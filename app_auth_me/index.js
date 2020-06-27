@@ -7,30 +7,38 @@ module.exports = async function (context, req) {
   const token = null; //req.headers.Cookie.token;
 
   if (!token) {
-    context.res = response({
+    return response({
       context,
-      status: 401,
+      status: 200,
+      body: {
+        clientPrincipal: null
+      }
     });
-    return;
   }
 
-  var payload;
+  let payload = null;
   try {
     payload = jwt.verify(token, jwtKey);
   } catch (e) {
     if (e instanceof jwt.JsonWebTokenError) {
-      context.res = response({
+      return response({
         context,
-        status: 401,
+        status: 200,
+        body: {
+          clientPrincipal: null
+        }
       });
     }
-    context.res = response({
+    return response({
       context,
       status: 400,
+      body: {
+        clientPrincipal: null
+      }
     });
   }
 
-  context.res = response({
+  return response({
     context,
     status: 200,
     body: {
