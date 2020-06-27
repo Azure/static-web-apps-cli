@@ -16,9 +16,8 @@ module.exports = async function (context, req) {
     });
   }
 
-  let payload = null;
   try {
-    payload = jwt.verify(token, jwtKey);
+    jwt.verify(token, jwtKey);
   } catch (e) {
     if (e instanceof jwt.JsonWebTokenError) {
       return response({
