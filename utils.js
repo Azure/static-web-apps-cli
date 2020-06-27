@@ -14,6 +14,7 @@ module.exports.response = ({ context, status, headers, cookies, body = "" }) => 
     headers,
     cookies,
     headers: {
+      status,
       "Content-Type": "application/json",
       ...headers,
     },
