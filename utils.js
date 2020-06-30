@@ -1,3 +1,5 @@
+const cookie = require('cookie');
+
 module.exports.response = ({ context, status, headers, cookies, body = "" }) => {
   let location;
   if (headers) {
@@ -43,3 +45,16 @@ module.exports.response = ({ context, status, headers, cookies, body = "" }) => 
   };
   return res;
 };
+
+
+module.exports.validateCookie = (cookieValue) => {
+  const cookies = cookie.parse(cookieValue);
+  console.log(JSON.stringify(cookies));
+
+  if (cookies.StaticWebAppsAuthCookie) {
+    console.log(cookies.StaticWebAppsAuthCookie === process.env.StaticWebAppsAuthCookie);
+    return cookies.StaticWebAppsAuthCookie === process.env.StaticWebAppsAuthCookie;
+  }
+
+ return false;
+}
