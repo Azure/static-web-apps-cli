@@ -8,7 +8,7 @@
       "methods": [
         "get"
       ],
-      "route": ".redirect/{provider}"
+      "route": ".redirect/{provider:regex(aad|github|twitter|google|facebook)}"
     },
     {
       "type": "http",

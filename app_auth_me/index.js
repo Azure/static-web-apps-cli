@@ -5,16 +5,17 @@ module.exports = async function (context, req) {
   const cookie = req.headers.cookie;
 
   if (!cookie || !validateCookie(cookie)) {
-    return response({
+    context.res = response({
       context,
       status: 200,
       body: {
         clientPrincipal: null
       }
     });
+    return;
   }
 
-  return response({
+  context.res = response({
     context,
     status: 200,
     body: {

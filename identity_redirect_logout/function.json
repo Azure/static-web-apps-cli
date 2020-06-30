@@ -8,7 +8,7 @@
       "methods": [
         "get"
       ],
-      "route": "app/.auth/me"
+      "route": ".redirect/logout"
     },
     {
       "type": "http",

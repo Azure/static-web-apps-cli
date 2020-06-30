@@ -1,4 +1,4 @@
-const cookie = require('cookie');
+const cookie = require("cookie");
 
 module.exports.response = ({ context, status, headers, cookies, body = "" }) => {
   let location;
@@ -11,16 +11,9 @@ module.exports.response = ({ context, status, headers, cookies, body = "" }) => 
     };
   }
 
-  const res = {
-    status,
-    headers,
-    cookies,
-    headers: {
-      status,
-      "Content-Type": "application/json",
-      ...headers,
-    },
-    body:
+  body = body || null;
+  if (process.env.DEBUG) {
+    body =
       body ||
       JSON.stringify(
         {
@@ -41,11 +34,22 @@ module.exports.response = ({ context, status, headers, cookies, body = "" }) => 
         },
         null,
         2
-      ),
+      );
+  }
+
+  const res = {
+    status,
+    headers,
+    cookies,
+    headers: {
+      status,
+      //"Content-Type": "application/json",
+      ...headers,
+    },
+    body,
   };
   return res;
 };
-
 
 module.exports.validateCookie = (cookieValue) => {
   const cookies = cookie.parse(cookieValue);
@@ -56,5 +60,5 @@ module.exports.validateCookie = (cookieValue) => {
     return cookies.StaticWebAppsAuthCookie === process.env.StaticWebAppsAuthCookie;
   }
 
- return false;
-}
+  return false;
+};
