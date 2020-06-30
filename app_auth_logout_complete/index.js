@@ -34,7 +34,7 @@ module.exports = async function (context, req) {
       },
     ],
     headers: {
-      location: `//localhost:4200/`,
+      location: `//localhost/`,
     },
   });
 };
