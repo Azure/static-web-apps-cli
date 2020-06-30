@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "description": "Azure Static Web Apps Emulator",
   "scripts": {
-    "start": "func host start"
+    "msha": "node msha.js",
+    "auth": "func host start",
+    "start": "concurrently --restart-tries 1 -c 'bgBlue.bold,bgMagenta.bold' --kill-others 'npm:msha' 'npm:auth' "
   },
   "author": "Wassim Chegham <github@wassim.dev>",
   "dependencies": {
     "azure-functions-core-tools": "^2.7.2508",
+    "concurrently": "^5.2.0",
     "cookie": "^0.4.1",
     "http-proxy": "^1.18.1",
     "jsonwebtoken": "^8.5.1",
