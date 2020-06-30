@@ -3,7 +3,7 @@ const { response } = require("../utils");
 module.exports = async function (context, req) {
   const { hostName, post_logout_redirect_uri = "/" } = req.query;
 
-  const location = `http://127.0.0.1:4242/.auth/logout?post_login_redirect_uri=${post_logout_redirect_uri}`;
+  const location = `//localhost:4242/.auth/logout?post_login_redirect_uri=${post_logout_redirect_uri}`;
 
   context.res = response({
     context,
@@ -15,7 +15,7 @@ module.exports = async function (context, req) {
         path: "/",
         secure: false,
         HttpOnly: false,
-        domain: "127.0.0.1",
+        domain: "localhost",
         SameSite: "None",
       },
     ],

@@ -11,7 +11,7 @@ module.exports = async function (context, req) {
         path: "/",
         secure: false,
         HttpOnly: false,
-        domain: "127.0.0.1",
+        domain: "localhost",
         expires: new Date(1970),
       },
       {
@@ -20,7 +20,7 @@ module.exports = async function (context, req) {
         path: "/",
         secure: false,
         HttpOnly: false,
-        domain: "127.0.0.1",
+        domain: "localhost",
         expires: new Date(1970),
       },
       {
@@ -29,12 +29,12 @@ module.exports = async function (context, req) {
         path: "/",
         secure: false,
         HttpOnly: false,
-        domain: "127.0.0.1",
+        domain: "localhost",
         expires: new Date(1970),
       },
     ],
     headers: {
-      location: `http://127.0.0.1:4200/`,
+      location: `//localhost:4200/`,
     },
   });
 };

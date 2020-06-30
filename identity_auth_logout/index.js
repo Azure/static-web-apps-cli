@@ -15,7 +15,7 @@ module.exports = async function (context, req) {
       },
     ],
     headers: {
-      location: `http://127.0.0.1:4242/.auth/logout/complete`,
+      location: `http://localhost:4242/.auth/logout/complete`,
     },
   });
 };

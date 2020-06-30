@@ -4,7 +4,7 @@ module.exports = async function (context, req) {
   const { provider } = context.bindingData;
   const { post_login_redirect_uri } = req.query;
 
-  const location = `http://127.0.0.1:4242/.redirect/${provider}?hostName=localhost&staticWebAppsAuthNonce=${context.invocationId}`;
+  const location = `//localhost:4242/.redirect/${provider}?hostName=localhost&staticWebAppsAuthNonce=${context.invocationId}`;
   context.res = response({
     context,
     status: 302,
@@ -15,7 +15,7 @@ module.exports = async function (context, req) {
         path: "/",
         secure: false,
         HttpOnly: false,
-        domain: "127.0.0.1",
+        domain: "localhost",
         SameSite: "None",
       },
     ],

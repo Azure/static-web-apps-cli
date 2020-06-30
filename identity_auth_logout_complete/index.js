@@ -1,7 +1,7 @@
 const { response } = require("../utils");
 
 module.exports = async function (context, req) {
-  const location = `http://127.0.0.1:4242/app/.auth/logout/complete`;
+  const location = `//localhost:4242/app/.auth/logout/complete`;
 
   context.res = response({
     context,
@@ -13,7 +13,7 @@ module.exports = async function (context, req) {
         path: "/",
         secure: false,
         HttpOnly: false,
-        domain: "127.0.0.1",
+        domain: "localhost",
         expires: new Date(1970),
       },
     ],

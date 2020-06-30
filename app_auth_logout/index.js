@@ -21,12 +21,12 @@ module.exports = async function (context, req) {
         path: "/",
         secure: false,
         HttpOnly: false,
-        domain: "127.0.0.1",
+        domain: "localhost",
         SameSite: "None",
       },
     ],
     headers: {
-      location: `http://127.0.0.1:4242/.redirect/logout?hostName=127.0.0.1`,
+      location: `//localhost:4242/.redirect/logout?hostName=localhost`,
     },
   });
 };

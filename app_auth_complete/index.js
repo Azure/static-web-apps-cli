@@ -4,7 +4,6 @@ module.exports = async function (context, req) {
   const { provider } = context.bindingData;
   const { post_login_redirect_uri } = req.query;
 
-  const location = `//127.0.0.1:4200/profile`;
   context.res = response({
     context,
     status: 302,
@@ -13,7 +12,7 @@ module.exports = async function (context, req) {
         name: "StaticWebAppsAuthContextCookie",
         value: "deleted",
         path: "/",
-        domain: "127.0.0.1",
+        domain: "localhost",
         expires: new Date(1970),
       },
       {
@@ -22,12 +21,12 @@ module.exports = async function (context, req) {
         path: "/",
         secure: false,
         HttpOnly: false,
-        domain: "127.0.0.1",
+        domain: "localhost",
         SameSite: "Strict",
       },
     ],
     headers: {
-      location,
+      location: `//localhost:4200/profile`,
     },
   });
 };

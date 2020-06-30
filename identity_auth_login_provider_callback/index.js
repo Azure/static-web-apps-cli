@@ -19,7 +19,7 @@ module.exports = async function (context, req) {
   const token = await githubOauthResponse.json();
   console.log(JSON.stringify(token));
 
-  const location = "http://127.0.0.1:4242/.auth/login/done";
+  const location = "//localhost:4242/.auth/login/done";
   context.res = response({
     context,
     status: 302,
