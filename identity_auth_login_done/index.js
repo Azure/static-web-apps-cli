@@ -15,8 +15,8 @@ module.exports = async function (context, req) {
       existingroles: "",
     },
     nonce: context.invocationId,
-    iss: "https://localhost/",
-    aud: "https://localhost/",
+    iss: "https://127.0.0.1/",
+    aud: "https://127.0.0.1/",
   };
   const user_login_jwt = jwt.sign(payload, jwtKey, {
     algorithm: "HS256",
@@ -31,8 +31,7 @@ module.exports = async function (context, req) {
         name: "StaticWebAppsAuthContextCookie",
         value: "deleted",
         path: "/",
-        expires: new Date("Thu, 01 Jan 1970 00:00:00 GMT"),
-        domain: "localhost",
+        domain: "127.0.0.1",
       }
     ],
     headers: {
@@ -41,7 +40,7 @@ module.exports = async function (context, req) {
     },
     body: `
     <title>Working...</title>
-    <form id="f" method="POST" action="http://localhost:4242/app/.auth/complete">
+    <form id="f" method="POST" action="http://127.0.0.1:4242/app/.auth/complete">
       <input type="hidden" name="user_login_jwt" value="${user_login_jwt}" />
       <noscript>
         <p>Script is disabled.Click Submit to continue.</p>

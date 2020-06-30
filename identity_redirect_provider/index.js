@@ -4,7 +4,7 @@ module.exports = async function (context, req) {
   const { provider } = context.bindingData;
   const { hostName, post_login_redirect_uri = "/.auth/login/done" } = req.query;
 
-  const location = `http://localhost:4242/.auth/login/${provider}?post_login_redirect_uri=${post_login_redirect_uri}`;
+  const location = `http://127.0.0.1:4242/.auth/login/${provider}?post_login_redirect_uri=${post_login_redirect_uri}`;
 
   context.res = response({
     context,
@@ -12,10 +12,10 @@ module.exports = async function (context, req) {
     cookies: [
       {
         name: "StaticWebAppsAuthContextCookie",
-        value: "xxx",
+        value: process.env.StaticWebAppsAuthContextCookie,
         path: "/",
-        secure: true,
-        HttpOnly: true,
+        secure: false,
+        HttpOnly: false,
         domain: hostName,
         SameSite: "None",
       },

@@ -17,8 +17,9 @@ module.exports = async function (context, req) {
   });
 
   const token = await githubOauthResponse.json();
+  console.log(JSON.stringify(token));
 
-  const location = "http://localhost:4242/.auth/login/done";
+  const location = "http://127.0.0.1:4242/.auth/login/done";
   context.res = response({
     context,
     status: 302,
@@ -27,26 +28,25 @@ module.exports = async function (context, req) {
         name: "Nonce",
         value: "deleted",
         path: "/",
-        expires: new Date('Thu, 01 Jan 1970 00:00:00 GMT'),
+        expires: new Date(1970),
       },
       {
         name: "RedirectCount",
         value: "deleted",
         path: "/",
-        expires: new Date('Thu, 01 Jan 1970 00:00:00 GMT'),
+        expires: new Date(1970),
       },
       {
         name: "AppServiceAuthSession",
-        value: "UUUUU",
+        value: process.env.AppServiceAuthSession,
         path: "/",
-        secure: true,
-        HttpOnly: true,
+        secure: false,
+        HttpOnly: false,
         SameSite: "None",
       },
     ],
     headers: {
       location,
-      token
     },
   });
 };

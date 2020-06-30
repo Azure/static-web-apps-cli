@@ -4,7 +4,7 @@ module.exports = async function (context, req) {
   const { provider } = context.bindingData;
   const { post_login_redirect_uri } = req.query;
 
-  const redirect_uri = `http://localhost:4242/.auth/login/${provider}/callback&state=${encodeURIComponent(
+  const redirect_uri = `http://127.0.0.1:4242/.auth/login/${provider}/callback&state=${encodeURIComponent(
     `redir=${post_login_redirect_uri}&nonce=${context.invocationId}`
   )}`;
 
