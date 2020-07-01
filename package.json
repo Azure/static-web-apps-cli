@@ -8,14 +8,20 @@
     "start": "concurrently --restart-tries 1 -c 'bgBlue.bold,bgMagenta.bold' --kill-others 'npm:msha' 'npm:auth' ",
     "release": "release-it"
   },
+  "bin": {
+    "swa": "./bin/index.js",
+    "swa-emu": "./bin/index.js"
+  },
   "author": "Wassim Chegham <github@wassim.dev>",
   "dependencies": {
     "azure-functions-core-tools": "^2.7.2508",
+    "commander": "^5.1.0",
     "concurrently": "^5.2.0",
     "cookie": "^0.4.1",
     "http-proxy": "^1.18.1",
     "jsonwebtoken": "^8.5.1",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "shelljs": "^0.8.4"
   },
   "devDependencies": {
     "release-it": "^13.6.4"
