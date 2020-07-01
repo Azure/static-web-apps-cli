@@ -1,5 +1,6 @@
 const { response } = require("../src/utils");
 const jwt = require("jsonwebtoken");
+const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `//localhost:4242`;
 
 const jwtKey = "123";
 const jwtExpirySeconds = 300;
@@ -32,7 +33,7 @@ module.exports = async function (context, req) {
         value: "deleted",
         path: "/",
         domain: "localhost",
-      }
+      },
     ],
     headers: {
       "Content-Type": "text/html",
@@ -40,7 +41,7 @@ module.exports = async function (context, req) {
     },
     body: `
     <title>Working...</title>
-    <form id="f" method="POST" action="http://localhost:4242/app/.auth/complete">
+    <form id="f" method="POST" action="${SWA_EMU_AUTH_URI}/app/.auth/complete">
       <input type="hidden" name="user_login_jwt" value="${user_login_jwt}" />
       <noscript>
         <p>Script is disabled.Click Submit to continue.</p>

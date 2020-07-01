@@ -1,4 +1,5 @@
 const { response, validateCookie } = require("../src/utils");
+const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `//localhost:4242`;
 
 module.exports = async function (context, req) {
   const cookie = req.headers.cookie;
@@ -26,7 +27,7 @@ module.exports = async function (context, req) {
       },
     ],
     headers: {
-      location: `//localhost:4242/.redirect/logout?hostName=localhost`,
+      location: `${SWA_EMU_AUTH_URI}/.redirect/logout?hostName=localhost`,
     },
   });
 };

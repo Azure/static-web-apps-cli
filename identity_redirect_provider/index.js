@@ -1,10 +1,11 @@
 const { response } = require("../src/utils");
+const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `//localhost:4242`;
 
 module.exports = async function (context, req) {
   const { provider } = context.bindingData;
   const { hostName, post_login_redirect_uri = "/.auth/login/done" } = req.query;
 
-  const location = `//localhost:4242/.auth/login/${provider}?post_login_redirect_uri=${post_login_redirect_uri}`;
+  const location = `${SWA_EMU_AUTH_URI}/.auth/login/${provider}?post_login_redirect_uri=${post_login_redirect_uri}`;
 
   context.res = response({
     context,

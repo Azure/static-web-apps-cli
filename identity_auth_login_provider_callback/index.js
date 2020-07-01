@@ -1,5 +1,6 @@
 const { response } = require("../src/utils");
 const { default: fetch } = require("node-fetch");
+const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `//localhost:4242`;
 
 module.exports = async function (context, req) {
   let { state, code } = req.query;
@@ -19,7 +20,7 @@ module.exports = async function (context, req) {
   const token = await githubOauthResponse.json();
   console.log(JSON.stringify(token));
 
-  const location = "//localhost:4242/.auth/login/done";
+  const location = `${SWA_EMU_AUTH_URI}/.auth/login/done`;
   context.res = response({
     context,
     status: 302,
