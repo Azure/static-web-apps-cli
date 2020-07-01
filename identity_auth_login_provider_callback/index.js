@@ -18,7 +18,6 @@ module.exports = async function (context, req) {
   });
 
   const token = await githubOauthResponse.json();
-  console.log(JSON.stringify(token));
 
   const location = `${SWA_EMU_AUTH_URI}/.auth/login/done`;
   context.res = response({
