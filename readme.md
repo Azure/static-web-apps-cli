@@ -33,6 +33,25 @@ Provide the following environment variables if you need to override the default 
 | `SWA_EMU_HOST`| the emulator host address | `0.0.0.0`|
 | `SWA_EMU_PORT`| the emulator port | `80`|
 
+You can also create a `local.settings.json` file providing the following values:
+
+```json
+{
+  "Values": {
+    "GITHUB_CLIENT_ID": "<GITHUB_CLIENT_ID>",
+    "GITHUB_CLIENT_SECRET": "<GITHUB_CLIENT_SECRET>",
+    "StaticWebAppsAuthCookie": "123",
+    "StaticWebAppsAuthContextCookie": "abc",
+    "AppServiceAuthSession": "1a2b3c",
+    "DEBUG": ""
+  },
+  "Host": {
+    "LocalHttpPort": 4242,
+  }
+}
+
+```
+
 ## Auth emulation status
 
 | Provider 	| Auth Emulation 	|
