@@ -1,5 +1,5 @@
 const { response } = require("../src/utils");
-const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `//localhost:4242`;
+const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `http://localhost:4242`;
 
 module.exports = async function (context, req) {
   const { provider } = context.bindingData;

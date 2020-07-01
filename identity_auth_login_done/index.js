@@ -1,6 +1,6 @@
 const { response } = require("../src/utils");
 const jwt = require("jsonwebtoken");
-const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `//localhost:4242`;
+const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `http://localhost:4242`;
 
 const jwtKey = "123";
 const jwtExpirySeconds = 300;
@@ -16,8 +16,8 @@ module.exports = async function (context, req) {
       existingroles: "",
     },
     nonce: context.invocationId,
-    iss: "https://localhost/",
-    aud: "https://localhost/",
+    iss: "localhost",
+    aud: "localhost",
   };
   const user_login_jwt = jwt.sign(payload, jwtKey, {
     algorithm: "HS256",
