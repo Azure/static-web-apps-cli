@@ -1,9 +1,9 @@
 {
-  "name": "swa-emulator",
-  "version": "1.0.0",
-  "description": "Azure Static Web Apps Emulator",
+  "name": "@manekinekko/swa-emu",
+  "version": "0.0.1",
+  "description": "Azure Static Web Apps Emulator for Auth, API and APP",
   "scripts": {
-    "msha": "node msha.js",
+    "msha": "node src/msha.js",
     "auth": "func host start",
     "start": "concurrently --restart-tries 1 -c 'bgBlue.bold,bgMagenta.bold' --kill-others 'npm:msha' 'npm:auth' "
   },
@@ -15,5 +15,6 @@
     "http-proxy": "^1.18.1",
     "jsonwebtoken": "^8.5.1",
     "node-fetch": "^2.6.0"
-  }
+  },
+  "private": false
 }
