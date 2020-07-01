@@ -13,22 +13,22 @@ var server = http.createServer(function (req, res) {
 
     console.log(req.headers);
     proxyAuth.web(req, res, {
-      target: "http://localhost:4242",
+      target: process.env.SWA_EMU_AUTH_URI || "http://localhost:4242",
     });
-  } else if (req.url.startsWith("/api")) {
+  } else if (req.url.startsWith(`/${ process.env.SWA_EMU_API_PREFIX || 'api' }`)) {
     console.log("api>", req.method, req.url);
 
     proxyApi.web(req, res, {
-      target: "http://localhost:7170",
+      target: process.env.SWA_EMU_API_URI || "http://localhost:7170",
     });
   } else {
     console.log("app>", req.method, req.url);
 
     proxyApp.web(req, res, {
-      target: "http://localhost:4200",
+      target: process.env.SWA_EMU_APP_URI || "http://localhost:4200",
     });
   }
 });
 
 console.log("listening on port 0.0.0.0:80");
-server.listen(80, "0.0.0.0");
+server.listen(process.env.SWA_EMU_PORT || 80, process.env.SWA_EMU_HOST || "0.0.0.0");
