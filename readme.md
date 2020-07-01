@@ -45,3 +45,4 @@ Provide the following options if you need to override the default values:
 
 - Custom routes are not supported.
 - Authorization is not supported.
+- Emulator is serving all traffic over HTTP.
