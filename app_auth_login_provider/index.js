@@ -6,6 +6,7 @@ module.exports = async function (context, req) {
   const { post_login_redirect_uri } = req.query;
 
   const location = `${SWA_EMU_AUTH_URI}/.redirect/${provider}?hostName=localhost&staticWebAppsAuthNonce=${context.invocationId}`;
+
   context.res = response({
     context,
     status: 302,

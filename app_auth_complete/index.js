@@ -1,4 +1,5 @@
 const { response } = require("../src/utils");
+const SWA_EMU_HOST = "//localhost:" + process.env.SWA_EMU_PORT || `//localhost`;
 
 module.exports = async function (context, req) {
   const { provider } = context.bindingData;
@@ -26,7 +27,7 @@ module.exports = async function (context, req) {
       },
     ],
     headers: {
-      location: `//localhost/profile`,
+      location: `${SWA_EMU_HOST}/profile`,
     },
   });
 };
