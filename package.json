@@ -6,7 +6,7 @@
     "msha": "node src/msha.js",
     "auth": "func host start",
     "start": "concurrently --restart-tries 1 -c 'bgBlue.bold,bgMagenta.bold' --kill-others 'npm:msha' 'npm:auth' ",
-    "release": "release-it"
+    "release": "release-it --preRelease=alpha --npm.tag=alpha --github.preRelease"
   },
   "author": "Wassim Chegham <github@wassim.dev>",
   "dependencies": {
