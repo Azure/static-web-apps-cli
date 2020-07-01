@@ -41,7 +41,7 @@ Provide the following options if you need to override the default values:
 | Facebook | TODO           |
 | AAD      | TODO           |
 
-## Limitations
+## Caveats
 
-- SWA routes are not supported.
-- SWA Authorization is not supported.
+- Custom routes are not supported.
+- Authorization is not supported.
