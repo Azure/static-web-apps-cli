@@ -1,14 +1,20 @@
-const { response } = require("../src/utils");
+const { response, ɵɵUseGithubDevToken } = require("../src/utils");
 const { default: fetch } = require("node-fetch");
 const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `//localhost:4242`;
 
 module.exports = async function (context, req) {
   let { state, code } = req.query;
-
   state = decodeURIComponent(state);
 
-  const client_id = process.env.GITHUB_CLIENT_ID;
-  const client_secret = process.env.GITHUB_CLIENT_SECRET;
+  let client_id = process.env.GITHUB_CLIENT_ID;
+  let client_secret = process.env.GITHUB_CLIENT_SECRET;
+
+  //**** GITHUB NOTICE */
+  if (!client_id || !client_secret) {
+    ({ client_id, client_secret } = await ɵɵUseGithubDevToken());
+  }
+  //**** GITHUB NOTICE */
+
   const oauthUri = `https://github.com/login/oauth/access_token?client_id=${client_id}&client_secret=${client_secret}&code=${code}&state=${state}`;
   const githubOauthResponse = await fetch(oauthUri, {
     method: "POST",
@@ -18,7 +24,6 @@ module.exports = async function (context, req) {
   });
 
   const token = await githubOauthResponse.json();
-
   const location = `${SWA_EMU_AUTH_URI}/.auth/login/done`;
   context.res = response({
     context,
