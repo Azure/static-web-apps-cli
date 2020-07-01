@@ -23,7 +23,7 @@ var server = http.createServer(function (req, res) {
       proxyAuth.close();
     });
   } else if (req.url.startsWith(`/${process.env.SWA_EMU_API_PREFIX || "api"}`)) {
-    const target = process.env.SWA_EMU_API_URI || "http://localhost:7170";
+    const target = process.env.SWA_EMU_API_URI || "http://localhost:7071";
     console.log("api>", req.method, target + req.url);
 
     proxyApi.web(req, res, {
