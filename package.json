@@ -5,7 +5,8 @@
   "scripts": {
     "msha": "node src/msha.js",
     "auth": "func host start",
-    "start": "concurrently --restart-tries 1 -c 'bgBlue.bold,bgMagenta.bold' --kill-others 'npm:msha' 'npm:auth' "
+    "start": "concurrently --restart-tries 1 -c 'bgBlue.bold,bgMagenta.bold' --kill-others 'npm:msha' 'npm:auth' ",
+    "release": "release-it"
   },
   "author": "Wassim Chegham <github@wassim.dev>",
   "dependencies": {
@@ -16,5 +17,8 @@
     "jsonwebtoken": "^8.5.1",
     "node-fetch": "^2.6.0"
   },
-  "private": false
+  "private": false,
+  "devDependencies": {
+    "release-it": "^13.6.4"
+  }
 }
