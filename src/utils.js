@@ -43,7 +43,7 @@ module.exports.response = ({ context, status, headers, cookies, body = "" }) => 
     cookies,
     headers: {
       status,
-      //"Content-Type": "application/json",
+      "Content-Type": "application/json",
       ...headers,
     },
     body,
@@ -53,10 +53,8 @@ module.exports.response = ({ context, status, headers, cookies, body = "" }) => 
 
 module.exports.validateCookie = (cookieValue) => {
   const cookies = cookie.parse(cookieValue);
-  console.log(JSON.stringify(cookies));
 
   if (cookies.StaticWebAppsAuthCookie) {
-    console.log(cookies.StaticWebAppsAuthCookie === process.env.StaticWebAppsAuthCookie);
     return cookies.StaticWebAppsAuthCookie === process.env.StaticWebAppsAuthCookie;
   }
 
