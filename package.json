@@ -17,7 +17,6 @@
     "jsonwebtoken": "^8.5.1",
     "node-fetch": "^2.6.0"
   },
-  "private": false,
   "devDependencies": {
     "release-it": "^13.6.4"
   }
