@@ -12,15 +12,13 @@ SWA EMU serves as a local emulator for Azure Static Web Apps. It emulates the fo
 - Start the emulator: `swa`
 - Access your SWA app from `http://localhost`
 
-## Getting started
+## Configuration
 
 SWA EMU binds to these defaults server URIs:
 
 - `http://localhost:4242`: for authentication.
 - `http://localhost:7071`: for the API (baked by Azure Function)
 - `http://localhost:4200`: for app assets (the front-end app)
-
-### Customize (optional)
 
 Provide the following options if you need to override the default values:
 
