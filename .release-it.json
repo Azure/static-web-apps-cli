@@ -1,0 +1,25 @@
+{
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "preset": "angular"
+    }
+  },
+  "git": {
+    "commitMessage": "chore(release): v${version}",
+    "tagName": "${version}",
+    "tagAnnotation": "Release ${version}",
+    "push": true,
+    "commit": true
+  },
+  "github": {
+    "release": true,
+    "preRelease": "alpha",
+    "releaseName": "SWA EMU ${version}",
+    "draft": false,
+    "tokenRef": "GITHUB_TOKEN"
+  },
+  "npm": {
+    "publish": true,
+    "tag": "alpha"
+  }
+}
