@@ -1,4 +1,4 @@
-const { response } = require("../utils");
+const { response } = require("../src/utils");
 
 module.exports = async function (context, req) {
   context.res = response({

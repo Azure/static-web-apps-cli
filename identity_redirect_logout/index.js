@@ -1,4 +1,4 @@
-const { response } = require("../utils");
+const { response } = require("../src/utils");
 
 module.exports = async function (context, req) {
   const { hostName, post_logout_redirect_uri = "/" } = req.query;

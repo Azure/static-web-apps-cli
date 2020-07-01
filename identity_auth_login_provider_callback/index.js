@@ -1,4 +1,4 @@
-const { response } = require("../utils");
+const { response } = require("../src/utils");
 const { default: fetch } = require("node-fetch");
 
 module.exports = async function (context, req) {

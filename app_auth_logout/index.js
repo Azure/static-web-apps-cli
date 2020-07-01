@@ -1,4 +1,4 @@
-const { response, validateCookie } = require("../utils");
+const { response, validateCookie } = require("../src/utils");
 
 module.exports = async function (context, req) {
   const cookie = req.headers.cookie;

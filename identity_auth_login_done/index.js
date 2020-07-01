@@ -1,4 +1,4 @@
-const { response } = require("../utils");
+const { response } = require("../src/utils");
 const jwt = require("jsonwebtoken");
 
 const jwtKey = "123";
