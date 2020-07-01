@@ -7,8 +7,7 @@ module.exports.response = ({ context, status, headers, cookies, body = "" }) => 
     ({ location } = headers);
     headers = {
       ...headers,
-      location,
-      // location: null
+      location: process.env.DEBUG ? null : location,
     };
   }
 
