@@ -9,11 +9,21 @@ module.exports = async function (context, req) {
 
   const client_id = process.env.GITHUB_CLIENT_ID;
   const location = `https://github.com/login/oauth/authorize?client_id=${client_id}&redirect_uri=${redirect_uri}`;
+
   context.res = response({
     context,
     status: 302,
+    cookies: [
+      {
+        name: "Nonce",
+        value: context.invocationId,
+        path: "/",
+        secure: false,
+        HttpOnly: false,
+        SameSite: "None",
+      },
+    ],
     headers: {
-      "set-cookie": `Nonce=zzz; path=/; secure; HttpOnly; SameSite=None`,
       location,
     },
   });
