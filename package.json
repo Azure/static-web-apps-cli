@@ -19,5 +19,24 @@
   },
   "devDependencies": {
     "release-it": "^13.6.4"
-  }
+  },
+  "homepage": "https://github.com/manekinekko/swa-emulator#readme",
+  "private": false,
+  "keywords": [
+    "azure",
+    "cloud",
+    "serverless",
+    "hosting",
+    "static",
+    "authentication",
+    "staticwebapp"
+  ],
+  "bugs": {
+    "url": "https://github.com/manekinekko/swa-emulator/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/manekinekko/swa-emulator.git"
+  },
+  "license": "MIT"
 }
