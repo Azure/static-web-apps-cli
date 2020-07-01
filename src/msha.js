@@ -2,19 +2,24 @@ const http = require("http");
 const httpProxy = require("http-proxy");
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
-const proxyAuth = httpProxy.createProxyServer({ autoRewrite: true });
+const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
 
 var server = http.createServer(function (req, res) {
-  if (req.url.startsWith("/.auth") || req.url.startsWith("/.redirect")) {
+  if (req.url.startsWith("/.auth")) {
     const target = process.env.SWA_EMU_AUTH_URI || "http://localhost:4242";
-    console.log("auth>", req.method, target + req.url);
+    req.url = `/app${req.url}`;
 
-    req.url = req.url.startsWith("/.auth") ? `app${req.url}` : req.url;
+    console.log("auth>", req.method, target + req.url);
     proxyAuth.web(req, res, {
       target,
     });
+    proxyAuth.on("proxyRes", function (proxyRes, req, res) {
+      console.log("auth>>", req.method, target + req.url);
+      console.log(JSON.stringify(proxyRes.headers, true, 2));
+    });
     proxyAuth.on("error", function (err, req, res) {
-      console.log("auth>", err.message);
+      console.log("auth>>", req.method, target + req.url);
+      console.log(err.message);
       proxyAuth.close();
     });
   } else if (req.url.startsWith(`/${process.env.SWA_EMU_API_PREFIX || "api"}`)) {
@@ -25,18 +30,19 @@ var server = http.createServer(function (req, res) {
       target,
     });
     proxyApi.on("error", function (err, req, res) {
-      console.log("api>", err.message);
+      console.log("api>>", req.method, target + req.url);
+      console.log(err.message);
       proxyApi.close();
     });
   } else {
-    const target = process.env.SWA_EMU_API_URI || "http://localhost:4200";
+    const target = process.env.SWA_EMU_APP_URI || "http://localhost:4200";
     console.log("app>", req.method, target + req.url);
 
     proxyApp.web(req, res, {
       target,
     });
     proxyApp.on("error", function (err, req, res) {
-      console.log("app>", err.message);
+      console.log("app>>", req.method, target + req.url);
       proxyApp.close();
     });
   }
