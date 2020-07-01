@@ -2,62 +2,48 @@
 
 SWA EMU serves as a local emulator for Azure Static Web Apps. It emulates the following features:
 
-- Authentication
+- Support local authentication
 - Serving API requests
 - Serving static APP assets
 
-## How to use
+## Quick start
 
-- Install the emulator: `npm i @manekinekko/swa-emu@alpha`
-- Start the emulator: `npm start`
-- Access your SWA app from `http://localhost` (default port `80`)
+- Install the emulator: `npm install -g @manekinekko/swa-emu@alpha`
+- Start the emulator: `swa`
+- Access your SWA app from `http://localhost`
 
 ## Getting started
 
-SWA EMU binds to these defaults server ports on localhost:
+SWA EMU binds to these defaults server URIs:
 
 - `http://localhost:4242`: for authentication.
-- `http://localhost:7170`: for the API (baked by Azure Function)
+- `http://localhost:7071`: for the API (baked by Azure Function)
 - `http://localhost:4200`: for app assets (the front-end app)
 
-## Customize (optional)
+### Customize (optional)
 
-Provide the following environment variables if you need to override the default values:
+Provide the following options if you need to override the default values:
 
-|Enviroment var| Description| Default|
-|--|--|--|
-| `SWA_EMU_API_PREFIX`| the API prefix | `api`|
-| `SWA_EMU_AUTH_URI`| the Auth uri | `http://localhost:4242`|
-| `SWA_EMU_API_URI`| the API uri | `http://localhost:7170`|
-| `SWA_EMU_APP_URI`| the app uri | `http://localhost:4200`|
-| `SWA_EMU_HOST`| the emulator host address | `0.0.0.0`|
-| `SWA_EMU_PORT`| the emulator port | `80`|
-
-You can also create a `local.settings.json` file providing the following values:
-
-```json
-{
-  "Values": {
-    "GITHUB_CLIENT_ID": "<GITHUB_CLIENT_ID>",
-    "GITHUB_CLIENT_SECRET": "<GITHUB_CLIENT_SECRET>",
-    "StaticWebAppsAuthCookie": "123",
-    "StaticWebAppsAuthContextCookie": "abc",
-    "AppServiceAuthSession": "1a2b3c",
-    "DEBUG": ""
-  },
-  "Host": {
-    "LocalHttpPort": 4242,
-  }
-}
-
-```
+| Options            | Description               | Default                 |
+| ------------------ | ------------------------- | ----------------------- |
+| `swa --api-prefix` | the API prefix            | `api`                   |
+| `swa --auth-uri`   | the Auth uri              | `http://localhost:4242` |
+| `swa --api-uri`    | the API uri               | `http://localhost:7071` |
+| `swa --app-uri`    | the app uri               | `http://localhost:4200` |
+| `swa --host`       | the emulator host address | `0.0.0.0`               |
+| `swa --port`       | the emulator port value   | `80`                    |
 
 ## Auth emulation status
 
-| Provider 	| Auth Emulation 	|
-|----------	|----------------	|
-| GitHub   	| ✅              	|
-| Twitter  	| TODO           	|
-| Google   	| TODO           	|
-| Facebook 	| TODO           	|
-| AAD      	| TODO           	|
+| Provider | Auth Emulation |
+| -------- | -------------- |
+| GitHub   | ✅             |
+| Twitter  | TODO           |
+| Google   | TODO           |
+| Facebook | TODO           |
+| AAD      | TODO           |
+
+## Limitations
+
+- SWA routes are not supported.
+- SWA Authorization is not supported.
