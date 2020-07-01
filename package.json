@@ -1,7 +1,7 @@
 {
   "name": "@manekinekko/swa-emu",
   "version": "0.0.1",
-  "description": "Azure Static Web Apps Emulator for Auth, API and APP",
+  "description": "Azure Static Web Apps Emulator for Auth, API and static content",
   "scripts": {
     "msha": "node src/msha.js",
     "auth": "func host start",
