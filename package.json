@@ -14,7 +14,7 @@
   },
   "author": "Wassim Chegham <github@wassim.dev>",
   "dependencies": {
-    "azure-functions-core-tools": "^2.7.2508",
+    "azure-functions-core-tools": "^3.0.2630",
     "commander": "^5.1.0",
     "concurrently": "^5.2.0",
     "cookie": "^0.4.1",
