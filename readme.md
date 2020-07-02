@@ -6,6 +6,17 @@ SWA EMU serves as a local emulator for Azure Static Web Apps. It can:
 - Serves API requests
 - Serves static APP assets
 
+## How does it work?
+
+Under the head, the SWA EMU is built on top of the following components:
+- The Builder: reads the local SWA github workflow flow and builds both the APP and API according to the user's config. And pretty much like SWA, if the user isn't using an API, SWA EMU will skip the API build. 
+- The MSHA: this is the heart of the SWA EMU, it's the piece that forwards all the HTTP requests to the appropritate component:
+  - `/.auth/**` requests are forwarded to the Auth Emulator.
+  - `/api/**` requests are forwarded to the localhot API function (if available).
+  - All other requests are forwarded to the static assets server (serving the front-end app).
+- The Auth Emulator server: this emulate the whole authentication flow.
+- The Static content server: this serves the local app static cotent.
+
 ## Disclaimer
 
 SWA EMU is still is alpha preview, which means that you might encounter issues (and you will!). Your contribution would be highly appreciated 🙏
