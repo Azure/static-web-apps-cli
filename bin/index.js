@@ -3,8 +3,8 @@
 const shell = require("shelljs");
 const path = require("path");
 const program = require("commander");
-const builder = require("./builder");
-const { readConfigFile } = require("./utils");
+const builder = require("../src/builder");
+const { readConfigFile } = require("../src/utils");
 
 program
   .name("swa")
@@ -30,7 +30,6 @@ const authUriPort = program.authUri.split(":").map(Number)[2] || 4242;
 // parse the APP URI port or default to 4200
 const appUriSegments = program.appUri.split(":");
 const appUriPort = appUriSegments[2] || 4200;
-const appUriAddress = (appUriSegments[1] || "localhost").replace("//", "");
 
 // provide binaries
 const concurrentlyBin = path.resolve(__dirname, "..", "./node_modules/.bin/concurrently");
@@ -76,10 +75,10 @@ const startCommand = [
   // serve the app
   // See available options for http-server: https://github.com/http-party/http-server#available-options
   // Note: the --proxy options allows http-server to work with SPA routing.
-  `"${httpServerBin} ${app_artifact_location} -p ${appUriPort} -c-1 --proxy http://localhost:${appUriPort}?"`,
+  `"${httpServerBin} ${app_artifact_location} -p ${appUriPort} -c-1"`,
 
   // serve the api
-  `"(cd ${api_location}; func start)"`,
+  `"(cd ${api_location}; func start --cors *)"`,
   `--color=always`,
 ];
 
