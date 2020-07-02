@@ -6,7 +6,7 @@
   },
   "git": {
     "commitMessage": "chore(release): v${version}",
-    "tagName": "${version}",
+    "tagName": "v${version}",
     "tagAnnotation": "Release ${version}",
     "push": true,
     "commit": true
