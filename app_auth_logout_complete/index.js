@@ -16,15 +16,6 @@ module.exports = async function (context, req) {
         expires: new Date(1970),
       },
       {
-        name: "StaticSitesAuthCookie",
-        value: "deleted",
-        path: "/",
-        secure: false,
-        HttpOnly: false,
-        domain: "localhost",
-        expires: new Date(1970),
-      },
-      {
         name: "StaticWebAppsAuthContextCookie",
         value: "deleted",
         path: "/",
