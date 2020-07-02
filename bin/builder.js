@@ -13,8 +13,8 @@ module.exports = () => {
 
   try {
     // figure out if appLocation exists
-    let appLocation = path.resolve(process.cwd(), app_location);
-    if (appLocation === "" || appLocation === "/" || fs.existsSync(appLocation) === false) {
+    let appLocation = app_location;
+    if (fs.existsSync(appLocation) === false) {
       appLocation = process.cwd();
     }
 
@@ -39,7 +39,7 @@ module.exports = () => {
         `--names api_build`,
         `--kill-others-on-fail`,
         `-c 'bgYellow.bold'`,
-        `"${api_build_command}"`,
+        `"npm install --production && ${app_build_command}"`,
         `--color=always`,
       ].join(" ");
       exec(apiBuildCommand, {

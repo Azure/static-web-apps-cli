@@ -15,9 +15,6 @@ module.exports.readConfigFile = () => {
       .pop();
 
     githubActionFile = path.resolve(githubActionFolder, githubActionFile);
-    if (githubActionFile && process.env.DEBUG) {
-      console.log("> Found config file:", githubActionFile);
-    }
 
     githubActionContent = fs.readFileSync(githubActionFile, "utf8");
   } catch (err) {
@@ -29,20 +26,23 @@ module.exports.readConfigFile = () => {
   const swaYaml = YAML.parse(githubActionContent);
   const swaBuildConfig = swaYaml.jobs.build_and_deploy_job.steps.find((step) => step.uses && step.uses.includes("static-web-apps-deploy"));
   const {
+    app_build_command = "npm run build --if-present",
+    api_build_command = "npm run build --if-present",
+
     app_location = "/",
     app_artifact_location = "/",
     api_location = "api",
-    app_build_command = "npm run build",
-    api_build_command = "npm run build",
   } = swaBuildConfig.with;
 
-  return {
-    app_location,
-    api_location,
+  const config = {
     app_build_command,
     api_build_command,
 
-    // the app_artifact_location must be under the user's project folder
-    app_artifact_location: path.resolve(process.cwd(), app_artifact_location),
+    // these locations must be under the user's project folder
+    app_location: path.join(process.cwd(), app_location),
+    api_location: path.join(process.cwd(), api_location),
+    app_artifact_location: path.join(process.cwd(), app_artifact_location),
   };
+
+  return config;
 };

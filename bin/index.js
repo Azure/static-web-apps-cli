@@ -35,7 +35,7 @@ const appUriAddress = (appUriSegments[1] || "localhost").replace("//", "");
 // provide binaries
 const concurrentlyBin = path.resolve(__dirname, "..", "./node_modules/.bin/concurrently");
 const httpServerBin = path.resolve(__dirname, "..", "./node_modules/.bin/http-server");
-const { app_artifact_location } = readConfigFile();
+const { app_artifact_location, api_location } = readConfigFile();
 
 if (program.build) {
   // run the app/api builds
@@ -63,13 +63,23 @@ const startCommand = [
   // run concurrent commands
   concurrentlyBin,
   `--restart-tries 1`,
-  `--names msha,auth,app`,
-  `-c 'bgBlue.bold,bgMagenta.bold,bgCyan.bold'`,
+  `--names msha,auth,app,api`,
+  `-c 'bgYellow.bold,bgMagenta.bold,bgCyan.bold.bgCyanBright.bold'`,
   `--kill-others`,
+
+  // start msha
   `'npm:msha'`,
+
+  // emulate auth
   `'npm:auth -- --port=${authUriPort} --cors=*'`,
+
+  // serve the app
   // See available options for http-server: https://github.com/http-party/http-server#available-options
-  `"${httpServerBin} ${app_artifact_location} -p ${appUriPort} -c-1"`,
+  // Note: the --proxy options allows http-server to work with SPA routing.
+  `"${httpServerBin} ${app_artifact_location} -p ${appUriPort} -c-1 --proxy http://localhost:${appUriPort}?"`,
+
+  // serve the api
+  `"(cd ${api_location}; func start)"`,
   `--color=always`,
 ];
 
