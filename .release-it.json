@@ -14,7 +14,7 @@
   "github": {
     "release": true,
     "preRelease": "alpha",
-    "releaseName": "SWA EMU ${version}",
+    "releaseName": "v${version}",
     "draft": false,
     "tokenRef": "GITHUB_TOKEN"
   },
