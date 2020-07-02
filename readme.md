@@ -1,11 +1,10 @@
 ## SWA EMU: Azure Static Web Apps Emulator (Alpha Preview)
 
-SWA EMU serves as a local emulator for Azure Static Web Apps. It emulates the following features:
-
-- Auto builds for APP and API
+SWA EMU serves as a local emulator for Azure Static Web Apps. It can:
+- Auto-build your local APP and API
 - Emulate Authentication
-- Serving API requests
-- Serving static APP assets
+- Serves API requests
+- Serves static APP assets
 
 ## Disclaimer
 
