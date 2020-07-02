@@ -15,7 +15,7 @@
     "release": true,
     "preRelease": "alpha",
     "releaseName": "v${version}",
-    "draft": false,
+    "draft": true,
     "tokenRef": "GITHUB_TOKEN"
   },
   "npm": {
