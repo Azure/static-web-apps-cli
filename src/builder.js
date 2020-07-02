@@ -39,7 +39,7 @@ module.exports = () => {
         `--names api_build`,
         `--kill-others-on-fail`,
         `-c 'bgYellow.bold'`,
-        `"npm install --production && ${app_build_command}"`,
+        `"npm install --production && ${api_build_command}"`,
         `--color=always`,
       ].join(" ");
       exec(apiBuildCommand, {
