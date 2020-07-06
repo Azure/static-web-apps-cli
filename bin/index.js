@@ -77,8 +77,8 @@ const startCommand = [
   // Note: the --proxy options allows http-server to work with SPA routing.
   `"${httpServerBin} ${app_artifact_location} -p ${appUriPort} -c-1"`,
 
-  // serve the api
-  `"(cd ${api_location}; func start --cors *)"`,
+  // serve the api, if it's available
+  `"[ -d '${api_location}' ] && (cd ${api_location}; func start --cors *) || echo 'No API found. Skipping.'"`,
   `--color=always`,
 ];
 

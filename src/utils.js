@@ -97,11 +97,10 @@ module.exports.readConfigFile = () => {
   const swaYaml = YAML.parse(githubActionContent);
   const swaBuildConfig = swaYaml.jobs.build_and_deploy_job.steps.find((step) => step.uses && step.uses.includes("static-web-apps-deploy"));
 
-  // extract the user config and set defaults
+  // extract the user's config and set defaults
   const {
     app_build_command = "npm run build --if-present",
     api_build_command = "npm run build --if-present",
-
     app_location = "/",
     app_artifact_location = "/",
     api_location = "api",
