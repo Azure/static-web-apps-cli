@@ -11,19 +11,26 @@ SWA EMU serves as a local emulator for [Azure Static Web Apps](https://bit.ly/2Z
 
 ![swa emulator architecture](./docs/swa-emu-architecture.png)
 
-The SWA emulator CLI is built on top of the following components:
+The SWA EMU is built on top of the following components:
 
-- The Builder: reads the local SWA github workflow flow and builds both the APP and API according to the user's config. And pretty much like SWA, if the user isn't using an API, SWA EMU will skip the API build.
-- The reverse proxy: this is the heart of the SWA EMU, it's the piece that forwards all HTTP requests to the appropriate components:
+- The Reverse Proxy: this is the heart of the SWA EMU, it's the piece that forwards all HTTP requests to the appropriate components:
   - `/.auth/**` requests are forwarded to the Auth Emulator server.
   - `/api/**` requests are forwarded to the localhost API function (if available).
   - `/**` all other requests are forwarded to the static assets server (serving the front-end app).
-- The Auth Emulator server: this emulate the whole authentication flow.
-- The Static content server: this serves the local app static content.
+- The Auth Emulator server: emulates the whole authentication flow.
+- The Static content server: serves the local app static content.
+
+Before SWA EMU bootstraps, it also can read (using the `--build` options) the local SWA github workflow file (created by [Azure Static Web Apps](https://bit.ly/2ZNcakP)) and builds both the static app and the api according to the user's config. And pretty much like SWA, if the user isn't using an API, SWA EMU will skip the API build.
+
+## Authentication emulation flow
+
+The Authentication flow is illustrated in the following sequence diagram (or [open in a new tab](https://bit.ly/swa-auth-flow)):
+
+![SWA Auth flow diagram](docs/swa-auth-flow.png)
 
 ## Disclaimer
 
-SWA EMU is still in alpha preview and not ready yet for prime time. You will encounter issues, so please report them or help us fix them. Your contributions will be very appreciated 🙏
+SWA EMU is still in alpha preview and not yet ready for prime time. You will encounter issues, so please report them or help us fix them. Your contributions will be very appreciated 🙏
 
 ## Quick start
 
