@@ -1,4 +1,4 @@
-const { response, ɵɵUseGithubDevToken } = require("../src/utils");
+const { response, ɵɵUseGithubDevToken } = require("../../utils");
 const { default: fetch } = require("node-fetch");
 const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `http://localhost:4242`;
 

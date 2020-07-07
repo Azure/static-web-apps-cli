@@ -3,9 +3,6 @@
   "version": "0.0.1-alpha.0",
   "description": "Azure Static Web Apps Emulator for Auth, API and static content",
   "scripts": {
-    "msha": "node src/msha.js",
-    "auth": "func host start",
-    "start": "concurrently --restart-tries 1 -c 'bgBlue.bold,bgMagenta.bold' --kill-others 'npm:msha' 'npm:auth' ",
     "release": "release-it --preRelease=alpha"
   },
   "bin": {

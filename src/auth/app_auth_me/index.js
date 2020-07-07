@@ -1,5 +1,5 @@
-const { response, validateCookie } = require("../src/utils");
-const user = require("../src/users.json")[0];
+const { response, validateCookie } = require("../../utils");
+const user = require("../users.json")[0];
 
 module.exports = async function (context, req) {
   const cookie = req.headers.cookie;

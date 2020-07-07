@@ -62,15 +62,15 @@ const startCommand = [
   // run concurrent commands
   concurrentlyBin,
   `--restart-tries 1`,
-  `--names msha,auth,app,api`,
+  `--names proxy,auth,app,api`,
   `-c 'bgYellow.bold,bgMagenta.bold,bgCyan.bold.bgCyanBright.bold'`,
   `--kill-others`,
 
-  // start msha
-  `'npm:msha'`,
+  // start the reverse proxy
+  `"node ./src/proxy.js"`,
 
   // emulate auth
-  `'npm:auth -- --port=${authUriPort} --cors=*'`,
+  `"(cd ./src/auth/; func start --cors=* --port=${authUriPort})"`,
 
   // serve the app
   // See available options for http-server: https://github.com/http-party/http-server#available-options

@@ -1,4 +1,4 @@
-const { response } = require("../src/utils");
+const { response } = require("../../utils");
 const SWA_EMU_HOST = "http://localhost:" + process.env.SWA_EMU_PORT;
 
 module.exports = async function (context, req) {
