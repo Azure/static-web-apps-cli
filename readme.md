@@ -1,21 +1,25 @@
 ## SWA EMU: Azure Static Web Apps Emulator (Alpha Preview)
 
 SWA EMU serves as a local emulator for Azure Static Web Apps. It can:
+
 - Auto-build your local APP and API
 - Emulate Authentication
-- Serves API requests
-- Serves static APP assets
+- Serve API requests
+- Serve static APP assets
 
-## How does it work?
+## High-level architecture
 
-Under the head, the SWA EMU is built on top of the following components:
-- The Builder: reads the local SWA github workflow flow and builds both the APP and API according to the user's config. And pretty much like SWA, if the user isn't using an API, SWA EMU will skip the API build. 
-- The MSHA: this is the heart of the SWA EMU, it's the piece that forwards all the HTTP requests to the appropritate component:
-  - `/.auth/**` requests are forwarded to the Auth Emulator.
-  - `/api/**` requests are forwarded to the localhot API function (if available).
-  - All other requests are forwarded to the static assets server (serving the front-end app).
+![swa emulator architecture](./docs/swa-emu-architecture.png)
+
+The SWA emulator CLI is built on top of the following components:
+
+- The Builder: reads the local SWA github workflow flow and builds both the APP and API according to the user's config. And pretty much like SWA, if the user isn't using an API, SWA EMU will skip the API build.
+- The reverse proxy: this is the heart of the SWA EMU, it's the piece that forwards all HTTP requests to the appropriate components:
+  - `/.auth/**` requests are forwarded to the Auth Emulator server.
+  - `/api/**` requests are forwarded to the localhost API function (if available).
+  - `/**` all other requests are forwarded to the static assets server (serving the front-end app).
 - The Auth Emulator server: this emulate the whole authentication flow.
-- The Static content server: this serves the local app static cotent.
+- The Static content server: this serves the local app static content.
 
 ## Disclaimer
 
@@ -68,4 +72,4 @@ Provide the following options if you need to override the default values:
 
 ## Want to help? [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/manekinekko/swa-emu/issues)
 
-Want to file a bug, contribute some code, or improve the documentation? Excellent! Read up on our guidelines for [contributing](https://github.com/manekinekko/swa-emu/blob/master/CONTRIBUTING.md) and then check out one of our issues in the hotlist: [community-help](https://github.com/manekinekko/swa-emu/issues).
+Want to file a bug, contribute some code, or improve the documentation? Excellent! Read up on our guidelines for [contributing](https://github.com/manekinekko/swa-emu/blob/master/CONTRIBUTING.md) and then check out one of our issues in the list: [community-help](https://github.com/manekinekko/swa-emu/issues).
