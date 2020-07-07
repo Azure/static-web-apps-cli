@@ -19,6 +19,7 @@ The SWA EMU is built on top of the following components:
   - `/**` all other requests are forwarded to the static assets server (serving the front-end app).
 - The Auth Emulator server: emulates the whole authentication flow.
 - The Static content server: serves the local app static content.
+- The Serverless API server (baked by the Azure Function App).
 
 Before SWA EMU bootstraps, it also can read (using the `--build` options) the local SWA github workflow file (created by [Azure Static Web Apps](https://bit.ly/2ZNcakP)) and builds both the static app and the api according to the user's config. And pretty much like SWA, if the user isn't using an API, SWA EMU will skip the API build.
 
