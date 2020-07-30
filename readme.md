@@ -86,6 +86,16 @@ If you need to override the default values, provide the following options:
 - The emulator is serving all traffic over HTTP (HTTPS support will be added soon).
 - When using GitHub, the OAuth client ID and client secret are provided as-is for dev purposes ONLY. You should create your own OAuth GitHub app!
 
+## Troubleshooting
+
+### Port 4242 is unavailable
+
+This means that there is already an instance of Azure Functions Core Tools (assigned to the Auth Emulator) that is running and bound to the default port `4242`. Make sure to either:
+
+- close the other running instance, and run the emulator again.
+- run the emulator using a different port: `--auth-uri=http://localhost:4243`
+- force close the other instance by killing its processes: `killall node azure-functions-core-tools`
+
 ## Want to help? [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/manekinekko/swa-emu/issues)
 
 Want to file a bug, contribute some code, or improve the documentation? Excellent! Read up on our guidelines for [contributing](https://github.com/manekinekko/swa-emu/blob/master/CONTRIBUTING.md) and then check out one of our issues in the list: [community-help](https://github.com/manekinekko/swa-emu/issues).
