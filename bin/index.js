@@ -5,6 +5,14 @@ const path = require("path");
 const program = require("commander");
 const builder = require("../src/builder");
 const { readConfigFile } = require("../src/utils");
+const { dashboard } = require("../src/dashboard");
+const { spawn } = require("child_process");
+const spawnx = (command, args) =>
+  spawn(command, args, {
+    // stdio: [null, null, null, null],
+    shell: true,
+    cwd: path.resolve(__dirname, ".."),
+  });
 
 program
   .name("swa")
@@ -62,7 +70,7 @@ const startCommand = [
   // run concurrent commands
   concurrentlyBin,
   `--restart-tries 1`,
-  `--names proxy,auth,app,api`,
+  `--names emulator,auth,hosting,functions`,
   `-c 'bgYellow.bold,bgMagenta.bold,bgCyan.bold.bgCyanBright.bold'`,
   `--kill-others`,
 
@@ -75,7 +83,7 @@ const startCommand = [
   // serve the app
   // See available options for http-server: https://github.com/http-party/http-server#available-options
   // Note: the --proxy options allows http-server to work with SPA routing.
-  `"${httpServerBin} ${app_artifact_location} -p ${appUriPort} -c-1"`,
+  `"${httpServerBin} ${app_artifact_location} -p ${appUriPort} -c-1 --silent"`,
 
   // serve the api, if it's available
   `"[ -d '${api_location}' ] && (cd ${api_location}; func start --cors *) || echo 'No API found. Skipping.'"`,
@@ -86,15 +94,24 @@ if (process.env.DEBUG) {
   console.log(startCommand);
 }
 
-shell.exec(
-  startCommand.join(" "),
-  {
-    // set the cwd to the installation folder
-    cwd: path.resolve(__dirname, ".."),
-  },
-  (code, stdout, stderr) => {
-    if (stderr.length) {
-      console.error(stderr);
-    }
-  }
-);
+// start hosting
+const hosting = spawnx(`${httpServerBin}`, `${app_artifact_location} -p ${appUriPort} -c-1`.split(" "));
+dashboard.stream("hosting", hosting);
+// hosting.stdout.on("data", (data) => dashboard.hosting.log(data.toString("utf8")));
+// hosting.stderr.on("data", (data) => dashboard.hosting.log(data.toString("utf8")));
+
+// start functions
+const functions = spawnx(`[ -d '${api_location}' ] && (cd ${api_location}; func start --cors *) || echo 'No API found. Skipping.'`, []);
+dashboard.stream("functions", functions);
+
+// start auth
+const auth = spawnx(`(cd ./src/auth/; func start --cors=* --port=${authUriPort})`, []);
+dashboard.stream("auth", auth);
+
+// start proxy
+const status = spawnx(`node`, [`./src/proxy`]);
+dashboard.stream("status", status);
+
+process.on("exit", () => {
+  process.exit(process.pid);
+});

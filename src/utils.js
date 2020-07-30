@@ -89,8 +89,7 @@ module.exports.readConfigFile = () => {
 
     githubActionContent = fs.readFileSync(githubActionFile, "utf8");
   } catch (err) {
-    console.error(err);
-    shell.echo("No SWA configuration build found.");
+    shell.echo("No SWA configuration build found. A SWA folder must contain a GitHub workflow file. Read more: https://bit.ly/31RAODu");
     shell.exit(0);
   }
 
