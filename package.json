@@ -29,6 +29,11 @@
   },
   "devDependencies": {
     "@release-it/conventional-changelog": "^1.1.4",
+    "@types/blessed": "^0.1.17",
+    "@types/cookie": "^0.4.0",
+    "@types/http-proxy": "^1.17.4",
+    "@types/node-fetch": "^2.5.7",
+    "@types/shelljs": "^0.8.8",
     "release-it": "^13.6.4",
     "typescript": "^3.9.7"
   },

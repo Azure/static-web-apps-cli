@@ -1,10 +1,12 @@
-// @ts-check
+import blessed from "blessed";
+import { ChildProcessWithoutNullStreams } from "child_process";
 
-const blessed = require("blessed");
-
-module.exports.dashboard = new (class Dashboard {
-  logText;
-  log;
+const dashboard = new (class Dashboard {
+  private screen: blessed.Widgets.Screen;
+  private hosting: blessed.Widgets.Log;
+  private functions: blessed.Widgets.Log;
+  private auth: blessed.Widgets.Log;
+  private status: blessed.Widgets.Log;
 
   constructor() {
     this.screen = blessed.screen({
@@ -12,7 +14,6 @@ module.exports.dashboard = new (class Dashboard {
       dockBorders: false,
       fullUnicode: true,
       autoPadding: true,
-
     });
     this.screen.title = "Azure Static Web Apps Emulator";
     this.screen.key(["escape", "q", "C-c"], () => {
@@ -48,8 +49,8 @@ module.exports.dashboard = new (class Dashboard {
       clickable: true,
       focus: {
         border: {
-          fg: 'green'
-        }
+          fg: "green",
+        },
       },
       mouse: true,
     });
@@ -70,7 +71,7 @@ module.exports.dashboard = new (class Dashboard {
     });
   }
 
-  stream(type, proc) {
+  stream(type: string, proc: ChildProcessWithoutNullStreams) {
     if (proc) {
       proc.stdout.on("data", (data) => this[type].log(data.toString("utf8")));
       proc.stderr.on("data", (data) => this[type].log(data.toString("utf8")));
@@ -81,3 +82,5 @@ module.exports.dashboard = new (class Dashboard {
     }
   }
 })();
+
+export { dashboard };

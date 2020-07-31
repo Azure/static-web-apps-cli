@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-const shell = require("shelljs");
-const path = require("path");
-const program = require("commander");
-const builder = require("../src/builder");
-const { readConfigFile } = require("../src/utils");
-const { dashboard } = require("../src/dashboard");
-const { spawn } = require("child_process");
-const spawnx = (command, args) =>
+import shell from "shelljs";
+import path from "path";
+import program from "commander";
+import builder from "../src/builder";
+import { readConfigFile } from "../src/utils";
+import { dashboard } from "../src/dashboard";
+import { spawn } from "child_process";
+const spawnx = (command: string, args: readonly string[]) =>
   spawn(command, args, {
     // stdio: [null, null, null, null],
     shell: true,
@@ -23,7 +23,7 @@ program
   .option("--api-prefix <apiPrefix>", "set API prefix", "api")
   .option("--app-uri <appUri>", "set APP uri", "http://localhost:4200")
   .option("--host <host>", "set host address", "0.0.0.0")
-  .option("--port <port>", "set port value", 80)
+  .option("--port <port>", "set port value", "80")
   .option("--debug", "set port value", false)
   .option("--build", "build the API and APP before starting the emulator", false)
   .parse(process.argv);

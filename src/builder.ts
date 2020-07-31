@@ -1,11 +1,11 @@
-const fs = require("fs");
-const path = require("path");
-const shell = require("shelljs");
-const { readConfigFile } = require("./utils");
+import fs from "fs";
+import path from "path";
+import shell, { ExecOptions } from "shelljs";
+import { readConfigFile } from "./utils";
 
-const exec = (command, options = {}) => shell.exec(command, { async: false, ...options });
+const exec = (command: string, options: ExecOptions = {}) => shell.exec(command, { async: false, ...options });
 
-module.exports = () => {
+export default () => {
   const { app_location, api_location, app_build_command, api_build_command } = readConfigFile();
 
   // use the concurrently binary provided by this emulator

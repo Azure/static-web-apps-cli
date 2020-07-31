@@ -3,7 +3,8 @@
     "outDir": "./output",
     "allowJs": true,
     "target": "es5",
-    "sourceMap": true
+    "sourceMap": true,
+    "esModuleInterop": true
   },
   "include": ["./src/**/*", "./bin/**/*"]
 }

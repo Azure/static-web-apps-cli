@@ -1,11 +1,11 @@
-const cookie = require("cookie");
-const { default: fetch } = require("node-fetch");
-const path = require("path");
-const fs = require("fs");
-const shell = require("shelljs");
-const YAML = require("yaml");
+import cookie from "cookie";
+import fetch from "node-fetch";
+import path from "path";
+import fs from "fs";
+import shell from "shelljs";
+import YAML from "yaml";
 
-module.exports.response = ({ context, status, headers, cookies, body = "" }) => {
+const response = ({ context, status, headers, cookies, body = "" }) => {
   let location;
   if (headers) {
     ({ location } = headers);
@@ -43,7 +43,6 @@ module.exports.response = ({ context, status, headers, cookies, body = "" }) => 
 
   const res = {
     status,
-    headers,
     cookies,
     headers: {
       status,
@@ -55,7 +54,7 @@ module.exports.response = ({ context, status, headers, cookies, body = "" }) => 
   return res;
 };
 
-module.exports.validateCookie = (cookieValue) => {
+const validateCookie = (cookieValue: string) => {
   const cookies = cookie.parse(cookieValue);
 
   if (cookies.StaticWebAppsAuthCookie) {
@@ -65,16 +64,31 @@ module.exports.validateCookie = (cookieValue) => {
   return false;
 };
 
-module.exports.ɵɵUseGithubDevToken = async () => {
+type SwaTokenResponse = {
+  github: {
+    client_id: string;
+    client_secret: string;
+  };
+};
+
+const ɵɵUseGithubDevToken = async () => {
   console.log("!!!! Notice: You are using a dev GitHub token. You should create and use your own!");
   console.log("!!!! Read https://docs.github.com/en/developers/apps/building-oauth-apps");
   const swaTokens = `https://gist.githubusercontent.com/manekinekko/7fbfc79a85b0f1f312715f1beda26236/raw/740c51aac5b1fb970e69408067a49907485d1e31/swa-emu.json`;
   const swaTokensResponse = await fetch(swaTokens);
-  const token = await swaTokensResponse.json();
+  const token: SwaTokenResponse = await swaTokensResponse.json();
   return token.github;
 };
 
-module.exports.readConfigFile = () => {
+export type Config = {
+  app_build_command: string;
+  api_build_command: string;
+  app_location: string;
+  app_artifact_location: string;
+  api_location: string;
+};
+
+const readConfigFile = (): Config => {
   const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
 
   // find the SWA GitHub action file
@@ -94,7 +108,9 @@ module.exports.readConfigFile = () => {
   }
 
   const swaYaml = YAML.parse(githubActionContent);
-  const swaBuildConfig = swaYaml.jobs.build_and_deploy_job.steps.find((step) => step.uses && step.uses.includes("static-web-apps-deploy"));
+  const swaBuildConfig: { with: Config } = swaYaml.jobs.build_and_deploy_job.steps.find(
+    (step) => step.uses && step.uses.includes("static-web-apps-deploy")
+  );
 
   // extract the user's config and set defaults
   const {
@@ -117,3 +133,5 @@ module.exports.readConfigFile = () => {
 
   return config;
 };
+
+export { response, validateCookie, ɵɵUseGithubDevToken, readConfigFile };

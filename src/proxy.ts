@@ -1,5 +1,5 @@
-const http = require("http");
-const httpProxy = require("http-proxy");
+import http from "http";
+import httpProxy from "http-proxy";
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
@@ -15,7 +15,7 @@ var server = http.createServer(function (req, res) {
     });
     proxyAuth.on("proxyRes", function (proxyRes, req, res) {
       console.log("auth>>", req.method, target + req.url);
-      console.log(JSON.stringify(proxyRes.headers, true, 2));
+      console.log(JSON.stringify(proxyRes.headers, null, 2));
     });
     proxyAuth.on("error", function (err, req, res) {
       console.log("auth>>", req.method, target + req.url);
@@ -50,4 +50,4 @@ var server = http.createServer(function (req, res) {
 
 const address = `${process.env.SWA_EMU_HOST || "0.0.0.0"}:${process.env.SWA_EMU_PORT || 80}`;
 console.log(`>> SWA listening on ${address}`);
-server.listen(process.env.SWA_EMU_PORT || 80, process.env.SWA_EMU_HOST || "0.0.0.0");
+server.listen(Number(process.env.SWA_EMU_PORT) || 80, process.env.SWA_EMU_HOST || "0.0.0.0", 0);
