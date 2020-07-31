@@ -90,10 +90,22 @@ If you need to override the default values, provide the following options:
 
 ### Port 4242 is unavailable
 
-This means that there is already an instance of Azure Functions Core Tools (assigned to the Auth Emulator) that is running and bound to the default port `4242`. Make sure to either:
+This means that there is already an instance of Azure Functions Core Tools (assigned to the Auth Emulator) that is running and bound to the default port `4242`.
+
+To fix it, either:
 
 - close the other running instance, and run the emulator again.
 - run the emulator using a different port: `--auth-uri=http://localhost:4243`
+- force close the other instance by killing its processes: `killall node azure-functions-core-tools`
+
+### Error: listen EADDRINUSE: address already in use 0.0.0.0:80
+
+This error indicates that another app is running and bound to the default port of the emulator: `80`.
+
+To fix it, either:
+
+- close the other running instance, and run the emulator again.
+- run the emulator using a different port: `--port=8081`
 - force close the other instance by killing its processes: `killall node azure-functions-core-tools`
 
 ## Want to help? [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/manekinekko/swa-emu/issues)
