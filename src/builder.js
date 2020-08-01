@@ -34,7 +34,7 @@ module.exports = () => {
 
     // NOTE: API is optional. Build it only if it exists
     let apiLocation = path.resolve(process.cwd(), api_location);
-    if (fs.existsSync(apiLocation) === true) {
+    if (fs.existsSync(apiLocation) === true && fs.existsSync(path.join(apiLocation, 'host.json'))) {
       const apiBuildCommand = [
         'CI=1',
         concurrentlyBin,
