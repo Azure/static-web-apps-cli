@@ -1,8 +1,23 @@
+const fs = require("fs");
+const path = require("path");
 const http = require("http");
 const httpProxy = require("http-proxy");
+const { dirname } = require("path");
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
+
+const serveStatic = (file, res) => {
+  fs.readFile(file, (err, data) => {
+    if (err) {
+      res.writeHead(404);
+      res.end(JSON.stringify(err));
+      return;
+    }
+    res.writeHead(200);
+    res.end(data);
+  });
+};
 
 var server = http.createServer(function (req, res) {
   if (req.url.startsWith("/.auth")) {
@@ -40,10 +55,31 @@ var server = http.createServer(function (req, res) {
 
     proxyApp.web(req, res, {
       target,
+      // set this to true so we can handle our own response
+      // see https://github.com/http-party/node-http-proxy#miscellaneous
+      selfHandleResponse: true,
     });
+
+    proxyApp.on("proxyRes", function (proxyRes, req, res) {
+      if (proxyRes.statusCode === 404) {
+        const file = path.resolve(__dirname, "404.html");
+        serveStatic(file, res);
+      } else {
+        let file = path.join(process.env.SWA_EMU_APP_LOCATION, req.url);
+        if (fs.lstatSync(file).isDirectory()) {
+          file = `${file}index.html`;
+        }
+        serveStatic(file, res);
+      }
+    });
+
     proxyApp.on("error", function (err, req, res) {
       console.log("app>>", req.method, target + req.url);
-      proxyApp.close();
+      res.writeHead(500, {
+        "Content-Type": "text/plain",
+      });
+
+      res.end(`Something went wrong.\n${err.toString()}`);
     });
   }
 });
