@@ -20,11 +20,12 @@ module.exports = () => {
 
     // build app
     const appBuildCommand = [
+      'CI=1',
       concurrentlyBin,
       `--names app_build`,
       `-c 'bgGreen.bold'`,
       `--kill-others-on-fail`,
-      `"${app_build_command}"`,
+      `"npm install && ${app_build_command}"`,
       `--color=always`,
     ].join(" ");
     exec(appBuildCommand, {
@@ -35,6 +36,7 @@ module.exports = () => {
     let apiLocation = path.resolve(process.cwd(), api_location);
     if (fs.existsSync(apiLocation) === true) {
       const apiBuildCommand = [
+        'CI=1',
         concurrentlyBin,
         `--names api_build`,
         `--kill-others-on-fail`,
