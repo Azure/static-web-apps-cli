@@ -68,14 +68,11 @@ const envVarsObj = {
 };
 
 const startCommand = [
-  ...Object.keys(envVarsObj).map((key) => `${key}="${envVarsObj[key]}"`),
-
   // run concurrent commands
   concurrentlyBin,
-  `--restart-tries 1`,
+  `--restart-tries 3`,
   `--names emulator,auth,hosting,functions`,
-  `-c 'bgYellow.bold,bgMagenta.bold,bgCyan.bold.bgCyanBright.bold'`,
-  `--kill-others`,
+  `-c 'bgYellow.bold,bgMagenta.bold,bgCyan.bold,bgGreen.bold'`,
 
   // start the reverse proxy
   `"node ./src/proxy.js"`,
@@ -85,11 +82,12 @@ const startCommand = [
 
   // serve the app
   // See available options for http-server: https://github.com/http-party/http-server#available-options
-  // Note: the --proxy options allows http-server to work with SPA routing.
-  `"${httpServerBin} ${app_artifact_location} -p ${appUriPort} -c-1 --silent"`,
+  // Note: --proxy allows us to add fallback routes for SPA (https://github.com/http-party/http-server#catch-all-redirect)
+  `"${httpServerBin} ${app_artifact_location} -p ${appUriPort} -c-1 --proxy http://localhost:${appUriPort}? --silent"`,
 
   // serve the api, if it's available
   `"[ -d '${api_location}' ] && (cd ${api_location}; func start --cors *) || echo 'No API found. Skipping.'"`,
+
   `--color=always`,
 ];
 
@@ -128,11 +126,13 @@ if (program.ui) {
     process.exit(process.pid);
   });
 } else {
+  // run concurrent commands
   shell.exec(
     startCommand.join(" "),
     {
       // set the cwd to the installation folder
       cwd: path.resolve(__dirname, ".."),
+      env: { ...process.env, ...envVarsObj },
     },
     (code, stdout, stderr) => {
       if (stderr.length) {
