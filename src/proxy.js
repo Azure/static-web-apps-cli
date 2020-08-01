@@ -2,7 +2,6 @@ const fs = require("fs");
 const path = require("path");
 const http = require("http");
 const httpProxy = require("http-proxy");
-const { dirname } = require("path");
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
@@ -20,6 +19,7 @@ const serveStatic = (file, res) => {
 };
 
 var server = http.createServer(function (req, res) {
+  // proxy AUTH request to AUTH emulator
   if (req.url.startsWith("/.auth")) {
     const target = process.env.SWA_EMU_AUTH_URI || "http://localhost:4242";
     req.url = `/app${req.url}`;
@@ -37,7 +37,10 @@ var server = http.createServer(function (req, res) {
       console.log(err.message);
       proxyAuth.close();
     });
-  } else if (req.url.startsWith(`/${process.env.SWA_EMU_API_PREFIX || "api"}`)) {
+  }
+
+  // proxy API request to local API
+  else if (req.url.startsWith(`/${process.env.SWA_EMU_API_PREFIX || "api"}`)) {
     const target = process.env.SWA_EMU_API_URI || "http://localhost:7071";
     console.log("api>", req.method, target + req.url);
 
@@ -49,7 +52,10 @@ var server = http.createServer(function (req, res) {
       console.log(err.message);
       proxyApi.close();
     });
-  } else {
+  }
+
+  // proxy APP request to local APP
+  else {
     const target = process.env.SWA_EMU_APP_URI || "http://localhost:4200";
     console.log("app>", req.method, target + req.url);
 
@@ -61,15 +67,20 @@ var server = http.createServer(function (req, res) {
     });
 
     proxyApp.on("proxyRes", function (proxyRes, req, res) {
+      const file404 = path.resolve(__dirname, "404.html");
       if (proxyRes.statusCode === 404) {
-        const file = path.resolve(__dirname, "404.html");
-        serveStatic(file, res);
+        serveStatic(file404, res);
       } else {
         let file = path.join(process.env.SWA_EMU_APP_LOCATION, req.url);
-        if (fs.lstatSync(file).isDirectory()) {
-          file = `${file}index.html`;
+        if (fs.existsSync(file)) {
+          if (fs.lstatSync(file).isDirectory()) {
+            file = `${file}index.html`;
+          }
+          serveStatic(file, res);
+        } else {
+          // URL/file not found on disk
+          serveStatic(file404, res);
         }
-        serveStatic(file, res);
       }
     });
 
@@ -79,7 +90,7 @@ var server = http.createServer(function (req, res) {
         "Content-Type": "text/plain",
       });
 
-      res.end(`Something went wrong.\n${err.toString()}`);
+      res.end(err.toString());
     });
   }
 });
