@@ -67,7 +67,8 @@ If you need to override the default values, provide the following options:
 | `--host`       | the emulator host address             | `0.0.0.0`               |
 | `--port`       | the emulator port value               | `80`                    |
 | `--build`      | build the api and app before starting | `false`                 |
-| `--debug`      | enable debug logs                     | `false`                 |
+| `--verbose`    | enable debug logs                     | `false`                 |
+| `--ui`         | enable dashboard UI                   | `false`                 |
 
 ## Auth emulation status
 
@@ -96,7 +97,7 @@ To fix it, either:
 
 - close the other running instance, and run the emulator again.
 - run the emulator using a different port: `--auth-uri=http://localhost:4243`
-- force close the other instance by killing its processes: `killall node azure-functions-core-tools`
+- force close the other instance by killing its processes: `lsof -t -i tcp:4242 | xargs kill`
 
 ### Error: listen EADDRINUSE: address already in use 0.0.0.0:80
 
@@ -106,7 +107,7 @@ To fix it, either:
 
 - close the other running instance, and run the emulator again.
 - run the emulator using a different port: `--port=8081`
-- force close the other instance by killing its processes: `killall node azure-functions-core-tools`
+- force close the other instance by killing its processes: `lsof -t -i tcp:80 | xargs kill`
 
 ## Want to help? [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/manekinekko/swa-emu/issues)
 
