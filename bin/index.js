@@ -83,7 +83,7 @@ const startCommand = [
   // serve the app
   // See available options for http-server: https://github.com/http-party/http-server#available-options
   // Note: --proxy allows us to add fallback routes for SPA (https://github.com/http-party/http-server#catch-all-redirect)
-  `"${httpServerBin} ${app_artifact_location} -p ${appUriPort} -c-1 --proxy http://localhost:${appUriPort}? --silent"`,
+  `"${httpServerBin} ${app_artifact_location} -p ${appUriPort} -c-1 --proxy http://${program.host}:${program.port}/?"`,
 
   // serve the api, if it's available
   `"[ -d '${api_location}' ] && (cd ${api_location}; func start --cors *) || echo 'No API found. Skipping.'"`,

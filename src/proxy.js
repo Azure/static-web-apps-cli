@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const http = require("http");
+const url = require("url");
 const httpProxy = require("http-proxy");
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
@@ -13,6 +14,7 @@ const serveStatic = (file, res) => {
       res.end(JSON.stringify(err));
       return;
     }
+    console.log("serving", file);
     res.writeHead(200);
     res.end(data);
   });
@@ -67,20 +69,33 @@ var server = http.createServer(function (req, res) {
     });
 
     proxyApp.on("proxyRes", function (proxyRes, req, res) {
+      console.log("app>>>", req.method, target + req.url, `[${proxyRes.statusCode}]`);
+
+      const uri = url.parse(req.url).pathname;
+      // default to SWA 404 page
       const file404 = path.resolve(__dirname, "404.html");
+      const fileIndex = path.join(process.env.SWA_EMU_APP_LOCATION, "index.html");
+      let resource = path.join(process.env.SWA_EMU_APP_LOCATION, req.url);
+      const isRouteRequest = (uri) => (uri.split("/").pop().indexOf(".") === -1 ? true : false);
+
       if (proxyRes.statusCode === 404) {
         serveStatic(file404, res);
       } else {
-        let file = path.join(process.env.SWA_EMU_APP_LOCATION, req.url);
-        if (fs.existsSync(file)) {
-          if (fs.lstatSync(file).isDirectory()) {
-            file = `${file}index.html`;
+        if (fs.existsSync(resource)) {
+          if (fs.lstatSync(resource).isDirectory()) {
+            resource = fileIndex;
           }
-          serveStatic(file, res);
         } else {
-          // URL/file not found on disk
-          serveStatic(file404, res);
+          if (isRouteRequest(uri)) {
+            // route detected: fallback to index file
+            resource = fileIndex;
+          } else {
+            // resource not found on disk
+            resource = file404;
+          }
         }
+
+        serveStatic(resource, res);
       }
     });
 
