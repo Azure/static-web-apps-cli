@@ -19,7 +19,11 @@
     "tokenRef": "GITHUB_TOKEN"
   },
   "npm": {
-    "publish": true,
+    "publish": false,
+    "publishConfig": {
+      "access": "public"
+    },
+    "publishPath": ".",
     "tag": "alpha"
   }
 }
