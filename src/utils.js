@@ -74,6 +74,21 @@ module.exports.ɵɵUseGithubDevToken = async () => {
   return token.github;
 };
 
+module.exports.RuntimeType = {
+  dotnet: "dotnet",
+  node: "node",
+};
+
+module.exports.detectRuntime = (app_location) => {
+  const files = fs.readdirSync(app_location);
+
+  if (files.some((file) => path.extname(file) === ".csproj")) {
+    return module.exports.RuntimeType.dotnet;
+  }
+
+  return module.exports.RuntimeType.node;
+};
+
 module.exports.readConfigFile = () => {
   const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
 
