@@ -74,20 +74,24 @@ module.exports.ɵɵUseGithubDevToken = async () => {
   return token.github;
 };
 
-module.exports.RuntimeType = {
+const RuntimeType = {
   dotnet: "dotnet",
   node: "node",
 };
 
-module.exports.detectRuntime = (app_location) => {
+module.exports.RuntimeType = RuntimeType;
+
+const detectRuntime = (app_location) => {
   const files = fs.readdirSync(app_location);
 
   if (files.some((file) => path.extname(file) === ".csproj")) {
-    return module.exports.RuntimeType.dotnet;
+    return RuntimeType.dotnet;
   }
 
-  return module.exports.RuntimeType.node;
+  return RuntimeType.node;
 };
+
+module.exports.detectRuntime = detectRuntime;
 
 module.exports.readConfigFile = () => {
   const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
@@ -127,7 +131,10 @@ module.exports.readConfigFile = () => {
     // these locations must be under the user's project folder
     app_location: path.join(process.cwd(), app_location),
     api_location: path.join(process.cwd(), api_location),
-    app_artifact_location: path.join(process.cwd(), app_location, app_artifact_location),
+    app_artifact_location:
+      detectRuntime(path.join(process.cwd(), app_location)) === RuntimeType.node
+        ? path.join(process.cwd(), app_location, app_artifact_location)
+        : path.join(process.cwd(), app_location, "bin", "Debug", "netstandard2.1", "publish", app_artifact_location),
   };
 
   return config;
