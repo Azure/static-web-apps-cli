@@ -4,6 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const shell = require("shelljs");
 const YAML = require("yaml");
+const { detectRuntime, RuntimeType } = require("./runtimes");
 
 module.exports.response = ({ context, status, headers, cookies, body = "" }) => {
   let location;
@@ -73,25 +74,6 @@ module.exports.ɵɵUseGithubDevToken = async () => {
   const token = await swaTokensResponse.json();
   return token.github;
 };
-
-const RuntimeType = {
-  dotnet: "dotnet",
-  node: "node",
-};
-
-module.exports.RuntimeType = RuntimeType;
-
-const detectRuntime = (app_location) => {
-  const files = fs.readdirSync(app_location);
-
-  if (files.some((file) => path.extname(file) === ".csproj")) {
-    return RuntimeType.dotnet;
-  }
-
-  return RuntimeType.node;
-};
-
-module.exports.detectRuntime = detectRuntime;
 
 module.exports.readConfigFile = () => {
   const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
