@@ -107,7 +107,10 @@ if (program.ui) {
     });
 
   // start hosting
-  const hosting = spawnx(`${httpServerBin}`, `${app_artifact_location} -p ${appUriPort} -c-1 --proxy http://${program.host}:${program.port}/?`.split(" "));
+  const hosting = spawnx(
+    `${httpServerBin}`,
+    `${app_artifact_location} -p ${appUriPort} -c-1 --proxy http://${program.host}:${program.port}/?`.split(" ")
+  );
   dashboard.stream("hosting", hosting);
 
   // start functions
