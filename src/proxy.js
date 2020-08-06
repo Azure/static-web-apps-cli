@@ -78,25 +78,27 @@ var server = http.createServer(function (req, res) {
       let resource = path.join(process.env.SWA_EMU_APP_LOCATION, req.url);
       const isRouteRequest = (uri) => (uri.split("/").pop().indexOf(".") === -1 ? true : false);
 
+      // Not found, return the SWA 404 page
       if (proxyRes.statusCode === 404) {
         serveStatic(file404, res);
-      } else {
-        if (fs.existsSync(resource)) {
-          if (fs.lstatSync(resource).isDirectory()) {
-            resource = fileIndex;
-          }
-        } else {
-          if (isRouteRequest(uri)) {
-            // route detected: fallback to index file
-            resource = fileIndex;
-          } else {
-            // resource not found on disk
-            resource = file404;
-          }
-        }
-
-        serveStatic(resource, res);
+        return;
       }
+
+      // A request from the route.json file
+      if (isRouteRequest(uri)) {
+        serveStatic(fileIndex, res);
+        return;
+      }
+
+      // copy original response to proxy response
+      let body = [];
+      proxyRes.on("data", function (chunk) {
+        body.push(chunk);
+      });
+      proxyRes.on("end", function () {
+        body = Buffer.concat(body).toString();
+        res.end(body);
+      });
     });
 
     proxyApp.on("error", function (err, req, res) {
