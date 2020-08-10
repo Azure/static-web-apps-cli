@@ -64,6 +64,13 @@ const server = http.createServer(function (req, res) {
     processApiRequest(req, res);
   }
 
+  // detected a proxy pass-through from http-server, so 404 it
+  else if (req.url.startsWith("/?")) {
+    console.log("proxy>", req.method, req.headers.host + req.url);
+    const file404 = path.resolve(__dirname, "404.html");
+    serveStatic(file404, res);
+  }
+
   // proxy APP request to local APP
   else {
     const target = process.env.SWA_EMU_APP_URI || "http://localhost:4200";
