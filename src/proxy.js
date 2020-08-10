@@ -1,7 +1,6 @@
 const fs = require("fs");
 const path = require("path");
 const http = require("http");
-const url = require("url");
 const httpProxy = require("http-proxy");
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
@@ -20,48 +19,40 @@ const serveStatic = (file, res) => {
   });
 };
 
-const processApiRequest = (req, res) => {
-  const target = process.env.SWA_EMU_API_URI || "http://localhost:7071";
-  console.log("api>", req.method, target + req.url);
-
-  proxyApi.web(req, res, {
-    target,
-  });
-  proxyApi.on("error", function (err, req) {
-    console.log("api>>", req.method, target + req.url);
-    console.log(err.message);
-    proxyApi.close();
-  });
-};
-
-const processAuthRequest = (req, res) => {
-  const target = process.env.SWA_EMU_AUTH_URI || "http://localhost:4242";
-  req.url = `/app${req.url}`;
-
-  console.log("auth>", req.method, target + req.url);
-  proxyAuth.web(req, res, {
-    target,
-  });
-  proxyAuth.on("proxyRes", function (proxyRes, req) {
-    console.log("auth>>", req.method, target + req.url);
-    console.log(JSON.stringify(proxyRes.headers, true, 2));
-  });
-  proxyAuth.on("error", function (err, req) {
-    console.log("auth>>", req.method, target + req.url);
-    console.log(err.message);
-    proxyAuth.close();
-  });
-};
-
 const server = http.createServer(function (req, res) {
   // proxy AUTH request to AUTH emulator
   if (req.url.startsWith("/.auth")) {
-    processAuthRequest(req, res);
+    const target = process.env.SWA_EMU_AUTH_URI || "http://localhost:4242";
+    req.url = `/app${req.url}`;
+
+    console.log("auth>", req.method, target + req.url);
+    proxyAuth.web(req, res, {
+      target,
+    });
+    proxyAuth.on("proxyRes", function (proxyRes, req) {
+      console.log("auth>>", req.method, target + req.url);
+      console.log(JSON.stringify(proxyRes.headers, true, 2));
+    });
+    proxyAuth.on("error", function (err, req) {
+      console.log("auth>>", req.method, target + req.url);
+      console.log(err.message);
+      proxyAuth.close();
+    });
   }
 
   // proxy API request to local API
   else if (req.url.startsWith(`/${process.env.SWA_EMU_API_PREFIX || "api"}`)) {
-    processApiRequest(req, res);
+    const target = process.env.SWA_EMU_API_URI || "http://localhost:7071";
+    console.log("api>", req.method, target + req.url);
+
+    proxyApi.web(req, res, {
+      target,
+    });
+    proxyApi.on("error", function (err, req) {
+      console.log("api>>", req.method, target + req.url);
+      console.log(err.message);
+      proxyApi.close();
+    });
   }
 
   // detected a proxy pass-through from http-server, so 404 it
@@ -78,45 +69,7 @@ const server = http.createServer(function (req, res) {
 
     proxyApp.web(req, res, {
       target,
-      // set this to true so we can handle our own response
-      // see https://github.com/http-party/node-http-proxy#miscellaneous
-      // selfHandleResponse: true,
     });
-
-    // proxyApp.on("proxyRes", function (proxyRes, req, res) {
-    //   console.log("app>>>", req.method, target + req.url, `[${proxyRes.statusCode}]`);
-
-    //   const uri = url.parse(req.url).pathname;
-    //   // default to SWA 404 page
-    //   const file404 = path.resolve(__dirname, "404.html");
-    //   const fileIndex = path.join(process.env.SWA_EMU_APP_LOCATION, "index.html");
-    //   let resource = path.join(process.env.SWA_EMU_APP_LOCATION, req.url);
-    //   const isRouteRequest = (uri) => (uri.split("/").pop().indexOf(".") === -1 ? true : false);
-
-    //   // Not found, return the SWA 404 page
-    //   if (proxyRes.statusCode === 404) {
-    //     serveStatic(file404, res);
-    //     return;
-    //   }
-
-    //   // A request from the route.json file
-    //   if (isRouteRequest(uri)) {
-    //     serveStatic(fileIndex, res);
-    //     return;
-    //   }
-
-    //   // copy original response to proxy response
-    //   const { rawHeaders } = proxyRes;
-    //   const headers = {};
-    //   for (let i = 0; i < rawHeaders.length; i += 2) {
-    //     let key = rawHeaders[i];
-    //     let val = rawHeaders[i + 1];
-
-    //     headers[key] = val;
-    //   }
-    //   res.writeHead(proxyRes.statusCode, headers);
-    //   proxyRes.pipe(res);
-    // });
 
     proxyApp.on("error", function (err, req, res) {
       console.log("app>>", req.method, target + req.url);
