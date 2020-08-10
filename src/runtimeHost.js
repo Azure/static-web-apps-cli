@@ -17,7 +17,7 @@ module.exports.createRuntimeHost = (port, proxyHost, proxyPort) => {
     case RuntimeType.node:
     default:
       const command = httpServerBin;
-      const args = `${app_artifact_location} -p ${port} -c-1 --proxy http://${proxyHost}:${proxyPort}/?"`.split(" ");
+      const args = `${app_artifact_location} -p ${port} -c-1 --proxy http://${proxyHost}:${proxyPort}/?`.split(" ");
 
       return {
         command,

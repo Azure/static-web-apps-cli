@@ -65,41 +65,43 @@ var server = http.createServer(function (req, res) {
       target,
       // set this to true so we can handle our own response
       // see https://github.com/http-party/node-http-proxy#miscellaneous
-      selfHandleResponse: true,
+      // selfHandleResponse: true,
     });
 
-    proxyApp.on("proxyRes", function (proxyRes, req, res) {
-      console.log("app>>>", req.method, target + req.url, `[${proxyRes.statusCode}]`);
+    // proxyApp.on("proxyRes", function (proxyRes, req, res) {
+    //   console.log("app>>>", req.method, target + req.url, `[${proxyRes.statusCode}]`);
 
-      const uri = url.parse(req.url).pathname;
-      // default to SWA 404 page
-      const file404 = path.resolve(__dirname, "404.html");
-      const fileIndex = path.join(process.env.SWA_EMU_APP_LOCATION, "index.html");
-      let resource = path.join(process.env.SWA_EMU_APP_LOCATION, req.url);
-      const isRouteRequest = (uri) => (uri.split("/").pop().indexOf(".") === -1 ? true : false);
+    //   const uri = url.parse(req.url).pathname;
+    //   // default to SWA 404 page
+    //   const file404 = path.resolve(__dirname, "404.html");
+    //   const fileIndex = path.join(process.env.SWA_EMU_APP_LOCATION, "index.html");
+    //   let resource = path.join(process.env.SWA_EMU_APP_LOCATION, req.url);
+    //   const isRouteRequest = (uri) => (uri.split("/").pop().indexOf(".") === -1 ? true : false);
 
-      // Not found, return the SWA 404 page
-      if (proxyRes.statusCode === 404) {
-        serveStatic(file404, res);
-        return;
-      }
+    //   // Not found, return the SWA 404 page
+    //   if (proxyRes.statusCode === 404) {
+    //     serveStatic(file404, res);
+    //     return;
+    //   }
 
-      // A request from the route.json file
-      if (isRouteRequest(uri)) {
-        serveStatic(fileIndex, res);
-        return;
-      }
+    //   // A request from the route.json file
+    //   if (isRouteRequest(uri)) {
+    //     serveStatic(fileIndex, res);
+    //     return;
+    //   }
 
-      // copy original response to proxy response
-      let body = [];
-      proxyRes.on("data", function (chunk) {
-        body.push(chunk);
-      });
-      proxyRes.on("end", function () {
-        body = Buffer.concat(body).toString();
-        res.end(body);
-      });
-    });
+    //   // copy original response to proxy response
+    //   const { rawHeaders } = proxyRes;
+    //   const headers = {};
+    //   for (let i = 0; i < rawHeaders.length; i += 2) {
+    //     let key = rawHeaders[i];
+    //     let val = rawHeaders[i + 1];
+
+    //     headers[key] = val;
+    //   }
+    //   res.writeHead(proxyRes.statusCode, headers);
+    //   proxyRes.pipe(res);
+    // });
 
     proxyApp.on("error", function (err, req, res) {
       console.log("app>>", req.method, target + req.url);
