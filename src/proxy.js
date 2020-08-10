@@ -20,40 +20,48 @@ const serveStatic = (file, res) => {
   });
 };
 
-var server = http.createServer(function (req, res) {
+const processApiRequest = (req, res) => {
+  const target = process.env.SWA_EMU_API_URI || "http://localhost:7071";
+  console.log("api>", req.method, target + req.url);
+
+  proxyApi.web(req, res, {
+    target,
+  });
+  proxyApi.on("error", function (err, req) {
+    console.log("api>>", req.method, target + req.url);
+    console.log(err.message);
+    proxyApi.close();
+  });
+};
+
+const processAuthRequest = (req, res) => {
+  const target = process.env.SWA_EMU_AUTH_URI || "http://localhost:4242";
+  req.url = `/app${req.url}`;
+
+  console.log("auth>", req.method, target + req.url);
+  proxyAuth.web(req, res, {
+    target,
+  });
+  proxyAuth.on("proxyRes", function (proxyRes, req) {
+    console.log("auth>>", req.method, target + req.url);
+    console.log(JSON.stringify(proxyRes.headers, true, 2));
+  });
+  proxyAuth.on("error", function (err, req) {
+    console.log("auth>>", req.method, target + req.url);
+    console.log(err.message);
+    proxyAuth.close();
+  });
+};
+
+const server = http.createServer(function (req, res) {
   // proxy AUTH request to AUTH emulator
   if (req.url.startsWith("/.auth")) {
-    const target = process.env.SWA_EMU_AUTH_URI || "http://localhost:4242";
-    req.url = `/app${req.url}`;
-
-    console.log("auth>", req.method, target + req.url);
-    proxyAuth.web(req, res, {
-      target,
-    });
-    proxyAuth.on("proxyRes", function (proxyRes, req, res) {
-      console.log("auth>>", req.method, target + req.url);
-      console.log(JSON.stringify(proxyRes.headers, true, 2));
-    });
-    proxyAuth.on("error", function (err, req, res) {
-      console.log("auth>>", req.method, target + req.url);
-      console.log(err.message);
-      proxyAuth.close();
-    });
+    processAuthRequest(req, res);
   }
 
   // proxy API request to local API
   else if (req.url.startsWith(`/${process.env.SWA_EMU_API_PREFIX || "api"}`)) {
-    const target = process.env.SWA_EMU_API_URI || "http://localhost:7071";
-    console.log("api>", req.method, target + req.url);
-
-    proxyApi.web(req, res, {
-      target,
-    });
-    proxyApi.on("error", function (err, req, res) {
-      console.log("api>>", req.method, target + req.url);
-      console.log(err.message);
-      proxyApi.close();
-    });
+    processApiRequest(req, res);
   }
 
   // proxy APP request to local APP
