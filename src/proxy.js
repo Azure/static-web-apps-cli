@@ -5,6 +5,8 @@ const httpProxy = require("http-proxy");
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
+const { validateCookie } = require("./utils");
+const { currentUser } = require("./userManager");
 
 const serveStatic = (file, res) => {
   fs.readFile(file, (err, data) => {
@@ -52,6 +54,20 @@ const server = http.createServer(function (req, res) {
       console.log("api>>", req.method, target + req.url);
       console.log(err.message);
       proxyApi.close();
+    });
+    proxyApi.on("proxyReq", (proxyReq, req) => {
+      const cookie = req.headers.cookie;
+
+      if (cookie && validateCookie(cookie)) {
+        const user = currentUser();
+        const userClaims = {
+          clientPrincipal: {
+            ...user,
+          },
+        };
+        const buff = Buffer.from(JSON.stringify(userClaims), "utf-8");
+        proxyReq.setHeader("x-ms-client-principal", buff.toString("base64"));
+      }
     });
   }
 
