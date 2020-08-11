@@ -79,6 +79,11 @@ const server = http.createServer(function (req, res) {
         return;
       }
     }
+
+    // Want a redirect route
+    else if (userDefinedRoute.serve) {
+      req.url = userDefinedRoute.serve;
+    }
   }
 
   // proxy AUTH request to AUTH emulator
