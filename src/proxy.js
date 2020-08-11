@@ -72,7 +72,7 @@ const server = http.createServer(function (req, res) {
   }
 
   // detected a proxy pass-through from http-server, so 404 it
-  else if (req.url.startsWith("/?")) {
+  else if (req.url.startsWith("/?") || req.url.startsWith("/routes.json")) {
     console.log("proxy>", req.method, req.headers.host + req.url);
     const file404 = path.resolve(__dirname, "404.html");
     serveStatic(file404, res);
