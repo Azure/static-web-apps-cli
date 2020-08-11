@@ -7,6 +7,7 @@ const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
 const { validateCookie } = require("./utils");
 const { currentUser } = require("./userManager");
+const program = require("commander");
 
 const serveStatic = (file, res) => {
   fs.readFile(file, (err, data) => {
@@ -21,7 +22,65 @@ const serveStatic = (file, res) => {
   });
 };
 
+const readRoutes = (folder) => {
+  if (!fs.existsSync(folder)) {
+    return [];
+  }
+
+  const routesFile = fs.readdirSync(folder).find((file) => file.endsWith("routes.json"));
+
+  if (!routesFile) {
+    return [];
+  }
+
+  return require(path.join(folder, routesFile)).routes || [];
+};
+
+program.option("--artifacts <path>", "path to artifacts").parse(process.argv);
+
+const routes = readRoutes(program.artifacts);
+
+const routeTest = (userDefinedRoute, currentRoute) => {
+  if (userDefinedRoute === currentRoute) {
+    return true;
+  }
+
+  if (userDefinedRoute.endsWith("*")) {
+    return currentRoute.startsWith(userDefinedRoute.replace("*", ""));
+  }
+
+  return false;
+};
+
 const server = http.createServer(function (req, res) {
+  const userDefinedRoute = routes.find((route) => req.url.endsWith(route.route));
+
+  // something from the `routes.json`
+  if (userDefinedRoute && routeTest(userDefinedRoute.route, req.url)) {
+    // access control defined
+    if (userDefinedRoute.allowedRoles) {
+      const user = currentUser();
+      if (!userDefinedRoute.allowedRoles.some((role) => user.userRoles.some((ur) => ur === role))) {
+        res.writeHead(401);
+        res.end();
+        return;
+      }
+    }
+
+    // Wanting a specific status code but no attached route
+    else if (userDefinedRoute.statusCode && !userDefinedRoute.serve) {
+      if (userDefinedRoute.statusCode === 404) {
+        const file404 = path.resolve(__dirname, "404.html");
+        serveStatic(file404, res);
+        return;
+      } else {
+        res.writeHead(userDefinedRoute.statusCode);
+        res.end();
+        return;
+      }
+    }
+  }
+
   // proxy AUTH request to AUTH emulator
   if (req.url.startsWith("/.auth")) {
     const target = process.env.SWA_EMU_AUTH_URI || "http://localhost:4242";
