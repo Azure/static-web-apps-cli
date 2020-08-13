@@ -78,7 +78,7 @@ const startCommand = [
   `-c 'bgYellow.bold,bgMagenta.bold,bgCyan.bold,bgGreen.bold'`,
 
   // start the reverse proxy
-  `"node ./src/proxy.js --artifacts ${app_artifact_location}"`,
+  `"node ./src/proxy.js"`,
 
   // emulate auth
   `"(cd ./src/auth/; func start --cors=* --port=${authUriPort})"`,

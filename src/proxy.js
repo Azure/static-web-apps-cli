@@ -7,7 +7,6 @@ const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
 const { validateCookie } = require("./utils");
 const { currentUser } = require("./userManager");
-const program = require("commander");
 
 const serveStatic = (file, res) => {
   fs.readFile(file, (err, data) => {
@@ -36,9 +35,7 @@ const readRoutes = (folder) => {
   return require(path.join(folder, routesFile)).routes || [];
 };
 
-program.option("--artifacts <path>", "path to artifacts").parse(process.argv);
-
-const routes = readRoutes(program.artifacts);
+const routes = readRoutes(process.env.SWA_EMU_APP_LOCATION);
 
 const routeTest = (userDefinedRoute, currentRoute) => {
   if (userDefinedRoute === currentRoute) {
