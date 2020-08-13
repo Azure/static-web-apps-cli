@@ -121,12 +121,7 @@ const server = http.createServer(function (req, res) {
 
       if (cookie && validateCookie(cookie)) {
         const user = currentUser();
-        const userClaims = {
-          clientPrincipal: {
-            ...user,
-          },
-        };
-        const buff = Buffer.from(JSON.stringify(userClaims), "utf-8");
+        const buff = Buffer.from(JSON.stringify(user), "utf-8");
         proxyReq.setHeader("x-ms-client-principal", buff.toString("base64"));
       }
     });
