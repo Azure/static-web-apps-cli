@@ -4,6 +4,7 @@ const fs = require("fs");
 const RuntimeType = {
   dotnet: "dotnet",
   node: "node",
+  unknown: "unknown",
 };
 
 module.exports.RuntimeType = RuntimeType;
@@ -15,5 +16,9 @@ module.exports.detectRuntime = (app_location) => {
     return RuntimeType.dotnet;
   }
 
-  return RuntimeType.node;
+  if (files.some((file) => path.extname(file) === "package.json")) {
+    return RuntimeType.node;
+  }
+
+  return RuntimeType.unknown;
 };
