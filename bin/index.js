@@ -6,6 +6,7 @@ const program = require("commander");
 const builder = require("../src/builder");
 const { readConfigFile } = require("../src/utils");
 const { spawn } = require("child_process");
+const { createRuntimeHost } = require("../src/runtimeHost");
 
 const EMU_PORT = 80;
 const AUTH_PORT = 4242;
@@ -67,6 +68,8 @@ const envVarsObj = {
   SWA_EMU_PORT: program.port,
 };
 
+const { command: hostCommand, args: hostArgs } = createRuntimeHost(appUriPort, program.host, program.port);
+
 const startCommand = [
   // run concurrent commands
   concurrentlyBin,
@@ -83,7 +86,7 @@ const startCommand = [
   // serve the app
   // See available options for http-server: https://github.com/http-party/http-server#available-options
   // Note: --proxy allows us to add fallback routes for SPA (https://github.com/http-party/http-server#catch-all-redirect)
-  `"${httpServerBin} ${app_artifact_location} -p ${appUriPort} -c-1 --proxy http://${program.host}:${program.port}/?"`,
+  `"${hostCommand} ${hostArgs.join(" ")}"`,
 
   // serve the api, if it's available
   `"[ -d '${api_location}' ] && (cd ${api_location}; func start --cors *) || echo 'No API found. Skipping.'"`,
@@ -107,7 +110,7 @@ if (program.ui) {
     });
 
   // start hosting
-  const hosting = spawnx(`${httpServerBin}`, `${app_artifact_location} -p ${appUriPort} -c-1 --proxy http://${program.host}:${program.port}/?`.split(" "));
+  const hosting = spawnx(hostCommand, hostArgs);
   dashboard.stream("hosting", hosting);
 
   // start functions

@@ -4,6 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const shell = require("shelljs");
 const YAML = require("yaml");
+const { detectRuntime, RuntimeType } = require("./runtimes");
 
 module.exports.response = ({ context, status, headers, cookies, body = "" }) => {
   let location;
@@ -112,7 +113,10 @@ module.exports.readConfigFile = () => {
     // these locations must be under the user's project folder
     app_location: path.join(process.cwd(), app_location),
     api_location: path.join(process.cwd(), api_location),
-    app_artifact_location: path.join(process.cwd(), app_location, app_artifact_location),
+    app_artifact_location:
+      detectRuntime(path.join(process.cwd(), app_location)) === RuntimeType.node
+        ? path.join(process.cwd(), app_location, app_artifact_location)
+        : path.join(process.cwd(), app_location, "bin", "Debug", "netstandard2.1", "publish", app_artifact_location),
   };
 
   return config;

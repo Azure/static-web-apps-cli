@@ -1,11 +1,12 @@
 const fs = require("fs");
 const path = require("path");
 const http = require("http");
-const url = require("url");
 const httpProxy = require("http-proxy");
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
+const { validateCookie } = require("./utils");
+const { currentUser } = require("./userManager");
 
 const serveStatic = (file, res) => {
   fs.readFile(file, (err, data) => {
@@ -20,7 +21,68 @@ const serveStatic = (file, res) => {
   });
 };
 
-var server = http.createServer(function (req, res) {
+const readRoutes = (folder) => {
+  if (!fs.existsSync(folder)) {
+    return [];
+  }
+
+  const routesFile = fs.readdirSync(folder).find((file) => file.endsWith("routes.json"));
+
+  if (!routesFile) {
+    return [];
+  }
+
+  return require(path.join(folder, routesFile)).routes || [];
+};
+
+const routes = readRoutes(process.env.SWA_EMU_APP_LOCATION);
+
+const routeTest = (userDefinedRoute, currentRoute) => {
+  if (userDefinedRoute === currentRoute) {
+    return true;
+  }
+
+  if (userDefinedRoute.endsWith("*")) {
+    return currentRoute.startsWith(userDefinedRoute.replace("*", ""));
+  }
+
+  return false;
+};
+
+const server = http.createServer(function (req, res) {
+  const userDefinedRoute = routes.find((route) => req.url.endsWith(route.route));
+
+  // something from the `routes.json`
+  if (userDefinedRoute && routeTest(userDefinedRoute.route, req.url)) {
+    // access control defined
+    if (userDefinedRoute.allowedRoles) {
+      const user = currentUser();
+      if (!userDefinedRoute.allowedRoles.some((role) => user.userRoles.some((ur) => ur === role))) {
+        res.writeHead(401);
+        res.end();
+        return;
+      }
+    }
+
+    // Wanting a specific status code but no attached route
+    else if (userDefinedRoute.statusCode && !userDefinedRoute.serve) {
+      if (userDefinedRoute.statusCode === 404) {
+        const file404 = path.resolve(__dirname, "404.html");
+        serveStatic(file404, res);
+        return;
+      } else {
+        res.writeHead(userDefinedRoute.statusCode);
+        res.end();
+        return;
+      }
+    }
+
+    // Want a redirect route
+    else if (userDefinedRoute.serve) {
+      req.url = userDefinedRoute.serve;
+    }
+  }
+
   // proxy AUTH request to AUTH emulator
   if (req.url.startsWith("/.auth")) {
     const target = process.env.SWA_EMU_AUTH_URI || "http://localhost:4242";
@@ -30,11 +92,11 @@ var server = http.createServer(function (req, res) {
     proxyAuth.web(req, res, {
       target,
     });
-    proxyAuth.on("proxyRes", function (proxyRes, req, res) {
+    proxyAuth.on("proxyRes", function (proxyRes, req) {
       console.log("auth>>", req.method, target + req.url);
       console.log(JSON.stringify(proxyRes.headers, true, 2));
     });
-    proxyAuth.on("error", function (err, req, res) {
+    proxyAuth.on("error", function (err, req) {
       console.log("auth>>", req.method, target + req.url);
       console.log(err.message);
       proxyAuth.close();
@@ -49,11 +111,27 @@ var server = http.createServer(function (req, res) {
     proxyApi.web(req, res, {
       target,
     });
-    proxyApi.on("error", function (err, req, res) {
+    proxyApi.on("error", function (err, req) {
       console.log("api>>", req.method, target + req.url);
       console.log(err.message);
       proxyApi.close();
     });
+    proxyApi.on("proxyReq", (proxyReq, req) => {
+      const cookie = req.headers.cookie;
+
+      if (cookie && validateCookie(cookie)) {
+        const user = currentUser();
+        const buff = Buffer.from(JSON.stringify(user), "utf-8");
+        proxyReq.setHeader("x-ms-client-principal", buff.toString("base64"));
+      }
+    });
+  }
+
+  // detected a proxy pass-through from http-server, so 404 it
+  else if (req.url.startsWith("/?") || req.url.startsWith("/routes.json")) {
+    console.log("proxy>", req.method, req.headers.host + req.url);
+    const file404 = path.resolve(__dirname, "404.html");
+    serveStatic(file404, res);
   }
 
   // proxy APP request to local APP
@@ -63,40 +141,6 @@ var server = http.createServer(function (req, res) {
 
     proxyApp.web(req, res, {
       target,
-      // set this to true so we can handle our own response
-      // see https://github.com/http-party/node-http-proxy#miscellaneous
-      selfHandleResponse: true,
-    });
-
-    proxyApp.on("proxyRes", function (proxyRes, req, res) {
-      console.log("app>>>", req.method, target + req.url, `[${proxyRes.statusCode}]`);
-
-      const uri = url.parse(req.url).pathname;
-      // default to SWA 404 page
-      const file404 = path.resolve(__dirname, "404.html");
-      const fileIndex = path.join(process.env.SWA_EMU_APP_LOCATION, "index.html");
-      let resource = path.join(process.env.SWA_EMU_APP_LOCATION, req.url);
-      const isRouteRequest = (uri) => (uri.split("/").pop().indexOf(".") === -1 ? true : false);
-
-      if (proxyRes.statusCode === 404) {
-        serveStatic(file404, res);
-      } else {
-        if (fs.existsSync(resource)) {
-          if (fs.lstatSync(resource).isDirectory()) {
-            resource = fileIndex;
-          }
-        } else {
-          if (isRouteRequest(uri)) {
-            // route detected: fallback to index file
-            resource = fileIndex;
-          } else {
-            // resource not found on disk
-            resource = file404;
-          }
-        }
-
-        serveStatic(resource, res);
-      }
     });
 
     proxyApp.on("error", function (err, req, res) {
