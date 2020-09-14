@@ -84,8 +84,6 @@ const startCommand = [
   `"(cd ./src/auth/; func start --cors=* --port=${authUriPort})"`,
 
   // serve the app
-  // See available options for http-server: https://github.com/http-party/http-server#available-options
-  // Note: --proxy allows us to add fallback routes for SPA (https://github.com/http-party/http-server#catch-all-redirect)
   `"${hostCommand} ${hostArgs.join(" ")}"`,
 
   // serve the api, if it's available

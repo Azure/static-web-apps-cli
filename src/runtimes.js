@@ -16,7 +16,7 @@ module.exports.detectRuntime = (app_location) => {
     return RuntimeType.dotnet;
   }
 
-  if (files.some((file) => path.extname(file) === "package.json")) {
+  if (files.includes("package.json")) {
     return RuntimeType.node;
   }
 
