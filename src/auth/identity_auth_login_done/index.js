@@ -1,20 +1,15 @@
 const { response } = require("../../utils");
 const jwt = require("jsonwebtoken");
 const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `http://localhost:4242`;
+const { currentUser } = require("../../userManager");
 
 const jwtKey = "123";
 const jwtExpirySeconds = 300;
 
 module.exports = async function (context, req) {
+  const { cookie } = req.headers;
   const payload = {
-    ...{
-      identityprovider: "github",
-      useridfromprovider: "1699357",
-      userid: "59cd31faa8c34919ac22c19af50482b8",
-      userdetails: "manekinekko",
-      isnewuser: "False",
-      existingroles: "",
-    },
+    ...currentUser(cookie),
     nonce: context.invocationId,
     iss: "localhost",
     aud: "localhost",
