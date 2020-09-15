@@ -41,13 +41,7 @@ const appUriPort = appUriSegments[2] || APP_PORT;
 
 // provide binaries
 const concurrentlyBin = path.resolve(__dirname, "..", "./node_modules/.bin/concurrently");
-const httpServerBin = path.resolve(__dirname, "..", "./node_modules/.bin/http-server");
 const { app_artifact_location, api_location } = readConfigFile();
-
-if (program.build) {
-  // run the app/api builds
-  builder();
-}
 
 const envVarsObj = {
   // set env vars for current command
@@ -74,7 +68,7 @@ const startCommand = [
   // run concurrent commands
   concurrentlyBin,
   `--restart-tries 3`,
-  `--names emulator,auth,hosting,functions`,
+  `--names x,emulator,auth,hosting,functions`,
   `-c 'bgYellow.bold,bgMagenta.bold,bgCyan.bold,bgGreen.bold'`,
 
   // start the reverse proxy
@@ -94,6 +88,11 @@ const startCommand = [
 
 if (process.env.DEBUG) {
   console.log(startCommand);
+}
+
+if (program.build) {
+  // run the app/api builds
+  builder();
 }
 
 if (program.ui) {

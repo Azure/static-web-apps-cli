@@ -15,7 +15,7 @@ const serveStatic = (file, res) => {
       res.end(JSON.stringify(err));
       return;
     }
-    console.log("serving", file);
+    console.log(">> serving", file);
     res.writeHead(200);
     res.end(data);
   });
@@ -128,10 +128,17 @@ const server = http.createServer(function (req, res) {
   }
 
   // detected a proxy pass-through from http-server, so 404 it
-  else if (req.url.startsWith("/?") || req.url.startsWith("/routes.json")) {
+  else if (req.url.startsWith("/routes.json")) {
     console.log("proxy>", req.method, req.headers.host + req.url);
     const file404 = path.resolve(__dirname, "404.html");
     serveStatic(file404, res);
+  }
+
+  // detected SPA mode
+  else if (req.url.startsWith("/?")) {
+    console.log("proxy>", req.method, req.headers.host + req.url);
+    const fileIndex = path.join(process.env.SWA_EMU_APP_LOCATION, "index.html");
+    serveStatic(fileIndex, res);
   }
 
   // proxy APP request to local APP

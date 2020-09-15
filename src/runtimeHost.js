@@ -8,6 +8,8 @@ module.exports.createRuntimeHost = (port, proxyHost, proxyPort) => {
   const { app_location, app_artifact_location } = readConfigFile();
   const runtimeType = detectRuntime(app_location);
 
+  console.log(">> detected runtime:", runtimeType);
+
   switch (runtimeType) {
     // .NET runtime
     case RuntimeType.dotnet:
@@ -20,7 +22,6 @@ module.exports.createRuntimeHost = (port, proxyHost, proxyPort) => {
     case RuntimeType.node:
     case RuntimeType.unknown:
     default:
-
       // See available options for http-server: https://github.com/http-party/http-server#available-options
       // Note: --proxy allows us to add fallback routes for SPA (https://github.com/http-party/http-server#catch-all-redirect)
       const command = httpServerBin;
