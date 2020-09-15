@@ -2,7 +2,7 @@
     <h2 align="center">Azure Static Web Apps Emulator</h2>
 </p>
 <p align="center">
-    <img align="center" src="docs/swa-emu-icon.png" width="200">
+    <img align="center" src="docs/swa-emu-icon.png" width="300">
 </p>
 
 Introducing SWA EMU, the Azure Static Web Apps Emulator that serves as a local emulator for [Azure Static Web Apps](https://bit.ly/2ZNcakP). It can:
@@ -53,6 +53,35 @@ Using `npx`:
 - Start the emulator: `npx @manekinekko/swa-emu@latest`
 - Access your SWA app from `http://localhost`
 
+### Use with a local dev server
+
+When developing locally on your front-end application, it might be usefull to use your local application dev server, that comes with your application CLI, to serve your app content and benefit from the built-in feature like the livereload or HMR (hot module reload) features.
+
+In order to use SWA EMU with your local dev server, use the following command:
+
+```
+$ swa --use-dev-server=http://<dev-server-host>:<dev-server-port>`
+```
+
+Here are the default ports used by popular dev servers:
+
+- If you are using the [Angular CLI](https://angular.io/cli):
+```
+swa --use-dev-server=http://localhost:4200`
+```
+- If you are using the [Vue CLI](https://cli.vuejs.org/):
+```
+swa --use-dev-server=http://localhost:8080`
+```
+- If you are using [Create React App](https://reactjs.org/docs/create-a-new-react-app.html):
+```
+swa --use-dev-server=http://localhost:3000`
+```
+- If you are using [Webpack dev server](https://github.com/webpack/webpack-dev-server):
+```
+swa --use-dev-server=http://localhost:8080`
+```
+
 ## Configuration
 
 SWA EMU binds to these default hosts:
@@ -63,31 +92,52 @@ SWA EMU binds to these default hosts:
 
 If you need to override the default values, provide the following options:
 
-| Options        | Description                           | Default                 |
-| -------------- | ------------------------------------- | ----------------------- |
-| `--api-prefix` | the API URL prefix                    | `api`                   |
-| `--auth-uri`   | the Auth URI                          | `http://localhost:4242` |
-| `--api-uri`    | the API URI                           | `http://localhost:7071` |
-| `--app-uri`    | the app URI                           | `http://localhost:4200` |
-| `--host`       | the emulator host address             | `0.0.0.0`               |
-| `--port`       | the emulator port value               | `80`                    |
-| `--build`      | build the api and app before starting | `false`                 |
-| `--verbose`    | enable debug logs                     | `false`                 |
-| `--ui`         | enable dashboard UI                   | `false`                 |
+| Options              | Description                           | Default                 | Example                                     |
+| -------------------- | ------------------------------------- | ----------------------- |---------------------------------------------|
+| `--api-prefix`       | the API URL prefix                    | `api`                   | `swa --api=prefix=my-api-route`             |
+| `--auth-uri`         | the Auth URI                          | `http://localhost:4242` | `swa --auth-uri=http://localhost:8083`      |
+| `--api-uri`          | the API URI                           | `http://localhost:7071` | `swa --api-uri=http://localhost:8082`       |
+| `--app-uri`          | the app URI                           | `http://localhost:4200` | `swa --app-uri=http://localhost:8081`       |
+| `--use-dev-server`   | use the app dev server                | `null`                  | `swa --use-dev-server=http://localhost:8080`|
+| `--host`             | the emulator host address             | `0.0.0.0`               | `swa --host=192.168.68.80`                  |
+| `--port`             | the emulator port value               | `80`                    | `swa --port=8080`                           |
+| `--build`            | build the api and app before starting | `false`                 | `swa --build`                               |
+| `--verbose`          | enable debug logs                     | `false`                 | `swa --verbose`                             |
+| `--ui`               | enable dashboard UI                   | `false`                 | `swa --ui`                                  |
 
-## Auth emulation status
+## Auth emulation
 
-| Provider | Local Emulation |
-| -------- | --------------- |
-| GitHub   | ✅              |
-| Twitter  | ✅              |
-| Google   | ✅              |
-| Facebook | ✅              |
-| AAD      | ✅              |
+The emulator supports local authentication flow and mocks the following providers:
+
+| Provider | Endpoint              | Local Emulation |
+| -------- | --------------------- | --------------- |
+| GitHub   | `.auth/login/github`  | ✅              |
+| Twitter  | `.auth/login/twitter` | ✅              |
+| Google   | `.auth/login/google`  | ✅              |
+| Facebook | `.auth/login/facbook` | ✅              |
+| AAD      | `.auth/login/aad`     | ✅              |
+
+When requesting the `.auth/me` endpoint, a mocked user `clientPrincipal` will be returned by the emulator. Here is an example:
+
+```json
+{
+  "clientPrincipal": {
+    "identityProvider": "twitter",
+    "userId": "59cd31faa8c34919ac22c19af50482b8",
+    "userDetails": "manekinekko",
+    "userRoles": [
+      "anonymous",
+      "authenticated"
+    ]
+  }
+}
+```
+
+> NOTE: user roles and ACL are not yet supported (see [#7](https://github.com/manekinekko/swa-emulator/issues/7)).
 
 ## Caveats
 
-- Custom routes are not yet supported.
+- Custom routes are not yet supported (see [#6](https://github.com/manekinekko/swa-emulator/issues/6))
 - Authorization and roles are not supported (see [#7](https://github.com/manekinekko/swa-emulator/issues/7)).
 - The emulator is serving all traffic over HTTP (HTTPS support will be added soon) (see [#4](https://github.com/manekinekko/swa-emulator/issues/4)).
 - When using GitHub, the OAuth client ID and client secret are provided as-is for dev purposes ONLY. You should create your own OAuth GitHub app!
