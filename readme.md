@@ -57,13 +57,16 @@ Using `npx`:
 
 When developing locally on your front-end application, it might be usefull to use your local application dev server, that comes with your application CLI, to serve your app content and benefit from the built-in feature like the livereload or HMR (hot module reload) features.
 
-In order to use SWA EMU with your local dev server, use the following command:
+In order to use SWA EMU with your local dev server, follow these two steps:
+
+1. Start your local dev server (as usual). For example: `ng serve`
+1. Run `swa` with the `--use-dev-server` flag of the URI provided by the dev server, in the following format:
 
 ```
 $ swa --use-dev-server=http://<dev-server-host>:<dev-server-port>`
 ```
 
-Here are the default ports used by popular dev servers:
+Here is a list of the default ports used by popular dev servers:
 
 - [Angular CLI](https://angular.io/cli):
 ```
