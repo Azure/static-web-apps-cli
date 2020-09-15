@@ -1,7 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 const shell = require("shelljs");
-const { readConfigFile, detectRuntime, RuntimeType } = require("./utils");
+const { readConfigFile } = require("./utils");
+const { detectRuntime, RuntimeType } = require("./runtimes");
 
 const exec = (command, options = {}) => shell.exec(command, { async: false, ...options });
 

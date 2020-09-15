@@ -121,9 +121,9 @@ module.exports.readConfigFile = () => {
 
   const detectedRuntimeType = detectRuntime(app_location);
   if (detectedRuntimeType === RuntimeType.node) {
-    app_artifact_location = path.join(app_location, "bin", "Debug", "netstandard2.1", "publish", app_artifact_location);
-  } else {
     app_artifact_location = path.join(app_location, app_artifact_location);
+  } else {
+    app_artifact_location = path.join(app_location, "bin", "Debug", "netstandard2.1", "publish", app_artifact_location);
   }
 
   const config = {

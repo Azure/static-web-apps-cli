@@ -20,12 +20,15 @@ module.exports.detectRuntime = (app_location) => {
   const files = fs.readdirSync(app_location);
 
   if (files.some((file) => path.extname(file) === ".csproj")) {
+    console.log(">> .NET detected.");
     return RuntimeType.dotnet;
   }
 
   if (files.includes("package.json")) {
+    console.log(">> Node.js detected.");
     return RuntimeType.node;
   }
 
+  console.log(">> Unknown runtime detected.");
   return RuntimeType.unknown;
 };
