@@ -23,7 +23,7 @@ program
   .option("--app-uri <appUri>", "set APP uri", `http://localhost:${APP_PORT}`)
   .option("--host <host>", "set host address", "0.0.0.0")
   .option("--port <port>", "set port value", EMU_PORT)
-  .option("--verbose", "show more logs", false)
+  .option("--verbose", "show debug logs", false)
   .option("--build", "build the API and APP before starting the emulator", false)
   .option("--ui", "enable dashboard UI", false)
   .parse(process.argv);
