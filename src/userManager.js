@@ -1,5 +1,7 @@
 const users = require("./users.json");
+const { getProviderFromCookie } = require("./utils");
 
-module.exports.currentUser = () => {
-  return users[0];
+module.exports.currentUser = (cookie) => {
+  const provider = getProviderFromCookie(cookie);
+  return users[provider] || null;
 };

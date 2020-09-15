@@ -66,6 +66,11 @@ module.exports.validateCookie = (cookieValue) => {
   return false;
 };
 
+module.exports.getProviderFromCookie = (cookieValue) => {
+  const cookies = cookie.parse(cookieValue);
+  return cookies.StaticWebAppsAuthCookie__PROVIDER;
+};
+
 module.exports.ɵɵUseGithubDevToken = async () => {
   console.log("!!!! Notice: You are using a dev GitHub token. You should create and use your own!");
   console.log("!!!! Read https://docs.github.com/en/developers/apps/building-oauth-apps");
@@ -106,12 +111,10 @@ module.exports.readConfigFile = () => {
     api_location = "api",
   } = swaBuildConfig.with;
 
-
   // the following locations must be under the user's project folder
   // - app_location
   // - api_location
   // - app_artifact_location
-
 
   app_location = path.join(process.cwd(), app_location);
   api_location = path.join(process.cwd(), api_location);

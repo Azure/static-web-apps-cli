@@ -20,6 +20,15 @@ module.exports = async function (context, req) {
         domain: "localhost",
         SameSite: "None",
       },
+      {
+        name: "StaticWebAppsAuthCookie__PROVIDER",
+        value: provider,
+        path: "/",
+        secure: false,
+        HttpOnly: false,
+        domain: "localhost",
+        SameSite: "None",
+      },
     ],
     headers: {
       location,

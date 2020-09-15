@@ -24,6 +24,15 @@ module.exports = async function (context, req) {
         domain: "localhost",
         expires: new Date(1970),
       },
+      {
+        name: "StaticWebAppsAuthCookie__PROVIDER",
+        value: "deleted",
+        path: "/",
+        secure: false,
+        HttpOnly: false,
+        domain: "localhost",
+        expires: new Date(1970),
+      },
     ],
     headers: {
       location: SWA_EMU_HOST,
