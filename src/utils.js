@@ -98,7 +98,7 @@ module.exports.readConfigFile = () => {
   const swaBuildConfig = swaYaml.jobs.build_and_deploy_job.steps.find((step) => step.uses && step.uses.includes("static-web-apps-deploy"));
 
   // extract the user's config and set defaults
-  const {
+  let {
     app_build_command = "npm run build --if-present",
     api_build_command = "npm run build --if-present",
     app_location = "/",
@@ -106,17 +106,29 @@ module.exports.readConfigFile = () => {
     api_location = "api",
   } = swaBuildConfig.with;
 
+
+  // the following locations must be under the user's project folder
+  // - app_location
+  // - api_location
+  // - app_artifact_location
+
+
+  app_location = path.join(process.cwd(), app_location);
+  api_location = path.join(process.cwd(), api_location);
+
+  const detectedRuntimeType = detectRuntime(app_location);
+  if (detectedRuntimeType === RuntimeType.node) {
+    app_artifact_location = path.join(app_location, "bin", "Debug", "netstandard2.1", "publish", app_artifact_location);
+  } else {
+    app_artifact_location = path.join(app_location, app_artifact_location);
+  }
+
   const config = {
     app_build_command,
     api_build_command,
-
-    // these locations must be under the user's project folder
-    app_location: path.join(process.cwd(), app_location),
-    api_location: path.join(process.cwd(), api_location),
-    app_artifact_location:
-      detectRuntime(path.join(process.cwd(), app_location)) === RuntimeType.node
-        ? path.join(process.cwd(), app_location, app_artifact_location)
-        : path.join(process.cwd(), app_location, "bin", "Debug", "netstandard2.1", "publish", app_artifact_location),
+    app_location,
+    api_location,
+    app_artifact_location,
   };
 
   return config;

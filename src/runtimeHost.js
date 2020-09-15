@@ -9,14 +9,18 @@ module.exports.createRuntimeHost = (port, proxyHost, proxyPort) => {
   const runtimeType = detectRuntime(app_location);
 
   switch (runtimeType) {
+    // .NET runtime
     case RuntimeType.dotnet:
       return {
         command: "dotnet",
         args: `watch --project ${app_location} run --urls=http://localhost:${port}`.split(" "),
       };
 
+    // Node.js runtime or static sites
     case RuntimeType.node:
+    case RuntimeType.unknown:
     default:
+
       // See available options for http-server: https://github.com/http-party/http-server#available-options
       // Note: --proxy allows us to add fallback routes for SPA (https://github.com/http-party/http-server#catch-all-redirect)
       const command = httpServerBin;
