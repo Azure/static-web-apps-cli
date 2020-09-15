@@ -42,7 +42,7 @@ SWA EMU is still in developer preview and not yet ready for prime time. You will
 
 Using `npm` or `yarn`:
 
-- Install the emulator: `npm install -g @manekinekko/swa-emu@alpha`
+- Install the emulator: `npm install -g @manekinekko/swa-emu@latest`
 - Open a SWA app folder at the root (outside any /api or /app folders): `cd my-awesome-swa-app`
 - Start the emulator: `swa`
 - Access your SWA app from `http://localhost`
@@ -50,7 +50,7 @@ Using `npm` or `yarn`:
 Using `npx`:
 
 - Open a SWA app folder at the root (outside any /api or /app folders): `cd my-awesome-swa-app`
-- Start the emulator: `npx @manekinekko/swa-emu@alpha`
+- Start the emulator: `npx @manekinekko/swa-emu@latest`
 - Access your SWA app from `http://localhost`
 
 ## Configuration
