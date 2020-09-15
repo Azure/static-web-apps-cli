@@ -3,7 +3,7 @@ const SWA_EMU_HOST = "http://localhost:" + process.env.SWA_EMU_PORT;
 
 module.exports = async function (context, req) {
   const { provider } = context.bindingData;
-  const { post_login_redirect_uri } = req.query;
+  const { post_login_redirect_uri = "" } = req.query;
 
   context.res = response({
     context,
@@ -27,7 +27,7 @@ module.exports = async function (context, req) {
       },
     ],
     headers: {
-      location: `${SWA_EMU_HOST}/profile`,
+      location: `${SWA_EMU_HOST}/${post_login_redirect_uri}`,
     },
   });
 };
