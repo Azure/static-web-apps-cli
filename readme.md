@@ -1,6 +1,11 @@
-## SWA EMU: Azure Static Web Apps Emulator (Alpha Preview)
+<p align="center">
+    <h2 align="center">Azure Static Web Apps Emulator</h2>
+</p>
+<p align="center">
+    <img align="center" src="docs/swa-emu-icon.png" width="200">
+</p>
 
-SWA EMU serves as a local emulator for [Azure Static Web Apps](https://bit.ly/2ZNcakP). It can:
+Introducing SWA EMU, the Azure Static Web Apps Emulator that serves as a local emulator for [Azure Static Web Apps](https://bit.ly/2ZNcakP). It can:
 
 - Auto-build your local APP and API
 - Emulate Authentication
@@ -31,7 +36,7 @@ The Authentication flow is illustrated in the following sequence diagram (or [op
 
 ## Disclaimer
 
-SWA EMU is still in alpha preview and not yet ready for prime time. You will encounter issues, so please report them or help us fix them. Your contributions will be very appreciated 🙏
+SWA EMU is still in developer preview and not yet ready for prime time. You will encounter issues, so please report them or help us fix them. Your contributions will be very appreciated 🙏
 
 ## Quick start
 
@@ -72,19 +77,19 @@ If you need to override the default values, provide the following options:
 
 ## Auth emulation status
 
-| Provider | Local Emulation | Linked OAuth App |
-| -------- | --------------- | ---------------- |
-| GitHub   | ✅              | ✅               |
-| Twitter  | TODO            |                  |
-| Google   | TODO            |                  |
-| Facebook | TODO            |                  |
-| AAD      | TODO            |                  |
+| Provider | Local Emulation |
+| -------- | --------------- |
+| GitHub   | ✅              |
+| Twitter  | ✅              |
+| Google   | ✅              |
+| Facebook | ✅              |
+| AAD      | ✅              |
 
 ## Caveats
 
-- Custom routes are not supported.
-- Authorization and roles are not supported.
-- The emulator is serving all traffic over HTTP (HTTPS support will be added soon).
+- Custom routes are not yet supported.
+- Authorization and roles are not supported (see [#7](https://github.com/manekinekko/swa-emulator/issues/7)).
+- The emulator is serving all traffic over HTTP (HTTPS support will be added soon) (see [#4](https://github.com/manekinekko/swa-emulator/issues/4)).
 - When using GitHub, the OAuth client ID and client secret are provided as-is for dev purposes ONLY. You should create your own OAuth GitHub app!
 
 ## Troubleshooting
