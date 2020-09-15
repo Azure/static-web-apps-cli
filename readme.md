@@ -65,22 +65,31 @@ $ swa --use-dev-server=http://<dev-server-host>:<dev-server-port>`
 
 Here are the default ports used by popular dev servers:
 
-- If you are using the [Angular CLI](https://angular.io/cli):
+- [Angular CLI](https://angular.io/cli):
 ```
-swa --use-dev-server=http://localhost:4200`
+swa --use-dev-server=http://localhost:4200
 ```
-- If you are using the [Vue CLI](https://cli.vuejs.org/):
+- [Vue CLI](https://cli.vuejs.org/):
 ```
-swa --use-dev-server=http://localhost:8080`
+swa --use-dev-server=http://localhost:8080
 ```
-- If you are using [Create React App](https://reactjs.org/docs/create-a-new-react-app.html):
+- [Create React App](https://reactjs.org/docs/create-a-new-react-app.html):
 ```
-swa --use-dev-server=http://localhost:3000`
+swa --use-dev-server=http://localhost:3000
 ```
-- If you are using [Webpack dev server](https://github.com/webpack/webpack-dev-server):
+- [Webpack dev server](https://github.com/webpack/webpack-dev-server):
 ```
-swa --use-dev-server=http://localhost:8080`
+swa --use-dev-server=http://localhost:8080
 ```
+- [Parcel CLI](https://parceljs.org/cli.html):
+```
+swa --use-dev-server=http://localhost:1234
+```
+- [Stencil dev server](https://stenciljs.com/docs/dev-server):
+```
+swa --use-dev-server=http://localhost:3333
+```
+
 
 ## Configuration
 
@@ -105,11 +114,11 @@ If you need to override the default values, provide the following options:
 | `--verbose`          | enable debug logs                     | `false`                 | `swa --verbose`                             |
 | `--ui`               | enable dashboard UI                   | `false`                 | `swa --ui`                                  |
 
-## Auth emulation
+## Local Emulation
 
 The emulator supports local authentication flow and mocks the following providers:
 
-| Provider | Endpoint              | Local Emulation |
+| Provider | [Endpoint](https://docs.microsoft.com/en-us/azure/static-web-apps/authentication-authorization#login)              | Local Emulation |
 | -------- | --------------------- | --------------- |
 | GitHub   | `.auth/login/github`  | ✅              |
 | Twitter  | `.auth/login/twitter` | ✅              |
