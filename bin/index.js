@@ -21,6 +21,7 @@ program
   .option("--api-uri <apiUri>", "set API uri", `http://localhost:${API_PORT}`)
   .option("--api-prefix <apiPrefix>", "set API prefix", "api")
   .option("--app-uri <appUri>", "set APP uri", `http://localhost:${APP_PORT}`)
+  .option("--use-dev-server <useDevServer>", "Use running APP dev server", null)
   .option("--host <host>", "set host address", "0.0.0.0")
   .option("--port <port>", "set port value", EMU_PORT)
   .option("--verbose", "show debug logs", false)
@@ -56,19 +57,23 @@ const envVarsObj = {
   SWA_EMU_AUTH_URI: program.authUri,
   SWA_EMU_API_URI: program.apiUri,
   SWA_EMU_API_PREFIX: program.apiPrefix,
-  SWA_EMU_APP_URI: program.appUri,
+  SWA_EMU_APP_URI: program.useDevServer || program.appUri,
   SWA_EMU_APP_LOCATION: app_artifact_location,
   SWA_EMU_HOST: program.host,
   SWA_EMU_PORT: program.port,
 };
 
 const { command: hostCommand, args: hostArgs } = createRuntimeHost(appUriPort, program.host, program.port);
+let serveStaticContent = `${hostCommand} ${hostArgs.join(" ")}`;
+if (program.useDevServer) {
+  serveStaticContent = `echo 'using dev server at ${program.useDevServer}'`;
+}
 
 const startCommand = [
   // run concurrent commands
   concurrentlyBin,
   `--restart-tries 3`,
-  `--names x,emulator,auth,hosting,functions`,
+  `--names emulator,auth,hosting,functions`,
   `-c 'bgYellow.bold,bgMagenta.bold,bgCyan.bold,bgGreen.bold'`,
 
   // start the reverse proxy
@@ -78,7 +83,7 @@ const startCommand = [
   `"(cd ./src/auth/; func start --cors=* --port=${authUriPort})"`,
 
   // serve the app
-  `"${hostCommand} ${hostArgs.join(" ")}"`,
+  `"${serveStaticContent}"`,
 
   // serve the api, if it's available
   `"[ -d '${api_location}' ] && (cd ${api_location}; func start --cors *) || echo 'No API found. Skipping.'"`,
