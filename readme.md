@@ -68,30 +68,24 @@ $ swa --use-dev-server=http://<dev-server-host>:<dev-server-port>`
 
 Here is a list of the default ports used by popular dev servers:
 
-- [Angular CLI](https://angular.io/cli):
-```
-swa --use-dev-server=http://localhost:4200
-```
-- [Vue CLI](https://cli.vuejs.org/):
-```
-swa --use-dev-server=http://localhost:8080
-```
-- [Create React App](https://reactjs.org/docs/create-a-new-react-app.html):
-```
-swa --use-dev-server=http://localhost:3000
-```
-- [Webpack dev server](https://github.com/webpack/webpack-dev-server):
-```
-swa --use-dev-server=http://localhost:8080
-```
-- [Parcel CLI](https://parceljs.org/cli.html):
-```
-swa --use-dev-server=http://localhost:1234
-```
-- [Stencil dev server](https://stenciljs.com/docs/dev-server):
-```
-swa --use-dev-server=http://localhost:3333
-```
+| Tool                                                                               | Port | Command                                      |
+| ---------------------------------------------------------------------------------- | ---- | -------------------------------------------- |
+| [Angular](https://angular.io/cli)                                                  | 4200 | `swa --use-dev-server=http://localhost:4200` |
+| [Vue](https://cli.vuejs.org/)                                                      | 8080 | `swa --use-dev-server=http://localhost:8080` |
+| [Vite](https://github.com/vitejs/vite/)                                            | 3000 | `swa --use-dev-server=http://localhost:3000` |
+| [Create React App](https://reactjs.org/docs/create-a-new-react-app.html)           | 3000 | `swa --use-dev-server=http://localhost:3000` |
+| [Webpack Dev Server](https://github.com/webpack/webpack-dev-server)                | 8080 | `swa --use-dev-server=http://localhost:8080` |
+| [Parcel](https://parceljs.org/cli.html)                                            | 1234 | `swa --use-dev-server=http://localhost:1234` |
+| [Stencil](https://stenciljs.com/docs/dev-server)                                   | 3333 | `swa --use-dev-server=http://localhost:3333` |
+| [Hugo](https://gohugo.io/commands/hugo_server/)                                    | 1313 | `swa --use-dev-server=http://localhost:1313` |
+| [Elm (live server)](https://github.com/wking-io/elm-live/)                         | 8000 | `swa --use-dev-server=http://localhost:8000` |
+| [Ionic](https://ionicframework.com/docs/cli/commands/serve/)                       | 8100 | `swa --use-dev-server=http://localhost:8100` |
+| [Svelte (sirv-cli)](https://github.com/lukeed/sirv/tree/master/packages/sirv-cli/) | 5000 | `swa --use-dev-server=http://localhost:5000` |
+| [Sapper](https://sapper.svelte.dev/)                                               | 3000 | `swa --use-dev-server=http://localhost:3000` |
+| [Scully.io](https://scully.io/)                                                    | 1668 | `swa --use-dev-server=http://localhost:1668` |
+| [Gatsby](https://www.gatsbyjs.com/docs/gatsby-cli/)                                | 8000 | `swa --use-dev-server=http://localhost:8000` |
+| [Nuxt.js](https://nuxtjs.org/)                                                     | 3000 | `swa --use-dev-server=http://localhost:3000` |
+| [Next.js](https://nextjs.org/)                                                     | 3000 | `swa --use-dev-server=http://localhost:3000` |
 
 
 ## Configuration
