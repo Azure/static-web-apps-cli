@@ -63,7 +63,7 @@ In order to use SWA EMU with your local dev server, follow these two steps:
 1. Run `swa` with the `--use-dev-server` flag of the URI provided by the dev server, in the following format:
 
 ```
-$ swa --use-dev-server=http://<dev-server-host>:<dev-server-port>`
+$ swa --use-dev-server=http://<dev-server-host>:<dev-server-port>
 ```
 
 Here is a list of the default ports used by popular dev servers:
@@ -115,13 +115,14 @@ If you need to override the default values, provide the following options:
 
 The emulator supports local authentication flow and mocks the following providers:
 
-| Provider | [Endpoint](https://docs.microsoft.com/en-us/azure/static-web-apps/authentication-authorization#login)              | Local Emulation |
-| -------- | --------------------- | --------------- |
-| GitHub   | `.auth/login/github`  | ✅              |
-| Twitter  | `.auth/login/twitter` | ✅              |
-| Google   | `.auth/login/google`  | ✅              |
-| Facebook | `.auth/login/facbook` | ✅              |
-| AAD      | `.auth/login/aad`     | ✅              |
+| Provider | [Endpoint](https://docs.microsoft.com/azure/static-web-apps/authentication-authorization?WT.mc_id=swa-emu-github-wachegha#login) | Local Emulation |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| GitHub   | `.auth/login/github`                                                                                                             | ✅              |
+| Twitter  | `.auth/login/twitter`                                                                                                            | ✅              |
+| Google   | `.auth/login/google`                                                                                                             | ✅              |
+| Facebook | `.auth/login/facbook`                                                                                                            | ✅              |
+| AAD      | `.auth/login/aad`                                                                                                                | ✅              |
+
 
 When requesting the `.auth/me` endpoint, a mocked user `clientPrincipal` will be returned by the emulator. Here is an example:
 
