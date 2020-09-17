@@ -7,6 +7,17 @@ const YAML = require("yaml");
 const { detectRuntime, RuntimeType } = require("./runtimes");
 
 module.exports.response = ({ context, status, headers, cookies, body = "" }) => {
+  if (!context || !context.bindingData) {
+    throw Error(
+      "TypeError: context must be a valid Azure Functions context object. " +
+        "See https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-node#context-object"
+    );
+  }
+
+  if (typeof status !== "number") {
+    throw Error("TypeError: status code must be a number.");
+  }
+
   let location;
   if (headers) {
     ({ location } = headers);
@@ -44,7 +55,6 @@ module.exports.response = ({ context, status, headers, cookies, body = "" }) => 
 
   const res = {
     status,
-    headers,
     cookies,
     headers: {
       status,
@@ -57,6 +67,10 @@ module.exports.response = ({ context, status, headers, cookies, body = "" }) => 
 };
 
 module.exports.validateCookie = (cookieValue) => {
+  if (typeof cookieValue !== "string") {
+    throw Error("TypeError: cookie value must be a string");
+  }
+
   const cookies = cookie.parse(cookieValue);
 
   if (cookies.StaticWebAppsAuthCookie) {
@@ -67,6 +81,10 @@ module.exports.validateCookie = (cookieValue) => {
 };
 
 module.exports.getProviderFromCookie = (cookieValue) => {
+  if (typeof cookieValue !== "string") {
+    throw Error("TypeError: cookie value must be a string");
+  }
+
   const cookies = cookie.parse(cookieValue);
   return cookies.StaticWebAppsAuthCookie__PROVIDER;
 };
@@ -84,9 +102,10 @@ module.exports.readConfigFile = () => {
   const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
 
   // find the SWA GitHub action file
+  let githubActionFile;
   let githubActionContent;
   try {
-    let githubActionFile = fs
+    githubActionFile = fs
       .readdirSync(githubActionFolder)
       .filter((file) => file.includes("azure-static-web-apps") && file.endsWith(".yml"))
       .pop();
@@ -99,8 +118,45 @@ module.exports.readConfigFile = () => {
     shell.exit(0);
   }
 
+  if (typeof githubActionContent !== "string") {
+    throw Error("TypeError: GitHub action file content should be a string");
+  }
+
   const swaYaml = YAML.parse(githubActionContent);
+
+  if (!swaYaml) {
+    throw Error(`could not parse the SWA workflow file "${githubActionFile}". Make sure it's a valid YAML file.`);
+  }
+
+  if (!swaYaml.jobs) {
+    throw Error(`missing property 'jobs' in the SWA workflow file "${githubActionFile}". Make sure it's a valid SWA workflow file.`);
+  }
+
+  if (!swaYaml.jobs.build_and_deploy_job) {
+    throw Error(
+      `missing property 'jobs.build_and_deploy_job' in the SWA workflow file "${githubActionFile}". Make sure it's a valid SWA workflow file.`
+    );
+  }
+
+  if (!swaYaml.jobs.build_and_deploy_job.steps) {
+    throw Error(
+      `missing property 'jobs.build_and_deploy_job.steps' in the SWA workflow file "${githubActionFile}". Make sure it's a valid SWA workflow file.`
+    );
+  }
+
   const swaBuildConfig = swaYaml.jobs.build_and_deploy_job.steps.find((step) => step.uses && step.uses.includes("static-web-apps-deploy"));
+
+  if (!swaBuildConfig) {
+    throw Error(
+      `invalid property 'jobs.build_and_deploy_job.steps[]' in the SWA workflow file "${githubActionFile}". Make sure it's a valid SWA workflow file.`
+    );
+  }
+
+  if (!swaBuildConfig.with) {
+    throw Error(
+      `missing property 'jobs.build_and_deploy_job.steps[].with' in the SWA workflow file "${githubActionFile}". Make sure it's a valid SWA workflow file.`
+    );
+  }
 
   // extract the user's config and set defaults
   let {
@@ -117,7 +173,7 @@ module.exports.readConfigFile = () => {
   // - app_artifact_location
 
   app_location = path.join(process.cwd(), app_location);
-  api_location = path.join(process.cwd(), api_location);
+  api_location = path.join(process.cwd(), api_location || "/");
 
   const detectedRuntimeType = detectRuntime(app_location);
   if (detectedRuntimeType === RuntimeType.node) {
