@@ -591,7 +591,7 @@ jobs:
           )
         );
 
-        expect(readConfigFile().app_location).toBe(process.cwd() + path.sep);
+        expect(readConfigFile().app_location).toBe(path.normalize(process.cwd() + "/"));
       });
 
       it("property 'app_location' should be set to '/' if missing", () => {
@@ -612,7 +612,7 @@ jobs:
           )
         );
 
-        expect(readConfigFile().app_location).toBe(process.cwd() + path.sep);
+        expect(readConfigFile().app_location).toBe(path.normalize(process.cwd() + "/"));
       });
 
       it("property 'api_location' should be set", () => {
@@ -633,7 +633,7 @@ jobs:
           )
         );
 
-        expect(readConfigFile().api_location).toBe(process.cwd() + "/api");
+        expect(readConfigFile().api_location).toBe(path.normalize(process.cwd() + "/api"));
       });
 
       it("property 'api_location' should be set to 'api' if missing", () => {
@@ -654,7 +654,7 @@ jobs:
           )
         );
 
-        expect(readConfigFile().api_location).toBe(process.cwd() + "/api");
+        expect(readConfigFile().api_location).toBe(path.normalize(process.cwd() + "/api"));
       });
 
       it("property 'app_artifact_location' should be set", () => {
@@ -675,7 +675,7 @@ jobs:
           )
         );
 
-        expect(readConfigFile().app_artifact_location).toBe(process.cwd() + path.sep);
+        expect(readConfigFile().app_artifact_location).toBe(path.normalize(process.cwd() + "/"));
       });
 
       it("property 'app_artifact_location' should be set to '/' if missing", () => {
@@ -696,7 +696,7 @@ jobs:
           )
         );
 
-        expect(readConfigFile().app_artifact_location).toBe(process.cwd() + path.sep);
+        expect(readConfigFile().app_artifact_location).toBe(path.normalize(process.cwd() + "/"));
       });
 
       it("property 'app_build_command' should be set", () => {
