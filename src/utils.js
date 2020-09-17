@@ -162,8 +162,8 @@ module.exports.readConfigFile = () => {
   let {
     app_build_command = "npm run build --if-present",
     api_build_command = "npm run build --if-present",
-    app_location = "/",
-    app_artifact_location = "/",
+    app_location = path.sep,
+    app_artifact_location = path.sep,
     api_location = "api",
   } = swaBuildConfig.with;
 
@@ -172,8 +172,9 @@ module.exports.readConfigFile = () => {
   // - api_location
   // - app_artifact_location
 
-  app_location = path.join(process.cwd(), app_location);
-  api_location = path.join(process.cwd(), api_location || "/");
+  app_location = path.normalize(path.join(process.cwd(), app_location));
+  api_location = path.normalize(path.join(process.cwd(), api_location || path.sep));
+  app_artifact_location = path.normalize(app_artifact_location);
 
   const detectedRuntimeType = detectRuntime(app_location);
   if (detectedRuntimeType === RuntimeType.node) {

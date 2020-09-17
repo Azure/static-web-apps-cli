@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 const { Volume } = require("memfs");
 const shell = require("shelljs");
 
@@ -590,7 +591,7 @@ jobs:
           )
         );
 
-        expect(readConfigFile().app_location).toBe(process.cwd() + "/");
+        expect(readConfigFile().app_location).toBe(process.cwd() + path.sep);
       });
 
       it("property 'app_location' should be set to '/' if missing", () => {
@@ -611,7 +612,7 @@ jobs:
           )
         );
 
-        expect(readConfigFile().app_location).toBe(process.cwd() + "/");
+        expect(readConfigFile().app_location).toBe(process.cwd() + path.sep);
       });
 
       it("property 'api_location' should be set", () => {
@@ -674,7 +675,7 @@ jobs:
           )
         );
 
-        expect(readConfigFile().app_artifact_location).toBe(process.cwd() + "/");
+        expect(readConfigFile().app_artifact_location).toBe(process.cwd() + path.sep);
       });
 
       it("property 'app_artifact_location' should be set to '/' if missing", () => {
@@ -695,7 +696,7 @@ jobs:
           )
         );
 
-        expect(readConfigFile().app_artifact_location).toBe(process.cwd() + "/");
+        expect(readConfigFile().app_artifact_location).toBe(process.cwd() + path.sep);
       });
 
       it("property 'app_build_command' should be set", () => {
