@@ -21,7 +21,7 @@ program
   .option("--api-uri <apiUri>", "set API uri", `http://localhost:${API_PORT}`)
   .option("--api-prefix <apiPrefix>", "set API prefix", "api")
   .option("--app-uri <appUri>", "set APP uri", `http://localhost:${APP_PORT}`)
-  .option("--use-dev-server <useDevServer>", "Use running APP dev server", null)
+  .option("--use-app <useAppServer>", "Use running APP dev server", null)
   .option("--host <host>", "set host address", "0.0.0.0")
   .option("--port <port>", "set port value", EMU_PORT)
   .option("--verbose", "show debug logs", false)
@@ -57,7 +57,7 @@ const envVarsObj = {
   SWA_EMU_AUTH_URI: program.authUri,
   SWA_EMU_API_URI: program.apiUri,
   SWA_EMU_API_PREFIX: program.apiPrefix,
-  SWA_EMU_APP_URI: program.useDevServer || program.appUri,
+  SWA_EMU_APP_URI: program.useAppServer || program.appUri,
   SWA_EMU_APP_LOCATION: app_artifact_location,
   SWA_EMU_HOST: program.host,
   SWA_EMU_PORT: program.port,
@@ -65,8 +65,8 @@ const envVarsObj = {
 
 const { command: hostCommand, args: hostArgs } = createRuntimeHost(appUriPort, program.host, program.port);
 let serveStaticContent = `${hostCommand} ${hostArgs.join(" ")}`;
-if (program.useDevServer) {
-  serveStaticContent = `echo 'using dev server at ${program.useDevServer}'`;
+if (program.useAppServer) {
+  serveStaticContent = `echo 'using dev server at ${program.useAppServer}'`;
 }
 
 const startCommand = [
