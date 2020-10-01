@@ -60,33 +60,32 @@ When developing locally on your front-end application, it might be usefull to us
 In order to use SWA EMU with your local dev server, follow these two steps:
 
 1. Start your local dev server (as usual). For example: `ng serve`
-1. Run `swa` with the `--use-dev-server` flag of the URI provided by the dev server, in the following format:
+1. Run `swa` with the `--use-app` flag of the URI provided by the dev server, in the following format:
 
 ```
-$ swa --use-dev-server=http://<dev-server-host>:<dev-server-port>
+$ swa --use-app=http://<dev-server-host>:<dev-server-port>
 ```
 
 Here is a list of the default ports used by popular dev servers:
 
 | Tool                                                                               | Port | Command                                      |
 | ---------------------------------------------------------------------------------- | ---- | -------------------------------------------- |
-| [Angular](https://angular.io/cli)                                                  | 4200 | `swa --use-dev-server=http://localhost:4200` |
-| [Vue](https://cli.vuejs.org/)                                                      | 8080 | `swa --use-dev-server=http://localhost:8080` |
-| [Vite](https://github.com/vitejs/vite/)                                            | 3000 | `swa --use-dev-server=http://localhost:3000` |
-| [Create React App](https://reactjs.org/docs/create-a-new-react-app.html)           | 3000 | `swa --use-dev-server=http://localhost:3000` |
-| [Webpack Dev Server](https://github.com/webpack/webpack-dev-server)                | 8080 | `swa --use-dev-server=http://localhost:8080` |
-| [Parcel](https://parceljs.org/cli.html)                                            | 1234 | `swa --use-dev-server=http://localhost:1234` |
-| [Stencil](https://stenciljs.com/docs/dev-server)                                   | 3333 | `swa --use-dev-server=http://localhost:3333` |
-| [Hugo](https://gohugo.io/commands/hugo_server/)                                    | 1313 | `swa --use-dev-server=http://localhost:1313` |
-| [Elm (live server)](https://github.com/wking-io/elm-live/)                         | 8000 | `swa --use-dev-server=http://localhost:8000` |
-| [Ionic](https://ionicframework.com/docs/cli/commands/serve/)                       | 8100 | `swa --use-dev-server=http://localhost:8100` |
-| [Svelte (sirv-cli)](https://github.com/lukeed/sirv/tree/master/packages/sirv-cli/) | 5000 | `swa --use-dev-server=http://localhost:5000` |
-| [Sapper](https://sapper.svelte.dev/)                                               | 3000 | `swa --use-dev-server=http://localhost:3000` |
-| [Scully.io](https://scully.io/)                                                    | 1668 | `swa --use-dev-server=http://localhost:1668` |
-| [Gatsby](https://www.gatsbyjs.com/docs/gatsby-cli/)                                | 8000 | `swa --use-dev-server=http://localhost:8000` |
-| [Nuxt.js](https://nuxtjs.org/)                                                     | 3000 | `swa --use-dev-server=http://localhost:3000` |
-| [Next.js](https://nextjs.org/)                                                     | 3000 | `swa --use-dev-server=http://localhost:3000` |
-
+| [Angular](https://angular.io/cli)                                                  | 4200 | `swa --use-app=http://localhost:4200` |
+| [Vue](https://cli.vuejs.org/)                                                      | 8080 | `swa --use-app=http://localhost:8080` |
+| [Vite](https://github.com/vitejs/vite/)                                            | 3000 | `swa --use-app=http://localhost:3000` |
+| [Create React App](https://reactjs.org/docs/create-a-new-react-app.html)           | 3000 | `swa --use-app=http://localhost:3000` |
+| [Webpack Dev Server](https://github.com/webpack/webpack-dev-server)                | 8080 | `swa --use-app=http://localhost:8080` |
+| [Parcel](https://parceljs.org/cli.html)                                            | 1234 | `swa --use-app=http://localhost:1234` |
+| [Stencil](https://stenciljs.com/docs/dev-server)                                   | 3333 | `swa --use-app=http://localhost:3333` |
+| [Hugo](https://gohugo.io/commands/hugo_server/)                                    | 1313 | `swa --use-app=http://localhost:1313` |
+| [Elm (live server)](https://github.com/wking-io/elm-live/)                         | 8000 | `swa --use-app=http://localhost:8000` |
+| [Ionic](https://ionicframework.com/docs/cli/commands/serve/)                       | 8100 | `swa --use-app=http://localhost:8100` |
+| [Svelte (sirv-cli)](https://github.com/lukeed/sirv/tree/master/packages/sirv-cli/) | 5000 | `swa --use-app=http://localhost:5000` |
+| [Sapper](https://sapper.svelte.dev/)                                               | 3000 | `swa --use-app=http://localhost:3000` |
+| [Scully.io](https://scully.io/)                                                    | 1668 | `swa --use-app=http://localhost:1668` |
+| [Gatsby](https://www.gatsbyjs.com/docs/gatsby-cli/)                                | 8000 | `swa --use-app=http://localhost:8000` |
+| [Nuxt.js](https://nuxtjs.org/)                                                     | 3000 | `swa --use-app=http://localhost:3000` |
+| [Next.js](https://nextjs.org/)                                                     | 3000 | `swa --use-app=http://localhost:3000` |
 
 ## Configuration
 
@@ -98,18 +97,18 @@ SWA EMU binds to these default hosts:
 
 If you need to override the default values, provide the following options:
 
-| Options              | Description                           | Default                 | Example                                     |
-| -------------------- | ------------------------------------- | ----------------------- |---------------------------------------------|
-| `--api-prefix`       | the API URL prefix                    | `api`                   | `swa --api=prefix=my-api-route`             |
-| `--auth-uri`         | the Auth URI                          | `http://localhost:4242` | `swa --auth-uri=http://localhost:8083`      |
-| `--api-uri`          | the API URI                           | `http://localhost:7071` | `swa --api-uri=http://localhost:8082`       |
-| `--app-uri`          | the app URI                           | `http://localhost:4200` | `swa --app-uri=http://localhost:8081`       |
-| `--use-dev-server`   | use the app dev server                | `null`                  | `swa --use-dev-server=http://localhost:8080`|
-| `--host`             | the emulator host address             | `0.0.0.0`               | `swa --host=192.168.68.80`                  |
-| `--port`             | the emulator port value               | `80`                    | `swa --port=8080`                           |
-| `--build`            | build the api and app before starting | `false`                 | `swa --build`                               |
-| `--verbose`          | enable debug logs                     | `false`                 | `swa --verbose`                             |
-| `--ui`               | enable dashboard UI                   | `false`                 | `swa --ui`                                  |
+| Options        | Description                           | Default                 | Example                                |
+| -------------- | ------------------------------------- | ----------------------- | -------------------------------------- |
+| `--api-prefix` | the API URL prefix                    | `api`                   | `swa --api=prefix=my-api-route`        |
+| `--auth-uri`   | the Auth URI                          | `http://localhost:4242` | `swa --auth-uri=http://localhost:8083` |
+| `--api-uri`    | the API URI                           | `http://localhost:7071` | `swa --api-uri=http://localhost:8082`  |
+| `--app-uri`    | the app URI                           | `http://localhost:4200` | `swa --app-uri=http://localhost:8081`  |
+| `--use-app`    | use the app dev server                | `null`                  | `swa --use-app=http://localhost:8080`  |
+| `--host`       | the emulator host address             | `0.0.0.0`               | `swa --host=192.168.68.80`             |
+| `--port`       | the emulator port value               | `80`                    | `swa --port=8080`                      |
+| `--build`      | build the api and app before starting | `false`                 | `swa --build`                          |
+| `--verbose`    | enable debug logs                     | `false`                 | `swa --verbose`                        |
+| `--ui`         | enable dashboard UI                   | `false`                 | `swa --ui`                             |
 
 ## Local Emulation
 
@@ -123,7 +122,6 @@ The emulator supports local authentication flow and mocks the following provider
 | Facebook | `.auth/login/facbook`                                                                                                            | ✅              |
 | AAD      | `.auth/login/aad`                                                                                                                | ✅              |
 
-
 When requesting the `.auth/me` endpoint, a mocked user `clientPrincipal` will be returned by the emulator. Here is an example:
 
 ```json
@@ -132,10 +130,7 @@ When requesting the `.auth/me` endpoint, a mocked user `clientPrincipal` will be
     "identityProvider": "twitter",
     "userId": "59cd31faa8c34919ac22c19af50482b8",
     "userDetails": "manekinekko",
-    "userRoles": [
-      "anonymous",
-      "authenticated"
-    ]
+    "userRoles": ["anonymous", "authenticated"]
   }
 }
 ```
