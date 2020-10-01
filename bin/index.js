@@ -21,11 +21,12 @@ program
   .option("--api-uri <apiUri>", "set API uri", `http://localhost:${API_PORT}`)
   .option("--api-prefix <apiPrefix>", "set API prefix", "api")
   .option("--app-uri <appUri>", "set APP uri", `http://localhost:${APP_PORT}`)
-  .option("--use-app <useAppServer>", "Use running APP dev server", null)
-  .option("--host <host>", "set host address", "0.0.0.0")
-  .option("--port <port>", "set port value", EMU_PORT)
-  .option("--verbose", "show debug logs", false)
+  .option("--use-api <useApi>", "Use running API dev server", null)
+  .option("--use-app <useApp>", "Use running APP dev server", null)
+  .option("--host <host>", "set emulator host address", "0.0.0.0")
+  .option("--port <port>", "set emulator port value", EMU_PORT)
   .option("--build", "build the API and APP before starting the emulator", false)
+  .option("--verbose", "show debug logs", false)
   .option("--ui", "enable dashboard UI", false)
   .parse(process.argv);
 
@@ -55,18 +56,24 @@ const envVarsObj = {
   GITHUB_CLIENT_ID: "",
   GITHUB_CLIENT_SECRET: "",
   SWA_EMU_AUTH_URI: program.authUri,
-  SWA_EMU_API_URI: program.apiUri,
+  SWA_EMU_API_URI: program.useApi || program.apiUri,
   SWA_EMU_API_PREFIX: program.apiPrefix,
-  SWA_EMU_APP_URI: program.useAppServer || program.appUri,
+  SWA_EMU_APP_URI: program.useApp || program.appUri,
   SWA_EMU_APP_LOCATION: app_artifact_location,
   SWA_EMU_HOST: program.host,
   SWA_EMU_PORT: program.port,
 };
 
 const { command: hostCommand, args: hostArgs } = createRuntimeHost(appUriPort, program.host, program.port);
+
+let serveApiContent = `[ -d '${api_location}' ] && (cd ${api_location}; func start --cors *) || echo 'No API found. Skipping.'`;
+if (program.useApi) {
+  serveApiContent = `echo 'using API dev server at ${program.useApi}'`;
+}
+
 let serveStaticContent = `${hostCommand} ${hostArgs.join(" ")}`;
-if (program.useAppServer) {
-  serveStaticContent = `echo 'using dev server at ${program.useAppServer}'`;
+if (program.useApp) {
+  serveStaticContent = `echo 'using APP dev server at ${program.useApp}'`;
 }
 
 const startCommand = [
@@ -86,7 +93,7 @@ const startCommand = [
   `"${serveStaticContent}"`,
 
   // serve the api, if it's available
-  `"[ -d '${api_location}' ] && (cd ${api_location}; func start --cors *) || echo 'No API found. Skipping.'"`,
+  `"${serveApiContent}"`,
 
   `--color=always`,
 ];

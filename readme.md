@@ -53,17 +53,28 @@ Using `npx`:
 - Start the emulator: `npx @manekinekko/swa-emu@latest`
 - Access your SWA app from `http://localhost`
 
-### Use with a local dev server
+### Use with a local API dev server
 
-When developing locally on your front-end application, it might be usefull to use your local application dev server, that comes with your application CLI, to serve your app content and benefit from the built-in feature like the livereload or HMR (hot module reload) features.
+When developing locally on your back-end application, it might be useful to use your local API dev server, to serve your API content and benefit from the built-in features like debugging. In order to use SWA EMU with your local API dev server, follow these two steps:
+
+1. Start your local API dev server (as usual). For example: `func start host`.
+1. Run `swa` with the `--use-api` flag of the URI provided by the API dev server, in the following format:
+
+```bash
+swa --use-api=http://<api-dev-server-host>:<api-dev-server-port>
+```
+
+### Use with a local APP dev server
+
+When developing locally on your front-end application, it might be useful to use your local application dev server, that comes with your application CLI, to serve your app content and benefit from the built-in feature like the livereload or HMR (hot module reload) features.
 
 In order to use SWA EMU with your local dev server, follow these two steps:
 
 1. Start your local dev server (as usual). For example: `ng serve`
 1. Run `swa` with the `--use-app` flag of the URI provided by the dev server, in the following format:
 
-```
-$ swa --use-app=http://<dev-server-host>:<dev-server-port>
+```bash
+swa --use-app=http://<app-dev-server-host>:<app-dev-server-port>
 ```
 
 Here is a list of the default ports used by popular dev servers:
@@ -104,6 +115,7 @@ If you need to override the default values, provide the following options:
 | `--api-uri`    | the API URI                           | `http://localhost:7071` | `swa --api-uri=http://localhost:8082`  |
 | `--app-uri`    | the app URI                           | `http://localhost:4200` | `swa --app-uri=http://localhost:8081`  |
 | `--use-app`    | use the app dev server                | `null`                  | `swa --use-app=http://localhost:8080`  |
+| `--use-api`    | use the api dev server                | `null`                  | `swa --use-api=http://localhost:3000`  |
 | `--host`       | the emulator host address             | `0.0.0.0`               | `swa --host=192.168.68.80`             |
 | `--port`       | the emulator port value               | `80`                    | `swa --port=8080`                      |
 | `--build`      | build the api and app before starting | `false`                 | `swa --build`                          |
