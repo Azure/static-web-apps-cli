@@ -1,12 +1,12 @@
-const cookie = require("cookie");
-const { default: fetch } = require("node-fetch");
-const path = require("path");
-const fs = require("fs");
-const shell = require("shelljs");
-const YAML = require("yaml");
-const { detectRuntime, RuntimeType } = require("./runtimes");
+import cookie from "cookie";
+import fetch from "node-fetch";
+import path from "path";
+import fs from "fs";
+import shell from "shelljs";
+import YAML from "yaml";
+import { detectRuntime, RuntimeType } from "./runtimes";
 
-module.exports.response = ({ context, status, headers, cookies, body = "" }) => {
+export const response = ({ context, status, headers, cookies, body = "" }) => {
   if (!context || !context.bindingData) {
     throw Error(
       "TypeError: context must be a valid Azure Functions context object. " +
@@ -66,7 +66,7 @@ module.exports.response = ({ context, status, headers, cookies, body = "" }) => 
   return res;
 };
 
-module.exports.validateCookie = (cookieValue) => {
+export const validateCookie = (cookieValue) => {
   if (typeof cookieValue !== "string") {
     throw Error("TypeError: cookie value must be a string");
   }
@@ -80,7 +80,7 @@ module.exports.validateCookie = (cookieValue) => {
   return false;
 };
 
-module.exports.getProviderFromCookie = (cookieValue) => {
+export const getProviderFromCookie = (cookieValue) => {
   if (typeof cookieValue !== "string") {
     throw Error("TypeError: cookie value must be a string");
   }
@@ -89,7 +89,7 @@ module.exports.getProviderFromCookie = (cookieValue) => {
   return cookies.StaticWebAppsAuthCookie__PROVIDER;
 };
 
-module.exports.ɵɵUseGithubDevToken = async () => {
+export const ɵɵUseGithubDevToken = async () => {
   console.log("!!!! Notice: You are using a dev GitHub token. You should create and use your own!");
   console.log("!!!! Read https://docs.github.com/en/developers/apps/building-oauth-apps");
   const swaTokens = `https://gist.githubusercontent.com/manekinekko/7fbfc79a85b0f1f312715f1beda26236/raw/740c51aac5b1fb970e69408067a49907485d1e31/swa-emu.json`;
@@ -98,7 +98,7 @@ module.exports.ɵɵUseGithubDevToken = async () => {
   return token.github;
 };
 
-module.exports.readConfigFile = () => {
+export const readConfigFile = () => {
   const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
 
   // find the SWA GitHub action file

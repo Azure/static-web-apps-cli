@@ -1,4 +1,4 @@
-{
+export const users = {
   "github": {
     "identityProvider": "github",
     "userId": "59cd31faa8c34919ac22c19af50482b8",

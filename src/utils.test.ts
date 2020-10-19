@@ -1,9 +1,9 @@
-const fs = require("fs");
-const path = require("path");
-const { Volume } = require("memfs");
-const shell = require("shelljs");
+import fs from "fs";
+import path from "path";
+import { Volume } from "memfs";
+import shell from "shelljs";
 
-const { response, validateCookie, getProviderFromCookie, readConfigFile } = require("./utils");
+import { response, validateCookie, getProviderFromCookie, readConfigFile } from "./utils";
 
 // mock fs
 jest.mock(`fs`, () => {

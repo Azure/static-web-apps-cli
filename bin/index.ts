@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-const shell = require("shelljs");
-const path = require("path");
-const program = require("commander");
-const builder = require("../src/builder");
-const { readConfigFile } = require("../src/utils");
-const { spawn } = require("child_process");
-const { createRuntimeHost } = require("../src/runtimeHost");
+import shell from "shelljs";
+import path from "path";
+import program from "commander";
+import builder from "../src/builder";
+import { readConfigFile } from "../src/utils";
+import { spawn } from "child_process";
+import { createRuntimeHost } from "../src/runtimeHost";
 
 const EMU_PORT = 80;
 const AUTH_PORT = 4242;
@@ -110,7 +110,7 @@ if (program.build) {
 if (program.ui) {
   // print the dashboard UI
 
-  const { dashboard } = require("../src/dashboard");
+  import { dashboard } from "../src/dashboard";
   const spawnx = (command, args) =>
     spawn(`${command}`, args, {
       shell: true,

@@ -1,8 +1,8 @@
 // @ts-check
 
-const blessed = require("blessed");
+import blessed from "blessed";
 
-module.exports.dashboard = new (class Dashboard {
+export const dashboard = new (class Dashboard {
   logText;
   log;
 
@@ -12,7 +12,6 @@ module.exports.dashboard = new (class Dashboard {
       dockBorders: false,
       fullUnicode: true,
       autoPadding: true,
-
     });
     this.screen.title = "Azure Static Web Apps Emulator";
     this.screen.key(["escape", "q", "C-c"], () => {
@@ -48,8 +47,8 @@ module.exports.dashboard = new (class Dashboard {
       clickable: true,
       focus: {
         border: {
-          fg: 'green'
-        }
+          fg: "green",
+        },
       },
       mouse: true,
     });

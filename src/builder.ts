@@ -1,8 +1,8 @@
-const fs = require("fs");
-const path = require("path");
-const shell = require("shelljs");
-const { readConfigFile } = require("./utils");
-const { detectRuntime, RuntimeType } = require("./runtimes");
+import fs from "fs";
+import path from "path";
+import shell from "shelljs";
+import { readConfigFile } from "./utils";
+import { detectRuntime, RuntimeType } from "./runtimes";
 
 const exec = (command, options = {}) => shell.exec(command, { async: false, ...options });
 
@@ -39,7 +39,7 @@ const dotnetBuilder = (location, name, colour) => {
   });
 };
 
-module.exports = () => {
+const builder = () => {
   const { app_location, api_location, app_build_command, api_build_command } = readConfigFile();
   const runtimeType = detectRuntime(app_location);
 
@@ -84,3 +84,4 @@ module.exports = () => {
     console.error(stderr);
   }
 };
+export default builder;

@@ -1,12 +1,12 @@
-const fs = require("fs");
-const path = require("path");
-const http = require("http");
-const httpProxy = require("http-proxy");
+import fs from "fs";
+import path from "path";
+import http from "http";
+import httpProxy from "http-proxy";
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
-const { validateCookie } = require("./utils");
-const { currentUser } = require("./userManager");
+import { validateCookie } from "./utils";
+import { currentUser } from "./userManager";
 
 const serveStatic = (file, res) => {
   fs.readFile(file, (err, data) => {

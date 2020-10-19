@@ -1,10 +1,10 @@
-const path = require("path");
-const { readConfigFile } = require("./utils");
-const { detectRuntime, RuntimeType } = require("./runtimes");
+import path from "path";
+import { readConfigFile } from "./utils";
+import { detectRuntime, RuntimeType } from "./runtimes";
 
 const httpServerBin = path.resolve(__dirname, "..", "./node_modules/.bin/http-server");
 
-module.exports.createRuntimeHost = (port, proxyHost, proxyPort) => {
+export const createRuntimeHost = (port, proxyHost, proxyPort) => {
   const { app_location, app_artifact_location } = readConfigFile();
   const runtimeType = detectRuntime(app_location);
 
