@@ -42,7 +42,7 @@ const appUriSegments = program.appUri.split(":");
 const appUriPort = appUriSegments[2] || APP_PORT;
 
 // provide binaries
-const concurrentlyBin = path.resolve(__dirname, "..", "./node_modules/.bin/concurrently");
+const concurrentlyBin = "npx concurrently";
 const { app_artifact_location, api_location } = readConfigFile();
 
 const envVarsObj = {
@@ -66,7 +66,7 @@ const envVarsObj = {
 
 const { command: hostCommand, args: hostArgs } = createRuntimeHost(appUriPort, program.host, program.port);
 
-let serveApiContent = `[ -d '${api_location}' ] && (cd ${api_location}; func start --cors *) || echo 'No API found. Skipping.'`;
+let serveApiContent = `[ -d '${api_location}' ] && (cd ${api_location}; npx func start --cors *) || echo 'No API found. Skipping.'`;
 if (program.useApi) {
   serveApiContent = `echo 'using API dev server at ${program.useApi}'`;
 }
@@ -87,7 +87,7 @@ const startCommand = [
   `"node ./src/proxy.js"`,
 
   // emulate auth
-  `"(cd ./src/auth/; func start --cors=* --port=${authUriPort})"`,
+  `"(cd ./src/auth/; npx func start --cors=* --port=${authUriPort})"`,
 
   // serve the app
   `"${serveStaticContent}"`,
@@ -123,11 +123,11 @@ if (program.ui) {
   dashboard.stream("hosting", hosting);
 
   // start functions
-  const functions = spawnx(`[ -d '${api_location}' ] && (cd ${api_location}; func start --cors *) || echo 'No API found. Skipping.'`, []);
+  const functions = spawnx(`[ -d '${api_location}' ] && (cd ${api_location}; npx func start --cors *) || echo 'No API found. Skipping.'`, []);
   dashboard.stream("functions", functions);
 
   // start auth
-  const auth = spawnx(`(cd ./src/auth/; func start --cors=* --port=${authUriPort})`, []);
+  const auth = spawnx(`(cd ./src/auth/; npx func start --cors=* --port=${authUriPort})`, []);
   dashboard.stream("auth", auth);
 
   // start proxy

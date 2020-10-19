@@ -1,8 +1,7 @@
-const path = require("path");
 const { readConfigFile } = require("./utils");
 const { detectRuntime, RuntimeType } = require("./runtimes");
 
-const httpServerBin = path.resolve(__dirname, "..", "./node_modules/.bin/http-server");
+const httpServerBin = "npx http-server";
 
 module.exports.createRuntimeHost = (port, proxyHost, proxyPort) => {
   const { app_location, app_artifact_location } = readConfigFile();
