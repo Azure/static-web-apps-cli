@@ -312,7 +312,7 @@ describe("Utils", () => {
         },
       });
       expect(res.cookies).toBeDefined();
-      expect(res.cookies.foo).toBe("bar");
+      expect(res.cookies!.foo).toBe("bar");
     });
   });
 
@@ -419,12 +419,12 @@ describe("Utils", () => {
 
   describe("readConfigFile()", () => {
     it("config file not found should throw", () => {
-      const mockExit = jest.spyOn(shell, "exit").mockImplementation(() => {});
+      const mockExit = jest.spyOn(shell, "exit").mockImplementation((_) => {});
       expect(() => readConfigFile()).toThrow(/TypeError: GitHub action file content should be a string/);
     });
 
     it("config file not found should process.exit(0)", () => {
-      const mockExit = jest.spyOn(shell, "exit").mockImplementation(() => {});
+      const mockExit = jest.spyOn(shell, "exit").mockImplementation((_) => {});
 
       // we know this will throw. Check previous test
       try {
@@ -435,7 +435,7 @@ describe("Utils", () => {
     });
 
     it("config file with wrong filename should process.exit(0)", () => {
-      const mockExit = jest.spyOn(shell, "exit").mockImplementation(() => {});
+      const mockExit = jest.spyOn(shell, "exit").mockImplementation((_) => {});
       fs.use(
         Volume.fromJSON(
           {
@@ -450,7 +450,7 @@ describe("Utils", () => {
     });
 
     it("invalid YAML file should throw", () => {
-      const mockExit = jest.spyOn(shell, "exit").mockImplementation(() => {});
+      const mockExit = jest.spyOn(shell, "exit").mockImplementation((_) => {});
       fs.use(
         Volume.fromJSON(
           {
@@ -466,7 +466,7 @@ describe("Utils", () => {
 
     describe("checking workflow properties", () => {
       it("missing property 'jobs' should throw", () => {
-        const mockExit = jest.spyOn(shell, "exit").mockImplementation(() => {});
+        const mockExit = jest.spyOn(shell, "exit").mockImplementation((_) => {});
         fs.use(
           Volume.fromJSON(
             {
@@ -481,7 +481,7 @@ describe("Utils", () => {
       });
 
       it("missing property 'jobs.build_and_deploy_job' should throw", () => {
-        const mockExit = jest.spyOn(shell, "exit").mockImplementation(() => {});
+        const mockExit = jest.spyOn(shell, "exit").mockImplementation((_) => {});
         fs.use(
           Volume.fromJSON(
             {
@@ -499,7 +499,7 @@ jobs:
       });
 
       it("missing property 'jobs.build_and_deploy_job.steps' should throw", () => {
-        const mockExit = jest.spyOn(shell, "exit").mockImplementation(() => {});
+        const mockExit = jest.spyOn(shell, "exit").mockImplementation((_) => {});
         fs.use(
           Volume.fromJSON(
             {

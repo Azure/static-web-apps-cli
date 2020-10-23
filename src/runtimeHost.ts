@@ -4,7 +4,7 @@ import { detectRuntime, RuntimeType } from "./runtimes";
 
 const httpServerBin = path.resolve(__dirname, "..", "./node_modules/.bin/http-server");
 
-export const createRuntimeHost = (port, proxyHost, proxyPort) => {
+export const createRuntimeHost = (port: number, proxyHost: string, proxyPort: number) => {
   const { app_location, app_artifact_location } = readConfigFile();
   const runtimeType = detectRuntime(app_location);
 

@@ -8,7 +8,14 @@ const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
 import { validateCookie } from "./utils";
 import { currentUser } from "./userManager";
 
-const serveStatic = (file, res) => {
+type UserDefinedRoute = {
+  route: string;
+  allowedRoles?: string[];
+  statusCode?: number;
+  serve?: string;
+};
+
+const serveStatic = (file: string, res: http.ServerResponse) => {
   fs.readFile(file, (err, data) => {
     if (err) {
       res.writeHead(404);
@@ -21,7 +28,7 @@ const serveStatic = (file, res) => {
   });
 };
 
-const readRoutes = (folder) => {
+const readRoutes = (folder: string): UserDefinedRoute[] => {
   if (!fs.existsSync(folder)) {
     return [];
   }
@@ -35,9 +42,9 @@ const readRoutes = (folder) => {
   return require(path.join(folder, routesFile)).routes || [];
 };
 
-const routes = readRoutes(process.env.SWA_EMU_APP_LOCATION);
+const routes = readRoutes(process.env.SWA_EMU_APP_LOCATION || "");
 
-const routeTest = (userDefinedRoute, currentRoute) => {
+const routeTest = (userDefinedRoute: string, currentRoute: string) => {
   if (userDefinedRoute === currentRoute) {
     return true;
   }
@@ -50,7 +57,12 @@ const routeTest = (userDefinedRoute, currentRoute) => {
 };
 
 const server = http.createServer(function (req, res) {
-  const userDefinedRoute = routes.find((route) => req.url.endsWith(route.route));
+  // not quite sure how you'd hit an undefined url, but the types say you can
+  if (!req.url) {
+    return;
+  }
+
+  const userDefinedRoute = routes.find((route) => req.url!.endsWith(route.route));
 
   // something from the `routes.json`
   if (userDefinedRoute && routeTest(userDefinedRoute.route, req.url)) {
@@ -94,7 +106,7 @@ const server = http.createServer(function (req, res) {
     });
     proxyAuth.on("proxyRes", function (proxyRes, req) {
       console.log("auth>>", req.method, target + req.url);
-      console.log(JSON.stringify(proxyRes.headers, true, 2));
+      console.log(JSON.stringify(proxyRes.headers, undefined, 2));
     });
     proxyAuth.on("error", function (err, req) {
       console.log("auth>>", req.method, target + req.url);
@@ -161,6 +173,8 @@ const server = http.createServer(function (req, res) {
   }
 });
 
-const address = `${process.env.SWA_EMU_HOST || "0.0.0.0"}:${process.env.SWA_EMU_PORT || 80}`;
+const port = parseInt(process.env.SWA_EMU_PORT || "", 10) || 80;
+const host = process.env.SWA_EMU_HOST || "0.0.0.0";
+const address = `${host}:${port}`;
 console.log(`>> SWA listening on ${address}`);
-server.listen(process.env.SWA_EMU_PORT || 80, process.env.SWA_EMU_HOST || "0.0.0.0");
+server.listen(port, host);

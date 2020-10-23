@@ -6,7 +6,17 @@ import shell from "shelljs";
 import YAML from "yaml";
 import { detectRuntime, RuntimeType } from "./runtimes";
 
-export const response = ({ context, status, headers, cookies, body = "" }) => {
+type ResponseOptions = {
+  status?: number | null;
+  cookies?: { [key: string]: string } | null;
+  body?: string | null | { [key: string]: string | null };
+  headers?: { [key: string]: string | null } | null;
+  context?: {
+    bindingData: { [key: string]: string } | null;
+  } | null;
+};
+
+export const response = ({ context, status, headers, cookies, body = "" }: ResponseOptions) => {
   if (!context || !context.bindingData) {
     throw Error(
       "TypeError: context must be a valid Azure Functions context object. " +
@@ -66,7 +76,7 @@ export const response = ({ context, status, headers, cookies, body = "" }) => {
   return res;
 };
 
-export const validateCookie = (cookieValue) => {
+export const validateCookie = (cookieValue: any) => {
   if (typeof cookieValue !== "string") {
     throw Error("TypeError: cookie value must be a string");
   }
@@ -80,13 +90,14 @@ export const validateCookie = (cookieValue) => {
   return false;
 };
 
-export const getProviderFromCookie = (cookieValue) => {
+export type SwaProviders = "aad" | "github" | "twitter" | "facebook" | "google";
+export const getProviderFromCookie = (cookieValue: any): SwaProviders => {
   if (typeof cookieValue !== "string") {
     throw Error("TypeError: cookie value must be a string");
   }
 
   const cookies = cookie.parse(cookieValue);
-  return cookies.StaticWebAppsAuthCookie__PROVIDER;
+  return cookies.StaticWebAppsAuthCookie__PROVIDER as SwaProviders;
 };
 
 export const ɵɵUseGithubDevToken = async () => {
@@ -109,6 +120,10 @@ export const readConfigFile = () => {
       .readdirSync(githubActionFolder)
       .filter((file) => file.includes("azure-static-web-apps") && file.endsWith(".yml"))
       .pop();
+
+    if (!githubActionFile) {
+      throw Error("No SWA configuration build found. A SWA folder must contain a GitHub workflow file. Read more: https://bit.ly/31RAODu");
+    }
 
     githubActionFile = path.resolve(githubActionFolder, githubActionFile);
 
@@ -144,7 +159,8 @@ export const readConfigFile = () => {
     );
   }
 
-  const swaBuildConfig = swaYaml.jobs.build_and_deploy_job.steps.find((step) => step.uses && step.uses.includes("static-web-apps-deploy"));
+  // hacking this to have an `any` on the type in .find, mainly because a typescript definition for the YAML file is painful...
+  const swaBuildConfig = swaYaml.jobs.build_and_deploy_job.steps.find((step: any) => step.uses && step.uses.includes("static-web-apps-deploy"));
 
   if (!swaBuildConfig) {
     throw Error(

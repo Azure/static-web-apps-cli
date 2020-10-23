@@ -7,8 +7,9 @@ import builder from "../src/builder";
 import { readConfigFile } from "../src/utils";
 import { spawn } from "child_process";
 import { createRuntimeHost } from "../src/runtimeHost";
+import { dashboard } from "../src/dashboard";
 
-const EMU_PORT = 80;
+const EMU_PORT = "80";
 const AUTH_PORT = 4242;
 const API_PORT = 7071;
 const APP_PORT = 4200;
@@ -21,8 +22,8 @@ program
   .option("--api-uri <apiUri>", "set API uri", `http://localhost:${API_PORT}`)
   .option("--api-prefix <apiPrefix>", "set API prefix", "api")
   .option("--app-uri <appUri>", "set APP uri", `http://localhost:${APP_PORT}`)
-  .option("--use-api <useApi>", "Use running API dev server", null)
-  .option("--use-app <useApp>", "Use running APP dev server", null)
+  .option("--use-api <useApi>", "Use running API dev server", undefined)
+  .option("--use-app <useApp>", "Use running APP dev server", undefined)
   .option("--host <host>", "set emulator host address", "0.0.0.0")
   .option("--port <port>", "set emulator port value", EMU_PORT)
   .option("--build", "build the API and APP before starting the emulator", false)
@@ -110,8 +111,7 @@ if (program.build) {
 if (program.ui) {
   // print the dashboard UI
 
-  import { dashboard } from "../src/dashboard";
-  const spawnx = (command, args) =>
+  const spawnx = (command: string, args: string[]) =>
     spawn(`${command}`, args, {
       shell: true,
       env: { ...process.env, ...envVarsObj },

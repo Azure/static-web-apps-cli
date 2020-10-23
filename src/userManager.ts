@@ -1,7 +1,18 @@
-import { users } from "./users";
-import { getProviderFromCookie } from "./utils";
+import { getProviderFromCookie, SwaProviders } from "./utils";
 
-export const currentUser = (cookie) => {
+type MockUser = {
+  identityProvider: string;
+  userId: string;
+  userDetails: string;
+  userRoles: string[];
+};
+
+type MockUsers = {
+  [key in SwaProviders]: MockUser;
+};
+const users: MockUsers = require("./users.json");
+
+export const currentUser = (cookie?: string) => {
   const provider = getProviderFromCookie(cookie);
   return users[provider] || null;
 };

@@ -7,7 +7,7 @@ export enum RuntimeType {
   unknown = "unknown",
 };
 
-export const detectRuntime = (app_location) => {
+export const detectRuntime = (app_location: string) => {
   if (fs.existsSync(app_location) === false) {
     console.error(`The provided "app_location" was not found. Can't detect runtime!`);
     console.error(app_location);
