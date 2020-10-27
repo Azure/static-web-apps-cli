@@ -7,13 +7,7 @@ import YAML from "yaml";
 import { detectRuntime, RuntimeType } from "./runtimes";
 
 type ResponseOptions = {
-  status?: number | null;
-  cookies?: { [key: string]: string } | null;
-  body?: string | null | { [key: string]: string | null };
-  headers?: { [key: string]: string | null } | null;
-  context?: {
-    bindingData: { [key: string]: string } | null;
-  } | null;
+  [key: string]: any;
 };
 
 export const response = ({ context, status, headers, cookies, body = "" }: ResponseOptions) => {
@@ -193,10 +187,11 @@ export const readConfigFile = () => {
   app_artifact_location = path.normalize(app_artifact_location);
 
   const detectedRuntimeType = detectRuntime(app_location);
-  if (detectedRuntimeType === RuntimeType.node) {
-    app_artifact_location = path.join(app_location, app_artifact_location);
-  } else {
+  if (detectedRuntimeType === RuntimeType.dotnet) {
+    // TODO: work out what runtime is being used for .NET rather than hard-coded
     app_artifact_location = path.join(app_location, "bin", "Debug", "netstandard2.1", "publish", app_artifact_location);
+  } else {
+    app_artifact_location = path.join(app_location, app_artifact_location);
   }
 
   const config = {
