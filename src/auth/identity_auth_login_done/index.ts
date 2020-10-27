@@ -1,12 +1,13 @@
-const { response } = require("../../utils");
-const jwt = require("jsonwebtoken");
+import { AzureFunction, HttpRequest } from "@azure/functions";
+import { response } from "../../utils";
+import jwt from "jsonwebtoken";
 const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `http://localhost:4242`;
-const { currentUser } = require("../../userManager");
+import { currentUser } from "../../userManager";
 
 const jwtKey = "123";
 const jwtExpirySeconds = 300;
 
-module.exports = async function (context, req) {
+const httpTrigger: AzureFunction = function (context, req: HttpRequest) {
   const { cookie } = req.headers;
   const payload = {
     ...currentUser(cookie),
@@ -46,3 +47,5 @@ module.exports = async function (context, req) {
       <script>f.submit();</script>`,
   });
 };
+
+export default httpTrigger;

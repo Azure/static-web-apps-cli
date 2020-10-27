@@ -1,7 +1,8 @@
-const { response } = require("../../utils");
+import { AzureFunction, HttpRequest } from "@azure/functions";
+import { response } from "../../utils";
 const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `http://localhost:4242`;
 
-module.exports = async function (context, req) {
+const httpTrigger: AzureFunction = function (context, req: HttpRequest) {
   const { hostName, post_logout_redirect_uri = "/" } = req.query;
 
   const location = `${SWA_EMU_AUTH_URI}/.auth/logout?post_login_redirect_uri=${post_logout_redirect_uri}`;
@@ -25,3 +26,5 @@ module.exports = async function (context, req) {
     },
   });
 };
+
+export default httpTrigger;
