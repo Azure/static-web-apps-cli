@@ -48,7 +48,7 @@ const { app_artifact_location, api_location } = readConfigFile();
 
 const envVarsObj = {
   // set env vars for current command
-  StaticWebAppsAuthCookie: 123,
+  StaticWebAppsAuthCookie: "123",
   StaticWebAppsAuthContextCookie: "abc",
   AppServiceAuthSession: "1a2b3c",
   DEBUG: program.debug ? "*" : "",
