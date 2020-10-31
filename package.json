@@ -6,11 +6,11 @@
     "release": "release-it --preRelease=alpha",
     "test": "jest",
     "build": "tsc",
-    "clean": "rm bin/*.js && rm src/*.js"
+    "prebuild": "rm -fr dist"
   },
   "bin": {
-    "swa": "./bin/index.js",
-    "swa-emu": "./bin/index.js"
+    "swa": "./dist/cli.js",
+    "swa-emu": "./dist/cli.js"
   },
   "author": "Wassim Chegham <github@wassim.dev>",
   "dependencies": {

@@ -1,5 +1,5 @@
 import { AzureFunction, HttpRequest } from "@azure/functions";
-import { response, validateCookie, getProviderFromCookie } from "../../utils";
+import { response, validateCookie } from "../../utils";
 import { currentUser } from "../../userManager";
 
 const httpTrigger: AzureFunction = function (context, req: HttpRequest) {

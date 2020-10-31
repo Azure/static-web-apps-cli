@@ -42,7 +42,4 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-bin/*.js
-bin/*.map
-src/**/*.js
-src/**/*.map
+dist

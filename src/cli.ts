@@ -3,11 +3,11 @@
 import shell from "shelljs";
 import path from "path";
 import program from "commander";
-import builder from "../src/builder";
-import { readConfigFile } from "../src/utils";
+import builder from "./builder";
+import { readConfigFile } from "./utils";
 import { spawn } from "child_process";
-import { createRuntimeHost } from "../src/runtimeHost";
-import { dashboard } from "../src/dashboard";
+import { createRuntimeHost } from "./runtimeHost";
+import { dashboard } from "./dashboard";
 
 const EMU_PORT = "80";
 const AUTH_PORT = 4242;
@@ -146,7 +146,7 @@ if (program.ui) {
       cwd: path.resolve(__dirname, ".."),
       env: { ...process.env, ...envVarsObj },
     },
-    (code, stdout, stderr) => {
+    (_code, _stdout, stderr) => {
       if (stderr.length) {
         console.error(stderr);
       }

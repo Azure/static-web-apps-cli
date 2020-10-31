@@ -404,7 +404,7 @@ describe("Utils", () => {
 
   describe("readConfigFile()", () => {
     it("config file not found should throw", () => {
-      const mockExit = jest.spyOn(shell, "exit").mockImplementation(((_) => {}) as (code?: number | undefined) => never);
+      jest.spyOn(shell, "exit").mockImplementation(((_) => {}) as (code?: number | undefined) => never);
       expect(() => readConfigFile()).toThrow(/TypeError: GitHub action file content should be a string/);
     });
 

@@ -2,7 +2,7 @@ import { AzureFunction, HttpRequest } from "@azure/functions";
 import { response } from "../../utils";
 const SWA_EMU_HOST = "http://localhost:" + process.env.SWA_EMU_PORT;
 
-const httpTrigger: AzureFunction = function (context, req: HttpRequest) {
+const httpTrigger: AzureFunction = function (context, _req: HttpRequest) {
   context.res = response({
     context,
     status: 302,
