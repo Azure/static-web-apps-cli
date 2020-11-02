@@ -160,6 +160,7 @@ const server = http.createServer(function (req, res) {
 
     proxyApp.web(req, res, {
       target,
+      secure: false,
     });
 
     proxyApp.on("error", function (err, req, res) {
