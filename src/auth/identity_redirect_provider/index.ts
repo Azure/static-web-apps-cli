@@ -2,7 +2,7 @@ import { AzureFunction, HttpRequest } from "@azure/functions";
 import { response } from "../../utils";
 const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `http://localhost:4242`;
 
-const httpTrigger: AzureFunction = function (context, req: HttpRequest) {
+const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
   const { provider } = context.bindingData;
   const { hostName, post_login_redirect_uri = "/.auth/login/done" } = req.query;
 

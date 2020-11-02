@@ -14,7 +14,7 @@ const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
 
   switch (provider) {
     case "github":
-      client_id = process.env.GITHUB_CLIENT_ID;
+      client_id = process.env.GITHUB_CLIENT_ID || "";
 
       //**** GITHUB NOTICE: start */
       if (!client_id) {

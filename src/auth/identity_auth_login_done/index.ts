@@ -7,7 +7,7 @@ import { currentUser } from "../../userManager";
 const jwtKey = "123";
 const jwtExpirySeconds = 300;
 
-const httpTrigger: AzureFunction = function (context, req: HttpRequest) {
+const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
   const { cookie } = req.headers;
   const payload = {
     ...currentUser(cookie),
