@@ -85,10 +85,10 @@ const startCommand = [
   `-c 'bgYellow.bold,bgMagenta.bold,bgCyan.bold,bgGreen.bold'`,
 
   // start the reverse proxy
-  `"node ./src/proxy.js"`,
+  `"node ./dist/proxy.js"`,
 
   // emulate auth
-  `"(cd ./src/auth/; func start --cors=* --port=${authUriPort})"`,
+  `"(cd ./dist/auth/; func start --cors=* --port=${authUriPort})"`,
 
   // serve the app
   `"${serveStaticContent}"`,
@@ -127,11 +127,11 @@ if (program.ui) {
   dashboard.stream("functions", functions);
 
   // start auth
-  const auth = spawnx(`(cd ./src/auth/; func start --cors=* --port=${authUriPort})`, []);
+  const auth = spawnx(`(cd ./dist/auth/; func start --cors=* --port=${authUriPort})`, []);
   dashboard.stream("auth", auth);
 
   // start proxy
-  const status = spawnx(`node`, [`./src/proxy`]);
+  const status = spawnx(`node`, [`./dist/proxy`]);
   dashboard.stream("status", status);
 
   process.on("exit", () => {
