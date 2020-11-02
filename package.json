@@ -6,7 +6,8 @@
     "release": "release-it --preRelease=alpha",
     "test": "jest",
     "build": "tsc",
-    "prebuild": "rm -fr dist"
+    "prebuild": "rm -fr dist",
+    "watch": "tsc --watch"
   },
   "bin": {
     "swa": "./dist/cli.js",
