@@ -1,4 +1,3 @@
-// @ts-check
 import { ChildProcessWithoutNullStreams } from "child_process";
 import blessed from "blessed";
 
