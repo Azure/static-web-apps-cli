@@ -79,7 +79,7 @@ const server = http.createServer(function (req, res) {
     // Wanting a specific status code but no attached route
     else if (userDefinedRoute.statusCode && !userDefinedRoute.serve) {
       if (userDefinedRoute.statusCode === 404) {
-        const file404 = path.resolve(__dirname, "404.html");
+        const file404 = path.resolve(__dirname, "..", "mock-pages", "404.html");
         serveStatic(file404, res);
         return;
       } else {
