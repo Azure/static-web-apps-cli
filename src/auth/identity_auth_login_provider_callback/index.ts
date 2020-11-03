@@ -1,9 +1,8 @@
-const { response } = require("../../utils");
+import { AzureFunction, HttpRequest } from "@azure/functions";
+import { response } from "../../utils";
 const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `http://localhost:4242`;
 
-module.exports = async function (context, req) {
-  let { state, code, nonce } = req.query;
-
+const httpTrigger: AzureFunction = async function (context, _req: HttpRequest) {
   const location = `${SWA_EMU_AUTH_URI}/.auth/login/done`;
   context.res = response({
     context,
@@ -35,3 +34,5 @@ module.exports = async function (context, req) {
     },
   });
 };
+
+export default httpTrigger;

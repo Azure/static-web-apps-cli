@@ -1,16 +1,13 @@
-const path = require("path");
-const fs = require("fs");
+import path from "path";
+import fs from "fs";
 
-const RuntimeType = {
-  dotnet: "dotnet",
-  node: "node",
-  unknown: "unknown",
+export enum RuntimeType {
+  dotnet = "dotnet",
+  node ="node",
+  unknown = "unknown",
 };
 
-module.exports.RuntimeType = RuntimeType;
-
-module.exports.detectRuntime = (app_location) => {
-
+export const detectRuntime = (app_location: string) => {
   if (fs.existsSync(app_location) === false) {
     console.error(`The provided "app_location" was not found. Can't detect runtime!`);
     console.error(app_location);

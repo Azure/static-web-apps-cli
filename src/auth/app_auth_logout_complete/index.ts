@@ -1,7 +1,8 @@
-const { response } = require("../../utils");
+import { AzureFunction, HttpRequest } from "@azure/functions";
+import { response } from "../../utils";
 const SWA_EMU_HOST = "http://localhost:" + process.env.SWA_EMU_PORT;
 
-module.exports = async function (context, req) {
+const httpTrigger: AzureFunction = async function (context, _req: HttpRequest) {
   context.res = response({
     context,
     status: 302,
@@ -39,3 +40,5 @@ module.exports = async function (context, req) {
     },
   });
 };
+
+export default httpTrigger;

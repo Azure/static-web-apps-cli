@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 
-const shell = require("shelljs");
-const path = require("path");
-const program = require("commander");
-const builder = require("../src/builder");
-const { readConfigFile } = require("../src/utils");
-const { spawn } = require("child_process");
-const { createRuntimeHost } = require("../src/runtimeHost");
+import shell from "shelljs";
+import path from "path";
+import program from "commander";
+import builder from "./builder";
+import { readConfigFile } from "./utils";
+import { spawn } from "child_process";
+import { createRuntimeHost } from "./runtimeHost";
+import { dashboard } from "./dashboard";
 
-const EMU_PORT = 80;
+const EMU_PORT = "80";
 const AUTH_PORT = 4242;
 const API_PORT = 7071;
 const APP_PORT = 4200;
@@ -21,8 +22,8 @@ program
   .option("--api-uri <apiUri>", "set API uri", `http://localhost:${API_PORT}`)
   .option("--api-prefix <apiPrefix>", "set API prefix", "api")
   .option("--app-uri <appUri>", "set APP uri", `http://localhost:${APP_PORT}`)
-  .option("--use-api <useApi>", "Use running API dev server", null)
-  .option("--use-app <useApp>", "Use running APP dev server", null)
+  .option("--use-api <useApi>", "Use running API dev server", undefined)
+  .option("--use-app <useApp>", "Use running APP dev server", undefined)
   .option("--host <host>", "set emulator host address", "0.0.0.0")
   .option("--port <port>", "set emulator port value", EMU_PORT)
   .option("--build", "build the API and APP before starting the emulator", false)
@@ -47,7 +48,7 @@ const { app_artifact_location, api_location } = readConfigFile();
 
 const envVarsObj = {
   // set env vars for current command
-  StaticWebAppsAuthCookie: 123,
+  StaticWebAppsAuthCookie: "123",
   StaticWebAppsAuthContextCookie: "abc",
   AppServiceAuthSession: "1a2b3c",
   DEBUG: program.debug ? "*" : "",
@@ -84,10 +85,10 @@ const startCommand = [
   `-c 'bgYellow.bold,bgMagenta.bold,bgCyan.bold,bgGreen.bold'`,
 
   // start the reverse proxy
-  `"node ./src/proxy.js"`,
+  `"node ./dist/proxy.js"`,
 
   // emulate auth
-  `"(cd ./src/auth/; func start --cors=* --port=${authUriPort})"`,
+  `"(cd ./dist/auth/; func start --cors=* --port=${authUriPort})"`,
 
   // serve the app
   `"${serveStaticContent}"`,
@@ -110,8 +111,7 @@ if (program.build) {
 if (program.ui) {
   // print the dashboard UI
 
-  const { dashboard } = require("../src/dashboard");
-  const spawnx = (command, args) =>
+  const spawnx = (command: string, args: string[]) =>
     spawn(`${command}`, args, {
       shell: true,
       env: { ...process.env, ...envVarsObj },
@@ -127,11 +127,11 @@ if (program.ui) {
   dashboard.stream("functions", functions);
 
   // start auth
-  const auth = spawnx(`(cd ./src/auth/; func start --cors=* --port=${authUriPort})`, []);
+  const auth = spawnx(`(cd ./dist/auth/; func start --cors=* --port=${authUriPort})`, []);
   dashboard.stream("auth", auth);
 
   // start proxy
-  const status = spawnx(`node`, [`./src/proxy`]);
+  const status = spawnx(`node`, [`./dist/proxy`]);
   dashboard.stream("status", status);
 
   process.on("exit", () => {
@@ -146,7 +146,7 @@ if (program.ui) {
       cwd: path.resolve(__dirname, ".."),
       env: { ...process.env, ...envVarsObj },
     },
-    (code, stdout, stderr) => {
+    (_code, _stdout, stderr) => {
       if (stderr.length) {
         console.error(stderr);
       }

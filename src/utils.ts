@@ -1,12 +1,16 @@
-const cookie = require("cookie");
-const { default: fetch } = require("node-fetch");
-const path = require("path");
-const fs = require("fs");
-const shell = require("shelljs");
-const YAML = require("yaml");
-const { detectRuntime, RuntimeType } = require("./runtimes");
+import cookie from "cookie";
+import fetch from "node-fetch";
+import path from "path";
+import fs from "fs";
+import shell from "shelljs";
+import YAML from "yaml";
+import { detectRuntime, RuntimeType } from "./runtimes";
 
-module.exports.response = ({ context, status, headers, cookies, body = "" }) => {
+type ResponseOptions = {
+  [key: string]: any;
+};
+
+export const response = ({ context, status, headers, cookies, body = "" }: ResponseOptions) => {
   if (!context || !context.bindingData) {
     throw Error(
       "TypeError: context must be a valid Azure Functions context object. " +
@@ -66,7 +70,7 @@ module.exports.response = ({ context, status, headers, cookies, body = "" }) => 
   return res;
 };
 
-module.exports.validateCookie = (cookieValue) => {
+export const validateCookie = (cookieValue: any) => {
   if (typeof cookieValue !== "string") {
     throw Error("TypeError: cookie value must be a string");
   }
@@ -80,16 +84,17 @@ module.exports.validateCookie = (cookieValue) => {
   return false;
 };
 
-module.exports.getProviderFromCookie = (cookieValue) => {
+export type SwaProviders = "aad" | "github" | "twitter" | "facebook" | "google";
+export const getProviderFromCookie = (cookieValue: any): SwaProviders => {
   if (typeof cookieValue !== "string") {
     throw Error("TypeError: cookie value must be a string");
   }
 
   const cookies = cookie.parse(cookieValue);
-  return cookies.StaticWebAppsAuthCookie__PROVIDER;
+  return cookies.StaticWebAppsAuthCookie__PROVIDER as SwaProviders;
 };
 
-module.exports.ɵɵUseGithubDevToken = async () => {
+export const ɵɵUseGithubDevToken = async () => {
   console.log("!!!! Notice: You are using a dev GitHub token. You should create and use your own!");
   console.log("!!!! Read https://docs.github.com/en/developers/apps/building-oauth-apps");
   const swaTokens = `https://gist.githubusercontent.com/manekinekko/7fbfc79a85b0f1f312715f1beda26236/raw/740c51aac5b1fb970e69408067a49907485d1e31/swa-emu.json`;
@@ -98,7 +103,7 @@ module.exports.ɵɵUseGithubDevToken = async () => {
   return token.github;
 };
 
-module.exports.readConfigFile = () => {
+export const readConfigFile = () => {
   const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
 
   // find the SWA GitHub action file
@@ -109,6 +114,10 @@ module.exports.readConfigFile = () => {
       .readdirSync(githubActionFolder)
       .filter((file) => file.includes("azure-static-web-apps") && file.endsWith(".yml"))
       .pop();
+
+    if (!githubActionFile) {
+      throw Error("No SWA configuration build found. A SWA folder must contain a GitHub workflow file. Read more: https://bit.ly/31RAODu");
+    }
 
     githubActionFile = path.resolve(githubActionFolder, githubActionFile);
 
@@ -144,7 +153,8 @@ module.exports.readConfigFile = () => {
     );
   }
 
-  const swaBuildConfig = swaYaml.jobs.build_and_deploy_job.steps.find((step) => step.uses && step.uses.includes("static-web-apps-deploy"));
+  // hacking this to have an `any` on the type in .find, mainly because a typescript definition for the YAML file is painful...
+  const swaBuildConfig = swaYaml.jobs.build_and_deploy_job.steps.find((step: any) => step.uses && step.uses.includes("static-web-apps-deploy"));
 
   if (!swaBuildConfig) {
     throw Error(
@@ -177,10 +187,11 @@ module.exports.readConfigFile = () => {
   app_artifact_location = path.normalize(app_artifact_location);
 
   const detectedRuntimeType = detectRuntime(app_location);
-  if (detectedRuntimeType === RuntimeType.node) {
-    app_artifact_location = path.join(app_location, app_artifact_location);
-  } else {
+  if (detectedRuntimeType === RuntimeType.dotnet) {
+    // TODO: work out what runtime is being used for .NET rather than hard-coded
     app_artifact_location = path.join(app_location, "bin", "Debug", "netstandard2.1", "publish", app_artifact_location);
+  } else {
+    app_artifact_location = path.join(app_location, app_artifact_location);
   }
 
   const config = {

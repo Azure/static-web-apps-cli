@@ -1,15 +1,15 @@
-const fs = require("fs");
-const path = require("path");
-const shell = require("shelljs");
-const { readConfigFile } = require("./utils");
-const { detectRuntime, RuntimeType } = require("./runtimes");
+import fs from "fs";
+import path from "path";
+import shell from "shelljs";
+import { readConfigFile } from "./utils";
+import { detectRuntime, RuntimeType } from "./runtimes";
 
-const exec = (command, options = {}) => shell.exec(command, { async: false, ...options });
+const exec = (command: string, options = {}) => shell.exec(command, { async: false, ...options });
 
 // use the concurrently binary provided by this emulator
 const concurrentlyBin = path.resolve(__dirname, "..", "./node_modules/.bin/concurrently");
 
-const nodeBuilder = (location, buildCommand, name, colour) => {
+const nodeBuilder = (location: string, buildCommand: string, name: string, colour: string) => {
   const appBuildCommand = [
     "CI=1",
     concurrentlyBin,
@@ -24,7 +24,7 @@ const nodeBuilder = (location, buildCommand, name, colour) => {
   });
 };
 
-const dotnetBuilder = (location, name, colour) => {
+const dotnetBuilder = (location: string, name: string, colour: string) => {
   const appBuildCommand = [
     "CI=1",
     concurrentlyBin,
@@ -39,7 +39,7 @@ const dotnetBuilder = (location, name, colour) => {
   });
 };
 
-module.exports = () => {
+const builder = () => {
   const { app_location, api_location, app_build_command, api_build_command } = readConfigFile();
   const runtimeType = detectRuntime(app_location);
 
@@ -84,3 +84,4 @@ module.exports = () => {
     console.error(stderr);
   }
 };
+export default builder;

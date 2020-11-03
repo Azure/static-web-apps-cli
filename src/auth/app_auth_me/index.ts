@@ -1,7 +1,8 @@
-const { response, validateCookie, getProviderFromCookie } = require("../../utils");
-const { currentUser } = require("../../userManager");
+import { AzureFunction, HttpRequest } from "@azure/functions";
+import { response, validateCookie } from "../../utils";
+import { currentUser } from "../../userManager";
 
-module.exports = async function (context, req) {
+const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
   const { cookie } = req.headers;
 
   if (!cookie || !validateCookie(cookie)) {
@@ -27,3 +28,5 @@ module.exports = async function (context, req) {
     },
   });
 };
+
+export default httpTrigger;

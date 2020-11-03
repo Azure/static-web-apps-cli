@@ -1,27 +1,12 @@
-const fs = require("fs");
-const path = require("path");
-const { Volume } = require("memfs");
-const shell = require("shelljs");
+import mockFs from "mock-fs";
+import path from "path";
+import shell from "shelljs";
 
-const { response, validateCookie, getProviderFromCookie, readConfigFile } = require("./utils");
-
-// mock fs
-jest.mock(`fs`, () => {
-  const fs = jest.requireActual(`fs`);
-  const unionfs = require(`unionfs`).default;
-  unionfs.reset = () => {
-    unionfs.fss = [fs];
-  };
-  return unionfs.use(fs);
-});
+import { response, validateCookie, getProviderFromCookie, readConfigFile } from "./utils";
 
 describe("Utils", () => {
   beforeEach(() => {
-    delete process.env.DEBUG;
-  });
-
-  afterEach(() => {
-    fs.reset();
+    process.env.DEBUG = "";
   });
 
   describe("response()", () => {
@@ -312,7 +297,7 @@ describe("Utils", () => {
         },
       });
       expect(res.cookies).toBeDefined();
-      expect(res.cookies.foo).toBe("bar");
+      expect(res.cookies!.foo).toBe("bar");
     });
   });
 
@@ -419,12 +404,12 @@ describe("Utils", () => {
 
   describe("readConfigFile()", () => {
     it("config file not found should throw", () => {
-      const mockExit = jest.spyOn(shell, "exit").mockImplementation(() => {});
+      jest.spyOn(shell, "exit").mockImplementation(((_) => {}) as (code?: number | undefined) => never);
       expect(() => readConfigFile()).toThrow(/TypeError: GitHub action file content should be a string/);
     });
 
     it("config file not found should process.exit(0)", () => {
-      const mockExit = jest.spyOn(shell, "exit").mockImplementation(() => {});
+      const mockExit = jest.spyOn(shell, "exit").mockImplementation(((_) => {}) as (code?: number | undefined) => never);
 
       // we know this will throw. Check previous test
       try {
@@ -435,149 +420,122 @@ describe("Utils", () => {
     });
 
     it("config file with wrong filename should process.exit(0)", () => {
-      const mockExit = jest.spyOn(shell, "exit").mockImplementation(() => {});
-      fs.use(
-        Volume.fromJSON(
-          {
-            "wrong-file-name-pattern.yml": "",
-          },
-          ".github/workflows"
-        )
-      );
+      const mockExit = jest.spyOn(shell, "exit").mockImplementation(((_) => {}) as (code?: number | undefined) => never);
+
+      mockFs({
+        ".github/workflows/wrong-file-name-pattern.yml": "",
+      });
 
       expect(() => readConfigFile()).toThrow(/TypeError: GitHub action file content should be a string/);
       expect(mockExit).toHaveBeenCalledWith(0);
+
+      mockFs.restore();
     });
 
     it("invalid YAML file should throw", () => {
-      const mockExit = jest.spyOn(shell, "exit").mockImplementation(() => {});
-      fs.use(
-        Volume.fromJSON(
-          {
-            "azure-static-web-apps__not-valid.yml": "",
-          },
-          ".github/workflows"
-        )
-      );
+      const mockExit = jest.spyOn(shell, "exit").mockImplementation(((_) => {}) as (code?: number | undefined) => never);
+      mockFs({
+        ".github/workflows/azure-static-web-apps__not-valid.yml": "",
+      });
 
       expect(() => readConfigFile()).toThrow(/could not parse the SWA workflow file/);
       expect(mockExit).toHaveBeenCalledWith(0);
+
+      mockFs.restore();
     });
 
     describe("checking workflow properties", () => {
       it("missing property 'jobs' should throw", () => {
-        const mockExit = jest.spyOn(shell, "exit").mockImplementation(() => {});
-        fs.use(
-          Volume.fromJSON(
-            {
-              "azure-static-web-apps__not-valid.yml": `name: Azure Static Web Apps CI/CD`,
-            },
-            ".github/workflows"
-          )
-        );
+        const mockExit = jest.spyOn(shell, "exit").mockImplementation(((_) => {}) as (code?: number | undefined) => never);
+        mockFs({
+          ".github/workflows/azure-static-web-apps__not-valid.yml": `name: Azure Static Web Apps CI/CD`,
+        });
 
         expect(() => readConfigFile()).toThrow(/missing property 'jobs'/);
         expect(mockExit).toHaveBeenCalledWith(0);
+
+        mockFs.restore();
       });
 
       it("missing property 'jobs.build_and_deploy_job' should throw", () => {
-        const mockExit = jest.spyOn(shell, "exit").mockImplementation(() => {});
-        fs.use(
-          Volume.fromJSON(
-            {
-              "azure-static-web-apps.yml": `
+        const mockExit = jest.spyOn(shell, "exit").mockImplementation(((_) => {}) as (code?: number | undefined) => never);
+        mockFs({
+          ".github/workflows/azure-static-web-apps.yml": `
 jobs:
   invalid_property:
 `,
-            },
-            ".github/workflows"
-          )
-        );
-
+        });
         expect(() => readConfigFile()).toThrow(/missing property 'jobs.build_and_deploy_job'/);
         expect(mockExit).toHaveBeenCalledWith(0);
+
+        mockFs.restore();
       });
 
       it("missing property 'jobs.build_and_deploy_job.steps' should throw", () => {
-        const mockExit = jest.spyOn(shell, "exit").mockImplementation(() => {});
-        fs.use(
-          Volume.fromJSON(
-            {
-              "azure-static-web-apps.yml": `
+        const mockExit = jest.spyOn(shell, "exit").mockImplementation(((_) => {}) as (code?: number | undefined) => never);
+        mockFs({
+          ".github/workflows/azure-static-web-apps.yml": `
 jobs:
   build_and_deploy_job:
     invalid_property:
 `,
-            },
-            ".github/workflows"
-          )
-        );
+        });
 
         expect(() => readConfigFile()).toThrow(/missing property 'jobs.build_and_deploy_job.steps'/);
         expect(mockExit).toHaveBeenCalledWith(0);
+
+        mockFs.restore();
       });
 
       it("invalid property 'jobs.build_and_deploy_job.steps' should throw", () => {
-        fs.use(
-          Volume.fromJSON(
-            {
-              "azure-static-web-apps.yml": `
+        mockFs({
+          ".github/workflows/azure-static-web-apps.yml": `
 jobs:
   build_and_deploy_job:
     steps:
 `,
-            },
-            ".github/workflows"
-          )
-        );
-
+        });
         expect(() => readConfigFile()).toThrow(/missing property 'jobs.build_and_deploy_job.steps'/);
+
+        mockFs.restore();
       });
 
       it("invalid property 'jobs.build_and_deploy_job.steps[]' should throw", () => {
-        fs.use(
-          Volume.fromJSON(
-            {
-              "azure-static-web-apps.yml": `
+        mockFs({
+          ".github/workflows/azure-static-web-apps.yml": `
 jobs:
   build_and_deploy_job:
     steps:
       - name: Build And Deploy
 `,
-            },
-            ".github/workflows"
-          )
-        );
+        });
 
         expect(() => readConfigFile()).toThrow(/invalid property 'jobs.build_and_deploy_job.steps\[\]'/);
+
+        mockFs.restore();
       });
 
       it("missing property 'jobs.build_and_deploy_job.steps[].with' should throw", () => {
-        fs.use(
-          Volume.fromJSON(
-            {
-              "azure-static-web-apps.yml": `
+        mockFs({
+          ".github/workflows/azure-static-web-apps.yml": `
 jobs:
   build_and_deploy_job:
     steps:
       - name: Build And Deploy
         uses: Azure/static-web-apps-deploy@v0.0.1-preview
 `,
-            },
-            ".github/workflows"
-          )
-        );
+        });
 
         expect(() => readConfigFile()).toThrow(/missing property 'jobs.build_and_deploy_job.steps\[\].with'/);
+
+        mockFs.restore();
       });
     });
 
     describe("checking SWA properties", () => {
       it("property 'app_location' should be set", () => {
-        fs.use(
-          Volume.fromJSON(
-            {
-              "azure-static-web-apps.yml": `
+        mockFs({
+          ".github/workflows/azure-static-web-apps.yml": `
 jobs:
   build_and_deploy_job:
     steps:
@@ -586,19 +544,16 @@ jobs:
         with:
           app_location: "/"
 `,
-            },
-            ".github/workflows"
-          )
-        );
+        });
 
         expect(readConfigFile().app_location).toBe(path.normalize(process.cwd() + "/"));
+
+        mockFs.restore();
       });
 
       it("property 'app_location' should be set to '/' if missing", () => {
-        fs.use(
-          Volume.fromJSON(
-            {
-              "azure-static-web-apps.yml": `
+        mockFs({
+          ".github/workflows/azure-static-web-apps.yml": `
 jobs:
   build_and_deploy_job:
     steps:
@@ -607,19 +562,16 @@ jobs:
         with:
           foo: bar
 `,
-            },
-            ".github/workflows"
-          )
-        );
+        });
 
         expect(readConfigFile().app_location).toBe(path.normalize(process.cwd() + "/"));
+
+        mockFs.restore();
       });
 
       it("property 'api_location' should be set", () => {
-        fs.use(
-          Volume.fromJSON(
-            {
-              "azure-static-web-apps.yml": `
+        mockFs({
+          ".github/workflows/azure-static-web-apps.yml": `
 jobs:
   build_and_deploy_job:
     steps:
@@ -628,19 +580,16 @@ jobs:
         with:
           api_location: "/api"
 `,
-            },
-            ".github/workflows"
-          )
-        );
+        });
 
         expect(readConfigFile().api_location).toBe(path.normalize(process.cwd() + "/api"));
+
+        mockFs.restore();
       });
 
       it("property 'api_location' should be set to 'api' if missing", () => {
-        fs.use(
-          Volume.fromJSON(
-            {
-              "azure-static-web-apps.yml": `
+        mockFs({
+          ".github/workflows/azure-static-web-apps.yml": `
 jobs:
   build_and_deploy_job:
     steps:
@@ -649,19 +598,16 @@ jobs:
         with:
           foo: bar
 `,
-            },
-            ".github/workflows"
-          )
-        );
+        });
 
         expect(readConfigFile().api_location).toBe(path.normalize(process.cwd() + "/api"));
+
+        mockFs.restore();
       });
 
       it("property 'app_artifact_location' should be set", () => {
-        fs.use(
-          Volume.fromJSON(
-            {
-              "azure-static-web-apps.yml": `
+        mockFs({
+          ".github/workflows/azure-static-web-apps.yml": `
 jobs:
   build_and_deploy_job:
     steps:
@@ -670,19 +616,16 @@ jobs:
         with:
           app_artifact_location: "/"
 `,
-            },
-            ".github/workflows"
-          )
-        );
+        });
 
         expect(readConfigFile().app_artifact_location).toBe(path.normalize(process.cwd() + "/"));
+
+        mockFs.restore();
       });
 
       it("property 'app_artifact_location' should be set to '/' if missing", () => {
-        fs.use(
-          Volume.fromJSON(
-            {
-              "azure-static-web-apps.yml": `
+        mockFs({
+          ".github/workflows/azure-static-web-apps.yml": `
 jobs:
   build_and_deploy_job:
     steps:
@@ -691,19 +634,16 @@ jobs:
         with:
           foo: bar
 `,
-            },
-            ".github/workflows"
-          )
-        );
+        });
 
         expect(readConfigFile().app_artifact_location).toBe(path.normalize(process.cwd() + "/"));
+
+        mockFs.restore();
       });
 
       it("property 'app_build_command' should be set", () => {
-        fs.use(
-          Volume.fromJSON(
-            {
-              "azure-static-web-apps.yml": `
+        mockFs({
+          ".github/workflows/azure-static-web-apps.yml": `
 jobs:
   build_and_deploy_job:
     steps:
@@ -712,19 +652,16 @@ jobs:
         with:
           app_build_command: "echo test"
 `,
-            },
-            ".github/workflows"
-          )
-        );
+        });
 
         expect(readConfigFile().app_build_command).toBe("echo test");
+
+        mockFs.restore();
       });
 
       it("property 'app_build_command' should be set to default if missing", () => {
-        fs.use(
-          Volume.fromJSON(
-            {
-              "azure-static-web-apps.yml": `
+        mockFs({
+          ".github/workflows/azure-static-web-apps.yml": `
 jobs:
   build_and_deploy_job:
     steps:
@@ -733,19 +670,16 @@ jobs:
         with:
           foo: bar
 `,
-            },
-            ".github/workflows"
-          )
-        );
+        });
 
         expect(readConfigFile().app_build_command).toBe("npm run build --if-present");
+
+        mockFs.restore();
       });
 
       it("property 'api_build_command' should be set", () => {
-        fs.use(
-          Volume.fromJSON(
-            {
-              "azure-static-web-apps.yml": `
+        mockFs({
+          ".github/workflows/azure-static-web-apps.yml": `
 jobs:
   build_and_deploy_job:
     steps:
@@ -754,19 +688,16 @@ jobs:
         with:
           api_build_command: "echo test"
 `,
-            },
-            ".github/workflows"
-          )
-        );
+        });
 
         expect(readConfigFile().api_build_command).toBe("echo test");
+
+        mockFs.restore();
       });
 
       it("property 'api_build_command' should be set to default if missing", () => {
-        fs.use(
-          Volume.fromJSON(
-            {
-              "azure-static-web-apps.yml": `
+        mockFs({
+          ".github/workflows/azure-static-web-apps.yml": `
 jobs:
   build_and_deploy_job:
     steps:
@@ -775,12 +706,11 @@ jobs:
         with:
           foo: bar
 `,
-            },
-            ".github/workflows"
-          )
-        );
+        });
 
         expect(readConfigFile().api_build_command).toBe("npm run build --if-present");
+
+        mockFs.restore();
       });
     });
   });
