@@ -19,6 +19,8 @@ const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
     algorithm: "HS256",
     expiresIn: jwtExpirySeconds,
   });
+  // This doesn't match the API, but we need to get the redir value across
+  const { post_login_redirect_uri = "" } = req.query;
 
   context.res = response({
     context,
@@ -37,7 +39,7 @@ const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
     },
     body: `
     <title>Working...</title>
-    <form id="f" method="POST" action="${SWA_EMU_AUTH_URI}/app/.auth/complete">
+    <form id="f" method="POST" action="${SWA_EMU_AUTH_URI}/app/.auth/complete?post_login_redirect_uri=${post_login_redirect_uri}">
       <input type="hidden" name="user_login_jwt" value="${user_login_jwt}" />
       <noscript>
         <p>Script is disabled.Click Submit to continue.</p>

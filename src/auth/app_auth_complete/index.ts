@@ -7,7 +7,7 @@ const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
 
   context.res = response({
     context,
-    status: 302,
+    status: 200,
     cookies: [
       {
         name: "StaticWebAppsAuthContextCookie",
@@ -27,8 +27,31 @@ const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
       },
     ],
     headers: {
-      location: `${SWA_EMU_HOST}/${post_login_redirect_uri}`,
+      "Content-Type": "text/html",
+      status: 200,
     },
+    body: `
+    <html>
+    <head>
+      <title>Working...</title>
+    </head>
+    <body>
+      <form
+        method="GET"
+        name="hiddenform"
+        action="${SWA_EMU_HOST}/${post_login_redirect_uri}"
+      >
+        <noscript
+          ><p>Script is disabled. Click Submit to continue.</p>
+          <input type="submit" value="Submit"
+        /></noscript>
+      </form>
+      <script language="javascript">
+        document.forms[0].submit();
+      </script>
+    </body>
+  </html>
+    `,
   });
 };
 
