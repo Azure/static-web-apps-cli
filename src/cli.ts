@@ -7,7 +7,7 @@ import builder from "./builder";
 import { readConfigFile } from "./utils";
 import { spawn } from "child_process";
 import { createRuntimeHost } from "./runtimeHost";
-import { dashboard } from "./dashboard";
+import { Dashboard } from "./dashboard";
 
 const EMU_PORT = "80";
 const AUTH_PORT = 4242;
@@ -110,6 +110,7 @@ if (program.build) {
 
 if (program.ui) {
   // print the dashboard UI
+  const dashboard = new Dashboard();
 
   const spawnx = (command: string, args: string[]) =>
     spawn(`${command}`, args, {

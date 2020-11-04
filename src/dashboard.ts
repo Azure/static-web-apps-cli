@@ -1,7 +1,7 @@
 import { ChildProcessWithoutNullStreams } from "child_process";
 import blessed from "blessed";
 
-export const dashboard = new (class Dashboard {
+export const Dashboard = class Dashboard {
   #screen: blessed.Widgets.Screen;
   #hosting: blessed.Widgets.Log;
   #functions: blessed.Widgets.Log;
@@ -113,4 +113,4 @@ export const dashboard = new (class Dashboard {
       });
     }
   }
-})();
+};
