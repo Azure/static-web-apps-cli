@@ -61,7 +61,6 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://npm.pkg.github.com/
           scope: "@manekinekko"
-      - run: npm ci
       - run: echo "registry=https://npm.pkg.github.com/@manekinekko" >> .npmrc
       - run: npm publish $(ls *.tgz)
         env:
