@@ -29,7 +29,6 @@ jobs:
   package:
     needs: [test]
     runs-on: ubuntu-18.04
-    # if: github.token != ''
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js 14.x
@@ -47,6 +46,12 @@ jobs:
             name: package
             path: "*.tgz"
 
+  publish:
+      name: "Publish to GitHub Packages"
+      needs: [package]
+      runs-on: ubuntu-18.04
+      if: github.repository_owner == 'manekinekko' # && github.token != ''
+      steps:
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ env.NODE_VERSION }}
