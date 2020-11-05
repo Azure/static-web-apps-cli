@@ -29,7 +29,7 @@ jobs:
   package:
     needs: [test]
     runs-on: ubuntu-18.04
-    if: github.token != ''
+    # if: github.token != ''
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js 14.x
@@ -46,3 +46,14 @@ jobs:
         with:
             name: package
             path: "*.tgz"
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: https://npm.pkg.github.com/
+          scope: "@${{ github.repository_owner }}"
+      - run: npm ci
+      - run: echo "registry=https://npm.pkg.github.com/@${{ github.repository_owner }}" >> .npmrc
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
