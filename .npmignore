@@ -1,1 +1,8 @@
 local.settings.json
+.vscode
+.github
+.release-it.json
+.editorconfig
+.tsconfig
+.nvmrc
+.prettierrc
