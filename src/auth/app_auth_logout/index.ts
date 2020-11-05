@@ -4,6 +4,7 @@ const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `http://localhost:4242`
 
 const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
   const cookie = req.headers.cookie;
+  const { post_logout_redirect_uri } = req.query;
 
   if (!cookie || !validateCookie(cookie)) {
     context.res = response({
@@ -27,7 +28,7 @@ const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
       },
     ],
     headers: {
-      location: `${SWA_EMU_AUTH_URI}/.redirect/logout?hostName=localhost`,
+      location: `${SWA_EMU_AUTH_URI}/.redirect/logout?hostName=localhost&post_logout_redirect_uri=${post_logout_redirect_uri}`,
     },
   });
 };
