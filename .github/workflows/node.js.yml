@@ -52,6 +52,10 @@ jobs:
       runs-on: ubuntu-18.04
       if: github.repository_owner == 'manekinekko' # && github.token != ''
       steps:
+      - name: Upload
+        uses: actions/download-artifact@v2
+        with:
+            name: package
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -59,6 +63,6 @@ jobs:
           scope: "@manekinekko"
       - run: npm ci
       - run: echo "registry=https://npm.pkg.github.com/@manekinekko" >> .npmrc
-      - run: npm publish
+      - run: npm publish $(ls *.tgz)
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
