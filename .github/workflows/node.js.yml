@@ -51,9 +51,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://npm.pkg.github.com/
-          scope: "@${{ github.repository_owner }}"
+          scope: "@manekinekko"
       - run: npm ci
-      - run: echo "registry=https://npm.pkg.github.com/@${{ github.repository_owner }}" >> .npmrc
+      - run: echo "registry=https://npm.pkg.github.com/@manekinekko" >> .npmrc
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
