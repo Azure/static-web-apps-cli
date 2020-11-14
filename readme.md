@@ -126,7 +126,7 @@ If you need to override the default values, provide the following options:
 
 The emulator supports local authentication flow and mocks the following providers:
 
-| Provider | [Endpoint](https://docs.microsoft.com/azure/static-web-apps/authentication-authorization?WT.mc_id=swa-emu-github-wachegha#login) | Local Emulation |
+| Provider | [Endpoint](https://docs.microsoft.com/azure/static-web-apps/authentication-authorization?WT.mc_id=javascript-0000-wachegha#login) | Local Emulation |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------- |
 | GitHub   | `.auth/login/github`                                                                                                             | ✅              |
 | Twitter  | `.auth/login/twitter`                                                                                                            | ✅              |
