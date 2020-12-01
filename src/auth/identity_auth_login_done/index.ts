@@ -1,4 +1,4 @@
-import { AzureFunction, HttpRequest } from "@azure/functions";
+
 import { response } from "../../utils";
 import jwt from "jsonwebtoken";
 const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `http://localhost:4242`;
@@ -7,7 +7,7 @@ import { currentUser } from "../../userManager";
 const jwtKey = "123";
 const jwtExpirySeconds = 300;
 
-const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
+const httpTrigger = async function (context: Context, req: ServerRequest) {
   const { cookie } = req.headers;
   const payload = {
     ...currentUser(cookie),

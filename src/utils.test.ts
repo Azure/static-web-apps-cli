@@ -17,16 +17,6 @@ describe("Utils", () => {
         });
       }).toThrow();
     });
-    it("context.bindingData = null", () => {
-      expect(() =>
-        response({
-          status: 200,
-          context: {
-            bindingData: null,
-          },
-        })
-      ).toThrow();
-    });
     it("context.bindingData = {foo:bar} (DEBUG off)", () => {
       expect(
         response({
@@ -302,30 +292,6 @@ describe("Utils", () => {
   });
 
   describe("validateCookie()", () => {
-    it("cookies = null", () => {
-      expect(() => {
-        validateCookie(null);
-      }).toThrow(/TypeError/);
-    });
-
-    it("cookies = undefined", () => {
-      expect(() => {
-        validateCookie(undefined);
-      }).toThrow(/TypeError/);
-    });
-
-    it("cookies = 123", () => {
-      expect(() => {
-        validateCookie(123);
-      }).toThrow(/TypeError/);
-    });
-
-    it("cookies = {}", () => {
-      expect(() => {
-        validateCookie({});
-      }).toThrow(/TypeError/);
-    });
-
     it("cookies = ''", () => {
       expect(validateCookie("")).toBe(false);
     });

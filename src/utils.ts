@@ -11,13 +11,6 @@ type ResponseOptions = {
 };
 
 export const response = ({ context, status, headers, cookies, body = "" }: ResponseOptions) => {
-  if (!context || !context.bindingData) {
-    throw Error(
-      "TypeError: context must be a valid Azure Functions context object. " +
-        "See https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-node#context-object"
-    );
-  }
-
   if (typeof status !== "number") {
     throw Error("TypeError: status code must be a number.");
   }
@@ -70,9 +63,9 @@ export const response = ({ context, status, headers, cookies, body = "" }: Respo
   return res;
 };
 
-export const validateCookie = (cookieValue: any) => {
+export const validateCookie = (cookieValue: string) => {
   if (typeof cookieValue !== "string") {
-    throw Error("TypeError: cookie value must be a string");
+    throw Error(`TypeError: cookie value must be a string.`);
   }
 
   const cookies = cookie.parse(cookieValue);
@@ -82,6 +75,10 @@ export const validateCookie = (cookieValue: any) => {
   }
 
   return false;
+};
+
+export const serializeCookie = (cookieName: string, cookieValue: string, options: any) => {
+  return cookie.serialize(cookieName, cookieValue, options);
 };
 
 export type SwaProviders = "aad" | "github" | "twitter" | "facebook" | "google";

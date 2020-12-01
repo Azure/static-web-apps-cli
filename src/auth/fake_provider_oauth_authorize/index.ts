@@ -1,7 +1,7 @@
-import { AzureFunction, HttpRequest } from "@azure/functions";
+
 import { response } from "../../utils";
 
-const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
+const httpTrigger = async function (context: Context, req: ServerRequest) {
   const { redirect_uri, state } = req.query;
 
   console.log("+++++++++");

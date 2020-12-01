@@ -1,8 +1,8 @@
-import { AzureFunction, HttpRequest } from "@azure/functions";
+
 import { response } from "../../utils";
 const SWA_EMU_HOST = "http://localhost:" + process.env.SWA_EMU_PORT;
 
-const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
+const httpTrigger = async function (context: Context, req: ServerRequest) {
   const { post_login_redirect_uri = "" } = req.query;
 
   context.res = response({
@@ -14,13 +14,13 @@ const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
         value: "deleted",
         path: "/",
         domain: "localhost",
-        expires: new Date(1970),
+        expires: new Date(1).toUTCString(),
       },
       {
         name: "StaticWebAppsAuthCookie",
         value: process.env.StaticWebAppsAuthCookie,
         path: "/",
-        secure: false,
+        // secure: false,
         HttpOnly: false,
         domain: "localhost",
         SameSite: "Strict",
@@ -39,7 +39,7 @@ const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
       <form
         method="GET"
         name="hiddenform"
-        action="${SWA_EMU_HOST}/${post_login_redirect_uri}"
+        action="${SWA_EMU_HOST}${post_login_redirect_uri}"
       >
         <noscript
           ><p>Script is disabled. Click Submit to continue.</p>
