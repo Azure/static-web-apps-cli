@@ -2,11 +2,50 @@ import mockFs from "mock-fs";
 import path from "path";
 import shell from "shelljs";
 
-import { response, validateCookie, getProviderFromCookie, readConfigFile } from "./utils";
+import { response, validateCookie, getProviderFromCookie, readConfigFile, argv } from "./utils";
 
 describe("Utils", () => {
   beforeEach(() => {
     process.env.DEBUG = "";
+    process.argv = [];
+  });
+
+  describe('argv()', () => {
+    it("process.argv = []", () => {
+      process.argv = [];
+      expect(argv('--port')).toBe(null);
+    });
+
+    it("process.argv = ['--port']", () => {
+      process.argv = ['--port'];
+      expect(argv('--port')).toBe(true);
+      expect(argv('--portxyz')).toBe(false);
+    });
+
+    it("process.argv = ['--port=4242']", () => {
+      process.argv = ['--port=4242'];
+      expect(argv('--port')).toBe("4242");
+    });
+
+    it("process.argv = ['--port  =   4242  ']", () => {
+      process.argv = ['--port  =  4242  '];
+      expect(argv('--port')).toBe("4242");
+    });
+
+    it("process.argv = ['--port', '4242']", () => {
+      process.argv = ['--port', '4242'];
+      expect(argv('--port')).toBe("4242");
+    });
+
+    it("process.argv = ['--port', '--other']", () => {
+      process.argv = ['--port', '--other'];
+      expect(argv('--port')).toBe(true);
+    });
+
+    it("process.argv = ['--port=']", () => {
+      process.argv = ['--port='];
+      expect(argv('--port')).toBe(null);
+    });
   });
 
   describe("response()", () => {

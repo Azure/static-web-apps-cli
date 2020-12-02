@@ -1,9 +1,9 @@
 import { createServer, ServerResponse } from "http";
 import url from "url";
-import { serializeCookie } from "../utils";
+import { serializeCookie, argv } from "../utils";
 
-const port = 4242;
-const host = "0.0.0.0";
+const port = argv<number>('--port') || 4242;
+const host = argv<string>('--host') || "localhost";
 
 const authPaths: Path[] = [
   {
@@ -85,7 +85,7 @@ export async function routeMatcher(url = "/"): Promise<{ func: Function | undefi
         };
       }
 
-      const func = (await import(`./${path.function}/index`)).default as Function;
+      const func = (await import(`./routes/${path.function}`)).default as Function;
       return { func, bindingData };
     }
   }
@@ -163,5 +163,5 @@ const server = createServer(requestHandler);
 server.listen(Number(port), host, () => {
   const { address, port } = server.address() as any; /* AddressInfo */
   const host = `http://${address}:${port}`;
-  console.log(`Server listening on ${host}`);
+  console.log(`Auth server listening on ${host}`);
 });

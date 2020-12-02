@@ -81,14 +81,14 @@ const startCommand = [
   // run concurrent commands
   concurrentlyBin,
   `--restart-tries 3`,
-  `--names " swa","auth"," app"," api"`, // respect 4 character length
+  `--names " swa","auth"," app"," api"`, // 4 characters each
   `-c 'bgYellow.bold,bgMagenta.bold,bgCyan.bold,bgGreen.bold'`,
 
   // start the reverse proxy
   `"node ./dist/proxy.js"`,
 
   // emulate auth
-  `"node ./dist/auth/server.js --port=${authUriPort}"`,
+  `"node ./dist/auth/server.js --host=localhost --port=${authUriPort}"`,
 
   // serve the app
   `"${serveStaticContent}"`,
