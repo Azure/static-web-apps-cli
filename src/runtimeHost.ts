@@ -25,7 +25,7 @@ export const createRuntimeHost = (port: number, proxyHost: string, proxyPort: nu
       // See available options for http-server: https://github.com/http-party/http-server#available-options
       // Note: --proxy allows us to add fallback routes for SPA (https://github.com/http-party/http-server#catch-all-redirect)
       const command = httpServerBin;
-      const args = `${app_artifact_location} -p ${port} -c-1 --proxy http://${proxyHost}:${proxyPort}/?`.split(" ");
+      const args = `${app_artifact_location} --port ${port} --cache -1 --proxy http://${proxyHost}:${proxyPort}/?`.split(" ");
 
       return {
         command,

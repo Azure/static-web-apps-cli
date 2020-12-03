@@ -2,8 +2,8 @@ import { createServer, ServerResponse } from "http";
 import url from "url";
 import { serializeCookie, argv } from "../utils";
 
-const port = argv<number>('--port') || 4242;
-const host = argv<string>('--host') || "localhost";
+const port = argv<number>("--port") || 4242;
+const host = argv<string>("--host") || "localhost";
 
 const authPaths: Path[] = [
   {
@@ -131,6 +131,7 @@ export async function requestHandler(request: ServerRequest, response: ServerRes
       // enable CORS for all requests
       response.setHeader("Access-Control-Allow-Origin", request.headers.origin || "*");
       response.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
+      response.setHeader("Access-Control-Allow-Credentials", "true");
 
       // set JSON response by default (if no content type was set)
       if (response.hasHeader("Content-Type") === false) {
