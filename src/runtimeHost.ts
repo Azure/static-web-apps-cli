@@ -26,7 +26,7 @@ export const createRuntimeHost = ({ appPort, proxyHost, proxyPort, appLocation, 
         console.log(`WARN: --app-artifact-location was not provided. Setting default value to "./"`);
         appArtifactLocation = "./";
       }
-      const args = `${appArtifactLocation} -p ${appPort} -c-1 --proxy http://${proxyHost}:${proxyPort}/?`.split(" ");
+      const args = `${app_artifact_location} --port ${port} --cache -1 --proxy http://${proxyHost}:${proxyPort}/?`.split(" ");
 
       return {
         command,

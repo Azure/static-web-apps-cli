@@ -17,13 +17,6 @@ export type GithubActionSWAConfig = {
 };
 
 export const response = ({ context, status, headers, cookies, body = "" }: ResponseOptions) => {
-  if (!context || !context.bindingData) {
-    throw Error(
-      "TypeError: context must be a valid Azure Functions context object. " +
-        "See https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-node#context-object"
-    );
-  }
-
   if (typeof status !== "number") {
     throw Error("TypeError: status code must be a number.");
   }
@@ -76,9 +69,9 @@ export const response = ({ context, status, headers, cookies, body = "" }: Respo
   return res;
 };
 
-export const validateCookie = (cookieValue: any) => {
+export const validateCookie = (cookieValue: string) => {
   if (typeof cookieValue !== "string") {
-    throw Error("TypeError: cookie value must be a string");
+    throw Error(`TypeError: cookie value must be a string.`);
   }
 
   const cookies = cookie.parse(cookieValue);
@@ -88,6 +81,10 @@ export const validateCookie = (cookieValue: any) => {
   }
 
   return false;
+};
+
+export const serializeCookie = (cookieName: string, cookieValue: string, options: any) => {
+  return cookie.serialize(cookieName, cookieValue, options);
 };
 
 export type SwaProviders = "aad" | "github" | "twitter" | "facebook" | "google";
@@ -234,3 +231,55 @@ export const readConfigFile = ({ overrideConfig }: { overrideConfig?: Partial<Gi
   console.info({ config });
   return config;
 };
+/**
+ * Parse process.argv and retrieve a specific flag value.
+ * Usage:
+ * ```
+ * // ./server --port 4242
+ * let port = argv<number>('--port');
+ * ```
+ *
+ * @param flag the flag name to retrieve from argv, e.g.: --port
+ * @returns {T} the value of the corresponding flag:
+ * - if flag is --key=value or --key value, returns value as type `T`.
+ * - if flag is --key, return a boolean (true if the flag is present, false if not).
+ * - if flag is not present, return null.
+ *
+ */
+export function argv<T extends string | number | boolean | null>(flag: string): T {
+  const flags = process.argv;
+  for (let index = 0; index < flags.length; index++) {
+    const entry = flags[index];
+
+    // ex: --key=value
+    if (entry.startsWith("--")) {
+      if (entry.includes("=")) {
+        // ex: [--key, value]
+        const [key, value] = entry.split("=");
+        if (flag === key.trim()) {
+          // ex: --key=value --> value
+          // ex: --key=      --> null
+          return (!!value ? value.trim() : null) as T;
+        }
+      }
+      // ex: --key value
+      // ex: --key
+      else if (flag === entry.trim()) {
+        const nextEntry = flags[index + 1]?.trim();
+        // ex: --key
+        if (nextEntry === undefined || nextEntry?.startsWith("--")) {
+          return true as T;
+        }
+        // ex: --key value
+        else if (!!nextEntry) {
+          return nextEntry as T;
+        }
+      } else {
+        // flag wasn't found
+        return false as T;
+      }
+    }
+  }
+
+  return null as T;
+}
