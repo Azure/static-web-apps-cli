@@ -1,4 +1,3 @@
-
 import { response, ɵɵUseGithubDevToken } from "../../utils";
 const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `http://localhost:4242`;
 
@@ -14,7 +13,7 @@ const httpTrigger = async function (context: Context, req: ServerRequest) {
 
   switch (provider) {
     case "github":
-      client_id = process.env.GITHUB_CLIENT_ID;
+      client_id = process.env.GITHUB_CLIENT_ID || client_id;
 
       //**** GITHUB NOTICE: start */
       if (!client_id) {

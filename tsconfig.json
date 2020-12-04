@@ -32,5 +32,5 @@
   },
   "exclude": ["node_modules", "dist"],
   "include": ["src/**/*.ts", "src/**/*.json"],
-  "files": ["environment.d.ts", "src/auth/server.d.ts"]
+  "files": ["swa.d.ts"]
 }
