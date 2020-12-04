@@ -27,7 +27,6 @@
     "yaml": "^1.10.0"
   },
   "devDependencies": {
-    "@azure/functions": "^1.2.2",
     "@release-it/conventional-changelog": "^1.1.4",
     "@types/blessed": "^0.1.17",
     "@types/cookie": "^0.4.0",
