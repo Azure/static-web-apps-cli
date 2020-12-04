@@ -25,7 +25,7 @@ describe("runtimeHost", () => {
       });
 
       expect(spyDetectRuntime).toHaveBeenCalledWith("./");
-      expect(rh.command).toContain("@manekinekko/swa-emulator/node_modules/.bin/http-server");
+      expect(rh.command).toContain("swa-emulator/node_modules/.bin/http-server");
       expect(rh.args).toEqual(["./foobar", "--port", "8080", "--cache", "-1", "--proxy", "http://0.0.0.0:4242/?"]);
     });
 
@@ -36,7 +36,7 @@ describe("runtimeHost", () => {
       });
 
       expect(spyDetectRuntime).toHaveBeenCalledWith("./");
-      expect(rh.command).toContain("@manekinekko/swa-emulator/node_modules/.bin/http-server");
+      expect(rh.command).toContain("swa-emulator/node_modules/.bin/http-server");
       expect(rh.args).toEqual(["./", "--port", "8080", "--cache", "-1", "--proxy", "http://0.0.0.0:4242/?"]);
     });
 
@@ -47,7 +47,7 @@ describe("runtimeHost", () => {
       });
 
       expect(spyDetectRuntime).toHaveBeenCalledWith("./");
-      expect(rh.command).toContain("@manekinekko/swa-emulator/node_modules/.bin/http-server");
+      expect(rh.command).toContain("swa-emulator/node_modules/.bin/http-server");
       expect(rh.args).toEqual(["./", "--port", "8080", "--cache", "-1", "--proxy", "http://127.0.0.1:4242/?"]);
     });
 
@@ -58,7 +58,7 @@ describe("runtimeHost", () => {
       });
 
       expect(spyDetectRuntime).toHaveBeenCalledWith("./");
-      expect(rh.command).toContain("@manekinekko/swa-emulator/node_modules/.bin/http-server");
+      expect(rh.command).toContain("swa-emulator/node_modules/.bin/http-server");
       expect(rh.args).toEqual(["./", "--port", "8080", "--cache", "-1", "--proxy", "http://0.0.0.0:3000/?"]);
     });
 
@@ -69,7 +69,7 @@ describe("runtimeHost", () => {
       });
 
       expect(spyDetectRuntime).toHaveBeenCalledWith("./foobar");
-      expect(rh.command).toContain("@manekinekko/swa-emulator/node_modules/.bin/http-server");
+      expect(rh.command).toContain("swa-emulator/node_modules/.bin/http-server");
       expect(rh.args).toEqual(["./", "--port", "8080", "--cache", "-1", "--proxy", "http://0.0.0.0:4242/?"]);
     });
   });
