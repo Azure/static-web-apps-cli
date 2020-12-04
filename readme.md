@@ -165,12 +165,12 @@ When requesting the `.auth/me` endpoint, a mocked user `clientPrincipal` will be
 }
 ```
 
-> NOTE: user roles and ACL are not yet supported (see [#7](https://github.com/manekinekko/swa-emulator/issues/7)).
+> NOTE: user roles and ACL are not fully supported (see [#7](https://github.com/manekinekko/swa-emulator/issues/7)).
 
 ## Caveats
 
 - Custom routes are not yet supported (see [#6](https://github.com/manekinekko/swa-emulator/issues/6))
-- Authorization and roles are not supported (see [#7](https://github.com/manekinekko/swa-emulator/issues/7)).
+- Authorization and roles are not fully supported (see [#7](https://github.com/manekinekko/swa-emulator/issues/7)).
 - The emulator is serving all traffic over HTTP (HTTPS support will be added soon) (see [#4](https://github.com/manekinekko/swa-emulator/issues/4)).
 - When using GitHub, the OAuth client ID and client secret are provided as-is for dev purposes ONLY. You should create your own OAuth GitHub app!
 
