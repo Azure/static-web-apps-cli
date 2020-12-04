@@ -1,9 +1,9 @@
-import { AzureFunction, HttpRequest } from "@azure/functions";
+
 import { response, ɵɵUseGithubDevToken } from "../../utils";
 const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `http://localhost:4242`;
 
-const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
-  const { provider } = context.bindingData;
+const httpTrigger = async function (context: Context, req: ServerRequest) {
+  const provider = context.bindingData?.provider;
   const { post_login_redirect_uri } = req.query;
 
   const redirect_uri = `${SWA_EMU_AUTH_URI}/.auth/login/${provider}/callback&state=${encodeURIComponent(
@@ -43,9 +43,9 @@ const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
         name: "Nonce",
         value: context.invocationId,
         path: "/",
-        secure: false,
+        // secure: false,
         HttpOnly: false,
-        SameSite: "None",
+        // SameSite: "None",
       },
     ],
     headers: {

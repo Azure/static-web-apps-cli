@@ -1,13 +1,13 @@
-import { AzureFunction, HttpRequest } from "@azure/functions";
+
 import { response } from "../../utils";
 import qs from "querystring";
 
 const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `http://localhost:4242`;
 
-const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
+const httpTrigger = async function (context: Context, req: ServerRequest) {
   const { state } = req.query;
   const { redir = "" } = qs.parse(state);
-  
+
   // This doesn't match the API, but we need to get the redir value across
   const location = `${SWA_EMU_AUTH_URI}/.auth/login/done?post_login_redirect_uri=${redir}`;
 
@@ -19,21 +19,21 @@ const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
         name: "Nonce",
         value: "deleted",
         path: "/",
-        expires: new Date(1970),
+        expires: new Date(1).toUTCString(),
       },
       {
         name: "RedirectCount",
         value: "deleted",
         path: "/",
-        expires: new Date(1970),
+        expires: new Date(1).toUTCString(),
       },
       {
         name: "AppServiceAuthSession",
         value: process.env.AppServiceAuthSession,
         path: "/",
-        secure: false,
+        // secure: false,
         HttpOnly: false,
-        SameSite: "None",
+        // SameSite: "None",
       },
     ],
     headers: {

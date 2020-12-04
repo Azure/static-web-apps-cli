@@ -1,8 +1,8 @@
-import { AzureFunction, HttpRequest } from "@azure/functions";
+
 import { response, validateCookie } from "../../utils";
 const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `http://localhost:4242`;
 
-const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
+const httpTrigger = async function (context: Context, req: ServerRequest) {
   const cookie = req.headers.cookie;
   const { post_logout_redirect_uri } = req.query;
 
@@ -21,10 +21,10 @@ const httpTrigger: AzureFunction = async function (context, req: HttpRequest) {
         name: "StaticWebAppsAuthContextCookie",
         value: process.env.StaticWebAppsAuthContextCookie,
         path: "/",
-        secure: false,
+        // secure: false,
         HttpOnly: false,
         domain: "localhost",
-        SameSite: "None",
+        // SameSite: "None",
       },
     ],
     headers: {
