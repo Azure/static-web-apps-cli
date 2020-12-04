@@ -4,6 +4,7 @@
   "description": "Azure Static Web Apps Emulator for Auth, API and static content",
   "scripts": {
     "release": "release-it --preRelease=alpha",
+    "pretest": "npm run build",
     "test": "jest --detectOpenHandles --silent --verbose",
     "build": "tsc",
     "prebuild": "rm -fr dist",

@@ -114,7 +114,11 @@ export const readConfigFile = ({ overrideConfig }: { overrideConfig?: Partial<Gi
 
   if (fs.existsSync(githubActionFolder) === false) {
     console.warn(warningMessage);
-    return overrideConfig;
+    return {
+      appLocation: path.normalize(path.join(process.cwd(), overrideConfig?.appLocation || `.${path.sep}`)),
+      apiLocation: path.normalize(path.join(process.cwd(), overrideConfig?.apiLocation || `${path.sep}api`)),
+      appArtifactLocation: path.normalize(path.join(process.cwd(), overrideConfig?.appArtifactLocation || `.${path.sep}`)),
+    };
   }
 
   // find the SWA GitHub action file

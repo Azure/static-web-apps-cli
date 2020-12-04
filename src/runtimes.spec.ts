@@ -1,7 +1,7 @@
 import mockFs from "mock-fs";
 import { detectRuntime, RuntimeType } from "./runtimes";
 
-const appLocation = "/tmp";
+const appLocation = "./tmp-swa-emulator";
 describe("runtime", () => {
   afterEach(() => {
     mockFs.restore();
