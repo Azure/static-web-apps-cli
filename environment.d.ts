@@ -11,7 +11,7 @@ declare global {
       SWA_EMU_API_URI: string;
       SWA_EMU_API_PREFIX: string;
       SWA_EMU_APP_URI: string;
-      SWA_EMU_APP_LOCATION: string;
+      SWA_EMU_APP_ARTIFACT_LOCATION: string;
       SWA_EMU_HOST: string;
       SWA_EMU_PORT: string;
     }
@@ -19,3 +19,11 @@ declare global {
 }
 
 export {};
+
+declare interface RuntimeHostConfig {
+  appPort: number;
+  proxyHost: string;
+  proxyPort: number;
+  appLocation: string | undefined;
+  appArtifactLocation: string | undefined;
+};

@@ -1,20 +1,19 @@
-import path from "path";
 import fs from "fs";
+import path from "path";
 
 export enum RuntimeType {
   dotnet = "dotnet",
-  node ="node",
+  node = "node.js",
   unknown = "unknown",
-};
+}
 
-export const detectRuntime = (app_location: string) => {
-  if (fs.existsSync(app_location) === false) {
-    console.error(`The provided "app_location" was not found. Can't detect runtime!`);
-    console.error(app_location);
+export const detectRuntime = (appLocation: string | undefined) => {
+  if (!appLocation || fs.existsSync(appLocation) === false) {
+    console.warn(`WARNING: The provided app location "${appLocation}" was not found. Can't detect runtime!`);
     return RuntimeType.unknown;
   }
 
-  const files = fs.readdirSync(app_location);
+  const files = fs.readdirSync(appLocation);
 
   if (files.some((file) => path.extname(file) === ".csproj")) {
     return RuntimeType.dotnet;

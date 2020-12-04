@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import shell from "shelljs";
-import { readConfigFile } from "./utils";
+import { readConfigFile, GithubActionSWAConfig } from "./utils";
 import { detectRuntime, RuntimeType } from "./runtimes";
 
 const exec = (command: string, options = {}) => shell.exec(command, { async: false, ...options });
@@ -39,49 +39,51 @@ const dotnetBuilder = (location: string, name: string, colour: string) => {
   });
 };
 
-const builder = () => {
-  const { app_location, api_location, app_build_command, api_build_command } = readConfigFile();
-  const runtimeType = detectRuntime(app_location);
+const builder = ({config}: {config: Partial<GithubActionSWAConfig>}) => {
+  const configFile = readConfigFile();
+  if (configFile) {
+    let { appLocation, apiLocation, appBuildCommand, apiBuildCommand } = config as GithubActionSWAConfig;
+    const runtimeType = detectRuntime(appLocation);
 
-  try {
-    switch (runtimeType) {
-      case RuntimeType.dotnet:
-        {
-          // build app
-          dotnetBuilder(app_location, "app_build", "bgGreen.bold");
+    try {
+      switch (runtimeType) {
+        case RuntimeType.dotnet:
+          {
+            // build app
+            dotnetBuilder(appLocation, "app_build", "bgGreen.bold");
 
-          // NOTE: API is optional. Build it only if it exists
-          // This may result in a double-compile of some libraries if they are shared between the
-          // Blazor app and the API, but it's an acceptable outcome
-          let apiLocation = path.resolve(process.cwd(), api_location);
-          if (fs.existsSync(apiLocation) === true && fs.existsSync(path.join(apiLocation, "host.json"))) {
-            dotnetBuilder(apiLocation, "api_build", "bgYellow.bold");
+            // NOTE: API is optional. Build it only if it exists
+            // This may result in a double-compile of some libraries if they are shared between the
+            // Blazor app and the API, but it's an acceptable outcome
+            apiLocation = path.resolve(process.cwd(), apiLocation);
+            if (fs.existsSync(apiLocation) === true && fs.existsSync(path.join(apiLocation, "host.json"))) {
+              dotnetBuilder(apiLocation, "api_build", "bgYellow.bold");
+            }
           }
-        }
-        break;
+          break;
 
-      case RuntimeType.node:
-      default:
-        {
-          // figure out if appLocation exists
-          let appLocation = app_location;
-          if (fs.existsSync(appLocation) === false) {
-            appLocation = process.cwd();
+        case RuntimeType.node:
+        default:
+          {
+            // figure out if appLocation exists
+            if (fs.existsSync(appLocation) === false) {
+              appLocation = process.cwd();
+            }
+
+            // build app
+            nodeBuilder(appLocation, appBuildCommand, "app_build", "bgGreen.bold");
+
+            // NOTE: API is optional. Build it only if it exists
+            apiLocation = path.resolve(process.cwd(), apiLocation);
+            if (fs.existsSync(apiLocation) === true && fs.existsSync(path.join(apiLocation, "host.json"))) {
+              nodeBuilder(apiLocation, apiBuildCommand, "api_build", "bgYellow.bold");
+            }
           }
-
-          // build app
-          nodeBuilder(appLocation, app_build_command, "app_build", "bgGreen.bold");
-
-          // NOTE: API is optional. Build it only if it exists
-          let apiLocation = path.resolve(process.cwd(), api_location);
-          if (fs.existsSync(apiLocation) === true && fs.existsSync(path.join(apiLocation, "host.json"))) {
-            nodeBuilder(apiLocation, api_build_command, "api_build", "bgYellow.bold");
-          }
-        }
-        break;
+          break;
+      }
+    } catch (stderr) {
+      shell.echo(stderr);
     }
-  } catch (stderr) {
-    console.error(stderr);
   }
 };
 export default builder;

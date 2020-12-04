@@ -1,8 +1,7 @@
 import mockFs from "mock-fs";
 import path from "path";
-import shell from "shelljs";
-
-import { response, validateCookie, getProviderFromCookie, readConfigFile } from "./utils";
+// import shell from "shelljs";
+import { getProviderFromCookie, readConfigFile, response, validateCookie } from "./utils";
 
 describe("Utils", () => {
   beforeEach(() => {
@@ -403,62 +402,42 @@ describe("Utils", () => {
   });
 
   describe("readConfigFile()", () => {
-    it("config file not found should throw", () => {
-      jest.spyOn(shell, "exit").mockImplementation(((_) => {}) as (code?: number | undefined) => never);
-      expect(() => readConfigFile()).toThrow(/TypeError: GitHub action file content should be a string/);
+    it("config file not found should return undefined", () => {
+      expect(readConfigFile()).toBe(undefined);
     });
 
-    it("config file not found should process.exit(0)", () => {
-      const mockExit = jest.spyOn(shell, "exit").mockImplementation(((_) => {}) as (code?: number | undefined) => never);
-
-      // we know this will throw. Check previous test
-      try {
-        readConfigFile();
-      } catch (error) {}
-
-      expect(mockExit).toHaveBeenCalledWith(0);
-    });
-
-    it("config file with wrong filename should process.exit(0)", () => {
-      const mockExit = jest.spyOn(shell, "exit").mockImplementation(((_) => {}) as (code?: number | undefined) => never);
-
+    it("config file with wrong filename should return undefined", () => {
       mockFs({
         ".github/workflows/wrong-file-name-pattern.yml": "",
       });
 
-      expect(() => readConfigFile()).toThrow(/TypeError: GitHub action file content should be a string/);
-      expect(mockExit).toHaveBeenCalledWith(0);
+      expect(readConfigFile()).toBe(undefined);
 
       mockFs.restore();
     });
 
     it("invalid YAML file should throw", () => {
-      const mockExit = jest.spyOn(shell, "exit").mockImplementation(((_) => {}) as (code?: number | undefined) => never);
       mockFs({
         ".github/workflows/azure-static-web-apps__not-valid.yml": "",
       });
 
       expect(() => readConfigFile()).toThrow(/could not parse the SWA workflow file/);
-      expect(mockExit).toHaveBeenCalledWith(0);
 
       mockFs.restore();
     });
 
     describe("checking workflow properties", () => {
       it("missing property 'jobs' should throw", () => {
-        const mockExit = jest.spyOn(shell, "exit").mockImplementation(((_) => {}) as (code?: number | undefined) => never);
         mockFs({
           ".github/workflows/azure-static-web-apps__not-valid.yml": `name: Azure Static Web Apps CI/CD`,
         });
 
         expect(() => readConfigFile()).toThrow(/missing property 'jobs'/);
-        expect(mockExit).toHaveBeenCalledWith(0);
 
         mockFs.restore();
       });
 
       it("missing property 'jobs.build_and_deploy_job' should throw", () => {
-        const mockExit = jest.spyOn(shell, "exit").mockImplementation(((_) => {}) as (code?: number | undefined) => never);
         mockFs({
           ".github/workflows/azure-static-web-apps.yml": `
 jobs:
@@ -466,13 +445,11 @@ jobs:
 `,
         });
         expect(() => readConfigFile()).toThrow(/missing property 'jobs.build_and_deploy_job'/);
-        expect(mockExit).toHaveBeenCalledWith(0);
 
         mockFs.restore();
       });
 
       it("missing property 'jobs.build_and_deploy_job.steps' should throw", () => {
-        const mockExit = jest.spyOn(shell, "exit").mockImplementation(((_) => {}) as (code?: number | undefined) => never);
         mockFs({
           ".github/workflows/azure-static-web-apps.yml": `
 jobs:
@@ -482,7 +459,6 @@ jobs:
         });
 
         expect(() => readConfigFile()).toThrow(/missing property 'jobs.build_and_deploy_job.steps'/);
-        expect(mockExit).toHaveBeenCalledWith(0);
 
         mockFs.restore();
       });
@@ -546,7 +522,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile().app_location).toBe(path.normalize(process.cwd() + "/"));
+        expect(readConfigFile()).toBeTruthy();
+        expect(readConfigFile()?.appLocation).toBe(path.normalize(process.cwd() + "/"));
 
         mockFs.restore();
       });
@@ -563,8 +540,8 @@ jobs:
           foo: bar
 `,
         });
-
-        expect(readConfigFile().app_location).toBe(path.normalize(process.cwd() + "/"));
+        expect(readConfigFile()).toBeTruthy();
+        expect(readConfigFile()?.appLocation).toBe(path.normalize(process.cwd() + "/"));
 
         mockFs.restore();
       });
@@ -582,7 +559,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile().api_location).toBe(path.normalize(process.cwd() + "/api"));
+        expect(readConfigFile()).toBeTruthy();
+        expect(readConfigFile()?.apiLocation).toBe(path.normalize(process.cwd() + "/api"));
 
         mockFs.restore();
       });
@@ -600,7 +578,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile().api_location).toBe(path.normalize(process.cwd() + "/api"));
+        expect(readConfigFile()).toBeTruthy();
+        expect(readConfigFile()?.apiLocation).toBe(path.normalize(process.cwd() + "/api"));
 
         mockFs.restore();
       });
@@ -618,7 +597,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile().app_artifact_location).toBe(path.normalize(process.cwd() + "/"));
+        expect(readConfigFile()).toBeTruthy();
+        expect(readConfigFile()?.appArtifactLocation).toBe(path.normalize(process.cwd() + "/"));
 
         mockFs.restore();
       });
@@ -636,7 +616,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile().app_artifact_location).toBe(path.normalize(process.cwd() + "/"));
+        expect(readConfigFile()).toBeTruthy();
+        expect(readConfigFile()?.appArtifactLocation).toBe(path.normalize(process.cwd() + "/"));
 
         mockFs.restore();
       });
@@ -654,7 +635,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile().app_build_command).toBe("echo test");
+        expect(readConfigFile()).toBeTruthy();
+        expect(readConfigFile()?.appBuildCommand).toBe("echo test");
 
         mockFs.restore();
       });
@@ -672,7 +654,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile().app_build_command).toBe("npm run build --if-present");
+        expect(readConfigFile()).toBeTruthy();
+        expect(readConfigFile()?.appBuildCommand).toBe("npm run build --if-present");
 
         mockFs.restore();
       });
@@ -690,7 +673,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile().api_build_command).toBe("echo test");
+        expect(readConfigFile()).toBeTruthy();
+        expect(readConfigFile()?.apiBuildCommand).toBe("echo test");
 
         mockFs.restore();
       });
@@ -708,7 +692,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile().api_build_command).toBe("npm run build --if-present");
+        expect(readConfigFile()).toBeTruthy();
+        expect(readConfigFile()?.apiBuildCommand).toBe("npm run build --if-present");
 
         mockFs.restore();
       });

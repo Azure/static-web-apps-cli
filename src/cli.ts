@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-import shell from "shelljs";
-import path from "path";
-import program from "commander";
-import builder from "./builder";
-import { readConfigFile } from "./utils";
 import { spawn } from "child_process";
-import { createRuntimeHost } from "./runtimeHost";
+import program from "commander";
+import path from "path";
+import shell from "shelljs";
+import builder from "./builder";
 import { Dashboard } from "./dashboard";
+import { createRuntimeHost } from "./runtimeHost";
+import { GithubActionSWAConfig, readConfigFile } from "./utils";
 
 const EMU_PORT = "80";
 const AUTH_PORT = 4242;
@@ -18,6 +18,13 @@ program
   .name("swa")
   .usage("<command>")
   .version(require("../package.json").version)
+
+  // SWA config
+  .option("--app-location <appLocation>", "set app folder (location for the application code)", undefined)
+  .option("--app-artifact-location <appArtifactLocation>", "set app artifact folder (location where files are built for production)", undefined)
+  .option("--api-location <apiLocation>", "set the API folder", undefined)
+
+  // Emulator config
   .option("--auth-uri <authUri>", "set Auth uri", `http://localhost:${AUTH_PORT}`)
   .option("--api-uri <apiUri>", "set API uri", `http://localhost:${API_PORT}`)
   .option("--api-prefix <apiPrefix>", "set API prefix", "api")
@@ -44,7 +51,42 @@ const appUriPort = appUriSegments[2] || APP_PORT;
 
 // provide binaries
 const concurrentlyBin = path.resolve(__dirname, "..", "./node_modules/.bin/concurrently");
-const { app_artifact_location, api_location } = readConfigFile();
+
+// get the app and api artifact locations
+let [appLocation, appArtifactLocation, apiLocation] = [
+  program.appLocation as string,
+  program.appArtifactLocation as string,
+  program.apiLocation as string,
+];
+
+// retrieve the project's build configuration
+// provide any specific config that the user might provide
+const configFile = readConfigFile({
+  overrideConfig: {
+    appLocation,
+    appArtifactLocation,
+  },
+});
+
+// double check the required options are defined before moving on.
+// apply defaults otherwise
+if (configFile) {
+  if (configFile.appLocation === undefined) {
+    console.warn(`WARNING: The app location (--app-location) was not provided. Using "./" as a default value.`);
+    configFile.appLocation = "./";
+  }
+
+  if (configFile.appArtifactLocation === undefined) {
+    console.warn(`WARNING: The app artifact location (--app-artifact-location) was not provided. Using "./" as a default value.`);
+    configFile.appArtifactLocation = "./";
+  }
+
+  // set the default value for api location
+  if (configFile.apiLocation === undefined) {
+    console.warn(`WARNING: The api location (--api-location) was not provided. Using "./api" as a default value.`);
+    configFile.apiLocation = `./api`;
+  }
+}
 
 const envVarsObj = {
   // set env vars for current command
@@ -60,14 +102,22 @@ const envVarsObj = {
   SWA_EMU_API_URI: program.useApi || program.apiUri,
   SWA_EMU_API_PREFIX: program.apiPrefix,
   SWA_EMU_APP_URI: program.useApp || program.appUri,
-  SWA_EMU_APP_LOCATION: app_artifact_location,
+  SWA_EMU_APP_LOCATION: configFile?.appLocation as string,
+  SWA_EMU_APP_ARTIFACT_LOCATION: configFile?.appArtifactLocation as string,
+  SWA_EMU_API_LOCATION: configFile?.apiLocation as string,
   SWA_EMU_HOST: program.host,
   SWA_EMU_PORT: program.port,
 };
 
-const { command: hostCommand, args: hostArgs } = createRuntimeHost(appUriPort, program.host, program.port);
+const { command: hostCommand, args: hostArgs } = createRuntimeHost({
+  appPort: appUriPort,
+  proxyHost: program.host,
+  proxyPort: program.port,
+  appLocation: configFile?.appLocation,
+  appArtifactLocation: configFile?.appArtifactLocation,
+});
 
-let serveApiContent = `[ -d '${api_location}' ] && (cd ${api_location}; func start --cors *) || echo 'No API found. Skipping.'`;
+let serveApiContent = `[ -d '${apiLocation}' ] && (cd ${apiLocation}; func start --cors *) || echo 'No API found. Skipping.'`;
 if (program.useApi) {
   serveApiContent = `echo 'using API dev server at ${program.useApi}'`;
 }
@@ -100,12 +150,14 @@ const startCommand = [
 ];
 
 if (process.env.DEBUG) {
-  console.log(startCommand);
+  shell.echo(startCommand.join("\n"));
 }
 
 if (program.build) {
   // run the app/api builds
-  builder();
+  builder({
+    config: configFile as GithubActionSWAConfig,
+  });
 }
 
 if (program.ui) {
@@ -124,7 +176,7 @@ if (program.ui) {
   dashboard.stream("hosting", hosting);
 
   // start functions
-  const functions = spawnx(`[ -d '${api_location}' ] && (cd ${api_location}; func start --cors *) || echo 'No API found. Skipping.'`, []);
+  const functions = spawnx(`[ -d '${apiLocation}' ] && (cd ${apiLocation}; func start --cors *) || echo 'No API found. Skipping.'`, []);
   dashboard.stream("functions", functions);
 
   // start auth
