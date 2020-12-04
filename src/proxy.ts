@@ -42,7 +42,7 @@ const readRoutes = (folder: string): UserDefinedRoute[] => {
   return require(path.join(folder, routesFile)).routes || [];
 };
 
-const routes = readRoutes(process.env.SWA_EMU_APP_LOCATION || "");
+const routes = readRoutes(process.env.SWA_EMU_APP_ARTIFACT_LOCATION || "");
 
 const routeTest = (userDefinedRoute: string, currentRoute: string) => {
   if (userDefinedRoute === currentRoute) {
@@ -149,7 +149,7 @@ const server = http.createServer(function (req, res) {
   // detected SPA mode
   else if (req.url.startsWith("/?")) {
     console.log("proxy>", req.method, req.headers.host + req.url);
-    const fileIndex = path.join(process.env.SWA_EMU_APP_LOCATION, "index.html");
+    const fileIndex = path.join(process.env.SWA_EMU_APP_ARTIFACT_LOCATION, "index.html");
     serveStatic(fileIndex, res);
   }
 

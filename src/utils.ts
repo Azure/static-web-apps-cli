@@ -1,13 +1,19 @@
 import cookie from "cookie";
+import fs from "fs";
 import fetch from "node-fetch";
 import path from "path";
-import fs from "fs";
-import shell from "shelljs";
 import YAML from "yaml";
 import { detectRuntime, RuntimeType } from "./runtimes";
 
 type ResponseOptions = {
   [key: string]: any;
+};
+export type GithubActionSWAConfig = {
+  appBuildCommand: string;
+  apiBuildCommand: string;
+  appLocation: string;
+  apiLocation: string;
+  appArtifactLocation: string;
 };
 
 export const response = ({ context, status, headers, cookies, body = "" }: ResponseOptions) => {
@@ -100,29 +106,31 @@ export const ɵɵUseGithubDevToken = async () => {
   return token.github;
 };
 
-export const readConfigFile = () => {
+export const readConfigFile = ({ overrideConfig }: { overrideConfig?: Partial<GithubActionSWAConfig> } = {}):
+  | Partial<GithubActionSWAConfig>
+  | undefined => {
+  const warningMessage = "WARNING: SWA configuration not found.";
   const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
 
-  // find the SWA GitHub action file
-  let githubActionFile;
-  let githubActionContent;
-  try {
-    githubActionFile = fs
-      .readdirSync(githubActionFolder)
-      .filter((file) => file.includes("azure-static-web-apps") && file.endsWith(".yml"))
-      .pop();
-
-    if (!githubActionFile) {
-      throw Error("No SWA configuration build found. A SWA folder must contain a GitHub workflow file. Read more: https://bit.ly/31RAODu");
-    }
-
-    githubActionFile = path.resolve(githubActionFolder, githubActionFile);
-
-    githubActionContent = fs.readFileSync(githubActionFile, "utf8");
-  } catch (err) {
-    shell.echo("No SWA configuration build found. A SWA folder must contain a GitHub workflow file. Read more: https://bit.ly/31RAODu");
-    shell.exit(0);
+  if (fs.existsSync(githubActionFolder) === false) {
+    console.warn(warningMessage);
+    return overrideConfig;
   }
+
+  // find the SWA GitHub action file
+  let githubActionFile = fs
+    .readdirSync(githubActionFolder)
+    .filter((file) => file.includes("azure-static-web-apps") && file.endsWith(".yml"))
+    .pop();
+
+  if (!githubActionFile || fs.existsSync(githubActionFile)) {
+    console.warn(warningMessage);
+    return overrideConfig;
+  }
+
+  githubActionFile = path.resolve(githubActionFolder, githubActionFile);
+
+  let githubActionContent = fs.readFileSync(githubActionFile, "utf8");
 
   if (typeof githubActionContent !== "string") {
     throw Error("TypeError: GitHub action file content should be a string");
@@ -191,14 +199,36 @@ export const readConfigFile = () => {
     app_artifact_location = path.join(app_location, app_artifact_location);
   }
 
+  // override SWA config with user's config (if provided)
+  if (overrideConfig) {
+    // if the user provides an app artifact location, use that information
+    if (overrideConfig.appLocation) {
+      app_location = path.normalize(path.join(process.cwd(), overrideConfig.appLocation));
+    }
+
+    // if the user provides an app artifact location, use that information
+    // otherwise, try getting that information from the config file (if it's available)
+    if (overrideConfig.appArtifactLocation) {
+      app_artifact_location = path.normalize(path.join(process.cwd(), overrideConfig.appArtifactLocation));
+    }
+
+    // if the user provides an api location, use that information
+    // otherwise, try getting that information from the config file (if it's available)
+    if (overrideConfig.apiLocation) {
+      api_location = path.normalize(path.join(process.cwd(), overrideConfig.apiLocation));
+    }
+  }
+
   const config = {
-    app_build_command,
-    api_build_command,
-    app_location,
-    api_location,
-    app_artifact_location,
+    appBuildCommand: app_build_command,
+    apiBuildCommand: api_build_command,
+    appLocation: app_location,
+    apiLocation: api_location,
+    appArtifactLocation: app_artifact_location,
   };
 
+  console.info(`INFO: Using SWA configuration file: ${githubActionFile}`);
+  console.info({ config });
   return config;
 };
 /**
