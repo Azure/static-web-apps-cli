@@ -22,7 +22,7 @@
     "http-proxy": "^1.18.1",
     "http-server": "^0.12.3",
     "jsonwebtoken": "^8.5.1",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "shelljs": "^0.8.4",
     "yaml": "^1.10.0"
   },
