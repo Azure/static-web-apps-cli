@@ -16,7 +16,7 @@ const APP_PORT = 4200;
 
 program
   .name("swa")
-  .usage("<command>")
+  .usage("[options] <command>")
   .version(require("../package.json").version)
 
   // SWA config
@@ -59,8 +59,13 @@ let [appLocation, appArtifactLocation, apiLocation] = [
   program.apiLocation as string,
 ];
 
+// if the user provides an app folder, use it as an app artifact location
+if (program.args.length) {
+  appLocation = program.args[0];
+}
+
 // retrieve the project's build configuration
-// provide any specific config that the user might provide
+// use any specific config that the user might provide
 const configFile = readConfigFile({
   overrideConfig: {
     appLocation,
@@ -117,7 +122,7 @@ const { command: hostCommand, args: hostArgs } = createRuntimeHost({
   appArtifactLocation: configFile?.appArtifactLocation,
 });
 
-let serveApiContent = `[ -d '${apiLocation}' ] && (cd ${apiLocation}; func start --cors *) || echo 'No API found. Skipping.'`;
+let serveApiContent = `([ -d '${configFile?.apiLocation}' ] && (cd ${configFile?.apiLocation}; func start --cors *)) || echo 'No API found. Skipping.'`;
 if (program.useApi) {
   serveApiContent = `echo 'using API dev server at ${program.useApi}'`;
 }
@@ -150,7 +155,7 @@ const startCommand = [
 ];
 
 if (process.env.DEBUG) {
-  shell.echo(startCommand.join("\n"));
+  console.log({startCommand})
 }
 
 if (program.build) {

@@ -53,6 +53,24 @@ Using `npx`:
 - Start the emulator: `npx @manekinekko/swa-emu@latest`
 - Access your SWA app from `http://localhost`
 
+### Start the emulator from a specific folder
+
+By default, SWA EMU will start from the current directory `./`. But if you have multiple SWA projects, you can start SWA EMU with a specific folder, and the emulator will use that folder as the `app_location`.
+
+If your SWA project is under `./my-app`, then run the SWA EMU and provide that folder:
+
+```bash
+swa ./my-app
+```
+
+> Please also note, that running `swa ./my-app` is equivalent to `swa --app-location=./my-app`.
+
+In case the SWA EMU cannot determine the right frontend application artifact (dist) folder to serve, you can override this configuration by providing the `--app-artifact-location` flag:
+
+```bash
+swa ./my-app --app-artifact-location ./my-app/dist/
+```
+
 ### Use with a local API dev server
 
 When developing locally on your back-end application, it might be useful to use your local API dev server, to serve your API content and benefit from the built-in features like debugging. In order to use SWA EMU with your local API dev server, follow these two steps:
@@ -79,8 +97,8 @@ swa --use-app=http://<app-dev-server-host>:<app-dev-server-port>
 
 Here is a list of the default ports used by popular dev servers:
 
-| Tool                                                                               | Port | Command                                      |
-| ---------------------------------------------------------------------------------- | ---- | -------------------------------------------- |
+| Tool                                                                               | Port | Command                               |
+| ---------------------------------------------------------------------------------- | ---- | ------------------------------------- |
 | [Angular](https://angular.io/cli)                                                  | 4200 | `swa --use-app=http://localhost:4200` |
 | [Vue](https://cli.vuejs.org/)                                                      | 8080 | `swa --use-app=http://localhost:8080` |
 | [Vite](https://github.com/vitejs/vite/)                                            | 3000 | `swa --use-app=http://localhost:3000` |
@@ -127,12 +145,12 @@ If you need to override the default values, provide the following options:
 The emulator supports local authentication flow and mocks the following providers:
 
 | Provider | [Endpoint](https://docs.microsoft.com/azure/static-web-apps/authentication-authorization?WT.mc_id=javascript-0000-wachegha#login) | Local Emulation |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------- |
-| GitHub   | `.auth/login/github`                                                                                                             | ✅              |
-| Twitter  | `.auth/login/twitter`                                                                                                            | ✅              |
-| Google   | `.auth/login/google`                                                                                                             | ✅              |
-| Facebook | `.auth/login/facbook`                                                                                                            | ✅              |
-| AAD      | `.auth/login/aad`                                                                                                                | ✅              |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| GitHub   | `.auth/login/github`                                                                                                              | ✅              |
+| Twitter  | `.auth/login/twitter`                                                                                                             | ✅              |
+| Google   | `.auth/login/google`                                                                                                              | ✅              |
+| Facebook | `.auth/login/facbook`                                                                                                             | ✅              |
+| AAD      | `.auth/login/aad`                                                                                                                 | ✅              |
 
 When requesting the `.auth/me` endpoint, a mocked user `clientPrincipal` will be returned by the emulator. Here is an example:
 

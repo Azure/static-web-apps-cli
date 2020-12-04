@@ -13,7 +13,7 @@ const httpTrigger = async function (context: Context, req: ServerRequest) {
 
   switch (provider) {
     case "github":
-      client_id = process.env.GITHUB_CLIENT_ID || client_id;
+      client_id = process.env.GITHUB_CLIENT_ID || "";
 
       //**** GITHUB NOTICE: start */
       if (!client_id) {
