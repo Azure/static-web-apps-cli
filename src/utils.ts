@@ -3,6 +3,7 @@ import fs from "fs";
 import fetch from "node-fetch";
 import path from "path";
 import YAML from "yaml";
+import net from "net";
 import { detectRuntime, RuntimeType } from "./runtimes";
 
 type ResponseOptions = {
@@ -232,7 +233,9 @@ export const readConfigFile = ({ overrideConfig }: { overrideConfig?: Partial<Gi
   };
 
   console.info(`INFO: Using SWA configuration file: ${githubActionFile}`);
-  console.info({ config });
+  if (process.env.DEBUG) {
+    console.info({ config });
+  }
   return config;
 };
 /**
@@ -286,4 +289,33 @@ export function argv<T extends string | number | boolean | null>(flag: string): 
   }
 
   return null as T;
+}
+export async function isPortAvailable({ host = "127.0.0.1", port }: { host?: string; port: number }) {
+  return new Promise<boolean>((resolve, reject) => {
+    const server = net.createServer();
+
+    server
+      .once("error", (err: NodeJS.ErrnoException) => {
+        if (err.code !== "EADDRINUSE") {
+          reject(err);
+        } else {
+          resolve(false);
+        }
+      })
+      .once("listening", () => {
+        server.close();
+        resolve(true);
+      })
+      .listen(port, host);
+  });
+}
+
+export function parseUrl(url: string) {
+  const { protocol, port, host, hostname } = new URL(url);
+  return {
+    protocol,
+    port: Number(port),
+    host,
+    hostname,
+  };
 }

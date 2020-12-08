@@ -28,12 +28,6 @@ The SWA EMU is built on top of the following components:
 
 Before SWA EMU bootstraps, it also can read (using the `--build` options) the local SWA github workflow file (created by [Azure Static Web Apps](https://bit.ly/2ZNcakP)) and builds both the static app and the api according to the user's config. And pretty much like SWA, if the user isn't using an API, SWA EMU will skip the API build.
 
-## Authentication emulation flow
-
-The Authentication flow is illustrated in the following sequence diagram (or [open in a new tab](https://bit.ly/swa-auth-flow)):
-
-![SWA Auth flow diagram](docs/swa-auth-flow.png)
-
 ## Disclaimer
 
 SWA EMU is still in developer preview and not yet ready for prime time. You will encounter issues, so please report them or help us fix them. Your contributions will be very appreciated 🙏
@@ -44,57 +38,45 @@ Using `npm` or `yarn`:
 
 - Install the emulator: `npm install -g @manekinekko/swa-emu@latest`
 - Open a SWA app folder at the root (outside any /api or /app folders): `cd my-awesome-swa-app`
-- Start the emulator: `swa`
+- Start the emulator: `swa start`
 - Access your SWA app from `http://localhost`
 
 Using `npx`:
 
 - Open a SWA app folder at the root (outside any /api or /app folders): `cd my-awesome-swa-app`
-- Start the emulator: `npx @manekinekko/swa-emu@latest`
+- Start the emulator: `npx @manekinekko/swa-emu@latest start`
 - Access your SWA app from `http://localhost`
 
-### Start the emulator from a specific folder
+### Start the emulator
 
-By default, SWA EMU will start from the current directory `./`. But if you have multiple SWA projects, you can start SWA EMU with a specific folder, and the emulator will use that folder as the `app_location`.
+#### Serve from a folder
 
-If your SWA project is under `./my-app`, then run the SWA EMU and provide that folder:
-
-```bash
-swa ./my-app
-```
-
-> Please also note, that running `swa ./my-app` is equivalent to `swa --app-location=./my-app`.
-
-In case the SWA EMU cannot determine the right frontend application artifact (dist) folder to serve, you can override this configuration by providing the `--app-artifact-location` flag:
+By default, SWA EMU will start and serve the static app from the current working directory `./`:
 
 ```bash
-swa ./my-app --app-artifact-location ./my-app/dist/
+swa
 ```
 
-### Use with a local API dev server
-
-When developing locally on your back-end application, it might be useful to use your local API dev server, to serve your API content and benefit from the built-in features like debugging. In order to use SWA EMU with your local API dev server, follow these two steps:
-
-1. Start your local API dev server (as usual). For example: `func start host`.
-1. Run `swa` with the `--use-api` flag of the URI provided by the API dev server, in the following format:
+However, you can override this behavior. If the artifact folder of your static app is under a different folder (e.g. `./my-dist`), then run the SWA EMU and provide that folder:
 
 ```bash
-swa --use-api=http://<api-dev-server-host>:<api-dev-server-port>
+swa ./my-dist
 ```
 
-### Use with a local APP dev server
+> Note that by default the SWA EMU will not serve the api.
 
-When developing locally on your front-end application, it might be useful to use your local application dev server, that comes with your application CLI, to serve your app content and benefit from the built-in feature like the livereload or HMR (hot module reload) features.
+#### Serve from a local app dev server
+
+When developing locally on your static app, it might be useful to use your local application dev server, that comes with your application CLI, to serve your app content and benefit from the built-in features like the livereload and HMR (hot module reload).
 
 In order to use SWA EMU with your local dev server, follow these two steps:
 
 1. Start your local dev server (as usual). For example: `ng serve`
-1. Run `swa` with the `--use-app` flag of the URI provided by the dev server, in the following format:
+1. Run `swa start` with the URI provided by the dev server, in the following format:
 
 ```bash
-swa --use-app=http://<app-dev-server-host>:<app-dev-server-port>
+swa start http://<app-dev-server-host>:<app-dev-server-port>
 ```
-
 Here is a list of the default ports used by popular dev servers:
 
 | Tool                                                                               | Port | Command                               |
@@ -115,6 +97,17 @@ Here is a list of the default ports used by popular dev servers:
 | [Gatsby](https://www.gatsbyjs.com/docs/gatsby-cli/)                                | 8000 | `swa --use-app=http://localhost:8000` |
 | [Nuxt.js](https://nuxtjs.org/)                                                     | 3000 | `swa --use-app=http://localhost:3000` |
 | [Next.js](https://nextjs.org/)                                                     | 3000 | `swa --use-app=http://localhost:3000` |
+
+#### Serve with a local API dev server
+
+When developing locally on your back-end application, it might be useful to use your local API dev server, to serve your API content and benefit from the built-in features like debugging. In order to use SWA EMU with your local API dev server, follow these two steps:
+
+1. Start your local API dev server (as usual). For example: `func start host`.
+1. Run `swa` with the `--use-api` flag of the URI provided by the API dev server, in the following format:
+
+```bash
+swa start ./my-dist --use-api=http://<api-dev-server-host>:<api-dev-server-port>
+```
 
 ## Configuration
 
@@ -158,7 +151,7 @@ When requesting the `.auth/me` endpoint, a mocked user `clientPrincipal` will be
 {
   "clientPrincipal": {
     "identityProvider": "twitter",
-    "userId": "59cd31faa8c34919ac22c19af50482b8",
+    "userId": "<user-uuid>",
     "userDetails": "manekinekko",
     "userRoles": ["anonymous", "authenticated"]
   }
@@ -166,6 +159,12 @@ When requesting the `.auth/me` endpoint, a mocked user `clientPrincipal` will be
 ```
 
 > NOTE: user roles and ACL are not fully supported (see [#7](https://github.com/manekinekko/swa-emulator/issues/7)).
+
+## Authentication emulation flow
+
+The Authentication flow is illustrated in the following sequence diagram (or [open in a new tab](https://bit.ly/swa-auth-flow)):
+
+![SWA Auth flow diagram](docs/swa-auth-flow.png)
 
 ## Caveats
 

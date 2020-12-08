@@ -11,8 +11,8 @@
     "watch": "tsc --watch"
   },
   "bin": {
-    "swa": "./dist/cli.js",
-    "swa-emu": "./dist/cli.js"
+    "swa": "./dist/cli/index.js",
+    "swa-emu": "./dist/cli/index.js"
   },
   "author": "Wassim Chegham <github@wassim.dev>",
   "dependencies": {

@@ -22,7 +22,7 @@ const serveStatic = (file: string, res: http.ServerResponse) => {
       res.end(JSON.stringify(err));
       return;
     }
-    console.log(">> serving", file);
+    console.log("serving", file);
     res.writeHead(200);
     res.end(data);
   });
@@ -176,6 +176,6 @@ const server = http.createServer(function (req, res) {
 
 const port = parseInt(process.env.SWA_EMU_PORT || "", 10);
 const host = process.env.SWA_EMU_HOST || "0.0.0.0";
-const address = `${host}:${port}`;
-console.log(`>> SWA listening on ${address}`);
+const address = `http://${host}:${port}`;
+console.log(`SWA listening on ${address}`);
 server.listen(port, host);
