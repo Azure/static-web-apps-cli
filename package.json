@@ -13,8 +13,8 @@
     "copy-assets": "cp -r ./src/auth/ ./dist"
   },
   "bin": {
-    "swa": "./dist/cli.js",
-    "swa-emu": "./dist/cli.js"
+    "swa": "./dist/cli/index.js",
+    "swa-emu": "./dist/cli/index.js"
   },
   "author": "Microsoft Corporation",
   "dependencies": {
