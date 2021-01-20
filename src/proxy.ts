@@ -174,7 +174,7 @@ const server = http.createServer(function (req, res) {
   }
 });
 
-const port = parseInt(process.env.SWA_EMU_PORT || "", 10) || 80;
+const port = parseInt(process.env.SWA_EMU_PORT || "", 10);
 const host = process.env.SWA_EMU_HOST || "0.0.0.0";
 const address = `${host}:${port}`;
 console.log(`>> SWA listening on ${address}`);
