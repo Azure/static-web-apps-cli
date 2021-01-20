@@ -9,7 +9,7 @@ import { Dashboard } from "./dashboard";
 import { createRuntimeHost } from "./runtimeHost";
 import { GithubActionSWAConfig, readConfigFile } from "./utils";
 
-const EMU_PORT = "80";
+const EMU_PORT = 4280;
 const AUTH_PORT = 4242;
 const API_PORT = 7071;
 const APP_PORT = 4200;
@@ -32,7 +32,7 @@ program
   .option("--use-api <useApi>", "Use running API dev server", undefined)
   .option("--use-app <useApp>", "Use running APP dev server", undefined)
   .option("--host <host>", "set emulator host address", "0.0.0.0")
-  .option("--port <port>", "set emulator port value", EMU_PORT)
+  .option("--port <port>", "set emulator port value", `${EMU_PORT}`)
   .option("--build", "build the API and APP before starting the emulator", false)
   .option("--verbose", "show debug logs", false)
   .option("--ui", "enable dashboard UI", false)
