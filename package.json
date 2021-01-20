@@ -1,5 +1,5 @@
 {
-  "name": "@manekinekko/swa-emu",
+  "name": "@azure/static-web-apps-cli",
   "version": "0.0.1-alpha.7",
   "description": "Azure Static Web Apps Emulator for Auth, API and static content",
   "scripts": {
@@ -14,7 +14,7 @@
     "swa": "./dist/cli.js",
     "swa-emu": "./dist/cli.js"
   },
-  "author": "Wassim Chegham <github@wassim.dev>",
+  "author": "Microsoft Corporation",
   "dependencies": {
     "blessed": "^0.1.81",
     "commander": "^5.1.0",
@@ -44,7 +44,7 @@
     "ts-jest": "^26.4.4",
     "typescript": "^4.1.2"
   },
-  "homepage": "https://github.com/manekinekko/swa-emulator#readme",
+  "homepage": "https://github.com/azure/swa-emulator#readme",
   "private": false,
   "keywords": [
     "azure",
@@ -56,11 +56,11 @@
     "staticwebapp"
   ],
   "bugs": {
-    "url": "https://github.com/manekinekko/swa-emulator/issues"
+    "url": "https://github.com/azure/swa-emulator/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/manekinekko/swa-emulator.git"
+    "url": "https://github.com/azure/swa-emulator.git"
   },
   "license": "MIT"
 }

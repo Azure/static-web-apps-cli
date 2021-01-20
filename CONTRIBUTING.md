@@ -1,7 +1,18 @@
 # Contributing to this project
 
-We would love for you to contribute to the SWA EMU project and help make it even better
-than it is today! As a contributor, here are the guidelines we would like you
+This project welcomes contributions and suggestions. Most contributions require you to agree to a
+Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
+the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+
+When you submit a pull request, a CLA bot will automatically determine whether you need to provide
+a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
+provided by the bot. You will only need to do this once across all repos using our CLA.
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
+contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+As a contributor, here are the guidelines we would like you
 to follow:
 
  - [Code of Conduct](#coc)
@@ -13,7 +24,7 @@ to follow:
 
 ## <a name="coc"></a> Code of Conduct
 
-You can read about the SWA EMU project code of conduct [here](https://github.com/manekinekko/swa-emulator/blob/master/CODE_OF_CONDUCT.md).
+You can read about the SWA EMU project code of conduct [here](https://github.com/azure/static-web-apps-cli/blob/main/CODE_OF_CONDUCT.md).
 
 ## <a name="issue"></a> Found an Issue?
 
@@ -44,18 +55,18 @@ We will be insisting on a minimal reproduce scenario in order to save maintainer
 
 Unfortunately we are not able to investigate / fix bugs without a minimal reproduction, so if we don't hear back from you we are going to close an issue that don't have enough info to be reproduced.
 
-You can file new issues by filling out our [new issue form](https://github.com/manekinekko/swa-emulator/issues/new).
+You can file new issues by filling out our [new issue form](https://github.com/azure/static-web-apps-cli/issues/new).
 
 
 ### <a name="submit-pr"></a> Submitting a Pull Request (PR)
 Before you submit your Pull Request (PR) consider the following guidelines:
 
-* Search [GitHub](https://github.com/manekinekko/swa-emulator/pulls) for an open or closed PR
+* Search [GitHub](https://github.com/azure/static-web-apps-cli/pulls) for an open or closed PR
   that relates to your submission. You don't want to duplicate effort.
 * Make your changes in a new git branch:
 
      ```shell
-     git checkout -b my-fix-branch master
+     git checkout -b my-fix-branch main
      ```
 
 * Create your patch, **including appropriate test cases**.
@@ -77,14 +88,14 @@ Before you submit your Pull Request (PR) consider the following guidelines:
     git push origin my-fix-branch
     ```
 
-* In GitHub, send a pull request to `swa-emulator:master`.
+* In GitHub, send a pull request to `static-web-apps-cli:main`.
 * If we suggest changes then:
   * Make the required updates.
   * Re-run the test suites to ensure tests are still passing.
   * Rebase your branch and force push to your GitHub repository (this will update your Pull Request):
 
     ```shell
-    git rebase master -i
+    git rebase main -i
     git push -f
     ```
 
@@ -101,10 +112,10 @@ from the main (upstream) repository:
     git push origin --delete my-fix-branch
     ```
 
-* Check out the master branch:
+* Check out the main branch:
 
     ```shell
-    git checkout master -f
+    git checkout main -f
     ```
 
 * Delete the local branch:
@@ -113,10 +124,10 @@ from the main (upstream) repository:
     git branch -D my-fix-branch
     ```
 
-* Update your master with the latest upstream version:
+* Update your main with the latest upstream version:
 
     ```shell
-    git pull --ff upstream master
+    git pull --ff upstream main
     ```
 
 ## <a name="rules"></a> Coding Rules
@@ -125,8 +136,6 @@ To ensure consistency throughout the source code, keep these rules in mind as yo
 
 * All features or bug fixes **must be tested** by one or more specs (unit-tests or e2e-tests).
 * All public API methods **must be documented**.
-* We follow [Google's JavaScript Style Guide][js-style-guide], but wrap all code at
-  **100 characters**.
 
 ## <a name="commit"></a> Commit Message Guidelines
 
@@ -208,8 +217,4 @@ reference GitHub issues that this commit **Closes**.
 
 **Breaking Changes** should start with the word `BREAKING CHANGE:` with a space or two newlines. The rest of the commit message is then used for this.
 
-A detailed explanation can be found in this [document][commit-message-format].
-
-[commit-message-format]: https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#
-[GitHub]: https://github.com/manekinekko/swa-emulator
-[js-style-guide]: https://google.github.io/styleguide/jsguide.html
+[GitHub]: https://github.com/azure/static-web-apps-cli
