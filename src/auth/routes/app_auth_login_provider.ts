@@ -1,39 +1,19 @@
-
 import { response } from "../../utils";
-const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `http://localhost:4242`;
 
-const httpTrigger = async function (context: Context, req: ServerRequest) {
-  const provider = context.bindingData?.provider;
-  const { post_login_redirect_uri } = req.query;
+const fs = require("fs").promises;
+const path = require("path");
 
-  const location = `${SWA_EMU_AUTH_URI}/.redirect/${provider}?hostName=localhost&staticWebAppsAuthNonce=${context.invocationId}&post_login_redirect_uri=${post_login_redirect_uri}`;
+const httpTrigger = async function (context: Context) {
+  const body = await fs.readFile(path.join(__dirname, "..", "index.html"));
 
   context.res = response({
     context,
-    status: 302,
-    cookies: [
-      {
-        name: "StaticWebAppsAuthContextCookie",
-        value: process.env.StaticWebAppsAuthContextCookie,
-        path: "/",
-        // secure: false,
-        HttpOnly: false,
-        domain: "localhost",
-        // SameSite: "None",
-      },
-      {
-        name: "StaticWebAppsAuthCookie__PROVIDER",
-        value: provider,
-        path: "/",
-        secure: false,
-        HttpOnly: false,
-        domain: "localhost",
-        // SameSite: "None",
-      },
-    ],
+    status: 200,
     headers: {
-      location,
+      "Content-Type": "text/html",
+      status: 200,
     },
+    body,
   });
 };
 

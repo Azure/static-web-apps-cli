@@ -8,7 +8,9 @@
     "test": "jest --detectOpenHandles --silent --verbose",
     "build": "tsc",
     "prebuild": "rm -fr dist",
-    "watch": "tsc --watch"
+    "postbuild": "npm run copy-assets",
+    "watch": "tsc --watch",
+    "copy-assets": "cp -r ./src/auth/ ./dist/auth"
   },
   "bin": {
     "swa": "./dist/cli.js",
