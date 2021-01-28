@@ -1,0 +1,64 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Azure SDK Partner Pipeline Drop
+
+on: 
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch'     
+        required: true
+        default: 'main'
+
+jobs:
+#  test:
+#    runs-on: ${{ matrix.os }}
+#    strategy:
+#      matrix:
+#        os: [macos-latest, windows-latest, ubuntu-18.04]
+#        node-version: [10.x, 12.x, 14.x]
+#
+#    steps:
+#    - uses: actions/checkout@v2
+#    - name: Use Node.js ${{ matrix.node-version }}
+#      uses: actions/setup-node@v1
+#      with:
+#        node-version: ${{ matrix.node-version }}
+#    - run: npm ci
+#    - run: npm test
+
+  package:
+#    needs: [test]
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+
+      - run: npm ci
+      - run: npm run build
+#      - run: npm version prerelease --preid=ci-$GITHUB_RUN_ID --no-git-tag-version
+      - run: npm pack
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+            name: package
+            path: "*.tgz"
+
+  copy:
+      name: "Copy to Azure SDK Partner Pipeline Drop"
+      needs: [package]
+      runs-on: ubuntu-18.04
+      steps:
+      - name: Upload
+        uses: actions/download-artifact@v2
+        with:
+            name: package
+      - run: |
+          ls -la
+          # azcopy /Source:. /Dest:$AZURE_SDK_DROP_URL/azure-staticwebapps/npm/
+        env:
+          AZURE_SDK_DROP_URL: ${{secrets.AZURE_SDK_DROP_URL}}
