@@ -55,8 +55,7 @@ jobs:
           ls -la
           PACKAGE_VERSION=`echo $(ls *.tgz) | sed -e 's/\.tgz$//'`
           echo $PACKAGE_VERSION
-          azcopy --help
-          azcopy --source $(ls *.tgz) --destination "$AZURE_SDK_DROP_URL/azure-staticwebapps/npm/$PACKAGE_VERSION/$(ls *.tgz)" --dest-key $AZURE_SDK_DROP_ACCESS_KEY
+          az storage blob upload -n azure-staticwebapps/npm/$PACKAGE_VERSION/$(ls *.tgz) -c drops -f $(ls *.tgz) --account-name $AZURE_SDK_STORAGE_ACCOUNT_NAME --account-key $AZURE_SDK_DROP_ACCESS_KEY
         env:
-          AZURE_SDK_DROP_URL: ${{secrets.AZURE_SDK_DROP_URL}}
+          AZURE_SDK_STORAGE_ACCOUNT_NAME: ${{secrets.AZURE_SDK_STORAGE_ACCOUNT_NAME}}
           AZURE_SDK_DROP_ACCESS_KEY: ${{secrets.AZURE_SDK_DROP_ACCESS_KEY}}
