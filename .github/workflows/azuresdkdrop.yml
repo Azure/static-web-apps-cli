@@ -55,7 +55,7 @@ jobs:
           ls -la
           PACKAGE_VERSION=`echo $(ls *.tgz) | sed -e 's/\.tgz$//'`
           echo $PACKAGE_VERSION
-          azcopy /Source:. /Dest:$AZURE_SDK_DROP_URL/azure-staticwebapps/npm/$PACKAGE_VERSION /DestKey:$AZURE_SDK_DROP_ACCESS_KEY /S
+          azcopy /Source:$(pwd) /Dest:$AZURE_SDK_DROP_URL/azure-staticwebapps/npm/$PACKAGE_VERSION /DestKey:$AZURE_SDK_DROP_ACCESS_KEY /S
         env:
           AZURE_SDK_DROP_URL: ${{secrets.AZURE_SDK_DROP_URL}}
           AZURE_SDK_DROP_ACCESS_KEY: ${{secrets.AZURE_SDK_DROP_ACCESS_KEY}}
