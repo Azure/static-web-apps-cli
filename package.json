@@ -3,6 +3,7 @@
   "version": "0.0.1-alpha.7",
   "description": "Azure Static Web Apps Emulator for Auth, API and static content",
   "scripts": {
+    "release": "release-it --preRelease=alpha",
     "pretest": "npm run build",
     "test": "jest --detectOpenHandles --silent --verbose",
     "build": "tsc",
@@ -27,6 +28,9 @@
     "yaml": "^1.10.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-angular": "^11.0.0",
+    "@release-it/conventional-changelog": "^2.0.0",
     "@types/blessed": "^0.1.17",
     "@types/cookie": "^0.4.0",
     "@types/http-proxy": "^1.17.4",
@@ -40,6 +44,7 @@
     "lint-staged": "^10.5.3",
     "mock-fs": "^4.13.0",
     "prettier": "^2.2.1",
+    "release-it": "^14.2.2",
     "supertest": "^4.0.2",
     "ts-jest": "^26.4.4",
     "typescript": "^4.1.2"
