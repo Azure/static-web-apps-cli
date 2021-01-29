@@ -41,7 +41,7 @@
     "ts-jest": "^26.4.4",
     "typescript": "^4.1.2"
   },
-  "homepage": "https://github.com/azure/swa-emulator#readme",
+  "homepage": "https://github.com/azure/static-web-apps-cli#readme",
   "private": false,
   "keywords": [
     "azure",
@@ -53,11 +53,11 @@
     "staticwebapp"
   ],
   "bugs": {
-    "url": "https://github.com/azure/swa-emulator/issues"
+    "url": "https://github.com/azure/static-web-apps-cli/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/azure/swa-emulator.git"
+    "url": "https://github.com/azure/static-web-apps-cli.git"
   },
   "license": "MIT"
 }
