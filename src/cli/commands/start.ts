@@ -6,19 +6,18 @@ import shell from "shelljs";
 import builder from "../../builder";
 import { Dashboard } from "../../dashboard";
 import { createRuntimeHost } from "../../runtimeHost";
-import { GithubActionSWAConfig, isPortAvailable, parseUrl, readConfigFile } from "../../utils";
+import { GithubActionSWAConfig, isAcceptingTcpConnections, isHttpUrl, isPortAvailable, parseUrl, readConfigFile } from "../../utils";
 import { DEFAULT_CONFIG } from "../config";
 
 export async function start(startContext: string, program: CommanderStatic) {
-  if (startContext.startsWith("http")) {
+  if (isHttpUrl(startContext)) {
     // start the emulator and proxy app to the provided uri
-    let { host, port } = parseUrl(startContext);
-    port = port || 4280;
+    let { hostname, port } = parseUrl(startContext);
 
     // make sure host and port are available
     try {
-      const portAvailable = await isPortAvailable({ port, host });
-      if (portAvailable) {
+      const appListening = await isAcceptingTcpConnections({ port, host: hostname });
+      if (appListening ===  false) {
         console.info(`INFO: Could not connect to "${startContext}". Is the server up and running?`);
         process.exit(0);
       } else {

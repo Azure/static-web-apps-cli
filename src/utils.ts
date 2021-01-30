@@ -290,6 +290,32 @@ export function argv<T extends string | number | boolean | null>(flag: string): 
 
   return null as T;
 }
+
+export function isAcceptingTcpConnections({ host = "127.0.0.1", port }: { host?: string; port: number }) {
+  return new Promise<boolean>((resolve) => {
+    const socket = net.createConnection(port, host);
+
+    socket
+      .once("error", () => {
+        resolve(false);
+        socket.end();
+      })
+      .once("connect", () => {
+        resolve(true);
+        socket.end();
+      })
+  });
+}
+
+export function isHttpUrl(input: string) {
+  try {
+    const url = new URL(input);
+    return url.protocol.startsWith("http");
+  } catch {
+    return false;
+  }
+}
+
 export async function isPortAvailable({ host = "127.0.0.1", port }: { host?: string; port: number }) {
   return new Promise<boolean>((resolve, reject) => {
     const server = net.createServer();
