@@ -8,6 +8,11 @@ const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
 import { validateCookie } from "./utils";
 import { currentUser } from "./userManager";
 
+const SWA_EMU_APP_URI = process.env.SWA_EMU_APP_URI || "http://localhost:4200";
+const SWA_EMU_API_URI = process.env.SWA_EMU_API_URI || "http://localhost:7071";
+const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || "http://localhost:4242";
+const SWA_EMU_HOST = process.env.SWA_EMU_HOST || "0.0.0.0";
+const SWA_EMU_PORT = parseInt(process.env.SWA_EMU_PORT || "", 10);
 type UserDefinedRoute = {
   route: string;
   allowedRoles?: string[];
@@ -22,7 +27,7 @@ const serveStatic = (file: string, res: http.ServerResponse) => {
       res.end(JSON.stringify(err));
       return;
     }
-    console.log(">> serving", file);
+    console.log("serving", file);
     res.writeHead(200);
     res.end(data);
   });
@@ -97,7 +102,7 @@ const server = http.createServer(function (req, res) {
 
   // proxy AUTH request to AUTH emulator
   if (req.url.startsWith("/.auth")) {
-    const target = process.env.SWA_EMU_AUTH_URI || "http://localhost:4242";
+    const target = SWA_EMU_AUTH_URI;
     req.url = `/app${req.url}`;
 
     console.log("auth>", req.method, target + req.url);
@@ -117,7 +122,7 @@ const server = http.createServer(function (req, res) {
 
   // proxy API request to local API
   else if (req.url.startsWith(`/${process.env.SWA_EMU_API_PREFIX || "api"}`)) {
-    const target = process.env.SWA_EMU_API_URI || "http://localhost:7071";
+    const target = SWA_EMU_API_URI;
     console.log("api>", req.method, target + req.url);
 
     proxyApi.web(req, res, {
@@ -155,7 +160,7 @@ const server = http.createServer(function (req, res) {
 
   // proxy APP request to local APP
   else {
-    const target = process.env.SWA_EMU_APP_URI || "http://localhost:4200";
+    const target = SWA_EMU_APP_URI;
     console.log("app>", req.method, target + req.url);
 
     proxyApp.web(req, res, {
@@ -163,7 +168,7 @@ const server = http.createServer(function (req, res) {
       secure: false,
     });
 
-    proxyApp.on("error", function (err, req, res) {
+    proxyApp.on("error", function (err) {
       console.log("app>>", req.method, target + req.url);
       res.writeHead(500, {
         "Content-Type": "text/plain",
@@ -174,8 +179,14 @@ const server = http.createServer(function (req, res) {
   }
 });
 
-const port = parseInt(process.env.SWA_EMU_PORT || "", 10);
-const host = process.env.SWA_EMU_HOST || "0.0.0.0";
-const address = `${host}:${port}`;
-console.log(`>> SWA listening on ${address}`);
+const port = SWA_EMU_PORT;
+const host = SWA_EMU_HOST || "0.0.0.0";
+const address = `http://${host}:${port}`;
+console.log(`SWA listening on ${address}`);
+server.on("upgrade", function (req, socket, head) {
+  proxyApp.ws(req, socket, head, {
+    target: process.env.SWA_EMU_APP_URI,
+    secure: false,
+  });
+});
 server.listen(port, host);
