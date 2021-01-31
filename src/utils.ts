@@ -96,30 +96,62 @@ export const decodeCookie = (cookieValue: any): ClientPrincipal => {
   return JSON.parse(decodedValue);
 };
 
+function sanitizeUserConfig(overrideConfig: Partial<GithubActionSWAConfig>) {
+  let appLocation = undefined;
+  let apiLocation = undefined;
+  let appArtifactLocation = undefined;
+
+  if (overrideConfig.appLocation) {
+    appLocation = path.normalize(path.join(process.cwd(), overrideConfig.appLocation || `.${path.sep}`));
+    if (path.isAbsolute(overrideConfig.appLocation)) {
+      appLocation = overrideConfig.appLocation;
+    }
+  }
+
+  if (overrideConfig.apiLocation) {
+    apiLocation = path.normalize(path.join(process.cwd(), overrideConfig.apiLocation || `${path.sep}api`));
+    if (path.isAbsolute(overrideConfig.apiLocation)) {
+      apiLocation = overrideConfig.apiLocation;
+    }
+  }
+
+  if (overrideConfig.appArtifactLocation) {
+    appArtifactLocation = path.normalize(path.join(process.cwd(), overrideConfig.appArtifactLocation || `.${path.sep}`));
+    if (path.isAbsolute(overrideConfig.appArtifactLocation)) {
+      appArtifactLocation = overrideConfig.appArtifactLocation;
+    }
+  }
+
+  return {
+    appLocation,
+    apiLocation,
+    appArtifactLocation,
+  };
+}
+
 export const readConfigFile = ({ overrideConfig }: { overrideConfig?: Partial<GithubActionSWAConfig> } = {}):
   | Partial<GithubActionSWAConfig>
   | undefined => {
   const warningMessage = "WARNING: SWA configuration not found.";
   const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
 
+  // does the config folder exist?
   if (fs.existsSync(githubActionFolder) === false) {
     console.warn(warningMessage);
-    return {
-      appLocation: path.normalize(path.join(process.cwd(), overrideConfig?.appLocation || `.${path.sep}`)),
-      apiLocation: path.normalize(path.join(process.cwd(), overrideConfig?.apiLocation || `${path.sep}api`)),
-      appArtifactLocation: path.normalize(path.join(process.cwd(), overrideConfig?.appArtifactLocation || `.${path.sep}`)),
-    };
+    return overrideConfig && sanitizeUserConfig(overrideConfig);
   }
 
   // find the SWA GitHub action file
+  // @TODO handle multiple config file
   let githubActionFile = fs
     .readdirSync(githubActionFolder)
     .filter((file) => file.includes("azure-static-web-apps") && file.endsWith(".yml"))
     .pop();
 
+  // does the config file exist?
   if (!githubActionFile || fs.existsSync(githubActionFile)) {
     console.warn(warningMessage);
-    return overrideConfig;
+    return overrideConfig && sanitizeUserConfig(overrideConfig);
   }
 
   githubActionFile = path.resolve(githubActionFolder, githubActionFile);
@@ -195,21 +227,22 @@ export const readConfigFile = ({ overrideConfig }: { overrideConfig?: Partial<Gi
 
   // override SWA config with user's config (if provided)
   if (overrideConfig) {
+    const { apiLocation, appArtifactLocation, appLocation } = sanitizeUserConfig(overrideConfig);
     // if the user provides an app artifact location, use that information
     if (overrideConfig.appLocation) {
-      app_location = path.normalize(path.join(process.cwd(), overrideConfig.appLocation));
+      app_location = appLocation;
     }
 
     // if the user provides an app artifact location, use that information
     // otherwise, try getting that information from the config file (if it's available)
     if (overrideConfig.appArtifactLocation) {
-      app_artifact_location = path.normalize(path.join(process.cwd(), overrideConfig.appArtifactLocation));
+      app_artifact_location = appArtifactLocation;
     }
 
     // if the user provides an api location, use that information
     // otherwise, try getting that information from the config file (if it's available)
     if (overrideConfig.apiLocation) {
-      api_location = path.normalize(path.join(process.cwd(), overrideConfig.apiLocation));
+      api_location = apiLocation;
     }
   }
 
@@ -292,7 +325,7 @@ export function isAcceptingTcpConnections({ host = "127.0.0.1", port }: { host?:
       .once("connect", () => {
         resolve(true);
         socket.end();
-      })
+      });
   });
 }
 
@@ -333,4 +366,12 @@ export function parseUrl(url: string) {
     host,
     hostname,
   };
+}
+
+// @TODO
+export function computeAppLocationFromArtifactLocation(appArtifactLocation: string | undefined) {
+  if (appArtifactLocation) {
+    return path.dirname(appArtifactLocation).split(path.sep).pop();
+  }
+  return undefined;
 }

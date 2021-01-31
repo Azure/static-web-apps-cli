@@ -1,6 +1,6 @@
-import fs from "fs";
 import { spawn } from "child_process";
 import { CommanderStatic } from "commander";
+import fs from "fs";
 import path from "path";
 import shell from "shelljs";
 import builder from "../../builder";
@@ -17,7 +17,7 @@ export async function start(startContext: string, program: CommanderStatic) {
     // make sure host and port are available
     try {
       const appListening = await isAcceptingTcpConnections({ port, host: hostname });
-      if (appListening ===  false) {
+      if (appListening === false) {
         console.info(`INFO: Could not connect to "${startContext}". Is the server up and running?`);
         process.exit(0);
       } else {
@@ -103,29 +103,30 @@ export async function start(startContext: string, program: CommanderStatic) {
     SWA_EMU_PORT: program.port,
   };
 
-  const { command: hostCommand, args: hostArgs } = createRuntimeHost({
-    appPort: appUriPort,
-    proxyHost: program.host,
-    proxyPort: program.port,
-    appLocation: configFile?.appLocation,
-    appArtifactLocation: configFile?.appArtifactLocation,
-  });
+  // handle the APP location config
+  let serveStaticContent = undefined;
+  if (program.useApp) {
+    serveStaticContent = `echo 'using app dev server at ${program.useApp}'`;
+  } else {
+    const { command: hostCommand, args: hostArgs } = createRuntimeHost({
+      appPort: appUriPort,
+      proxyHost: program.host,
+      proxyPort: program.port,
+      appLocation: configFile?.appLocation,
+      appArtifactLocation: configFile?.appArtifactLocation,
+    });
+    serveStaticContent = `${hostCommand} ${hostArgs.join(" ")}`;
+  }
 
   // handle the API location config
   let serveApiContent = undefined;
-
-  // serve the api if and only if the user provide the --api-location flag
-  if (program.apiLocation && configFile?.apiLocation) {
-    serveApiContent = `([ -d '${configFile?.apiLocation}' ] && (cd ${configFile?.apiLocation}; func start --cors *)) || echo 'No API found. Skipping.'`;
-  }
-
   if (program.useApi) {
-    serveApiContent = `echo 'using API dev server at ${program.useApi}'`;
-  }
-
-  let serveStaticContent = `${hostCommand} ${hostArgs.join(" ")}`;
-  if (program.useApp) {
-    serveStaticContent = `echo 'using APP dev server at ${program.useApp}'`;
+    serveApiContent = `echo 'using api dev server at ${program.useApi}'`;
+  } else {
+    // serve the api if and only if the user provide the --api-location flag
+    if (program.apiLocation && configFile?.apiLocation) {
+      serveApiContent = `([ -d '${configFile?.apiLocation}' ] && (cd ${configFile?.apiLocation}; func start --cors *)) || echo 'No API found. Skipping.'`;
+    }
   }
 
   // provide binaries
@@ -177,8 +178,9 @@ export async function start(startContext: string, program: CommanderStatic) {
       });
 
     // start hosting
-    const hosting = spawnx(hostCommand, hostArgs);
-    dashboard.stream("hosting", hosting);
+    // FIXME: https://github.com/Azure/static-web-apps-cli/issues/40
+    // const hosting = spawnx(hostCommand, hostArgs);
+    // dashboard.stream("hosting", hosting);
 
     // start functions
     const functions = spawnx(`[ -d '${apiLocation}' ] && (cd ${apiLocation}; func start --cors *) || echo 'No API found. Skipping.'`, []);
