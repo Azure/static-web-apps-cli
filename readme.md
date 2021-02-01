@@ -28,12 +28,6 @@ The Static Web Apps CLI is built on top of the following components:
 
 Before Static Web Apps CLI bootstraps, it also can read (using the `--build` options) the local SWA github workflow file (created by [Azure Static Web Apps](https://bit.ly/2ZNcakP)) and builds both the static app and the api according to the user's config. And pretty much like SWA, if the user isn't using an API, Static Web Apps CLI will skip the API build.
 
-## Authentication emulation flow
-
-The Authentication flow is illustrated in the following sequence diagram (or [open in a new tab](https://bit.ly/swa-auth-flow)):
-
-![SWA Auth flow diagram](docs/swa-auth-flow.png)
-
 ## Disclaimer
 
 Static Web Apps CLI is still in developer preview and not yet ready for prime time. You will encounter issues, so please report them or help us fix them. Your contributions will be very appreciated 🙏
@@ -45,13 +39,13 @@ Using `npm` or `yarn`:
 - Install the cli: `npm install -g @azure/static-web-apps-cli@latest`
 - Open a SWA app folder at the root (outside any /api or /app folders): `cd my-awesome-swa-app`
 - Start the cli: `swa`
-- Access your SWA app from `http://localhost`
+- Access your SWA app from `http://localhost:4280`
 
 Using `npx`:
 
 - Open a SWA app folder at the root (outside any /api or /app folders): `cd my-awesome-swa-app`
 - Start the cli: `npx @azure/static-web-apps-cli@latest`
-- Access your SWA app from `http://localhost`
+- Access your SWA app from `http://localhost:4280`
 
 ### Start the cli from a specific folder
 
@@ -152,13 +146,13 @@ The cli supports local authentication flow and mocks the following providers:
 | Facebook | `.auth/login/facbook`                                                                                                             | ✅               |
 | AAD      | `.auth/login/aad`                                                                                                                 | ✅               |
 
-When requesting the `.auth/me` endpoint, a mocked user `clientPrincipal` will be returned by the cli. Here is an example:
+When requesting the `.auth/me` endpoint, a `clientPrincipal` containing the mock information configured by the user will be returned by the cli. Here is an example:
 
 ```json
 {
   "clientPrincipal": {
     "identityProvider": "twitter",
-    "userId": "59cd31faa8c34919ac22c19af50482b8",
+    "userId": "123456789",
     "userDetails": "manekinekko",
     "userRoles": ["anonymous", "authenticated"]
   }
@@ -169,10 +163,9 @@ When requesting the `.auth/me` endpoint, a mocked user `clientPrincipal` will be
 
 ## Caveats
 
-- Custom routes are not yet supported (see [#6](https://github.com/azure/static-web-apps-cli/issues/6))
+- Custom routes are not yet fully supported (see [#6](https://github.com/azure/static-web-apps-cli/issues/6))
 - Authorization and roles are not fully supported (see [#7](https://github.com/azure/static-web-apps-cli/issues/7)).
 - The cli is serving all traffic over HTTP (HTTPS support will be added soon) (see [#4](https://github.com/azure/static-web-apps-cli/issues/4)).
-- When using GitHub, the OAuth client ID and client secret are provided as-is for dev purposes ONLY. You should create your own OAuth GitHub app!
 
 ## Troubleshooting
 
