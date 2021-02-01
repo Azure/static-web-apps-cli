@@ -1,6 +1,5 @@
-
 import { response } from "../../utils";
-const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || `http://localhost:4242`;
+const SWA_EMU_HOST = "http://localhost:" + process.env.SWA_EMU_PORT;
 
 const httpTrigger = async function (context: Context, req: ServerRequest) {
   const { post_logout_redirect_uri } = req.query;
@@ -9,16 +8,16 @@ const httpTrigger = async function (context: Context, req: ServerRequest) {
     status: 302,
     cookies: [
       {
-        name: "AppServiceAuthSession",
+        name: "StaticWebAppsAuthCookie",
         value: "deleted",
         path: "/",
-        // secure: false,
         HttpOnly: false,
+        domain: "localhost",
         expires: new Date(1).toUTCString(),
-      },
+      }
     ],
     headers: {
-      location: `${SWA_EMU_AUTH_URI}/.auth/logout/complete?post_logout_redirect_uri=${post_logout_redirect_uri}`,
+      location: `${SWA_EMU_HOST}${post_logout_redirect_uri}`,
     },
   });
 };

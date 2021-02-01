@@ -8,9 +8,19 @@
     <link rel="shortcut icon" href="https://appservice.azureedge.net/images/static-apps/v3/favicon.svg" type="image/x-icon" />
     <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/4.1.1/css/bootstrap.min.css" crossorigin="anonymous" />
     <style>
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      .container-height {
+        flex: 1 0 auto;
+      }
       footer {
-        position: absolute;
-        bottom: 0;
+        flex-shrink: 0;
         width: 100%;
         background-color: #f5f5f5;
         left: -1px;
@@ -129,27 +139,24 @@
           </div>
         </div>
       </div>
-      <footer>
-        <div>Azure Static Web Apps local emulator (Version #STAMP#)</div>
-        <nav>
-          <ul>
-            <li><a href="">Contribute</a></li>
-            <li><a href="">Documentation</a></li>
-            <li><a href="">Privacy & Cookies</a></li>
-            <li><a href="">Terms of Use</a></li>
-          </ul>
-        </nav>
-        <div class="copyright">© Microsoft 2021</div>
-      </footer>
     </div>
+    <footer>
+      <div>Azure Static Web Apps local emulator (Version #STAMP#)</div>
+      <nav>
+        <ul>
+          <li><a href="">Contribute</a></li>
+          <li><a href="">Documentation</a></li>
+          <li><a href="">Privacy & Cookies</a></li>
+          <li><a href="">Terms of Use</a></li>
+        </ul>
+      </nav>
+      <div class="copyright">© Microsoft 2021</div>
+    </footer>
     <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
     <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/4.1.1/bootstrap.min.js" crossorigin="anonymous"></script>
     <script>
       function saveCookie(formElement) {
-        const data = {};
-        const formArray = formElement.serializeArray().forEach((item) => {
-          data[item.name] = item.value;
-        });
+        const data = localStorage[hashStorageKey(formElement)];
         document.cookie = `StaticWebAppsAuthCookie=${btoa(data)}; path=/`;
       }
       function redirectToApp() {
@@ -246,9 +253,9 @@
               if (Array.isArray(data[inputName])) {
                 input.val(data[inputName].join("\n"));
               } else if (input.val() === "") {
+                // set default values and cache entry
                 input.val(settings.defaultRoles.join("\n"));
-              } else {
-                input.val(data[inputName].join("\n"));
+                input.saveToLocalStorage();
               }
             } else if (inputName === "identityProvider") {
               // don't restore provider name from storage.

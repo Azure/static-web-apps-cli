@@ -5,8 +5,7 @@ import httpProxy from "http-proxy";
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
-import { validateCookie } from "./utils";
-import { currentUser } from "./userManager";
+import { decodeCookie, validateCookie } from "./utils";
 
 const SWA_EMU_APP_URI = process.env.SWA_EMU_APP_URI || "http://localhost:4200";
 const SWA_EMU_API_URI = process.env.SWA_EMU_API_URI || "http://localhost:7071";
@@ -31,6 +30,14 @@ const serveStatic = (file: string, res: http.ServerResponse) => {
     res.writeHead(200);
     res.end(data);
   });
+};
+
+const injectClientPrincipalCookies = (cookie: string | undefined, proxyReqOrRes: http.ServerResponse | http.ClientRequest) => {
+  if (cookie && validateCookie(cookie)) {
+    const user = decodeCookie(cookie);
+    const buff = Buffer.from(JSON.stringify(user), "utf-8");
+    proxyReqOrRes.setHeader("x-ms-client-principal", buff.toString("base64"));
+  }
 };
 
 const readRoutes = (folder: string): UserDefinedRoute[] => {
@@ -73,8 +80,8 @@ const server = http.createServer(function (req, res) {
   if (userDefinedRoute && routeTest(userDefinedRoute.route, req.url)) {
     // access control defined
     if (userDefinedRoute.allowedRoles) {
-      const user = currentUser();
-      if (!userDefinedRoute.allowedRoles.some((role) => user.userRoles.some((ur) => ur === role))) {
+      const user = decodeCookie(req.headers.cookie);
+      if (!userDefinedRoute.allowedRoles.some((role) => user.userRoles.some((ur: string) => ur === role))) {
         res.writeHead(401);
         res.end();
         return;
@@ -134,13 +141,10 @@ const server = http.createServer(function (req, res) {
       proxyApi.close();
     });
     proxyApi.on("proxyReq", (proxyReq, req) => {
-      const cookie = req.headers.cookie;
-
-      if (cookie && validateCookie(cookie)) {
-        const user = currentUser(cookie);
-        const buff = Buffer.from(JSON.stringify(user), "utf-8");
-        proxyReq.setHeader("x-ms-client-principal", buff.toString("base64"));
-      }
+      injectClientPrincipalCookies(req.headers.cookie, proxyReq);
+    });
+    proxyApi.on("proxyRes", function (_proxyRes, req) {
+      injectClientPrincipalCookies(req.headers.cookie, res);
     });
   }
 
