@@ -10,7 +10,7 @@
     "prebuild": "rm -fr dist",
     "postbuild": "npm run copy-assets",
     "watch": "tsc --watch",
-    "copy-assets": "cp -r ./src/auth/ ./dist/auth"
+    "copy-assets": "cp -r ./src/auth/ ./dist"
   },
   "bin": {
     "swa": "./dist/cli.js",
