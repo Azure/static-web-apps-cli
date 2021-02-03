@@ -17,7 +17,8 @@ const httpTrigger = async function (context: Context, req: ServerRequest) {
       }
     ],
     headers: {
-      location: `${SWA_EMU_HOST}${post_logout_redirect_uri}`,
+      location: `${SWA_EMU_HOST}${post_logout_redirect_uri || ''}`,
+
     },
   });
 };
