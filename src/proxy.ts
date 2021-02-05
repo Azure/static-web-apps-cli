@@ -12,6 +12,7 @@ const SWA_EMU_API_URI = process.env.SWA_EMU_API_URI || "http://localhost:7071";
 const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || "http://localhost:4242";
 const SWA_EMU_HOST = process.env.SWA_EMU_HOST || "0.0.0.0";
 const SWA_EMU_PORT = parseInt(process.env.SWA_EMU_PORT || "", 10);
+const SWA_404 = path.resolve(__dirname, "..", "public", "404.html");
 type UserDefinedRoute = {
   route: string;
   allowedRoles?: string[];
@@ -91,8 +92,7 @@ const server = http.createServer(function (req, res) {
     // Wanting a specific status code but no attached route
     else if (userDefinedRoute.statusCode && !userDefinedRoute.serve) {
       if (userDefinedRoute.statusCode === 404) {
-        const file404 = path.resolve(__dirname, "..", "mock-pages", "404.html");
-        serveStatic(file404, res);
+        serveStatic(SWA_404, res);
         return;
       } else {
         res.writeHead(userDefinedRoute.statusCode);
@@ -151,8 +151,7 @@ const server = http.createServer(function (req, res) {
   // detected a proxy pass-through from http-server, so 404 it
   else if (req.url.startsWith("/routes.json")) {
     console.log("proxy>", req.method, req.headers.host + req.url);
-    const file404 = path.resolve(__dirname, "404.html");
-    serveStatic(file404, res);
+    serveStatic(SWA_404, res);
   }
 
   // detected SPA mode
