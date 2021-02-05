@@ -1,11 +1,7 @@
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      StaticWebAppsAuthContextCookie: string;
-      AppServiceAuthSession: string;
       DEBUG: string;
-      GITHUB_CLIENT_ID: string;
-      GITHUB_CLIENT_SECRET: string;
       SWA_EMU_AUTH_URI: string;
       SWA_EMU_API_URI: string;
       SWA_EMU_APP_URI: string;

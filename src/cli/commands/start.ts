@@ -82,16 +82,9 @@ export async function start(startContext: string, program: CommanderStatic) {
     },
   });
 
+  // set env vars for current command
   const envVarsObj = {
-    // set env vars for current command
-    StaticWebAppsAuthCookie: "123",
-    StaticWebAppsAuthContextCookie: "abc",
-    AppServiceAuthSession: "1a2b3c",
     DEBUG: program.debug ? "*" : "",
-
-    // use the default dev token
-    GITHUB_CLIENT_ID: "",
-    GITHUB_CLIENT_SECRET: "",
     SWA_EMU_AUTH_URI: program.authUri,
     SWA_EMU_API_URI: program.useApi || program.apiUri,
     SWA_EMU_APP_URI: program.useApp || program.appUri,
