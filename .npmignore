@@ -1,8 +1,11 @@
-local.settings.json
 .vscode
 .github
 .release-it.json
 .editorconfig
-.tsconfig
+*tsconfig*
 .nvmrc
 .prettierrc
+src
+scripts
+*.config.js
+*.tar.gz
