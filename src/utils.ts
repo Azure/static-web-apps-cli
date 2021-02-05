@@ -385,11 +385,19 @@ export function computeAppLocationFromArtifactLocation(appArtifactLocation: stri
 }
 
 export function getBin(binary: string) {
-  // return `npx ${binary}`;
-
-  if (0 <= binary.indexOf(path.sep)) {
+  if (binary.indexOf(path.sep) >= 0) {
     return path.isAbsolute(binary) ? binary : path.resolve(binary);
   }
-  const binDir: string = spawnSync("npm", ["bin"], { cwd: process.cwd() }).stdout.toString().trim();
-  return path.resolve(binDir, /^win/.test(process.platform) ? `${binary}.cmd` : binary);
+
+  const binDirOutput = spawnSync(isWindows() ? "npm.cmd" : "npm", ["bin"], { cwd: process.cwd() });
+  const binDirErr = binDirOutput.stderr.toString();
+  if (binDirErr) {
+    console.error({ binDirErr });
+  }
+  const binDirOut = binDirOutput.stdout.toString().trim();
+  return path.resolve(binDirOut, isWindows() ? `${binary}.cmd` : binary);
+}
+
+export function isWindows() {
+  return process.platform === "win32" || /^(msys|cygwin)$/.test(process.env?.OSTYPE as string);
 }
