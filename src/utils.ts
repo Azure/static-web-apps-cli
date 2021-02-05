@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import YAML from "yaml";
 import net from "net";
+import { spawnSync } from "child_process";
 import { detectRuntime, RuntimeType } from "./runtimes";
 
 type ResponseOptions = {
@@ -377,5 +378,13 @@ export function computeAppLocationFromArtifactLocation(appArtifactLocation: stri
 }
 
 export function getBin(binary: string) {
-  return `npx ${binary}`;
+  // return `npx ${binary}`;
+
+  if (0 <= binary.indexOf(path.sep)) {
+    return path.isAbsolute(binary) ? binary : path.resolve(binary);
+  }
+  const binDir: string = spawnSync("npm", ["bin"], { cwd: process.cwd() }).stdout.toString().trim();
+  console.log({ binDir });
+
+  return path.resolve(binDir, /^win/.test(process.platform) ? `${binary}.cmd` : binary);
 }

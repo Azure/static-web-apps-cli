@@ -134,7 +134,7 @@ export async function start(startContext: string, program: CommanderStatic) {
 
   const startCommand = [
     // run concurrent commands
-    concurrentlyBin,
+    `${concurrentlyBin}`,
     `--restart-tries 3`,
     `--names " swa","auth"," app"," api"`, // 4 characters each
     `-c 'bgYellow.bold,bgMagenta.bold,bgCyan.bold,bgGreen.bold'`,
