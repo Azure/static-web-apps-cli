@@ -1,27 +1,11 @@
+import { spawnSync } from "child_process";
 import cookie from "cookie";
 import fs from "fs";
+import net from "net";
 import path from "path";
 import YAML from "yaml";
-import net from "net";
-import { spawnSync } from "child_process";
+import { DEFAULT_CONFIG } from "./cli/config";
 import { detectRuntime, RuntimeType } from "./runtimes";
-
-type ResponseOptions = {
-  [key: string]: any;
-};
-type ClientPrincipal = {
-  identityProvider: string;
-  userId: string;
-  userDetails: string;
-  userRoles: string[];
-};
-export type GithubActionSWAConfig = {
-  appBuildCommand: string;
-  apiBuildCommand: string;
-  appLocation: string;
-  apiLocation: string;
-  appArtifactLocation: string;
-};
 
 export const response = ({ context, status, headers, cookies, body = "" }: ResponseOptions) => {
   if (typeof status !== "number") {
@@ -97,31 +81,43 @@ export const decodeCookie = (cookieValue: any): ClientPrincipal => {
   return JSON.parse(decodedValue);
 };
 
-function sanitizeUserConfig(overrideConfig: Partial<GithubActionSWAConfig>) {
+function validateUserConfig(userConfig: Partial<GithubActionSWAConfig>) {
   let appLocation = undefined;
   let apiLocation = undefined;
   let appArtifactLocation = undefined;
 
-  if (overrideConfig.appLocation) {
-    appLocation = path.normalize(path.join(process.cwd(), overrideConfig.appLocation || `.${path.sep}`));
-    if (path.isAbsolute(overrideConfig.appLocation)) {
-      appLocation = overrideConfig.appLocation;
+  if (userConfig.appLocation) {
+    appLocation = path.normalize(path.join(process.cwd(), userConfig.appLocation || `.${path.sep}`));
+    if (path.isAbsolute(userConfig.appLocation)) {
+      appLocation = userConfig.appLocation;
     }
   }
 
-  if (overrideConfig.apiLocation) {
-    apiLocation = path.normalize(path.join(process.cwd(), overrideConfig.apiLocation || `${path.sep}api`));
-    if (path.isAbsolute(overrideConfig.apiLocation)) {
-      apiLocation = overrideConfig.apiLocation;
+  if (userConfig.apiLocation) {
+    if (isHttpUrl(userConfig.apiLocation)) {
+      apiLocation = userConfig.apiLocation;
+    } else {
+      // use the user's config and construct an absolute path
+      apiLocation = path.normalize(path.join(process.cwd(), userConfig.apiLocation));
+    }
+
+    if (path.isAbsolute(userConfig.apiLocation)) {
+      apiLocation = userConfig.apiLocation;
     }
   }
 
-  if (overrideConfig.appArtifactLocation) {
-    appArtifactLocation = path.normalize(path.join(process.cwd(), overrideConfig.appArtifactLocation || `.${path.sep}`));
-    if (path.isAbsolute(overrideConfig.appArtifactLocation)) {
-      appArtifactLocation = overrideConfig.appArtifactLocation;
+  if (userConfig.appArtifactLocation) {
+    appArtifactLocation = path.normalize(path.join(process.cwd(), userConfig.appArtifactLocation || `.${path.sep}`));
+    if (path.isAbsolute(userConfig.appArtifactLocation)) {
+      appArtifactLocation = userConfig.appArtifactLocation;
     }
   }
+
+  console.log({
+    appLocation,
+    apiLocation,
+    appArtifactLocation,
+  });
 
   return {
     appLocation,
@@ -130,16 +126,14 @@ function sanitizeUserConfig(overrideConfig: Partial<GithubActionSWAConfig>) {
   };
 }
 
-export const readConfigFile = ({ overrideConfig }: { overrideConfig?: Partial<GithubActionSWAConfig> } = {}):
-  | Partial<GithubActionSWAConfig>
-  | undefined => {
-  const warningMessage = "WARNING: SWA configuration not found.";
+export const readConfigFile = ({ userConfig }: { userConfig?: Partial<GithubActionSWAConfig> } = {}): Partial<GithubActionSWAConfig> | undefined => {
+  const warningMessage = "INFO: SWA configuration not found.";
   const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
 
   // does the config folder exist?
   if (fs.existsSync(githubActionFolder) === false) {
     console.warn(warningMessage);
-    return overrideConfig && sanitizeUserConfig(overrideConfig);
+    return userConfig && validateUserConfig(userConfig);
   }
 
   // find the SWA GitHub action file
@@ -152,7 +146,7 @@ export const readConfigFile = ({ overrideConfig }: { overrideConfig?: Partial<Gi
   // does the config file exist?
   if (!githubActionFile || fs.existsSync(githubActionFile)) {
     console.warn(warningMessage);
-    return overrideConfig && sanitizeUserConfig(overrideConfig);
+    return userConfig && validateUserConfig(userConfig);
   }
 
   githubActionFile = path.resolve(githubActionFolder, githubActionFile);
@@ -163,6 +157,8 @@ export const readConfigFile = ({ overrideConfig }: { overrideConfig?: Partial<Gi
     throw Error("TypeError: GitHub action file content should be a string");
   }
 
+  // MOTE: the YAML library will parse and return properties as sanke_case
+  // we will convert those properties to camelCase at the end of the function
   const swaYaml = YAML.parse(githubActionContent);
 
   if (!swaYaml) {
@@ -202,14 +198,14 @@ export const readConfigFile = ({ overrideConfig }: { overrideConfig?: Partial<Gi
 
   // extract the user's config and set defaults
   let {
-    app_build_command = "npm run build --if-present",
-    api_build_command = "npm run build --if-present",
-    app_location = path.sep,
-    app_artifact_location = path.sep,
-    api_location = "api",
+    app_build_command = DEFAULT_CONFIG.appBuildCommand,
+    api_build_command = DEFAULT_CONFIG.apiBuildCommand,
+    app_location = DEFAULT_CONFIG.appLocation,
+    app_artifact_location = DEFAULT_CONFIG.appArtifactLocation,
+    api_location = DEFAULT_CONFIG.apiLocation,
   } = swaBuildConfig.with;
 
-  // the following locations must be under the user's project folder
+  // the following locations (extracted from the config) should be under the user's project folder:
   // - app_location
   // - api_location
   // - app_artifact_location
@@ -226,27 +222,17 @@ export const readConfigFile = ({ overrideConfig }: { overrideConfig?: Partial<Gi
     app_artifact_location = path.join(app_location, app_artifact_location);
   }
 
-  // override SWA config with user's config (if provided)
-  if (overrideConfig) {
-    const { apiLocation, appArtifactLocation, appLocation } = sanitizeUserConfig(overrideConfig);
-    // if the user provides an app artifact location, use that information
-    if (overrideConfig.appLocation) {
-      app_location = appLocation;
-    }
-
-    // if the user provides an app artifact location, use that information
-    // otherwise, try getting that information from the config file (if it's available)
-    if (overrideConfig.appArtifactLocation) {
-      app_artifact_location = appArtifactLocation;
-    }
-
-    // if the user provides an api location, use that information
-    // otherwise, try getting that information from the config file (if it's available)
-    if (overrideConfig.apiLocation) {
-      api_location = apiLocation;
-    }
+  // override SWA config with user's config (if provided):
+  // if the user provides different app location, app artifact location or api location, use that information
+  if (userConfig) {
+    const { apiLocation, appArtifactLocation, appLocation } = validateUserConfig(userConfig);
+    app_location = userConfig.appLocation || appLocation;
+    app_artifact_location = userConfig.appArtifactLocation || appArtifactLocation;
+    api_location = userConfig.apiLocation || apiLocation;
   }
 
+  // convert variable names to camelCase
+  // instead of snake_case
   const config = {
     appBuildCommand: app_build_command,
     apiBuildCommand: api_build_command,
@@ -359,6 +345,27 @@ export async function isPortAvailable({ host = "127.0.0.1", port }: { host?: str
   });
 }
 
+export async function validateDevServerConfig(context: string) {
+  let { hostname, port } = parseUrl(context);
+
+  try {
+    const appListening = await isAcceptingTcpConnections({ port, host: hostname });
+    if (appListening === false) {
+      console.info(`INFO: Could not connect to "${context}". Is the server up and running?`);
+      process.exit(0);
+    } else {
+      return context;
+    }
+  } catch (err) {
+    if (err.message.includes("EACCES")) {
+      console.info(`INFO: Port "${port}" cannot be used. You might need elevated or admin privileges. Or, use a valid port: 1024 to 49151.`);
+    } else {
+      console.error(err.message);
+    }
+    process.exit(0);
+  }
+}
+
 export function parseUrl(url: string) {
   const { protocol, port, host, hostname } = new URL(url);
   return {
@@ -384,7 +391,5 @@ export function getBin(binary: string) {
     return path.isAbsolute(binary) ? binary : path.resolve(binary);
   }
   const binDir: string = spawnSync("npm", ["bin"], { cwd: process.cwd() }).stdout.toString().trim();
-  console.log({ binDir });
-
   return path.resolve(binDir, /^win/.test(process.platform) ? `${binary}.cmd` : binary);
 }

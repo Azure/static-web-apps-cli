@@ -15,8 +15,6 @@ const httpTrigger = async function (context: Context, req: ServerRequest) {
   }
 
   const clientPrincipal = decodeCookie(cookie);
-  console.log(typeof clientPrincipal);
-
 
   context.res = response({
     context,

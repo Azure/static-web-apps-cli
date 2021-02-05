@@ -11,7 +11,7 @@ import { DEFAULT_CONFIG } from "./config";
   program
     .option("--app-location <appLocation>", "set app folder (location for the application code)", DEFAULT_CONFIG.appLocation)
     .option(
-      "--app-artifact-location <appArtifactLocation>",
+      "--app, --app-artifact-location <appArtifactLocation>",
       "set app artifact folder (location where app files are built for production)",
       DEFAULT_CONFIG.appArtifactLocation
     )
@@ -21,8 +21,6 @@ import { DEFAULT_CONFIG } from "./config";
     .option("--auth-uri <authUri>", "set Auth uri", `http://localhost:${DEFAULT_CONFIG.authPort}`)
     .option("--api-uri <apiUri>", "set API uri", `http://localhost:${DEFAULT_CONFIG.apiPort}`)
     .option("--app-uri <appUri>", "set APP uri", `http://localhost:${DEFAULT_CONFIG.appPort}`)
-    .option("--use-api <useApi>", "Use running API dev server", undefined)
-    .option("--use-app <useApp>", "Use running APP dev server", undefined)
     .option("--host <host>", "set emulator host address", DEFAULT_CONFIG.host)
     .option("--port <port>", "set emulator port value", `${DEFAULT_CONFIG.port}`)
     .option("--build", "build the API and APP before starting the emulator", false)

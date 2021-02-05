@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import shell from "shelljs";
 import { detectRuntime, RuntimeType } from "./runtimes";
-import { getBin, GithubActionSWAConfig, readConfigFile } from "./utils";
+import { getBin, readConfigFile } from "./utils";
 
 const exec = (command: string, options = {}) => shell.exec(command, { async: false, ...options });
 
@@ -55,7 +55,7 @@ const builder = ({ config }: { config: Partial<GithubActionSWAConfig> }) => {
             // NOTE: API is optional. Build it only if it exists
             // This may result in a double-compile of some libraries if they are shared between the
             // Blazor app and the API, but it's an acceptable outcome
-            apiLocation = path.resolve(process.cwd(), apiLocation);
+            apiLocation = path.resolve(process.cwd(), apiLocation as string);
             if (fs.existsSync(apiLocation) === true && fs.existsSync(path.join(apiLocation, "host.json"))) {
               dotnetBuilder(apiLocation, "api_build", "bgYellow.bold");
             }
@@ -71,12 +71,12 @@ const builder = ({ config }: { config: Partial<GithubActionSWAConfig> }) => {
             }
 
             // build app
-            nodeBuilder(appLocation, appBuildCommand, "app_build", "bgGreen.bold");
+            nodeBuilder(appLocation, appBuildCommand as string, "app_build", "bgGreen.bold");
 
             // NOTE: API is optional. Build it only if it exists
-            apiLocation = path.resolve(process.cwd(), apiLocation);
+            apiLocation = path.resolve(process.cwd(), apiLocation as string);
             if (fs.existsSync(apiLocation) === true && fs.existsSync(path.join(apiLocation, "host.json"))) {
-              nodeBuilder(apiLocation, apiBuildCommand, "api_build", "bgYellow.bold");
+              nodeBuilder(apiLocation, apiBuildCommand as string, "api_build", "bgYellow.bold");
             }
           }
           break;

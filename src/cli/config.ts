@@ -1,11 +1,14 @@
-export const DEFAULT_CONFIG = {
+import path from "path";
+export const DEFAULT_CONFIG: SWACLIConfig = {
   port: 4280,
   host: "0.0.0.0",
   authPort: 4242,
   apiPort: 7071,
   appPort: 4200,
   apiPrefix: "api",
-  appLocation: "./",
-  appArtifactLocation: undefined,
-  apiLocation: undefined,
+  appLocation: `.${path.sep}`,
+  appArtifactLocation: `.${path.sep}`,
+  apiLocation: `.${path.sep}api`,
+  appBuildCommand: "npm run build --if-present",
+  apiBuildCommand: "npm run build --if-present",
 };

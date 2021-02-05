@@ -6,31 +6,15 @@ import shell from "shelljs";
 import builder from "../../builder";
 import { Dashboard } from "../../dashboard";
 import { createRuntimeHost } from "../../runtimeHost";
-import { getBin, GithubActionSWAConfig, isAcceptingTcpConnections, isHttpUrl, isPortAvailable, parseUrl, readConfigFile } from "../../utils";
+import { getBin, isHttpUrl, isPortAvailable, parseUrl, readConfigFile, validateDevServerConfig } from "../../utils";
 import { DEFAULT_CONFIG } from "../config";
 
 export async function start(startContext: string, program: CommanderStatic) {
-  if (isHttpUrl(startContext)) {
-    // start the emulator and proxy app to the provided uri
-    let { hostname, port } = parseUrl(startContext);
+  let useAppDevServer = null;
+  let useApiDevServer = null;
 
-    // make sure host and port are available
-    try {
-      const appListening = await isAcceptingTcpConnections({ port, host: hostname });
-      if (appListening === false) {
-        console.info(`INFO: Could not connect to "${startContext}". Is the server up and running?`);
-        process.exit(0);
-      } else {
-        program.useApp = startContext;
-      }
-    } catch (err) {
-      if (err.message.includes("EACCES")) {
-        console.info(`INFO: Port "${port}" cannot be used. You might need elevated or admin privileges. Or, use a valid port: 1024 to 49151.`);
-      } else {
-        console.error(err.message);
-      }
-      process.exit(0);
-    }
+  if (isHttpUrl(startContext)) {
+    useAppDevServer = await validateDevServerConfig(startContext);
   } else {
     // start the emulator from a specific artifact folder, if folder exists
     if (fs.existsSync(startContext)) {
@@ -43,17 +27,19 @@ export async function start(startContext: string, program: CommanderStatic) {
     }
   }
 
-  // make sure api folder exists
   if (program.apiLocation) {
-    if (fs.existsSync(program.apiLocation) === false) {
-      console.info(`INFO: The api folder "${program.apiLocation}" is not found.`);
-      process.exit(0);
+    if (isHttpUrl(program.apiLocation)) {
+      useApiDevServer = await validateDevServerConfig(program.apiLocation);
+    }
+    // make sure api folder exists
+    else if (fs.existsSync(program.apiLocation) === false) {
+      console.info(`INFO: Skipping API because folder "${program.apiLocation}" is missing.`);
     }
   }
 
   // parse the Auth URI port or use default
   let { port: authUriPort } = parseUrl(program.authUri);
-  authUriPort = authUriPort || DEFAULT_CONFIG.authPort;
+  authUriPort = authUriPort || (DEFAULT_CONFIG.authPort as number);
 
   const authPortAvailable = await isPortAvailable({ port: authUriPort });
   if (authPortAvailable === false) {
@@ -63,7 +49,7 @@ export async function start(startContext: string, program: CommanderStatic) {
 
   // parse the APP URI port or use default
   let { port: appUriPort } = parseUrl(program.appUri);
-  appUriPort = appUriPort || DEFAULT_CONFIG.appPort;
+  appUriPort = appUriPort || (DEFAULT_CONFIG.appPort as number);
 
   // get the app and api artifact locations
   let [appLocation, appArtifactLocation, apiLocation] = [
@@ -75,7 +61,7 @@ export async function start(startContext: string, program: CommanderStatic) {
   // retrieve the project's build configuration
   // use any specific config that the user might provide
   const configFile = readConfigFile({
-    overrideConfig: {
+    userConfig: {
       appLocation,
       appArtifactLocation,
       apiLocation,
@@ -84,10 +70,10 @@ export async function start(startContext: string, program: CommanderStatic) {
 
   // set env vars for current command
   const envVarsObj = {
-    DEBUG: program.debug ? "*" : "",
+    DEBUG: program.verbose ? "*" : "",
     SWA_EMU_AUTH_URI: program.authUri,
-    SWA_EMU_API_URI: program.useApi || program.apiUri,
-    SWA_EMU_APP_URI: program.useApp || program.appUri,
+    SWA_EMU_API_URI: useApiDevServer || program.apiUri,
+    SWA_EMU_APP_URI: useAppDevServer || program.appUri,
     SWA_EMU_APP_LOCATION: configFile?.appLocation as string,
     SWA_EMU_APP_ARTIFACT_LOCATION: configFile?.appArtifactLocation as string,
     SWA_EMU_API_LOCATION: configFile?.apiLocation as string,
@@ -97,8 +83,8 @@ export async function start(startContext: string, program: CommanderStatic) {
 
   // handle the APP location config
   let serveStaticContent = undefined;
-  if (program.useApp) {
-    serveStaticContent = `echo 'using app dev server at ${program.useApp}'`;
+  if (useAppDevServer) {
+    serveStaticContent = `echo 'using app dev server at ${useAppDevServer}'`;
   } else {
     const { command: hostCommand, args: hostArgs } = createRuntimeHost({
       appPort: appUriPort,
@@ -112,8 +98,8 @@ export async function start(startContext: string, program: CommanderStatic) {
 
   // handle the API location config
   let serveApiContent = undefined;
-  if (program.useApi) {
-    serveApiContent = `echo 'using api dev server at ${program.useApi}'`;
+  if (useApiDevServer) {
+    serveApiContent = `echo 'using api dev server at ${useApiDevServer}'`;
   } else {
     // serve the api if and only if the user provide the --api-location flag
     if (program.apiLocation && configFile?.apiLocation) {
@@ -121,7 +107,6 @@ export async function start(startContext: string, program: CommanderStatic) {
     }
   }
 
-  // provide binaries
   const concurrentlyBin = getBin("concurrently");
 
   const startCommand = [
