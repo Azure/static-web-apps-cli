@@ -130,19 +130,16 @@ SWA CLI binds to these default hosts:
 
 If you need to override the default values, provide the following options:
 
-| Options        | Description                           | Default                 | Example                                |
-| -------------- | ------------------------------------- | ----------------------- | -------------------------------------- |
-| `--api-prefix` | the API URL prefix                    | `api`                   | `swa --api=prefix=my-api-route`        |
-| `--auth-uri`   | the Auth URI                          | `http://localhost:4242` | `swa --auth-uri=http://localhost:8083` |
-| `--api-uri`    | the API URI                           | `http://localhost:7071` | `swa --api-uri=http://localhost:8082`  |
-| `--app-uri`    | the app URI                           | `http://localhost:4200` | `swa --app-uri=http://localhost:8081`  |
-| `--use-app`    | use the app dev server                | `null`                  | `swa --use-app=http://localhost:8080`  |
-| `--use-api`    | use the api dev server                | `null`                  | `swa --use-api=http://localhost:3000`  |
-| `--host`       | the emulator host address             | `0.0.0.0`               | `swa --host=192.168.68.80`             |
-| `--port`       | the emulator port value               | `4280`                  | `swa --port=8080`                      |
-| `--build`      | build the api and app before starting | `false`                 | `swa --build`                          |
-| `--verbose`    | enable debug logs                     | `false`                 | `swa --verbose`                        |
-| `--ui`         | enable dashboard UI                   | `false`                 | `swa --ui`                             |
+| Options      | Description                           | Default                 | Example                            |
+| ------------ | ------------------------------------- | ----------------------- | ---------------------------------- |
+| `--api`      | set the API folder or URI             | `./api`                 | `--api=http://localhost:8083`      |
+| `--auth-uri` | set the Auth URI                      | `http://localhost:4242` | `--auth-uri=http://localhost:8083` |
+| `--api-uri`  | set the API URI                       | `http://localhost:7071` | `--api-uri=http://localhost:8082`  |
+| `--app-uri`  | set the app URI                       | `http://localhost:4200` | `--app-uri=http://localhost:8081`  |
+| `--host`     | set the emulator host address         | `0.0.0.0`               | `--host=192.168.68.80`             |
+| `--port`     | set the emulator port value           | `4280`                  | `--port=8080`                      |
+| `--build`    | build the api and app before starting | `false`                 | `--build`                          |
+| `--verbose`  | enable verbose logs                   | `false`                 | `--verbose`                        |
 
 ## Local Authentication emulation
 

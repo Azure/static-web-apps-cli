@@ -1,10 +1,8 @@
-import { spawn } from "child_process";
 import { CommanderStatic } from "commander";
 import fs from "fs";
 import path from "path";
 import shell from "shelljs";
 import builder from "../../builder";
-import { Dashboard } from "../../dashboard";
 import { createRuntimeHost } from "../../runtimeHost";
 import { getBin, isHttpUrl, isPortAvailable, parseUrl, readConfigFile, validateDevServerConfig } from "../../utils";
 import { DEFAULT_CONFIG } from "../config";
@@ -142,52 +140,18 @@ export async function start(startContext: string, program: CommanderStatic) {
       config: configFile as GithubActionSWAConfig,
     });
   }
-
-  if (program.ui) {
-    // print the dashboard UI
-    const dashboard = new Dashboard();
-
-    const spawnx = (command: string, args: string[]) =>
-      spawn(`${command}`, args, {
-        shell: true,
-        env: { ...process.env, ...envVarsObj },
-        cwd: path.resolve(__dirname, ".."),
-      });
-
-    // start hosting
-    // FIXME: https://github.com/Azure/static-web-apps-cli/issues/40
-    // const hosting = spawnx(hostCommand, hostArgs);
-    // dashboard.stream("hosting", hosting);
-
-    // start functions
-    const functions = spawnx(`[ -d '${apiLocation}' ] && (cd ${apiLocation}; func start --cors *) || echo 'No API found. Skipping.'`, []);
-    dashboard.stream("functions", functions);
-
-    // start auth
-    const auth = spawnx(`(cd ./dist/auth/; func start --cors=* --port=${authUriPort})`, []);
-    dashboard.stream("auth", auth);
-
-    // start proxy
-    const status = spawnx(`node`, [`./dist/proxy`]);
-    dashboard.stream("status", status);
-
-    process.on("exit", () => {
-      process.exit(process.pid);
-    });
-  } else {
-    // run concurrent commands
-    shell.exec(
-      startCommand.join(" "),
-      {
-        // set the cwd to the installation folder
-        cwd: path.resolve(__dirname, ".."),
-        env: { ...process.env, ...envVarsObj },
-      },
-      (_code, _stdout, stderr) => {
-        if (stderr.length) {
-          console.error(stderr);
-        }
+  // run concurrent commands
+  shell.exec(
+    startCommand.join(" "),
+    {
+      // set the cwd to the installation folder
+      cwd: path.resolve(__dirname, ".."),
+      env: { ...process.env, ...envVarsObj },
+    },
+    (_code, _stdout, stderr) => {
+      if (stderr.length) {
+        console.error(stderr);
       }
-    );
-  }
+    }
+  );
 }
