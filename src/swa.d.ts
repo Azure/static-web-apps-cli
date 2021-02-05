@@ -2,12 +2,12 @@ declare global {
   namespace NodeJS {
     interface ProcessEnv {
       DEBUG: string;
-      SWA_EMU_AUTH_URI: string;
-      SWA_EMU_API_URI: string;
-      SWA_EMU_APP_URI: string;
-      SWA_EMU_APP_ARTIFACT_LOCATION: string;
-      SWA_EMU_HOST: string;
-      SWA_EMU_PORT: string;
+      SWA_CLI_AUTH_URI: string;
+      SWA_CLI_API_URI: string;
+      SWA_CLI_APP_URI: string;
+      SWA_CLI_APP_ARTIFACT_LOCATION: string;
+      SWA_CLI_HOST: string;
+      SWA_CLI_PORT: string;
     }
   }
 }

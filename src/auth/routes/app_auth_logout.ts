@@ -1,5 +1,5 @@
 import { response } from "../../utils";
-const SWA_EMU_HOST = "http://localhost:" + process.env.SWA_EMU_PORT;
+const SWA_CLI_HOST = "http://localhost:" + process.env.SWA_CLI_PORT;
 
 const httpTrigger = async function (context: Context, req: ServerRequest) {
   const { post_logout_redirect_uri } = req.query;
@@ -14,11 +14,10 @@ const httpTrigger = async function (context: Context, req: ServerRequest) {
         HttpOnly: false,
         domain: "localhost",
         expires: new Date(1).toUTCString(),
-      }
+      },
     ],
     headers: {
-      location: `${SWA_EMU_HOST}${post_logout_redirect_uri || ''}`,
-
+      location: `${SWA_CLI_HOST}${post_logout_redirect_uri || ""}`,
     },
   });
 };

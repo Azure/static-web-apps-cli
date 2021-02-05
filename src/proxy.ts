@@ -8,11 +8,11 @@ const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
 import { decodeCookie, validateCookie } from "./utils";
 import { DEFAULT_CONFIG } from "./cli/config";
 
-const SWA_EMU_APP_URI = process.env.SWA_EMU_APP_URI || "http://localhost:4200";
-const SWA_EMU_API_URI = process.env.SWA_EMU_API_URI || "http://localhost:7071";
-const SWA_EMU_AUTH_URI = process.env.SWA_EMU_AUTH_URI || "http://localhost:4242";
-const SWA_EMU_HOST = process.env.SWA_EMU_HOST || "0.0.0.0";
-const SWA_EMU_PORT = parseInt(process.env.SWA_EMU_PORT || "", 10);
+const SWA_CLI_APP_URI = process.env.SWA_CLI_APP_URI || "http://localhost:4200";
+const SWA_CLI_API_URI = process.env.SWA_CLI_API_URI || "http://localhost:7071";
+const SWA_CLI_AUTH_URI = process.env.SWA_CLI_AUTH_URI || "http://localhost:4242";
+const SWA_CLI_HOST = process.env.SWA_CLI_HOST || "0.0.0.0";
+const SWA_CLI_PORT = parseInt(process.env.SWA_CLI_PORT || "", 10);
 const SWA_404 = path.resolve(__dirname, "..", "public", "404.html");
 type UserDefinedRoute = {
   route: string;
@@ -56,7 +56,7 @@ const readRoutes = (folder: string): UserDefinedRoute[] => {
   return require(path.join(folder, routesFile)).routes || [];
 };
 
-const routes = readRoutes(process.env.SWA_EMU_APP_ARTIFACT_LOCATION || "");
+const routes = readRoutes(process.env.SWA_CLI_APP_ARTIFACT_LOCATION || "");
 
 const routeTest = (userDefinedRoute: string, currentRoute: string) => {
   if (userDefinedRoute === currentRoute) {
@@ -110,7 +110,7 @@ const server = http.createServer(function (req, res) {
 
   // proxy AUTH request to AUTH emulator
   if (req.url.startsWith("/.auth")) {
-    const target = SWA_EMU_AUTH_URI;
+    const target = SWA_CLI_AUTH_URI;
     req.url = `/app${req.url}`;
 
     console.log("auth>", req.method, target + req.url);
@@ -130,7 +130,7 @@ const server = http.createServer(function (req, res) {
 
   // proxy API request to local API
   else if (req.url.startsWith(`/${DEFAULT_CONFIG.apiPrefix}`)) {
-    const target = SWA_EMU_API_URI;
+    const target = SWA_CLI_API_URI;
     console.log("api>", req.method, target + req.url);
 
     proxyApi.web(req, res, {
@@ -158,13 +158,13 @@ const server = http.createServer(function (req, res) {
   // detected SPA mode
   else if (req.url.startsWith("/?")) {
     console.log("proxy>", req.method, req.headers.host + req.url);
-    const fileIndex = path.join(process.env.SWA_EMU_APP_ARTIFACT_LOCATION || "", "index.html");
+    const fileIndex = path.join(process.env.SWA_CLI_APP_ARTIFACT_LOCATION || "", "index.html");
     serveStatic(fileIndex, res);
   }
 
   // proxy APP request to local APP
   else {
-    const target = SWA_EMU_APP_URI;
+    const target = SWA_CLI_APP_URI;
     console.log("app>", req.method, target + req.url);
 
     proxyApp.web(req, res, {
@@ -183,13 +183,13 @@ const server = http.createServer(function (req, res) {
   }
 });
 
-const port = SWA_EMU_PORT;
-const host = SWA_EMU_HOST || "0.0.0.0";
+const port = SWA_CLI_PORT;
+const host = SWA_CLI_HOST || "0.0.0.0";
 const address = `http://${host}:${port}`;
 console.log(`SWA listening on ${address}`);
 server.on("upgrade", function (req, socket, head) {
   proxyApp.ws(req, socket, head, {
-    target: process.env.SWA_EMU_APP_URI,
+    target: process.env.SWA_CLI_APP_URI,
     secure: false,
   });
 });

@@ -71,14 +71,14 @@ export async function start(startContext: string, program: CommanderStatic) {
   // set env vars for current command
   const envVarsObj = {
     DEBUG: program.verbose ? "*" : "",
-    SWA_EMU_AUTH_URI: program.authUri,
-    SWA_EMU_API_URI: useApiDevServer || program.apiUri,
-    SWA_EMU_APP_URI: useAppDevServer || program.appUri,
-    SWA_EMU_APP_LOCATION: configFile?.appLocation as string,
-    SWA_EMU_APP_ARTIFACT_LOCATION: configFile?.appArtifactLocation as string,
-    SWA_EMU_API_LOCATION: configFile?.apiLocation as string,
-    SWA_EMU_HOST: program.host,
-    SWA_EMU_PORT: program.port,
+    SWA_CLI_AUTH_URI: program.authUri,
+    SWA_CLI_API_URI: useApiDevServer || program.apiUri,
+    SWA_CLI_APP_URI: useAppDevServer || program.appUri,
+    SWA_CLI_APP_LOCATION: configFile?.appLocation as string,
+    SWA_CLI_APP_ARTIFACT_LOCATION: configFile?.appArtifactLocation as string,
+    SWA_CLI_API_LOCATION: configFile?.apiLocation as string,
+    SWA_CLI_HOST: program.host,
+    SWA_CLI_PORT: program.port,
   };
 
   // handle the APP location config
