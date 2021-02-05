@@ -8,7 +8,9 @@
     "test": "jest --detectOpenHandles --silent --verbose",
     "build": "tsc",
     "prebuild": "rm -fr dist",
-    "watch": "tsc --watch"
+    "postbuild": "npm run copy-assets",
+    "watch": "tsc --watch",
+    "copy-assets": "cp -r ./src/auth/ ./dist"
   },
   "bin": {
     "swa": "./dist/cli.js",
@@ -22,8 +24,6 @@
     "cookie": "^0.4.1",
     "http-proxy": "^1.18.1",
     "http-server": "^0.12.3",
-    "jsonwebtoken": "^8.5.1",
-    "node-fetch": "^2.6.1",
     "shelljs": "^0.8.4",
     "yaml": "^1.10.0"
   },
@@ -35,9 +35,7 @@
     "@types/cookie": "^0.4.0",
     "@types/http-proxy": "^1.17.4",
     "@types/jest": "^26.0.16",
-    "@types/jsonwebtoken": "^8.5.0",
     "@types/mock-fs": "^4.13.0",
-    "@types/node-fetch": "^2.5.7",
     "@types/shelljs": "^0.8.8",
     "husky": "^4.3.8",
     "jest": "^26.6.3",

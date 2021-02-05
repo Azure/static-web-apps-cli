@@ -1,12 +1,17 @@
 import cookie from "cookie";
 import fs from "fs";
-import fetch from "node-fetch";
 import path from "path";
 import YAML from "yaml";
 import { detectRuntime, RuntimeType } from "./runtimes";
 
 type ResponseOptions = {
   [key: string]: any;
+};
+type ClientPrincipal = {
+  identityProvider: string;
+  userId: string;
+  userDetails: string;
+  userRoles: string[];
 };
 export type GithubActionSWAConfig = {
   appBuildCommand: string;
@@ -75,12 +80,7 @@ export const validateCookie = (cookieValue: string) => {
   }
 
   const cookies = cookie.parse(cookieValue);
-
-  if (cookies.StaticWebAppsAuthCookie) {
-    return cookies.StaticWebAppsAuthCookie === process.env.StaticWebAppsAuthCookie;
-  }
-
-  return false;
+  return !!cookies.StaticWebAppsAuthCookie;
 };
 
 export const serializeCookie = (cookieName: string, cookieValue: string, options: any) => {
@@ -88,22 +88,11 @@ export const serializeCookie = (cookieName: string, cookieValue: string, options
 };
 
 export type SwaProviders = "aad" | "github" | "twitter" | "facebook" | "google";
-export const getProviderFromCookie = (cookieValue: any): SwaProviders => {
-  if (typeof cookieValue !== "string") {
-    throw Error("TypeError: cookie value must be a string");
-  }
 
+export const decodeCookie = (cookieValue: any): ClientPrincipal => {
   const cookies = cookie.parse(cookieValue);
-  return cookies.StaticWebAppsAuthCookie__PROVIDER as SwaProviders;
-};
-
-export const ɵɵUseGithubDevToken = async () => {
-  console.log("!!!! Notice: You are using a dev GitHub token. You should create and use your own!");
-  console.log("!!!! Read https://docs.github.com/en/developers/apps/building-oauth-apps");
-  const swaTokens = `https://gist.githubusercontent.com/manekinekko/7fbfc79a85b0f1f312715f1beda26236/raw/740c51aac5b1fb970e69408067a49907485d1e31/swa-emu.json`;
-  const swaTokensResponse = await fetch(swaTokens);
-  const token = await swaTokensResponse.json();
-  return token.github;
+  const decodedValue = Buffer.from(cookies.StaticWebAppsAuthCookie, "base64").toString();
+  return JSON.parse(decodedValue);
 };
 
 export const readConfigFile = ({ overrideConfig }: { overrideConfig?: Partial<GithubActionSWAConfig> } = {}):

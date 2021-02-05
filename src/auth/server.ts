@@ -1,6 +1,6 @@
 import { createServer, ServerResponse } from "http";
+import { argv, serializeCookie } from "../utils";
 import url from "url";
-import { serializeCookie, argv } from "../utils";
 
 const port = argv<number>("--port") || 4242;
 const host = argv<string>("--host") || "localhost";
@@ -8,43 +8,8 @@ const host = argv<string>("--host") || "localhost";
 const authPaths: Path[] = [
   {
     method: "GET",
-    route: /^\/\.redirect\/(?<provider>aad|github|twitter|google|facebook)/,
-    function: "identity_auth_login_provider",
-  },
-  {
-    method: "GET",
-    route: /^\/\.redirect\/logout/,
-    function: "identity_redirect_logout",
-  },
-  {
-    method: "GET",
-    route: /^\/\.auth\/logout\/complete/,
-    function: "identity_auth_logout_complete",
-  },
-  {
-    method: "GET",
-    route: /^\/\.auth\/logout/,
-    function: "identity_auth_logout",
-  },
-  {
-    method: "GET",
-    route: /^\/\.auth\/login\/(?<provider>aad|github|twitter|google|facebook)\/callback/,
-    function: "identity_auth_login_provider_callback",
-  },
-  {
-    method: "GET",
-    route: /^\/\.auth\/login\/(?<provider>aad|github|twitter|google|facebook)/,
-    function: "identity_auth_login_provider",
-  },
-  {
-    method: "GET",
-    route: /^\/\.auth\/login\/done/,
-    function: "identity_auth_login_done",
-  },
-  {
-    method: "GET",
-    route: /^\/fake\/(?<provider>aad|github|twitter|google|facebook)\/oauth\/authorize/,
-    function: "fake_provider_oauth_authorize",
+    route: /^\/app\/\.auth\/login\/(?<provider>aad|github|twitter|google|facebook|[a-z]+)/,
+    function: "app_auth_login_provider",
   },
   {
     method: "GET",
@@ -53,27 +18,12 @@ const authPaths: Path[] = [
   },
   {
     method: "GET",
-    route: /^\/app\/\.auth\/logout\/complete/,
-    function: "app_auth_logout_complete",
-  },
-  {
-    method: "GET",
     route: /^\/app\/\.auth\/logout/,
     function: "app_auth_logout",
   },
-  {
-    method: "GET",
-    route: /^\/app\/\.auth\/login\/(?<provider>aad|github|twitter|google|facebook)/,
-    function: "app_auth_login_provider",
-  },
-  {
-    method: "POST",
-    route: /^\/app\/\.auth\/complete/,
-    function: "app_auth_complete",
-  },
 ];
 
-export async function routeMatcher(url = "/"): Promise<{ func: Function | undefined; bindingData: undefined | { provider: string } }> {
+async function routeMatcher(url = "/"): Promise<{ func: Function | undefined; bindingData: undefined | { provider: string } }> {
   for (let index = 0; index < authPaths.length; index++) {
     const path = authPaths[index];
     const match = url.match(new RegExp(path.route));

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Azure Static Web Apps Local Emulator - Authentication Portal</title>
+    <link rel="shortcut icon" href="https://appservice.azureedge.net/images/static-apps/v3/favicon.svg" type="image/x-icon" />
+    <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/4.1.1/css/bootstrap.min.css" crossorigin="anonymous" />
+    <style>
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      .container-height {
+        flex: 1 0 auto;
+      }
+      footer {
+        flex-shrink: 0;
+        width: 100%;
+        background-color: #f5f5f5;
+        left: -1px;
+        padding: 10px;
+        display: flex;
+        font-size: 0.8em;
+        justify-content: space-between;
+      }
+      footer nav {
+        display: flex;
+      }
+      footer ul {
+        list-style: none;
+        display: flex;
+      }
+      footer li {
+        margin: 0 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-light">
+      <div class="navbar-brand">
+        <div class="container pl-4 ml-5">
+          <img src=https://appservice.azureedge.net/images/static-apps/v3/microsoft_azure_logo.svg width="270" height="108" alt />
+        </div>
+      </div>
+    </nav>
+    <div class="container-fluid container-height mr-1">
+      <div class="row">
+        <div class="row col-xs-12 col-sm-12 d-block d-lg-none d-xl-none d-md-block d-sm-block d-xs-block">
+          <div class="text-center"><img src=https://appservice.azureedge.net/images/static-apps/v3/staticapps.svg /></div>
+        </div>
+        <div
+          class="extra-pl-small-scr offset-xl-1 offset-lg-1 offset-md-2 offset-sm-2 offset-xs-4 col-xl-5 col-lg-5 col-md-10 col-sm-11 col-xs-11 div-vertical-center"
+        >
+          <div class="container-fluid">
+            <h1 class="pb-4">Azure Static Web Apps Auth</h1>
+            <form action="" name="auth">
+              <div class="form-group row">
+                <label for="identityProvider" class="col-4 col-form-label">Provider</label>
+                <div class="col-8">
+                  <input
+                    disabled
+                    id="identityProvider"
+                    name="identityProvider"
+                    list="providers-list"
+                    placeholder="Choose a login provider"
+                    type="text"
+                    required="required"
+                    class="form-control"
+                  />
+                  <small id="identityProviderHelpBlock" class="form-text text-muted">Name of the identity provider</small>
+                </div>
+                <datalist id="providers-list">
+                  <option value="aad"></option>
+                  <option value="google"></option>
+                  <option value="github"></option>
+                  <option value="twitter"></option>
+                  <option value="facebook"></option>
+                  <option value="openid"></option>
+                </datalist>
+              </div>
+              <div class="form-group row">
+                <label for="userDetails" class="col-4 col-form-label">Username</label>
+                <div class="col-8">
+                  <input
+                    id="userDetails"
+                    name="userDetails"
+                    autocomplete="off"
+                    placeholder="Choose a username"
+                    type="text"
+                    aria-describedby="userDetailsHelpBlock"
+                    required="required"
+                    class="form-control"
+                  />
+                  <small id="userDetailsHelpBlock" class="form-text text-muted">Username or email address of the user</small>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="userId" class="col-4 col-form-label">User ID</label>
+                <div class="col-8">
+                  <input
+                    id="userId"
+                    name="userId"
+                    autocomplete="off"
+                    placeholder="Choose a user ID"
+                    type="text"
+                    aria-describedby="userIdHelpBlock"
+                    required="required"
+                    class="form-control"
+                  />
+                  <small id="userIdHelpBlock" class="form-text text-muted">An Azure Static Web Apps-specific unique ID for the user</small>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="userRoles" class="col-4 col-form-label">User’s roles</label>
+                <div class="col-8">
+                  <textarea id="userRoles" name="userRoles" cols="40" rows="5" class="form-control" aria-describedby="userRolesHelpBlock"></textarea>
+                  <small id="userRolesHelpBlock" class="form-text text-muted">Roles used during authorisation. One role per line</small>
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-4"></div>
+                <div class="col-8 text-right">
+                  <button name="submit" id="submit" type="submit" class="btn btn-primary">Login</button>
+                  <button name="clear" id="clear" type="button" class="btn btn-outline-danger">Clear</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="col-xl-5 col-lg-5 col-md-12 d-none d-lg-block">
+          <div class="text-center">
+            <img src="https://appservice.azureedge.net/images/static-apps/v3/staticapps.svg" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <div>Azure Static Web Apps local emulator (Version #STAMP#)</div>
+      <nav>
+        <ul>
+          <li><a href="">Contribute</a></li>
+          <li><a href="">Documentation</a></li>
+          <li><a href="">Privacy & Cookies</a></li>
+          <li><a href="">Terms of Use</a></li>
+        </ul>
+      </nav>
+      <div class="copyright">© Microsoft 2021</div>
+    </footer>
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/4.1.1/bootstrap.min.js" crossorigin="anonymous"></script>
+    <script>
+      function saveCookie(formElement) {
+        const data = localStorage[hashStorageKey(formElement)];
+        document.cookie = `StaticWebAppsAuthCookie=${btoa(data)}; path=/`;
+      }
+      function redirectToApp() {
+        const defaultRedirectPath = "/";
+        try {
+          const redirectPath = window.location.search || defaultRedirectPath;
+          const urlSearch = location.search.replace("?", "");
+          const urlQuery = urlSearch && Object.fromEntries(new Map(urlSearch.split("&").map((query) => query.split("="))));
+          const postLoginRedirectUri = urlQuery ? urlQuery["post_login_redirect_uri"] : redirectPath;
+          window.location.href = postLoginRedirectUri || defaultRedirectPath;
+        } catch (error) {
+          console.warn(error);
+          window.location.href = defaultRedirectPath;
+        }
+      }
+      function parseIdentityProviderFromUrl() {
+        const pathname = window.location.pathname;
+        if (pathname.startsWith("/.auth/login")) {
+          return pathname.split("/").pop();
+        } else {
+          return null;
+        }
+      }
+      function syncIdentityProviderFromUrl(formElement) {
+        // @TODO handle unknown providers
+        const identityProviderName = parseIdentityProviderFromUrl();
+        const providerElement = $("#identityProvider");
+        if (providerElement.val() === "") {
+          providerElement.val(identityProviderName);
+          providerElement.saveToLocalStorage();
+        } else {
+          // @TODO handle custom routes
+        }
+      }
+      function hashStorageKey(element) {
+        const formElement = element.closest("form");
+        const providerName = parseIdentityProviderFromUrl();
+        const formName = formElement.attr("name");
+        return `${formName}@${providerName}`;
+      }
+      $.fn.saveToLocalStorage = function saveToLocalStorage(options) {
+        const settings = $.extend({}, options);
+
+        if (typeof Storage == "undefined") {
+          console.warn("localStorage is not available. Auth data will not be cached!");
+          return false;
+        }
+
+        return this.each(function () {
+          const element = $(this);
+          const storageKey = hashStorageKey(element);
+
+          if (!localStorage[storageKey]) {
+            localStorage[storageKey] = "{}";
+          }
+
+          const inputName = element.attr("name");
+          const inputValue = element.val();
+          let data = JSON.parse(localStorage[storageKey]);
+          if (inputName === "userRoles") {
+            data[inputName] = inputValue.trim().split("\n");
+          } else {
+            data[inputName] = inputValue;
+          }
+          localStorage[storageKey] = JSON.stringify(data);
+        });
+      };
+      $.fn.syncFromLocalStorage = function syncFromLocalStorage(options) {
+        const settings = $.extend({}, options);
+
+        return this.each(function () {
+          const element = $(this);
+          const storageKey = hashStorageKey(element);
+          let data = {};
+
+          if (typeof Storage == "undefined") {
+            console.warn("localStorage is not available. Auth data will not be cached!");
+            return false;
+          }
+
+          if (localStorage[storageKey]) {
+            data = JSON.parse(localStorage[storageKey]);
+            if (!data) {
+              // initialize localStorage to empty object
+              localStorage[storageKey] = JSON.stringify({});
+              data = JSON.parse(localStorage[storageKey]);
+            }
+          }
+
+          element.find("input, textarea").each(function () {
+            const input = $(this);
+            const inputName = input.attr("name");
+            if (inputName === "userRoles") {
+              if (Array.isArray(data[inputName])) {
+                input.val(data[inputName].join("\n"));
+              } else if (input.val() === "") {
+                // set default values and cache entry
+                input.val(settings.defaultRoles.join("\n"));
+                input.saveToLocalStorage();
+              }
+            } else if (inputName === "identityProvider") {
+              // don't restore provider name from storage.
+              // this value will be taken from the URL
+            } else if (input.attr("type") !== "submit") {
+              const value = data[inputName];
+              input.val(value);
+            }
+          });
+        });
+      };
+    </script>
+    <script>
+      $(function () {
+        // setup default values
+        const defaultRoles = ["admin", "contributor"];
+        const form = $("form[name='auth']");
+
+        // trigger on first call
+        form.syncFromLocalStorage({
+          defaultRoles,
+        });
+
+        // get default provider name from URL
+        syncIdentityProviderFromUrl(form);
+
+        // delegate storing auth info to each input
+        form.on("keyup", "input, textarea", (event) => $(event.currentTarget).saveToLocalStorage());
+
+        // clear form
+        $("#clear").click(() => {
+          form.find("input[type=text]:not(#identityProvider)").val("");
+          form.find("textarea").val(defaultRoles.join("\n"));
+          form.find("input, textarea").each((idx, element) => $(element).saveToLocalStorage());
+        });
+
+        // store cookie info as base64
+        form.submit(() => {
+          event.preventDefault();
+          saveCookie(form);
+          redirectToApp();
+        });
+      });
+    </script>
+  </body>
+</html>

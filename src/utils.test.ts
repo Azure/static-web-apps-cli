@@ -1,6 +1,6 @@
 import mockFs from "mock-fs";
 import path from "path";
-import { response, validateCookie, getProviderFromCookie, readConfigFile, argv } from "./utils";
+import { response, validateCookie, readConfigFile, argv } from "./utils";
 
 describe("Utils", () => {
   beforeEach(() => {
@@ -8,41 +8,41 @@ describe("Utils", () => {
     process.argv = [];
   });
 
-  describe('argv()', () => {
+  describe("argv()", () => {
     it("process.argv = []", () => {
       process.argv = [];
-      expect(argv('--port')).toBe(null);
+      expect(argv("--port")).toBe(null);
     });
 
     it("process.argv = ['--port']", () => {
-      process.argv = ['--port'];
-      expect(argv('--port')).toBe(true);
-      expect(argv('--portxyz')).toBe(false);
+      process.argv = ["--port"];
+      expect(argv("--port")).toBe(true);
+      expect(argv("--portxyz")).toBe(false);
     });
 
     it("process.argv = ['--port=4242']", () => {
-      process.argv = ['--port=4242'];
-      expect(argv('--port')).toBe("4242");
+      process.argv = ["--port=4242"];
+      expect(argv("--port")).toBe("4242");
     });
 
     it("process.argv = ['--port  =   4242  ']", () => {
-      process.argv = ['--port  =  4242  '];
-      expect(argv('--port')).toBe("4242");
+      process.argv = ["--port  =  4242  "];
+      expect(argv("--port")).toBe("4242");
     });
 
     it("process.argv = ['--port', '4242']", () => {
-      process.argv = ['--port', '4242'];
-      expect(argv('--port')).toBe("4242");
+      process.argv = ["--port", "4242"];
+      expect(argv("--port")).toBe("4242");
     });
 
     it("process.argv = ['--port', '--other']", () => {
-      process.argv = ['--port', '--other'];
-      expect(argv('--port')).toBe(true);
+      process.argv = ["--port", "--other"];
+      expect(argv("--port")).toBe(true);
     });
 
     it("process.argv = ['--port=']", () => {
-      process.argv = ['--port='];
-      expect(argv('--port')).toBe(null);
+      process.argv = ["--port="];
+      expect(argv("--port")).toBe(null);
     });
   });
 
@@ -339,69 +339,6 @@ describe("Utils", () => {
 
     it("cookies = 'foo=bar'", () => {
       expect(validateCookie("foo=bar")).toBe(false);
-    });
-
-    it("cookies = 'StaticWebAppsAuthCookie=abc123' and process.env.StaticWebAppsAuthCookie = undefined", () => {
-      delete process.env.StaticWebAppsAuthCookie;
-      expect(validateCookie("StaticWebAppsAuthCookie=abc123")).toBe(false);
-    });
-
-    it("cookies = 'StaticWebAppsAuthCookie=abc123' and process.env.StaticWebAppsAuthCookie = 'xyz'", () => {
-      process.env.StaticWebAppsAuthCookie = "xyz";
-      expect(validateCookie("StaticWebAppsAuthCookie=abc123")).toBe(false);
-    });
-
-    it("cookies = 'StaticWebAppsAuthCookie=abc123' and process.env.StaticWebAppsAuthCookie = 'abc123'", () => {
-      process.env.StaticWebAppsAuthCookie = "abc123";
-      expect(validateCookie("StaticWebAppsAuthCookie=abc123")).toBe(true);
-    });
-
-    it("cookies = 'StaticWebAppsAuthCookie=xyz' and process.env.StaticWebAppsAuthCookie = 'abc123'", () => {
-      process.env.StaticWebAppsAuthCookie = "abc123";
-      expect(validateCookie("StaticWebAppsAuthCookie=xyz")).toBe(false);
-    });
-
-    it("cookies = 'StaticWebAppsAuthCookie=abc123;foo=bar' and process.env.StaticWebAppsAuthCookie = 'abc123'", () => {
-      process.env.StaticWebAppsAuthCookie = "abc123";
-      expect(validateCookie("StaticWebAppsAuthCookie=abc123;foo=bar")).toBe(true);
-    });
-  });
-
-  describe("getProviderFromCookie()", () => {
-    it("cookies = null", () => {
-      expect(() => {
-        getProviderFromCookie(null);
-      }).toThrow(/TypeError/);
-    });
-
-    it("cookies = undefined", () => {
-      expect(() => {
-        getProviderFromCookie(undefined);
-      }).toThrow(/TypeError/);
-    });
-
-    it("cookies = 123", () => {
-      expect(() => {
-        getProviderFromCookie(123);
-      }).toThrow(/TypeError/);
-    });
-
-    it("cookies = {}", () => {
-      expect(() => {
-        getProviderFromCookie({});
-      }).toThrow(/TypeError/);
-    });
-
-    it("cookies = foo=bar", () => {
-      expect(getProviderFromCookie("foo=bar")).toBe(undefined);
-    });
-
-    it("cookies = StaticWebAppsAuthCookie__PROVIDER", () => {
-      expect(getProviderFromCookie("StaticWebAppsAuthCookie__PROVIDER")).toBe(undefined);
-    });
-
-    it("cookies = StaticWebAppsAuthCookie__PROVIDER=github", () => {
-      expect(getProviderFromCookie("StaticWebAppsAuthCookie__PROVIDER=github")).toBe("github");
     });
   });
 

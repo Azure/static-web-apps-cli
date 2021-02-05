@@ -1,7 +1,6 @@
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      StaticWebAppsAuthCookie?: string;
       StaticWebAppsAuthContextCookie: string;
       AppServiceAuthSession: string;
       DEBUG: string;

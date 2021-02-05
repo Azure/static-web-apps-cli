@@ -95,7 +95,6 @@ if (configFile) {
 
 const envVarsObj = {
   // set env vars for current command
-  StaticWebAppsAuthCookie: "123",
   StaticWebAppsAuthContextCookie: "abc",
   AppServiceAuthSession: "1a2b3c",
   DEBUG: program.debug ? "*" : "",
