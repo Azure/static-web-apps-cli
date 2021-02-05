@@ -94,7 +94,6 @@ export async function start(startContext: string, program: CommanderStatic) {
     GITHUB_CLIENT_SECRET: "",
     SWA_EMU_AUTH_URI: program.authUri,
     SWA_EMU_API_URI: program.useApi || program.apiUri,
-    SWA_EMU_API_PREFIX: program.apiPrefix,
     SWA_EMU_APP_URI: program.useApp || program.appUri,
     SWA_EMU_APP_LOCATION: configFile?.appLocation as string,
     SWA_EMU_APP_ARTIFACT_LOCATION: configFile?.appArtifactLocation as string,

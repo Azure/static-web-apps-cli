@@ -6,6 +6,7 @@ const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
 import { decodeCookie, validateCookie } from "./utils";
+import { DEFAULT_CONFIG } from "./cli/config";
 
 const SWA_EMU_APP_URI = process.env.SWA_EMU_APP_URI || "http://localhost:4200";
 const SWA_EMU_API_URI = process.env.SWA_EMU_API_URI || "http://localhost:7071";
@@ -128,7 +129,7 @@ const server = http.createServer(function (req, res) {
   }
 
   // proxy API request to local API
-  else if (req.url.startsWith(`/${process.env.SWA_EMU_API_PREFIX || "api"}`)) {
+  else if (req.url.startsWith(`/${DEFAULT_CONFIG.apiPrefix}`)) {
     const target = SWA_EMU_API_URI;
     console.log("api>", req.method, target + req.url);
 

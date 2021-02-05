@@ -20,7 +20,6 @@ import { DEFAULT_CONFIG } from "./config";
     // Emulator config
     .option("--auth-uri <authUri>", "set Auth uri", `http://localhost:${DEFAULT_CONFIG.authPort}`)
     .option("--api-uri <apiUri>", "set API uri", `http://localhost:${DEFAULT_CONFIG.apiPort}`)
-    .option("--api-prefix <apiPrefix>", "set API prefix", DEFAULT_CONFIG.apiPrefix)
     .option("--app-uri <appUri>", "set APP uri", `http://localhost:${DEFAULT_CONFIG.appPort}`)
     .option("--use-api <useApi>", "Use running API dev server", undefined)
     .option("--use-app <useApp>", "Use running APP dev server", undefined)
