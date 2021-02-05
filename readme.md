@@ -1,24 +1,24 @@
 <p align="center">
-    <h2 align="center">Azure Static Web Apps CLI</h2>
+    <h2 align="center">Static Web Apps CLI</h2>
 </p>
 <p align="center">
     <img align="center" src="docs/swa-emu-icon.png" width="300">
 </p>
 
-Introducing Static Web Apps CLI, the Azure Static Web Apps CLI that serves as a local development tool for [Azure Static Web Apps](https://bit.ly/2ZNcakP). It can:
+The Static Web Apps CLI, also known as SWA CLI, serves as a local development tool for [Azure Static Web Apps](https://docs.microsoft.com/azure/static-web-apps). It can:
 
-- Auto-build the local static app and API
-- Emulate Authentication
-- Serve API requests
-- Serve static static app assets
+- Build the local static app and API backend
+- Emulate Authentication and Authorization
+- Serve API requests, or use the Azure Function dev server
+- Serve static static app assets, or use your app dev server
 
 ## High-level architecture
 
 ![swa cli architecture](./docs/swa-emu-architecture.png)
 
-The Static Web Apps CLI is built on top of the following components:
+The SWA CLI is built on top of the following components:
 
-- The Reverse Proxy: this is the heart of the Static Web Apps CLI, it's the piece that forwards all HTTP requests to the appropriate components:
+- The Reverse Proxy: this is the heart of the SWA CLI, it's the piece that forwards all HTTP requests to the appropriate components:
   - `/.auth/**` requests are forwarded to the Auth emulator server.
   - `/api/**` requests are forwarded to the localhost API function (if available).
   - `/**` all other requests are forwarded to the static assets server (serving the front-end app).
@@ -26,50 +26,60 @@ The Static Web Apps CLI is built on top of the following components:
 - The Static content server: serves the local app static content.
 - The Serverless API server (served by the Azure Function App).
 
-Before Static Web Apps CLI bootstraps, it also can read (using the `--build` options) the local SWA github workflow file (created by [Azure Static Web Apps](https://bit.ly/2ZNcakP)) and builds both the static app and the api according to the user's config. And pretty much like SWA, if the user isn't using an API, Static Web Apps CLI will skip the API build.
+Before SWA CLI bootstraps, it can also read (when using the `--build` options) the local SWA GitHub workflow file (created by [Azure Static Web Apps](https://docs.microsoft.com/azure/static-web-apps)) and builds both the static app and the API backend according based on the config. If the user isn't using an API backend, SWA CLI will skip the API backend build.
 
 ## Disclaimer
 
-Static Web Apps CLI is still in developer preview and not yet ready for prime time. You will encounter issues, so please report them or help us fix them. Your contributions will be very appreciated 🙏
+SWA CLI is still in developer preview and not yet ready for prime time. You will encounter issues, so please report them or help us fix them. Your contributions will be very appreciated 🙏
 
 ## Quick start
 
 Using `npm` or `yarn`:
 
-- Install the cli: `npm install -g @azure/static-web-apps-cli@latest`
+- Install the cli: `npm install -g @azure/static-web-apps-cli`
 - Open a SWA app folder at the root (outside any /api or /app folders): `cd my-awesome-swa-app`
 - Start the emulator: `swa start`
-- Access your SWA app from `http://localhost`
+- Access your SWA app from `http://localhost:4280`
+
+> Note: The cli can also be installed locally as a devDependency: `npm install -D @azure/static-web-apps-cli`
 
 Using `npx`:
 
 - Open a SWA app folder at the root (outside any /api or /app folders): `cd my-awesome-swa-app`
-- Start the emulator: `npx @manekinekko/swa-emu@latest start`
-- Access your SWA app from `http://localhost`
+- Start the emulator: `npx @azure/static-web-apps-cli start`
+- Access your SWA app from `http://localhost:4280`
 
 ### Start the emulator
 
 #### Serve from a folder
 
-By default, SWA EMU will start and serve the static app from the current working directory `./`:
+By default, CLI will start and serve any the static content from the current working directory `./`:
 
 ```bash
-swa
+swa start
 ```
 
-However, you can override this behavior. If the artifact folder of your static app is under a different folder (e.g. `./my-dist`), then run the SWA EMU and provide that folder:
+However, you can override this behavior. If the artifact folder of your static app is under a different folder (e.g. `./my-dist`), then run the CLI and provide that folder:
 
 ```bash
-swa ./my-dist
+swa start ./my-dist
 ```
 
-> Note that by default the SWA EMU will not serve the api.
+> Note: By default the CLI will not serve the api.
+
+#### Serve both the static app and api
+
+If you are using an API, then run the CLI and provide the folder that contains the API project:
+
+```bash
+swa start ./my-dist --app ./api-folder
+```
 
 #### Serve from a local app dev server
 
 When developing locally on your static app, it might be useful to use your local application dev server, that comes with your application CLI, to serve your app content and benefit from the built-in features like the livereload and HMR (hot module reload).
 
-In order to use Static Web Apps CLI with your local dev server, follow these two steps:
+In order to use SWA CLI with your local dev server, follow these two steps:
 
 1. Start your local dev server (as usual). For example: `ng serve`
 1. Run `swa start` with the URI provided by the dev server, in the following format:
@@ -77,6 +87,7 @@ In order to use Static Web Apps CLI with your local dev server, follow these two
 ```bash
 swa start http://<app-dev-server-host>:<app-dev-server-port>
 ```
+
 Here is a list of the default ports used by popular dev servers:
 
 | Tool                                                                               | Port | Command                               |
@@ -98,12 +109,12 @@ Here is a list of the default ports used by popular dev servers:
 | [Nuxt.js](https://nuxtjs.org/)                                                     | 3000 | `swa --use-app=http://localhost:3000` |
 | [Next.js](https://nextjs.org/)                                                     | 3000 | `swa --use-app=http://localhost:3000` |
 
-#### Serve with a local API dev server
+#### Serve with a local API backend dev server
 
-When developing locally on your back-end application, it might be useful to use your local API dev server, to serve your API content and benefit from the built-in features like debugging. In order to use SWA EMU with your local API dev server, follow these two steps:
+When developing locally on your back-end application, it might be useful to use your local API backend dev server, to serve your API backend content and benefit from the built-in features like debugging. In order to use CLI with your local API backend dev server, follow these two steps:
 
-1. Start your local API dev server (as usual). For example: `func start host`.
-1. Run `swa` with the `--use-api` flag of the URI provided by the API dev server, in the following format:
+1. Start your local API backend dev server (as usual). For example: `func start host`.
+1. Run `swa` with the `--use-api` flag of the URI provided by the API backend dev server, in the following format:
 
 ```bash
 swa start ./my-dist --use-api=http://<api-dev-server-host>:<api-dev-server-port>
@@ -111,11 +122,11 @@ swa start ./my-dist --use-api=http://<api-dev-server-host>:<api-dev-server-port>
 
 ## Configuration
 
-Static Web Apps CLI binds to these default hosts:
+SWA CLI binds to these default hosts:
 
-- `http://localhost:4242`: for _emulated_ authentication.
-- `http://localhost:7071`: for the API (baked by the Azure Function App)
-- `http://localhost:4200`: for app assets (the front-end app)
+- `http://localhost:4242`: for the _emulated_ authentication.
+- `http://localhost:7071`: for the API backend (baked by the Azure Function App)
+- `http://localhost:4200`: for the static app (the front-end app)
 
 If you need to override the default values, provide the following options:
 
@@ -133,19 +144,11 @@ If you need to override the default values, provide the following options:
 | `--verbose`    | enable debug logs                     | `false`                 | `swa --verbose`                        |
 | `--ui`         | enable dashboard UI                   | `false`                 | `swa --ui`                             |
 
-## Local Emulation
+## Local Authentication emulation
 
-The cli supports local authentication flow and mocks the following providers:
+When requesting `./auth/login/<provider>`, you will access a local Authentication UI allowing you to set fake user information.
 
-| Provider | [Endpoint](https://docs.microsoft.com/azure/static-web-apps/authentication-authorization?WT.mc_id=javascript-0000-wachegha#login) | Local Emulation |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------- | --------------- |
-| GitHub   | `.auth/login/github`                                                                                                              | ✅               |
-| Twitter  | `.auth/login/twitter`                                                                                                             | ✅               |
-| Google   | `.auth/login/google`                                                                                                              | ✅               |
-| Facebook | `.auth/login/facbook`                                                                                                             | ✅               |
-| AAD      | `.auth/login/aad`                                                                                                                 | ✅               |
-
-When requesting the `.auth/me` endpoint, a `clientPrincipal` containing the mock information configured by the user will be returned by the cli. Here is an example:
+When requesting the `.auth/me` endpoint, a `clientPrincipal` containing the fake information will be returned by the Authentication API. Here is an example:
 
 ```json
 {
@@ -159,12 +162,6 @@ When requesting the `.auth/me` endpoint, a `clientPrincipal` containing the mock
 ```
 
 > NOTE: user roles and ACL are not fully supported (see [#7](https://github.com/azure/static-web-apps-cli/issues/7)).
-
-## Authentication emulation flow
-
-The Authentication flow is illustrated in the following sequence diagram (or [open in a new tab](https://bit.ly/swa-auth-flow)):
-
-![SWA Auth flow diagram](docs/swa-auth-flow.png)
 
 ## Caveats
 
@@ -197,4 +194,3 @@ To fix it, either:
 ## Want to help? [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/azure/static-web-apps-cli/issues)
 
 Want to file a bug, contribute some code, or improve the documentation? Excellent! Read up on our guidelines for [contributing](https://github.com/azure/static-web-apps-cli/blob/master/CONTRIBUTING.md) and then check out one of our issues in the list: [community-help](https://github.com/azure/static-web-apps-cli/issues).
-
