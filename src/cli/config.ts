@@ -5,7 +5,7 @@ export const DEFAULT_CONFIG = {
   apiPort: 7071,
   appPort: 4200,
   apiPrefix: "api",
-  appLocation: undefined,
+  appLocation: "./",
   appArtifactLocation: undefined,
   apiLocation: undefined,
 };
