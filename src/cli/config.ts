@@ -1,10 +1,10 @@
 export const DEFAULT_CONFIG = {
-  port: 80,
+  port: 4280,
   host: "0.0.0.0",
   authPort: 4242,
   apiPort: 7071,
   appPort: 4200,
-  apiPrefix: 'api',
+  apiPrefix: "api",
   appLocation: undefined,
   appArtifactLocation: undefined,
   apiLocation: undefined,
