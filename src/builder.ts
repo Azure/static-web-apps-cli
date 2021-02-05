@@ -1,13 +1,13 @@
 import fs from "fs";
 import path from "path";
 import shell from "shelljs";
-import { readConfigFile, GithubActionSWAConfig } from "./utils";
 import { detectRuntime, RuntimeType } from "./runtimes";
+import { getBin, GithubActionSWAConfig, readConfigFile } from "./utils";
 
 const exec = (command: string, options = {}) => shell.exec(command, { async: false, ...options });
 
 // use the concurrently binary provided by this emulator
-const concurrentlyBin = path.resolve(__dirname, "..", "./node_modules/.bin/concurrently");
+const concurrentlyBin = getBin("concurrently");
 
 const nodeBuilder = (location: string, buildCommand: string, name: string, colour: string) => {
   const appBuildCommand = [
@@ -39,7 +39,7 @@ const dotnetBuilder = (location: string, name: string, colour: string) => {
   });
 };
 
-const builder = ({config}: {config: Partial<GithubActionSWAConfig>}) => {
+const builder = ({ config }: { config: Partial<GithubActionSWAConfig> }) => {
   const configFile = readConfigFile();
   if (configFile) {
     let { appLocation, apiLocation, appBuildCommand, apiBuildCommand } = config as GithubActionSWAConfig;

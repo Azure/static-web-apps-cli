@@ -6,7 +6,7 @@ import shell from "shelljs";
 import builder from "../../builder";
 import { Dashboard } from "../../dashboard";
 import { createRuntimeHost } from "../../runtimeHost";
-import { GithubActionSWAConfig, isAcceptingTcpConnections, isHttpUrl, isPortAvailable, parseUrl, readConfigFile } from "../../utils";
+import { getBin, GithubActionSWAConfig, isAcceptingTcpConnections, isHttpUrl, isPortAvailable, parseUrl, readConfigFile } from "../../utils";
 import { DEFAULT_CONFIG } from "../config";
 
 export async function start(startContext: string, program: CommanderStatic) {
@@ -130,7 +130,7 @@ export async function start(startContext: string, program: CommanderStatic) {
   }
 
   // provide binaries
-  const concurrentlyBin = path.resolve(__dirname, "..", "..", "..", "./node_modules/.bin/concurrently");
+  const concurrentlyBin = getBin("concurrently");
 
   const startCommand = [
     // run concurrent commands

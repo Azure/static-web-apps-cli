@@ -375,3 +375,7 @@ export function computeAppLocationFromArtifactLocation(appArtifactLocation: stri
   }
   return undefined;
 }
+
+export function getBin(binary: string) {
+  return `npx ${binary}`;
+}
