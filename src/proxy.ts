@@ -5,15 +5,39 @@ import httpProxy from "http-proxy";
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
-import { decodeCookie, validateCookie } from "./utils";
+import { decodeCookie, isHttpUrl, validateCookie } from "./utils";
 import { DEFAULT_CONFIG } from "./cli/config";
 
-const SWA_CLI_APP_URI = process.env.SWA_CLI_APP_URI || "http://localhost:4200";
-const SWA_CLI_API_URI = process.env.SWA_CLI_API_URI || "http://localhost:7071";
-const SWA_CLI_AUTH_URI = process.env.SWA_CLI_AUTH_URI || "http://localhost:4242";
-const SWA_CLI_HOST = process.env.SWA_CLI_HOST || "0.0.0.0";
+const buildAdress = (host: string, port: number | string | undefined) => `http://${host}:${port}`;
+
+const SWA_CLI_HOST = process.env.SWA_CLI_HOST as string;
 const SWA_CLI_PORT = parseInt(process.env.SWA_CLI_PORT || "", 10);
-const SWA_404 = path.resolve(__dirname, "..", "public", "404.html");
+const SWA_CLI_APP_URI = buildAdress(SWA_CLI_HOST, process.env.SWA_CLI_APP_PORT);
+const SWA_CLI_API_URI = buildAdress(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
+const SWA_CLI_AUTH_URI = buildAdress(SWA_CLI_HOST, process.env.SWA_CLI_AUTH_PORT);
+
+if (!isHttpUrl(SWA_CLI_APP_URI)) {
+  console.log(`The provided app URI is not a valid`);
+  console.log(`Got: ${SWA_CLI_APP_URI}`);
+  console.log(`Abort.`);
+  process.exit(-1);
+}
+if (!isHttpUrl(SWA_CLI_API_URI)) {
+  console.log(`The provided API URI is not a valid`);
+  console.log(`Got: ${SWA_CLI_API_URI}`);
+  console.log(`Abort.`);
+  process.exit(-1);
+}
+if (!isHttpUrl(SWA_CLI_AUTH_URI)) {
+  console.log(`The provided auth URI is not a valid`);
+  console.log(`Got: ${SWA_CLI_AUTH_URI}`);
+  console.log(`Abort.`);
+  process.exit(-1);
+}
+
+const SWA_404 = path.resolve(process.cwd(), "..", "public", "404.html");
+const SWA_401 = path.resolve(process.cwd(), "..", "public", "unauthorized.html");
+
 type UserDefinedRoute = {
   route: string;
   allowedRoles?: string[];
@@ -21,7 +45,11 @@ type UserDefinedRoute = {
   serve?: string;
 };
 
-const serveStatic = (file: string, res: http.ServerResponse) => {
+const serveStatic = (file: string, res: http.ServerResponse, status = 200) => {
+  if (status !== 401) {
+    file = fs.existsSync(file) ? file : SWA_404;
+  }
+
   fs.readFile(file, (err, data) => {
     if (err) {
       res.writeHead(404);
@@ -29,7 +57,7 @@ const serveStatic = (file: string, res: http.ServerResponse) => {
       return;
     }
     console.log("serving", file);
-    res.writeHead(200);
+    res.writeHead(status);
     res.end(data);
   });
 };
@@ -84,8 +112,7 @@ const server = http.createServer(function (req, res) {
     if (userDefinedRoute.allowedRoles) {
       const user = decodeCookie(req.headers.cookie);
       if (!userDefinedRoute.allowedRoles.some((role) => user.userRoles.some((ur: string) => ur === role))) {
-        res.writeHead(401);
-        res.end();
+        serveStatic(SWA_401, res, 401);
         return;
       }
     }
@@ -184,7 +211,7 @@ const server = http.createServer(function (req, res) {
 });
 
 const port = SWA_CLI_PORT;
-const host = SWA_CLI_HOST || "0.0.0.0";
+const host = SWA_CLI_HOST;
 const address = `http://${host}:${port}`;
 console.log(`SWA listening on ${address}`);
 server.on("upgrade", function (req, socket, head) {

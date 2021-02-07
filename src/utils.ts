@@ -113,12 +113,6 @@ function validateUserConfig(userConfig: Partial<GithubActionSWAConfig>) {
     }
   }
 
-  console.log({
-    appLocation,
-    apiLocation,
-    appArtifactLocation,
-  });
-
   return {
     appLocation,
     apiLocation,
@@ -127,7 +121,7 @@ function validateUserConfig(userConfig: Partial<GithubActionSWAConfig>) {
 }
 
 export const readConfigFile = ({ userConfig }: { userConfig?: Partial<GithubActionSWAConfig> } = {}): Partial<GithubActionSWAConfig> | undefined => {
-  const warningMessage = "INFO: SWA configuration not found.";
+  const warningMessage = `INFO: Azure Static Web Apps configuration not found under ".github/workflows/"`;
   const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
 
   // does the config folder exist?
@@ -240,6 +234,8 @@ export const readConfigFile = ({ userConfig }: { userConfig?: Partial<GithubActi
     apiLocation: api_location,
     appArtifactLocation: app_artifact_location,
   };
+
+  console.log({ config });
 
   console.info(`INFO: Using SWA configuration file: ${githubActionFile}`);
   if (process.env.DEBUG) {
@@ -400,4 +396,18 @@ export function getBin(binary: string) {
 
 export function isWindows() {
   return process.platform === "win32" || /^(msys|cygwin)$/.test(process.env?.OSTYPE as string);
+}
+
+export function parsePort(port: string) {
+  const portNumber = parseInt(port, 10);
+  if (isNaN(portNumber)) {
+    console.error(`Port "${port}" is not a number.`);
+    process.exit(-1);
+  } else {
+    if (portNumber < 1024 || portNumber > 49151) {
+      console.error(`Port "${port}" is out of range. Allowed ports are from 1024 to 49151.`);
+      process.exit(-1);
+    }
+  }
+  return portNumber;
 }

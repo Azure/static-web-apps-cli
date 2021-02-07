@@ -1,15 +1,14 @@
-import { CommanderStatic } from "commander";
 import fs from "fs";
 import path from "path";
 import shell from "shelljs";
 import builder from "../../builder";
 import { createRuntimeHost } from "../../runtimeHost";
-import { getBin, isHttpUrl, isPortAvailable, parseUrl, readConfigFile, validateDevServerConfig } from "../../utils";
+import { getBin, isHttpUrl, isPortAvailable, readConfigFile, validateDevServerConfig } from "../../utils";
 import { DEFAULT_CONFIG } from "../config";
 
-export async function start(startContext: string, program: CommanderStatic) {
-  let useAppDevServer = null;
-  let useApiDevServer = null;
+export async function start(startContext: string, program: CLIConfig) {
+  let useAppDevServer = undefined;
+  let useApiDevServer = undefined;
 
   if (isHttpUrl(startContext)) {
     useAppDevServer = await validateDevServerConfig(startContext);
@@ -36,18 +35,16 @@ export async function start(startContext: string, program: CommanderStatic) {
   }
 
   // parse the Auth URI port or use default
-  let { port: authUriPort } = parseUrl(program.authUri);
-  authUriPort = authUriPort || (DEFAULT_CONFIG.authPort as number);
+  const authPort = (program.authPort || DEFAULT_CONFIG.authPort) as number;
 
-  const authPortAvailable = await isPortAvailable({ port: authUriPort });
+  const authPortAvailable = await isPortAvailable({ port: authPort });
   if (authPortAvailable === false) {
     console.info(`INFO: Port "${authPortAvailable}" is already in use. Choose a different port (1024 to 49151).`);
     process.exit(0);
   }
 
   // parse the APP URI port or use default
-  let { port: appUriPort } = parseUrl(program.appUri);
-  appUriPort = appUriPort || (DEFAULT_CONFIG.appPort as number);
+  let appPort = (program.appPort || DEFAULT_CONFIG.appPort) as number;
 
   // get the app and api artifact locations
   let [appLocation, appArtifactLocation, apiLocation] = [
@@ -69,14 +66,14 @@ export async function start(startContext: string, program: CommanderStatic) {
   // set env vars for current command
   const envVarsObj = {
     DEBUG: program.verbose ? "*" : "",
-    SWA_CLI_AUTH_URI: program.authUri,
-    SWA_CLI_API_URI: useApiDevServer || program.apiUri,
-    SWA_CLI_APP_URI: useAppDevServer || program.appUri,
+    SWA_CLI_AUTH_PORT: `${program.authPort}`,
+    SWA_CLI_API_PORT: `${program.apiPort}`,
+    SWA_CLI_APP_PORT: `${program.appPort}`,
     SWA_CLI_APP_LOCATION: configFile?.appLocation as string,
     SWA_CLI_APP_ARTIFACT_LOCATION: configFile?.appArtifactLocation as string,
     SWA_CLI_API_LOCATION: configFile?.apiLocation as string,
     SWA_CLI_HOST: program.host,
-    SWA_CLI_PORT: program.port,
+    SWA_CLI_PORT: `${program.port}`,
   };
 
   // handle the APP location config
@@ -85,9 +82,9 @@ export async function start(startContext: string, program: CommanderStatic) {
     serveStaticContent = `echo 'using app dev server at ${useAppDevServer}'`;
   } else {
     const { command: hostCommand, args: hostArgs } = createRuntimeHost({
-      appPort: appUriPort,
-      proxyHost: program.host,
-      proxyPort: program.port,
+      appPort: appPort,
+      proxyHost: program.host as string,
+      proxyPort: program.port as number,
       appLocation: configFile?.appLocation,
       appArtifactLocation: configFile?.appArtifactLocation,
     });
@@ -101,7 +98,7 @@ export async function start(startContext: string, program: CommanderStatic) {
   } else {
     // serve the api if and only if the user provide the --api-location flag
     if (program.apiLocation && configFile?.apiLocation) {
-      serveApiContent = `([ -d '${configFile?.apiLocation}' ] && (cd ${configFile?.apiLocation}; func start --cors *)) || echo 'No API found. Skipping.'`;
+      serveApiContent = `([ -d '${configFile?.apiLocation}' ] && (cd ${configFile?.apiLocation}; func start --cors * --port ${program.apiPort})) || echo 'No API found. Skipping.'`;
     }
   }
 
@@ -118,7 +115,7 @@ export async function start(startContext: string, program: CommanderStatic) {
     `"node ../proxy.js"`,
 
     // emulate auth
-    `"node ../auth/server.js --host=localhost --port=${authUriPort}"`,
+    `"node ../auth/server.js --host=${program.host} --port=${authPort}"`,
 
     // serve the app
     `"${serveStaticContent}"`,

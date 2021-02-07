@@ -49,7 +49,7 @@ declare type RuntimeHostConfig = {
 declare type GithubActionSWAConfig = {
   appBuildCommand?: string;
   apiBuildCommand?: string;
-  appLocation: string;
+  appLocation?: string;
   apiLocation?: string;
   appArtifactLocation?: string;
 };
@@ -62,6 +62,13 @@ declare type SWACLIConfig = GithubActionSWAConfig & {
   appPort?: number;
   apiPrefix?: "api";
 };
+
+declare interface CLIConfig extends SWACLIConfig {
+  app?: string;
+  api?: string;
+  build?: boolean;
+  verbose?: boolean;
+}
 
 declare type ResponseOptions = {
   [key: string]: any;

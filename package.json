@@ -3,6 +3,8 @@
   "version": "0.0.1-alpha.7",
   "description": "Azure Static Web Apps Emulator for Auth, API and static content",
   "scripts": {
+    "start": "node ./dist/cli/index.js",
+    "prestart": "npm run build",
     "release": "release-it --preRelease=alpha",
     "pretest": "npm run build",
     "test": "jest --detectOpenHandles --silent --verbose",

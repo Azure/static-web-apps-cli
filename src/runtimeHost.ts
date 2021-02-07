@@ -1,3 +1,4 @@
+import { DEFAULT_CONFIG } from "./cli/config";
 import { detectRuntime, RuntimeType } from "./runtimes";
 import { getBin } from "./utils";
 
@@ -12,7 +13,7 @@ export const createRuntimeHost = ({ appPort, proxyHost, proxyPort, appLocation, 
     case RuntimeType.dotnet:
       return {
         command: "dotnet",
-        args: `watch --project ${appLocation} run --urls=http://localhost:${appPort}`.split(" "),
+        args: `watch --project ${appLocation} run --urls=http://${proxyHost}:${appPort}`.split(" "),
       };
 
     // Node.js runtime or static sites
@@ -20,13 +21,12 @@ export const createRuntimeHost = ({ appPort, proxyHost, proxyPort, appLocation, 
     case RuntimeType.unknown:
     default:
       const command = httpServerBin;
-      if (!appArtifactLocation) {
-        console.log(`WARN: --app-artifact-location was not provided. Setting default value to "./"`);
-        appArtifactLocation = "./";
-      }
+      appArtifactLocation = appArtifactLocation || DEFAULT_CONFIG.appArtifactLocation;
       // See available options for http-server: https://github.com/http-party/http-server#available-options
       // Note: --proxy allows us to add fallback routes for SPA (https://github.com/http-party/http-server#catch-all-redirect)
-      const args = `${appArtifactLocation} --port ${appPort} --cache -1 --proxy http://${proxyHost}:${proxyPort}/?`.split(" ");
+      const args = `${appArtifactLocation} -d false --host ${proxyHost} --port ${appPort} --cache -1 --proxy http://${proxyHost}:${proxyPort}/?`.split(
+        " "
+      );
 
       return {
         command,
