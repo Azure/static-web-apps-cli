@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+const [, , ...args] = process.argv;
+process.title = ["swa", ...args].join(" ");
+
 import program from "commander";
 import { parsePort } from "../utils";
 import { start } from "./commands/start";

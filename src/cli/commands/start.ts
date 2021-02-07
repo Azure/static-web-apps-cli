@@ -107,7 +107,7 @@ export async function start(startContext: string, program: CLIConfig) {
   const startCommand = [
     // run concurrent commands
     `${concurrentlyBin}`,
-    `--restart-tries 3`,
+    `--restart-tries 1`,
     `--names " swa","auth"," app"," api"`, // 4 characters each
     `-c 'bgYellow.bold,bgMagenta.bold,bgCyan.bold,bgGreen.bold'`,
 
