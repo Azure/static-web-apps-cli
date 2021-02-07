@@ -3,7 +3,7 @@ import path from "path";
 import shell from "shelljs";
 import builder from "../../builder";
 import { createRuntimeHost } from "../../runtimeHost";
-import { getBin, isHttpUrl, isPortAvailable, readConfigFile, validateDevServerConfig } from "../../utils";
+import { getBinaryPath, isHttpUrl, isPortAvailable, readConfigFile, validateDevServerConfig } from "../../utils";
 import { DEFAULT_CONFIG } from "../config";
 
 export async function start(startContext: string, program: CLIConfig) {
@@ -96,13 +96,14 @@ export async function start(startContext: string, program: CLIConfig) {
   if (useApiDevServer) {
     serveApiContent = `echo 'using api dev server at ${useApiDevServer}'`;
   } else {
-    // serve the api if and only if the user provide the --api-location flag
     if (program.apiLocation && configFile?.apiLocation) {
-      serveApiContent = `([ -d '${configFile?.apiLocation}' ] && (cd ${configFile?.apiLocation}; func start --cors * --port ${program.apiPort})) || echo 'No API found. Skipping.'`;
+      const funcBinary = getBinaryPath("func");
+      // serve the api if and only if the user provides a folder via the --api-location flag
+      serveApiContent = `([ -d '${configFile?.apiLocation}' ] && (cd ${configFile?.apiLocation}; ${funcBinary} start --cors * --port ${program.apiPort})) || echo 'No API found. Skipping.'`;
     }
   }
 
-  const concurrentlyBin = getBin("concurrently");
+  const concurrentlyBin = getBinaryPath("concurrently");
 
   const startCommand = [
     // run concurrent commands

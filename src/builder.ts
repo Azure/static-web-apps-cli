@@ -2,12 +2,12 @@ import fs from "fs";
 import path from "path";
 import shell from "shelljs";
 import { detectRuntime, RuntimeType } from "./runtimes";
-import { getBin, readConfigFile } from "./utils";
+import { getBinaryPath, readConfigFile } from "./utils";
 
 const exec = (command: string, options = {}) => shell.exec(command, { async: false, ...options });
 
 // use the concurrently binary provided by this emulator
-const concurrentlyBin = getBin("concurrently");
+const concurrentlyBin = getBinaryPath("concurrently");
 
 const nodeBuilder = (location: string, buildCommand: string, name: string, colour: string) => {
   const appBuildCommand = [

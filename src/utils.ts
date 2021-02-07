@@ -121,12 +121,12 @@ function validateUserConfig(userConfig: Partial<GithubActionSWAConfig>) {
 }
 
 export const readConfigFile = ({ userConfig }: { userConfig?: Partial<GithubActionSWAConfig> } = {}): Partial<GithubActionSWAConfig> | undefined => {
-  const warningMessage = `INFO: Azure Static Web Apps configuration not found under ".github/workflows/"`;
+  const infoMessage = `INFO: GitHub Actions configuration was not found under ".github/workflows/"`;
   const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
 
   // does the config folder exist?
   if (fs.existsSync(githubActionFolder) === false) {
-    console.warn(warningMessage);
+    console.info(infoMessage);
     return userConfig && validateUserConfig(userConfig);
   }
 
@@ -139,7 +139,7 @@ export const readConfigFile = ({ userConfig }: { userConfig?: Partial<GithubActi
 
   // does the config file exist?
   if (!githubActionFile || fs.existsSync(githubActionFile)) {
-    console.warn(warningMessage);
+    console.info(infoMessage);
     return userConfig && validateUserConfig(userConfig);
   }
 
@@ -380,18 +380,31 @@ export function computeAppLocationFromArtifactLocation(appArtifactLocation: stri
   return undefined;
 }
 
-export function getBin(binary: string) {
-  if (binary.indexOf(path.sep) >= 0) {
-    return path.isAbsolute(binary) ? binary : path.resolve(binary);
-  }
-
-  const binDirOutput = spawnSync(isWindows() ? "npm.cmd" : "npm", ["bin"], { cwd: process.cwd() });
+function exec(cmd: string, args: string[] = []) {
+  const binDirOutput = spawnSync(cmd, args, { cwd: process.cwd() });
   const binDirErr = binDirOutput.stderr.toString();
   if (binDirErr) {
-    console.error({ binDirErr });
+    console.error(`ERRR: `, binDirErr);
+    process.exit(-1);
   }
-  const binDirOut = binDirOutput.stdout.toString().trim();
-  return path.resolve(binDirOut, isWindows() ? `${binary}.cmd` : binary);
+  return binDirOutput.stdout.toString().trim();
+}
+
+export function getBinaryPath(binary: string) {
+  const binDirOut = exec(isWindows() ? "npm.cmd" : "npm", ["bin"]);
+  let cmd = path.resolve(binDirOut, isWindows() ? `${binary}.cmd` : binary);
+
+  if (fs.existsSync(cmd)) {
+    return cmd;
+  }
+
+  // ask the OS where the binary is installed on the system
+  cmd = exec(isWindows() ? `where` : `which`, [binary]);
+  if (fs.existsSync(cmd)) {
+    return cmd;
+  }
+  console.error(`ERRR: Binary "${binary}" was not found. Please make sure it is installed.`);
+  process.exit(-1);
 }
 
 export function isWindows() {
