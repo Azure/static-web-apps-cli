@@ -5,8 +5,8 @@ import * as detectRuntime from "./runtimes";
 let spyDetectRuntime: jest.SpyInstance;
 const mockConfig = {
   appPort: 8080,
-  appArtifactLocation: "./",
-  appLocation: "./",
+  appArtifactLocation: `.${path.sep}`,
+  appLocation: `.${path.sep}`,
   proxyHost: "0.0.0.0",
   proxyPort: 4242,
 };
@@ -25,7 +25,7 @@ describe("runtimeHost", () => {
         appArtifactLocation: "./foobar",
       });
 
-      expect(spyDetectRuntime).toHaveBeenCalledWith("./");
+      expect(spyDetectRuntime).toHaveBeenCalledWith(`.${path.sep}`);
       expect(rh.command).toContain(`.bin${path.sep}http-server`);
       expect(rh.args).toEqual([
         "./foobar",
@@ -48,9 +48,21 @@ describe("runtimeHost", () => {
         appArtifactLocation: undefined,
       });
 
-      expect(spyDetectRuntime).toHaveBeenCalledWith("./");
+      expect(spyDetectRuntime).toHaveBeenCalledWith(`.${path.sep}`);
       expect(rh.command).toContain(`.bin${path.sep}http-server`);
-      expect(rh.args).toEqual(["./", "-d", "false", "--host", "0.0.0.0", "--port", "8080", "--cache", "-1", "--proxy", "http://0.0.0.0:4242/?"]);
+      expect(rh.args).toEqual([
+        `.${path.sep}`,
+        "-d",
+        "false",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8080",
+        "--cache",
+        "-1",
+        "--proxy",
+        "http://0.0.0.0:4242/?",
+      ]);
     });
 
     it("proxyHost should be propagated in resulting command", () => {
@@ -59,9 +71,21 @@ describe("runtimeHost", () => {
         proxyHost: "127.0.0.1",
       });
 
-      expect(spyDetectRuntime).toHaveBeenCalledWith("./");
+      expect(spyDetectRuntime).toHaveBeenCalledWith(`.${path.sep}`);
       expect(rh.command).toContain(`.bin${path.sep}http-server`);
-      expect(rh.args).toEqual(["./", "-d", "false", "--host", "127.0.0.1", "--port", "8080", "--cache", "-1", "--proxy", "http://127.0.0.1:4242/?"]);
+      expect(rh.args).toEqual([
+        `.${path.sep}`,
+        "-d",
+        "false",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8080",
+        "--cache",
+        "-1",
+        "--proxy",
+        "http://127.0.0.1:4242/?",
+      ]);
     });
 
     it("proxyPort should be propagated in resulting command", () => {
@@ -70,9 +94,21 @@ describe("runtimeHost", () => {
         proxyPort: 3000,
       });
 
-      expect(spyDetectRuntime).toHaveBeenCalledWith("./");
+      expect(spyDetectRuntime).toHaveBeenCalledWith(`.${path.sep}`);
       expect(rh.command).toContain(`.bin${path.sep}http-server`);
-      expect(rh.args).toEqual(["./", "-d", "false", "--host", "0.0.0.0", "--port", "8080", "--cache", "-1", "--proxy", "http://0.0.0.0:3000/?"]);
+      expect(rh.args).toEqual([
+        `.${path.sep}`,
+        "-d",
+        "false",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8080",
+        "--cache",
+        "-1",
+        "--proxy",
+        "http://0.0.0.0:3000/?",
+      ]);
     });
 
     it("appLocation should be propagated to the runtime detector", () => {
@@ -83,7 +119,19 @@ describe("runtimeHost", () => {
 
       expect(spyDetectRuntime).toHaveBeenCalledWith("./foobar");
       expect(rh.command).toContain(`.bin${path.sep}http-server`);
-      expect(rh.args).toEqual(["./", "-d", "false", "--host", "0.0.0.0", "--port", "8080", "--cache", "-1", "--proxy", "http://0.0.0.0:4242/?"]);
+      expect(rh.args).toEqual([
+        `.${path.sep}`,
+        "-d",
+        "false",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8080",
+        "--cache",
+        "-1",
+        "--proxy",
+        "http://0.0.0.0:4242/?",
+      ]);
     });
   });
 });
