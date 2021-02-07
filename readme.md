@@ -8,7 +8,7 @@
 The Static Web Apps CLI, also known as SWA CLI, serves as a local development tool for [Azure Static Web Apps](https://docs.microsoft.com/azure/static-web-apps). It can:
 
 - Build the local static app and API backend
-- Emulate Authentication and Authorization
+- Emulate authentication and authorization
 - Serve API requests, or use the Azure Function dev server
 - Serve static static app assets, or use your app dev server
 
@@ -65,23 +65,23 @@ However, you can override this behavior. If the artifact folder of your static a
 swa start ./my-dist
 ```
 
-> Note: By default the CLI will not serve the api.
+> Note: By default the CLI will try to serve an API backend if it finds a folder named "api" (in the current directory).
 
 #### Serve both the static app and api
 
-If you are using an API, then run the CLI and provide the folder that contains the API project:
+If you are using an API, then run the CLI and provide the folder that contains the API backend (a valid Azure Functions App project):
 
 ```bash
-swa start ./my-dist --app ./api-folder
+swa start ./my-dist --api ./api-folder
 ```
 
-#### Serve from a local app dev server
+#### Serve from a dev server
 
-When developing locally on your static app, it might be useful to use your local application dev server, that comes with your application CLI, to serve your app content and benefit from the built-in features like the livereload and HMR (hot module reload).
+When developing locally on your static app, it might be useful to use your local application dev server, that comes with your frontend app CLI, to serve your app content and benefit from the built-in features like the livereload and HMR (hot module replacement).
 
 In order to use SWA CLI with your local dev server, follow these two steps:
 
-1. Start your local dev server (as usual). For example: `ng serve`
+1. Start your local dev server (as usual). For examplem if you are using Angular: `ng serve`
 1. Run `swa start` with the URI provided by the dev server, in the following format:
 
 ```bash
@@ -90,62 +90,69 @@ swa start http://<app-dev-server-host>:<app-dev-server-port>
 
 Here is a list of the default ports used by popular dev servers:
 
-| Tool                                                                               | Port | Command                               |
-| ---------------------------------------------------------------------------------- | ---- | ------------------------------------- |
-| [Angular](https://angular.io/cli)                                                  | 4200 | `swa --use-app=http://localhost:4200` |
-| [Vue](https://cli.vuejs.org/)                                                      | 8080 | `swa --use-app=http://localhost:8080` |
-| [Vite](https://github.com/vitejs/vite/)                                            | 3000 | `swa --use-app=http://localhost:3000` |
-| [Create React App](https://reactjs.org/docs/create-a-new-react-app.html)           | 3000 | `swa --use-app=http://localhost:3000` |
-| [Webpack Dev Server](https://github.com/webpack/webpack-dev-server)                | 8080 | `swa --use-app=http://localhost:8080` |
-| [Parcel](https://parceljs.org/cli.html)                                            | 1234 | `swa --use-app=http://localhost:1234` |
-| [Stencil](https://stenciljs.com/docs/dev-server)                                   | 3333 | `swa --use-app=http://localhost:3333` |
-| [Hugo](https://gohugo.io/commands/hugo_server/)                                    | 1313 | `swa --use-app=http://localhost:1313` |
-| [Elm (live server)](https://github.com/wking-io/elm-live/)                         | 8000 | `swa --use-app=http://localhost:8000` |
-| [Ionic](https://ionicframework.com/docs/cli/commands/serve/)                       | 8100 | `swa --use-app=http://localhost:8100` |
-| [Svelte (sirv-cli)](https://github.com/lukeed/sirv/tree/master/packages/sirv-cli/) | 5000 | `swa --use-app=http://localhost:5000` |
-| [Sapper](https://sapper.svelte.dev/)                                               | 3000 | `swa --use-app=http://localhost:3000` |
-| [Scully.io](https://scully.io/)                                                    | 1668 | `swa --use-app=http://localhost:1668` |
-| [Gatsby](https://www.gatsbyjs.com/docs/gatsby-cli/)                                | 8000 | `swa --use-app=http://localhost:8000` |
-| [Nuxt.js](https://nuxtjs.org/)                                                     | 3000 | `swa --use-app=http://localhost:3000` |
-| [Next.js](https://nextjs.org/)                                                     | 3000 | `swa --use-app=http://localhost:3000` |
+| Tool                                                                               | Port | Command                           |
+| ---------------------------------------------------------------------------------- | ---- | --------------------------------- |
+| [Angular](https://angular.io/cli)                                                  | 4200 | `swa start http://localhost:4200` |
+| [Vue](https://cli.vuejs.org/)                                                      | 8080 | `swa start http://localhost:8080` |
+| [Vite](https://github.com/vitejs/vite/)                                            | 3000 | `swa start http://localhost:3000` |
+| [Create React App](https://reactjs.org/docs/create-a-new-react-app.html)           | 3000 | `swa start http://localhost:3000` |
+| [Webpack Dev Server](https://github.com/webpack/webpack-dev-server)                | 8080 | `swa start http://localhost:8080` |
+| [Parcel](https://parceljs.org/cli.html)                                            | 1234 | `swa start http://localhost:1234` |
+| [Stencil](https://stenciljs.com/docs/dev-server)                                   | 3333 | `swa start http://localhost:3333` |
+| [Hugo](https://gohugo.io/commands/hugo_server/)                                    | 1313 | `swa start http://localhost:1313` |
+| [Elm (live server)](https://github.com/wking-io/elm-live/)                         | 8000 | `swa start http://localhost:8000` |
+| [Ionic](https://ionicframework.com/docs/cli/commands/serve/)                       | 8100 | `swa start http://localhost:8100` |
+| [Svelte (sirv-cli)](https://github.com/lukeed/sirv/tree/master/packages/sirv-cli/) | 5000 | `swa start http://localhost:5000` |
+| [Sapper](https://sapper.svelte.dev/)                                               | 3000 | `swa start http://localhost:3000` |
+| [Scully.io](https://scully.io/)                                                    | 1668 | `swa start http://localhost:1668` |
+| [Gatsby](https://www.gatsbyjs.com/docs/gatsby-cli/)                                | 8000 | `swa start http://localhost:8000` |
+| [Nuxt.js](https://nuxtjs.org/)                                                     | 3000 | `swa start http://localhost:3000` |
+| [Next.js](https://nextjs.org/)                                                     | 3000 | `swa start http://localhost:3000` |
 
 #### Serve with a local API backend dev server
 
 When developing locally on your back-end application, it might be useful to use your local API backend dev server, to serve your API backend content and benefit from the built-in features like debugging. In order to use CLI with your local API backend dev server, follow these two steps:
 
-1. Start your local API backend dev server (as usual). For example: `func start host`.
-1. Run `swa` with the `--use-api` flag of the URI provided by the API backend dev server, in the following format:
+1. Start your local API backend dev server (as usual): `func start host`.
+2. Run the SWA CLI with the `--api` flag of the URI provided by the API backend dev server, in the following format:
 
 ```bash
-swa start ./my-dist --use-api=http://<api-dev-server-host>:<api-dev-server-port>
+swa start ./my-dist --api=http://<api-dev-server-host>:<api-dev-server-port>
+```
+
+#### Serve with both local API backend and fontend app dev servers
+
+In a typical scenario, you're probably working on your project locally, using both of the API and app dev servers. If you still want to benefit from SWA features such as authentication and authorization, you can run the SWA CLI providing both dev server URIs:
+
+```bash
+swa start http://app-dev-server --api=http://api-dev-server
 ```
 
 ## Configuration
 
-SWA CLI binds to these default hosts:
+SWA CLI binds to these default hosts and ports:
 
-- `http://localhost:4242`: for the _emulated_ authentication.
+- `http://0.0.0.0:4242`: for the authentication server.
+- `http://0.0.0.0:4200`: for the static app (the front-end app)
 - `http://localhost:7071`: for the API backend (baked by the Azure Function App)
-- `http://localhost:4200`: for the static app (the front-end app)
 
 If you need to override the default values, provide the following options:
 
-| Options      | Description                           | Default                 | Example                            |
-| ------------ | ------------------------------------- | ----------------------- | ---------------------------------- |
-| `--api`      | set the API folder or URI             | `./api`                 | `--api=http://localhost:8083`      |
-| `--auth-uri` | set the Auth URI                      | `http://localhost:4242` | `--auth-uri=http://localhost:8083` |
-| `--api-uri`  | set the API URI                       | `http://localhost:7071` | `--api-uri=http://localhost:8082`  |
-| `--app-uri`  | set the app URI                       | `http://localhost:4200` | `--app-uri=http://localhost:8081`  |
-| `--host`     | set the emulator host address         | `0.0.0.0`               | `--host=192.168.68.80`             |
-| `--port`     | set the emulator port value           | `4280`                  | `--port=8080`                      |
-| `--build`    | build the api and app before starting | `false`                 | `--build`                          |
-| `--verbose`  | enable verbose logs                   | `false`                 | `--verbose`                        |
+| Options                          | Description                                  | Default     | Example                       |
+| -------------------------------- | -------------------------------------------- | ----------- | ----------------------------- |
+| `--app, --app-artifact-location` | set app artifact (dist) folder or dev server | `./`        | `--app=./my-dist`             |
+| `--api, --api-artifact-location` | set the API folder or dev server             | `./api`     | `--api=http://localhost:8083` |
+| `--auth-port`                    | set the Auth server port                     | `4242`      | `--auth-port=8083`            |
+| `--api-port`                     | set the API server port                      | `7071`      | `--api-port=8082`             |
+| `--app-port`                     | set the app server port                      | `4200`      | `--app-port=8081`             |
+| `--host`                         | set the emulator host address                | `localhost` | `--host=192.168.68.80`        |
+| `--port`                         | set the emulator port value                  | `4280`      | `--port=8080`                 |
 
-## Local Authentication emulation
+## Local authentication & authorization emulation
 
-When requesting `./auth/login/<provider>`, you will access a local Authentication UI allowing you to set fake user information.
+When requesting `./auth/login/<provider>`, you will access a local authentication UI allowing you to set fake user information.
 
-When requesting the `.auth/me` endpoint, a `clientPrincipal` containing the fake information will be returned by the Authentication API. Here is an example:
+When requesting the `.auth/me` endpoint, a `clientPrincipal` containing the fake information will be returned by the authentication API. Here is an example:
 
 ```json
 {
@@ -163,30 +170,8 @@ When requesting the `.auth/me` endpoint, a `clientPrincipal` containing the fake
 ## Caveats
 
 - Custom routes are not yet fully supported (see [#6](https://github.com/azure/static-web-apps-cli/issues/6))
-- Authorization and roles are not fully supported (see [#7](https://github.com/azure/static-web-apps-cli/issues/7)).
+- authorization and roles are not fully supported (see [#7](https://github.com/azure/static-web-apps-cli/issues/7)).
 - The cli is serving all traffic over HTTP (HTTPS support will be added soon) (see [#4](https://github.com/azure/static-web-apps-cli/issues/4)).
-
-## Troubleshooting
-
-### Port 4242 is unavailable
-
-This means that there is already an instance of Azure Functions Core Tools (assigned to the Auth emulator) that is running and bound to the default port `4242`.
-
-To fix it, either:
-
-- close the other running instance, and run the cli again.
-- run the cli using a different port: `--auth-uri=http://localhost:4243`
-- force close the other instance by killing its processes: `lsof -t -i tcp:4242 | xargs kill`
-
-### Error: listen EADDRINUSE: address already in use 0.0.0.0:4280
-
-This error indicates that another app is running and bound to the default port of the emulator: `4280`.
-
-To fix it, either:
-
-- close the other running instance, and run the emulator again.
-- run the emulator using a different port: `--port=8081`
-- force close the other instance by killing its processes: `lsof -t -i tcp:4280 | xargs kill`
 
 ## Want to help? [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/azure/static-web-apps-cli/issues)
 

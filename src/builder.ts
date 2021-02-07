@@ -50,7 +50,7 @@ const builder = ({ config }: { config: Partial<GithubActionSWAConfig> }) => {
         case RuntimeType.dotnet:
           {
             // build app
-            dotnetBuilder(appLocation, "app_build", "bgGreen.bold");
+            dotnetBuilder(appLocation as string, "app_build", "bgGreen.bold");
 
             // NOTE: API is optional. Build it only if it exists
             // This may result in a double-compile of some libraries if they are shared between the
@@ -66,12 +66,12 @@ const builder = ({ config }: { config: Partial<GithubActionSWAConfig> }) => {
         default:
           {
             // figure out if appLocation exists
-            if (fs.existsSync(appLocation) === false) {
+            if (fs.existsSync(appLocation as string) === false) {
               appLocation = process.cwd();
             }
 
             // build app
-            nodeBuilder(appLocation, appBuildCommand as string, "app_build", "bgGreen.bold");
+            nodeBuilder(appLocation as string, appBuildCommand as string, "app_build", "bgGreen.bold");
 
             // NOTE: API is optional. Build it only if it exists
             apiLocation = path.resolve(process.cwd(), apiLocation as string);
