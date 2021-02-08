@@ -50,7 +50,6 @@ jobs:
       name: "Publish to GitHub Packages"
       needs: [package]
       runs-on: ubuntu-18.04
-      if: github.repository_owner == 'manekinekko' # && github.token != ''
       steps:
       - name: Upload
         uses: actions/download-artifact@v2
@@ -60,8 +59,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://npm.pkg.github.com/
-          scope: "@manekinekko"
-      - run: echo "registry=https://npm.pkg.github.com/@manekinekko" >> .npmrc
+          scope: "@azure"
+      - run: echo "registry=https://npm.pkg.github.com/@azure" >> .npmrc
       - run: npm publish $(ls *.tgz)
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
