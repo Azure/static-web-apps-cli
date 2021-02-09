@@ -1,10 +1,11 @@
 import fs from "fs";
 import path from "path";
-import shell from "shelljs";
-import builder from "../../builder";
+// import shell from "shelljs";
+// import builder from "../../builder";
 import { createRuntimeHost } from "../../runtimeHost";
-import { getBinaryPath, isHttpUrl, isPortAvailable, readConfigFile, validateDevServerConfig } from "../../utils";
+import { isHttpUrl, isPortAvailable, readConfigFile, validateDevServerConfig } from "../../utils";
 import { DEFAULT_CONFIG } from "../config";
+import concurrently from "concurrently";
 
 export async function start(startContext: string, program: CLIConfig) {
   let useAppDevServer = undefined;
@@ -97,59 +98,61 @@ export async function start(startContext: string, program: CLIConfig) {
     serveApiContent = `echo 'using api dev server at ${useApiDevServer}'`;
   } else {
     if (program.apiLocation && configFile?.apiLocation) {
-      const funcBinary = getBinaryPath("func");
+      const funcBinary = "func";
       // serve the api if and only if the user provides a folder via the --api-location flag
       serveApiContent = `([ -d '${configFile?.apiLocation}' ] && (cd ${configFile?.apiLocation}; ${funcBinary} start --cors * --port ${program.apiPort})) || echo 'No API found. Skipping.'`;
     }
   }
 
-  const concurrentlyBin = getBinaryPath("concurrently");
+  const concurrentlyEnv = { ...process.env, ...envVarsObj };
+  concurrently(
+    [
+      // start the reverse proxy
+      { command: `node ${path.join(__dirname, "..", "..", "proxy.js")}`, name: " swa", env: concurrentlyEnv, prefixColor: "bgYellow.bold" },
 
-  const startCommand = [
-    // run concurrent commands
-    `${concurrentlyBin}`,
-    `--restart-tries 1`,
-    `--names " swa","auth"," app"," api"`, // 4 characters each
-    `-c 'bgYellow.bold,bgMagenta.bold,bgCyan.bold,bgGreen.bold'`,
+      // emulate auth
+      {
+        command: `node ${path.join(__dirname, "..", "..", "auth", "server.js")} --host=${program.host} --port=${authPort}`,
+        name: "auth",
+        env: concurrentlyEnv,
+        prefixColor: "bgMagenta.bold",
+      },
 
-    // start the reverse proxy
-    `"node ../proxy.js"`,
+      // serve the app
+      { command: serveStaticContent, name: " app", env: concurrentlyEnv, prefixColor: "bgCyan.bold" },
 
-    // emulate auth
-    `"node ../auth/server.js --host=${program.host} --port=${authPort}"`,
-
-    // serve the app
-    `"${serveStaticContent}"`,
-
-    // serve the api, if it's available
-    serveApiContent && `"${serveApiContent}"`,
-
-    `--color=always`,
-  ];
-
-  if (process.env.DEBUG) {
-    console.log({ env: envVarsObj });
-    console.log({ startCommand });
-  }
-
-  if (program.build) {
-    // run the app/api builds
-    builder({
-      config: configFile as GithubActionSWAConfig,
-    });
-  }
-  // run concurrent commands
-  shell.exec(
-    startCommand.join(" "),
+      // serve the api, if it's available
+      { command: serveApiContent || "", name: " api", env: concurrentlyEnv, prefixColor: "bgGreen.bold" },
+    ],
     {
-      // set the cwd to the installation folder
-      cwd: path.resolve(__dirname, ".."),
-      env: { ...process.env, ...envVarsObj },
-    },
-    (_code, _stdout, stderr) => {
-      if (stderr.length) {
-        console.error(stderr);
-      }
+      restartTries: 1,
+      prefix: "name",
     }
   );
+
+  // if (process.env.DEBUG) {
+  //   console.log({ env: envVarsObj });
+  //   console.log({ startCommand });
+  // }
+
+  // if (program.build) {
+  //   // run the app/api builds
+  //   builder({
+  //     config: configFile as GithubActionSWAConfig,
+  //   });
+  // }
+  // // run concurrent commands
+  // shell.exec(
+  //   startCommand.join(" "),
+  //   {
+  //     // set the cwd to the installation folder
+  //     cwd: path.resolve(__dirname, ".."),
+  //     env: { ...process.env, ...envVarsObj },
+  //   },
+  //   (_code, _stdout, stderr) => {
+  //     if (stderr.length) {
+  //       console.error(stderr);
+  //     }
+  //   }
+  // );
 }

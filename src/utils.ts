@@ -1,4 +1,3 @@
-import { spawnSync } from "child_process";
 import cookie from "cookie";
 import fs from "fs";
 import net from "net";
@@ -378,37 +377,6 @@ export function computeAppLocationFromArtifactLocation(appArtifactLocation: stri
     return path.dirname(appArtifactLocation).split(path.sep).pop();
   }
   return undefined;
-}
-
-function exec(cmd: string, args: string[] = []) {
-  const binDirOutput = spawnSync(cmd, args, { cwd: process.cwd() });
-  const binDirErr = binDirOutput.stderr.toString();
-  if (binDirErr) {
-    console.error(`ERRR: `, binDirErr);
-    process.exit(-1);
-  }
-  return binDirOutput.stdout.toString().trim();
-}
-
-export function getBinaryPath(binary: string) {
-  const binDirOut = exec(isWindows() ? "npm.cmd" : "npm", ["bin"]);
-  let cmd = path.resolve(binDirOut, isWindows() ? `${binary}.cmd` : binary);
-
-  if (fs.existsSync(cmd)) {
-    return cmd;
-  }
-
-  // ask the OS where the binary is installed on the system
-  cmd = exec(isWindows() ? `where` : `which`, [binary]);
-  if (fs.existsSync(cmd)) {
-    return cmd;
-  }
-  console.error(`ERRR: Binary "${binary}" was not found. Please make sure it is installed.`);
-  process.exit(-1);
-}
-
-export function isWindows() {
-  return process.platform === "win32" || /^(msys|cygwin)$/.test(process.env?.OSTYPE as string);
 }
 
 export function parsePort(port: string) {

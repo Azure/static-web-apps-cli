@@ -1,8 +1,7 @@
 import { DEFAULT_CONFIG } from "./cli/config";
 import { detectRuntime, RuntimeType } from "./runtimes";
-import { getBinaryPath } from "./utils";
 
-const httpServerBin = getBinaryPath("http-server");
+const httpServerBin = "http-server";
 export const createRuntimeHost = ({ appPort, proxyHost, proxyPort, appLocation, appArtifactLocation }: RuntimeHostConfig) => {
   const runtimeType = detectRuntime(appLocation);
 

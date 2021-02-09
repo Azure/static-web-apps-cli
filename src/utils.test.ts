@@ -1,6 +1,6 @@
 import mockFs from "mock-fs";
 import path from "path";
-import { response, validateCookie, readConfigFile, argv, parsePort, isWindows } from "./utils";
+import { response, validateCookie, readConfigFile, argv, parsePort } from "./utils";
 
 describe("Utils", () => {
   const mockExit = jest.spyOn(process, "exit").mockImplementation(() => {
@@ -661,45 +661,6 @@ jobs:
     it("Ports between 1024 - 49151 should be valid", () => {
       const port = parsePort("1984");
       expect(port).toBe(1984);
-    });
-  });
-
-  describe("isWindows()", () => {
-    it("should detect Windows OS (win32)", () => {
-      Object.defineProperty(process, "platform", {
-        value: `win32`,
-      });
-      expect(isWindows()).toBe(true);
-    });
-    it("should detect Windows OS (msys)", () => {
-      Object.defineProperty(process, "platform", {
-        value: `xyz`,
-      });
-      process.env.OSTYPE = "msys";
-      expect(isWindows()).toBe(true);
-    });
-    it("should detect Windows OS (cygwin)", () => {
-      Object.defineProperty(process, "platform", {
-        value: `xyz`,
-      });
-      process.env.OSTYPE = "cygwin";
-      expect(isWindows()).toBe(true);
-    });
-
-    it("should detect Linux", () => {
-      Object.defineProperty(process, "platform", {
-        value: `linux`,
-      });
-      process.env.OSTYPE = undefined;
-      expect(isWindows()).toBe(false);
-    });
-
-    it("should detect macOS", () => {
-      Object.defineProperty(process, "platform", {
-        value: `darwin`,
-      });
-      process.env.OSTYPE = undefined;
-      expect(isWindows()).toBe(false);
     });
   });
 });
