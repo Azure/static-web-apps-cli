@@ -1,6 +1,6 @@
 {
   "name": "@azure/static-web-apps-cli",
-  "version": "0.0.1-alpha",
+  "version": "0.1.0",
   "description": "Azure Static Web Apps Emulator for Auth, API and static content",
   "scripts": {
     "start": "node ./dist/cli/index.js",
