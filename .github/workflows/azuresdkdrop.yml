@@ -33,7 +33,9 @@ jobs:
         with:
           node-version: 14.x
 
-      - run: echo "NPM_PACKAGE_VERSION=$(jq -r ".version" package.json)" >> $GITHUB_ENV
+      - run: |
+        echo "NPM_PACKAGE_VERSION=$(jq -r ".version" package.json)" >> $GITHUB_ENV
+        echo "NPM_PACKAGE_PATH=$(ls *.tgz)" >> $GITHUB_ENV
       - run: echo $NPM_PACKAGE_VERSION
       - run: npm ci
       - run: npm run build
@@ -44,6 +46,27 @@ jobs:
             name: package
             path: "*.tgz"
 
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.NPM_PACKAGE_VERSION }}
+          release_name: v${{ env.NPM_PACKAGE_VERSION }}
+          draft: true
+          prerelease: true
+
+      - name: Upload Release Asset
+        id: upload_release_asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.NPM_PACKAGE_PATH }}
+          asset_name: ${{ env.NPM_PACKAGE_PATH }}
+          asset_content_type: application/tar+gzip
   # copy:
   #   name: "Copy to Azure SDK Partner Pipeline Drop"
   #   needs: [ package ]
