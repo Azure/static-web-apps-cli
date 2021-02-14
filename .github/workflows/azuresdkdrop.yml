@@ -33,9 +33,6 @@ jobs:
         with:
           node-version: 14.x
 
-      - run: echo "NPM_PACKAGE_VERSION=$(jq -r ".version" package.json)" >> $GITHUB_ENV
-      - run: echo "NPM_PACKAGE_PATH=$(ls *.tgz)" >> $GITHUB_ENV
-
       - run: npm ci
       - run: npm run build
       - run: npm pack
@@ -44,6 +41,9 @@ jobs:
         with:
             name: package
             path: "*.tgz"
+
+      - run: echo "NPM_PACKAGE_VERSION=$(jq -r ".version" package.json)" >> $GITHUB_ENV
+      - run: echo "NPM_PACKAGE_PATH=$(ls *.tgz)" >> $GITHUB_ENV
 
       - name: Create Release
         id: create_release
