@@ -33,7 +33,7 @@ jobs:
         with:
           node-version: 14.x
 
-      - run: echo "NPM_PACKAGE_VERSION=$(jq -r ".name" package.json)" >> $GITHUB_ENV
+      - run: echo "NPM_PACKAGE_VERSION=$(jq -r ".version" package.json)" >> $GITHUB_ENV
       - run: echo $NPM_PACKAGE_VERSION
       - run: npm ci
       - run: npm run build
