@@ -23,7 +23,7 @@ jobs:
     - run: npm test
 
   packageAndRelease:
-    needs: [test]
+    needs: [ test ]
     name: Package, tag, recreate draft release
     runs-on: ubuntu-18.04
     steps:
@@ -83,7 +83,7 @@ jobs:
 
   copy:
     name: "Copy to Azure SDK Partner Pipeline Drop"
-    needs: [ package ]
+    needs: [ packageAndRelease ]
     runs-on: ubuntu-18.04
     steps:
     - name: Download artifact
