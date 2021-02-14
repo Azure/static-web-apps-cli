@@ -80,7 +80,7 @@ export async function start(startContext: string, program: CLIConfig) {
     serveStaticContent = `${hostCommand} ${hostArgs.join(" ")}`;
   }
 
-  // parse the APP URI port
+  // parse the API URI port
   let apiPort = (program.apiPort || DEFAULT_CONFIG.apiPort) as number;
 
   // handle the API location config
