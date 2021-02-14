@@ -36,7 +36,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm pack
-      
+
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
@@ -45,6 +45,18 @@ jobs:
 
       - run: echo "NPM_PACKAGE_VERSION=$(jq -r ".version" package.json)" >> $GITHUB_ENV
       - run: echo "NPM_PACKAGE_PATH=$(ls *.tgz)" >> $GITHUB_ENV
+
+      - name: Create tag
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: refs/tags/v${{ env.NPM_PACKAGE_VERSION }},
+              sha: context.sha
+            })
 
       - name: Create Release
         id: create_release
