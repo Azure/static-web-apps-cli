@@ -3,7 +3,7 @@ import path from "path";
 import shell from "shelljs";
 import builder from "../../builder";
 import { createRuntimeHost } from "../../runtimeHost";
-import { getBin, isHttpUrl, isPortAvailable, readConfigFile, validateDevServerConfig } from "../../utils";
+import { getBin, isHttpUrl, isPortAvailable, parseUrl, readConfigFile, validateDevServerConfig } from "../../utils";
 import { DEFAULT_CONFIG } from "../config";
 
 export async function start(startContext: string, program: CLIConfig) {
@@ -43,9 +43,6 @@ export async function start(startContext: string, program: CLIConfig) {
     process.exit(0);
   }
 
-  // parse the APP URI port or use default
-  let appPort = (program.appPort || DEFAULT_CONFIG.appPort) as number;
-
   // get the app and api artifact locations
   let [appLocation, appArtifactLocation, apiLocation] = [
     program.appLocation as string,
@@ -63,23 +60,15 @@ export async function start(startContext: string, program: CLIConfig) {
     },
   });
 
-  // set env vars for current command
-  const envVarsObj = {
-    DEBUG: program.verbose ? "*" : "",
-    SWA_CLI_AUTH_PORT: `${program.authPort}`,
-    SWA_CLI_API_PORT: `${program.apiPort}`,
-    SWA_CLI_APP_PORT: `${program.appPort}`,
-    SWA_CLI_APP_LOCATION: configFile?.appLocation as string,
-    SWA_CLI_APP_ARTIFACT_LOCATION: configFile?.appArtifactLocation as string,
-    SWA_CLI_API_LOCATION: configFile?.apiLocation as string,
-    SWA_CLI_HOST: program.host,
-    SWA_CLI_PORT: `${program.port}`,
-  };
+  // parse the APP URI port
+  let appPort = (program.appPort || DEFAULT_CONFIG.appPort) as number;
 
   // handle the APP location config
   let serveStaticContent = undefined;
   if (useAppDevServer) {
     serveStaticContent = `echo 'using app dev server at ${useAppDevServer}'`;
+    const { port } = parseUrl(useAppDevServer);
+    appPort = port;
   } else {
     const { command: hostCommand, args: hostArgs } = createRuntimeHost({
       appPort: appPort,
@@ -91,16 +80,34 @@ export async function start(startContext: string, program: CLIConfig) {
     serveStaticContent = `${hostCommand} ${hostArgs.join(" ")}`;
   }
 
+  // parse the APP URI port
+  let apiPort = (program.apiPort || DEFAULT_CONFIG.apiPort) as number;
+
   // handle the API location config
   let serveApiContent = undefined;
   if (useApiDevServer) {
     serveApiContent = `echo 'using api dev server at ${useApiDevServer}'`;
+    const { port } = parseUrl(useApiDevServer);
+    apiPort = port;
   } else {
     // serve the api if and only if the user provide the --api-location flag
     if (program.apiLocation && configFile?.apiLocation) {
       serveApiContent = `([ -d '${configFile?.apiLocation}' ] && (cd ${configFile?.apiLocation}; func start --cors * --port ${program.apiPort})) || echo 'No API found. Skipping.'`;
     }
   }
+
+  // set env vars for current command
+  const envVarsObj = {
+    DEBUG: program.verbose ? "*" : "",
+    SWA_CLI_AUTH_PORT: `${program.authPort}`,
+    SWA_CLI_API_PORT: `${apiPort}`,
+    SWA_CLI_APP_PORT: `${appPort}`,
+    SWA_CLI_APP_LOCATION: configFile?.appLocation as string,
+    SWA_CLI_APP_ARTIFACT_LOCATION: configFile?.appArtifactLocation as string,
+    SWA_CLI_API_LOCATION: configFile?.apiLocation as string,
+    SWA_CLI_HOST: program.host,
+    SWA_CLI_PORT: `${program.port}`,
+  };
 
   const concurrentlyBin = getBin("concurrently");
 
