@@ -54,7 +54,7 @@ jobs:
             github.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: refs/tags/v${{ env.NPM_PACKAGE_VERSION }},
+              ref: "refs/tags/v${{ env.NPM_PACKAGE_VERSION }}"",
               sha: context.sha
             })
 
