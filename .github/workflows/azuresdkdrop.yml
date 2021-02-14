@@ -6,8 +6,8 @@ name: Azure SDK copy package to drop
 on: workflow_dispatch
 
 jobs:
-  name: Run tests
   test:
+    name: Run tests
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
