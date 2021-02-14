@@ -385,7 +385,7 @@ export function getBin(binary: string) {
     return path.isAbsolute(binary) ? binary : path.resolve(binary);
   }
 
-  const binDirOutput = spawnSync(isWindows() ? "npm.cmd" : "npm", ["bin"], { cwd: process.cwd() });
+  const binDirOutput = spawnSync(isWindows() ? "npm.cmd" : "npm", ["bin"], { cwd: __dirname });
   const binDirErr = binDirOutput.stderr.toString();
   if (binDirErr) {
     console.error({ binDirErr });
