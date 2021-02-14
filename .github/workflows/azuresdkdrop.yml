@@ -6,25 +6,25 @@ name: Azure SDK copy package to drop
 on: workflow_dispatch
 
 jobs:
-#  test:
-#    runs-on: ${{ matrix.os }}
-#    strategy:
-#      matrix:
-#        os: [macos-latest, windows-latest, ubuntu-18.04]
-#        node-version: [10.x, 12.x, 14.x]
-#
-#    steps:
-#    - uses: actions/checkout@v2
-#    - name: Use Node.js ${{ matrix.node-version }}
-#      uses: actions/setup-node@v1
-#      with:
-#        node-version: ${{ matrix.node-version }}
-#    - run: npm ci
-#    - run: npm test
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-18.04]
+        node-version: [10.x, 12.x, 14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm ci
+    - run: npm test
 
   packageAndRelease:
-#    needs: [test]
-    name: Package and recreate draft release
+    needs: [test]
+    name: Package, tag, recreate draft release
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -43,8 +43,10 @@ jobs:
             name: package
             path: "*.tgz"
 
-      - run: echo "NPM_PACKAGE_VERSION=$(jq -r ".version" package.json)" >> $GITHUB_ENV
-      - run: echo "NPM_PACKAGE_PATH=$(ls *.tgz)" >> $GITHUB_ENV
+      - name: Get package version
+        run: echo "NPM_PACKAGE_VERSION=$(jq -r ".version" package.json)" >> $GITHUB_ENV
+      - name: Get package path
+        run: echo "NPM_PACKAGE_PATH=$(ls *.tgz)" >> $GITHUB_ENV
 
       - name: Create tag
         uses: actions/github-script@v3
@@ -70,7 +72,6 @@ jobs:
           prerelease: true
 
       - name: Upload Release Asset
-        id: upload_release_asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -79,20 +80,23 @@ jobs:
           asset_path: ${{ env.NPM_PACKAGE_PATH }}
           asset_name: ${{ env.NPM_PACKAGE_PATH }}
           asset_content_type: application/tar+gzip
-  # copy:
-  #   name: "Copy to Azure SDK Partner Pipeline Drop"
-  #   needs: [ package ]
-  #   runs-on: ubuntu-18.04
-  #   steps:
-  #   - name: Upload
-  #     uses: actions/download-artifact@v2
-  #     with:
-  #         name: package
-  #   - run: |
-  #       ls -la
-  #       PACKAGE_VERSION=`echo $(ls *.tgz) | sed -e 's/\.tgz$//'`
-  #       echo $PACKAGE_VERSION
-  #       az storage blob upload -n azure-staticwebapps/npm/$PACKAGE_VERSION/$(ls *.tgz) -c drops -f $(ls *.tgz) --account-name $AZURE_SDK_STORAGE_ACCOUNT_NAME --account-key $AZURE_SDK_DROP_ACCESS_KEY
-  #     env:
-  #       AZURE_SDK_STORAGE_ACCOUNT_NAME: ${{secrets.AZURE_SDK_STORAGE_ACCOUNT_NAME}}
-  #       AZURE_SDK_DROP_ACCESS_KEY: ${{secrets.AZURE_SDK_DROP_ACCESS_KEY}}
+
+  copy:
+    name: "Copy to Azure SDK Partner Pipeline Drop"
+    needs: [ package ]
+    runs-on: ubuntu-18.04
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+          name: package
+
+    - name: Upload to drop
+      run: |
+        ls -la
+        PACKAGE_ID=`echo $(ls *.tgz) | sed -e 's/\.tgz$//'`
+        echo $PACKAGE_ID
+        az storage blob upload -n azure-staticwebapps/npm/$PACKAGE_ID/$(ls *.tgz) -c drops -f $(ls *.tgz) --account-name $AZURE_SDK_STORAGE_ACCOUNT_NAME --account-key $AZURE_SDK_DROP_ACCESS_KEY
+      env:
+        AZURE_SDK_STORAGE_ACCOUNT_NAME: ${{secrets.AZURE_SDK_STORAGE_ACCOUNT_NAME}}
+        AZURE_SDK_DROP_ACCESS_KEY: ${{secrets.AZURE_SDK_DROP_ACCESS_KEY}}
