@@ -506,7 +506,7 @@ jobs:
         mockFs.restore();
       });
 
-      it("property 'api_location' should be set to 'api' if missing", () => {
+      it("property 'api_location' should be undefined if missing", () => {
         mockFs({
           ".github/workflows/azure-static-web-apps.yml": `
 jobs:
@@ -520,7 +520,7 @@ jobs:
         });
 
         expect(readConfigFile()).toBeTruthy();
-        expect(readConfigFile()?.apiLocation).toBe(path.normalize(process.cwd() + "/api"));
+        expect(readConfigFile()?.apiLocation).toBeUndefined();
 
         mockFs.restore();
       });

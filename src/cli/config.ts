@@ -8,7 +8,6 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   apiPrefix: "api",
   appLocation: `.${path.sep}`,
   appArtifactLocation: `.${path.sep}`,
-  apiLocation: `.${path.sep}api`,
   appBuildCommand: "npm run build --if-present",
   apiBuildCommand: "npm run build --if-present",
 };
