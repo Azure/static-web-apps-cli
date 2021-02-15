@@ -70,6 +70,21 @@ export async function start(startContext: string, program: CLIConfig) {
     const { port } = parseUrl(useAppDevServer);
     appPort = port;
   } else {
+    if (
+      (await isPortAvailable({
+        port: appPort,
+      })) === false
+    ) {
+      const randomPort = Math.floor(Math.random() * 49150) + 1024;
+      // @Todo: don't block and just define a random port for static server
+      // program.appPort = randomPort;
+
+      console.info(`INFO: Cannot start static server at "http://${program.host}:${appPort}". Port is already in use.`);
+      console.info(`INFO: Choose a different port (1024 to 49151).`);
+      console.info(`Hint: Try swa start ${startContext} --app-port=${randomPort}`);
+      process.exit(0);
+    }
+
     const { command: hostCommand, args: hostArgs } = createRuntimeHost({
       appPort: appPort,
       proxyHost: program.host as string,
