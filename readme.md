@@ -141,7 +141,7 @@ If you need to override the default values, provide the following options:
 | Options                          | Description                                  | Default     | Example                       |
 | -------------------------------- | -------------------------------------------- | ----------- | ----------------------------- |
 | `--app, --app-artifact-location` | set app artifact (dist) folder or dev server | `./`        | `--app=./my-dist`             |
-| `--api, --api-artifact-location` | set the API folder or dev server             | `./api`     | `--api=http://localhost:8083` |
+| `--api, --api-artifact-location` | set the API folder or dev server             |             | `--api=http://localhost:8083` |
 | `--auth-port`                    | set the Auth server port                     | `4242`      | `--auth-port=8083`            |
 | `--api-port`                     | set the API server port                      | `7071`      | `--api-port=8082`             |
 | `--app-port`                     | set the app server port                      | `4200`      | `--app-port=8081`             |

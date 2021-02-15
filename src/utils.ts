@@ -205,7 +205,9 @@ export const readConfigFile = ({ userConfig }: { userConfig?: Partial<GithubActi
   // - app_artifact_location
 
   app_location = path.normalize(path.join(process.cwd(), app_location));
-  api_location = path.normalize(path.join(process.cwd(), api_location || path.sep));
+  if (typeof api_location !== "undefined") {
+    api_location = path.normalize(path.join(process.cwd(), api_location || path.sep));
+  }
   app_artifact_location = path.normalize(app_artifact_location);
 
   const detectedRuntimeType = detectRuntime(app_location);
@@ -385,7 +387,7 @@ export function getBin(binary: string) {
     return path.isAbsolute(binary) ? binary : path.resolve(binary);
   }
 
-  const binDirOutput = spawnSync(isWindows() ? "npm.cmd" : "npm", ["bin"], { cwd: process.cwd() });
+  const binDirOutput = spawnSync(isWindows() ? "npm.cmd" : "npm", ["bin"], { cwd: __dirname });
   const binDirErr = binDirOutput.stderr.toString();
   if (binDirErr) {
     console.error({ binDirErr });

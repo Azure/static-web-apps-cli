@@ -198,16 +198,11 @@ const server = http.createServer(function (req, res) {
       target,
       secure: false,
     });
-
-    proxyApp.on("error", function (err) {
-      console.log("app>>", req.method, target + req.url);
-      res.writeHead(500, {
-        "Content-Type": "text/plain",
-      });
-
-      res.end(err.toString());
-    });
   }
+});
+
+proxyApp.on("error", function (err) {
+  console.error("app>", err.toString());
 });
 
 const port = SWA_CLI_PORT;
@@ -215,8 +210,9 @@ const host = SWA_CLI_HOST;
 const address = `http://${host}:${port}`;
 console.log(`SWA listening on ${address}`);
 server.on("upgrade", function (req, socket, head) {
+  console.log("app>", "Upgrading WebSocket");
   proxyApp.ws(req, socket, head, {
-    target: process.env.SWA_CLI_APP_URI,
+    target: SWA_CLI_APP_URI,
     secure: false,
   });
 });
