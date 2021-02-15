@@ -15,6 +15,7 @@ const SWA_CLI_PORT = parseInt(process.env.SWA_CLI_PORT || "", 10);
 const SWA_CLI_APP_URI = buildAdress(SWA_CLI_HOST, process.env.SWA_CLI_APP_PORT);
 const SWA_CLI_API_URI = buildAdress(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
 const SWA_CLI_AUTH_URI = buildAdress(SWA_CLI_HOST, process.env.SWA_CLI_AUTH_PORT);
+const SWA_CLI_APP_ARTIFACT_LOCATION = process.env.SWA_CLI_APP_ARTIFACT_LOCATION;
 
 if (!isHttpUrl(SWA_CLI_APP_URI)) {
   console.log(`The provided app URI is not a valid`);
@@ -56,7 +57,6 @@ const serveStatic = (file: string, res: http.ServerResponse, status = 200) => {
       res.end(JSON.stringify(err));
       return;
     }
-    console.log("serving", file);
     res.writeHead(status);
     res.end(data);
   });
@@ -84,7 +84,7 @@ const readRoutes = (folder: string): UserDefinedRoute[] => {
   return require(path.join(folder, routesFile)).routes || [];
 };
 
-const routes = readRoutes(process.env.SWA_CLI_APP_ARTIFACT_LOCATION || "");
+const routes = readRoutes(SWA_CLI_APP_ARTIFACT_LOCATION || "");
 
 const routeTest = (userDefinedRoute: string, currentRoute: string) => {
   if (userDefinedRoute === currentRoute) {
@@ -185,7 +185,7 @@ const server = http.createServer(function (req, res) {
   // detected SPA mode
   else if (req.url.startsWith("/?")) {
     console.log("proxy>", req.method, req.headers.host + req.url);
-    const fileIndex = path.join(process.env.SWA_CLI_APP_ARTIFACT_LOCATION || "", "index.html");
+    const fileIndex = path.join(SWA_CLI_APP_ARTIFACT_LOCATION || "", "index.html");
     serveStatic(fileIndex, res);
   }
 
