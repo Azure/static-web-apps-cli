@@ -121,12 +121,10 @@ function validateUserConfig(userConfig: Partial<GithubActionSWAConfig>) {
 }
 
 export const readConfigFile = ({ userConfig }: { userConfig?: Partial<GithubActionSWAConfig> } = {}): Partial<GithubActionSWAConfig> | undefined => {
-  const warningMessage = `INFO: Azure Static Web Apps configuration not found under ".github/workflows/"`;
   const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
 
   // does the config folder exist?
   if (fs.existsSync(githubActionFolder) === false) {
-    console.warn(warningMessage);
     return userConfig && validateUserConfig(userConfig);
   }
 
@@ -139,7 +137,6 @@ export const readConfigFile = ({ userConfig }: { userConfig?: Partial<GithubActi
 
   // does the config file exist?
   if (!githubActionFile || fs.existsSync(githubActionFile)) {
-    console.warn(warningMessage);
     return userConfig && validateUserConfig(userConfig);
   }
 
