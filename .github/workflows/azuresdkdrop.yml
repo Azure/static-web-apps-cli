@@ -52,6 +52,8 @@ jobs:
         run: echo "NPM_PACKAGE_VERSION=$(jq -r ".version" package.json)" >> $GITHUB_ENV
       - name: Get package path
         run: echo "NPM_PACKAGE_PATH=$(ls *.tgz)" >> $GITHUB_ENV
+      - name: Get commit SHA
+        run: echo "GIT_COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
       - name: Create tag
         uses: actions/github-script@v3
@@ -62,7 +64,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: "refs/tags/v${{ env.NPM_PACKAGE_VERSION }}",
-              sha: context.sha
+              sha: "${{ env.GIT_COMMIT_SHA }}"
             })
 
       - name: Create Release
