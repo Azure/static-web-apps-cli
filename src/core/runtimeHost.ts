@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG } from "./cli/config";
+import { DEFAULT_CONFIG } from "../config";
 import { detectRuntime, RuntimeType } from "./runtimes";
 import { getBin } from "./utils";
 

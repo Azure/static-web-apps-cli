@@ -1,4 +1,4 @@
-import { response } from "../../utils";
+import { response } from "../../core/utils";
 
 const fs = require("fs").promises;
 const path = require("path");
