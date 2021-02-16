@@ -1,10 +1,10 @@
 import fs from "fs";
 import path from "path";
 import shell from "shelljs";
-import builder from "../../builder";
-import { createRuntimeHost } from "../../runtimeHost";
-import { getBin, isHttpUrl, isPortAvailable, parseUrl, readConfigFile, validateDevServerConfig } from "../../utils";
-import { DEFAULT_CONFIG } from "../config";
+import builder from "../../core/builder";
+import { createRuntimeHost } from "../../core/runtimeHost";
+import { getBin, isHttpUrl, isPortAvailable, parseUrl, readConfigFile, validateDevServerConfig } from "../../core/utils";
+import { DEFAULT_CONFIG } from "../../config";
 
 export async function start(startContext: string, program: CLIConfig) {
   let useAppDevServer = undefined;
@@ -134,7 +134,7 @@ export async function start(startContext: string, program: CLIConfig) {
     `-c 'bgYellow.bold,bgMagenta.bold,bgCyan.bold,bgGreen.bold'`,
 
     // start the reverse proxy
-    `"node ../proxy.js"`,
+    `"node ../proxy/server.js"`,
 
     // emulate auth
     `"node ../auth/server.js --host=${program.host} --port=${authPort}"`,

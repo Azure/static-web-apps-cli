@@ -1,4 +1,4 @@
-import { response } from "../../utils";
+import { response } from "../../core/utils";
 const SWA_CLI_HOST = "http://localhost:" + process.env.SWA_CLI_PORT;
 
 const httpTrigger = async function (context: Context, req: ServerRequest) {

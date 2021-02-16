@@ -4,9 +4,9 @@ const [, , ...args] = process.argv;
 process.title = ["swa", ...args].join(" ");
 
 import program from "commander";
-import { parsePort } from "../utils";
+import { parsePort } from "../core/utils";
 import { start } from "./commands/start";
-import { DEFAULT_CONFIG } from "./config";
+import { DEFAULT_CONFIG } from "../config";
 
 (async function () {
   const cli: CLIConfig & program.Command = program

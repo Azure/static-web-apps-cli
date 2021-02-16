@@ -5,8 +5,8 @@ import httpProxy from "http-proxy";
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
-import { decodeCookie, isHttpUrl, validateCookie } from "./utils";
-import { DEFAULT_CONFIG } from "./cli/config";
+import { decodeCookie, isHttpUrl, validateCookie } from "../core/utils";
+import { DEFAULT_CONFIG } from "../config";
 
 const buildAdress = (host: string, port: number | string | undefined) => `http://${host}:${port}`;
 

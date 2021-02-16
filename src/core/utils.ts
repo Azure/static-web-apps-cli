@@ -4,7 +4,7 @@ import fs from "fs";
 import net from "net";
 import path from "path";
 import YAML from "yaml";
-import { DEFAULT_CONFIG } from "./cli/config";
+import { DEFAULT_CONFIG } from "../config";
 import { detectRuntime, RuntimeType } from "./runtimes";
 
 export const response = ({ context, status, headers, cookies, body = "" }: ResponseOptions) => {
