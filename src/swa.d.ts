@@ -61,6 +61,7 @@ declare type SWACLIConfig = GithubActionSWAConfig & {
   apiPort?: number;
   appPort?: number;
   apiPrefix?: "api";
+  swaConfigFilePattern?: RegExp;
 };
 
 declare interface CLIConfig extends SWACLIConfig {
@@ -78,4 +79,15 @@ declare type ClientPrincipal = {
   userId: string;
   userDetails: string;
   userRoles: string[];
+};
+
+declare type UserDefinedRoute = {
+  route: string;
+  allowedRoles?: string[];
+  statusCode?: number;
+  serve?: string;
+  headers?: { [key: string]: string };
+  methods?: string[];
+  rewrite?: string;
+  redirect?: string;
 };
