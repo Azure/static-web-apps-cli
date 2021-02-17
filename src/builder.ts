@@ -1,9 +1,9 @@
+import concurrently from "concurrently";
 import fs from "fs";
 import path from "path";
 import shell from "shelljs";
 import { detectRuntime, RuntimeType } from "./runtimes";
 import { readConfigFile } from "./utils";
-import concurrently from "concurrently";
 
 const nodeBuilder = (location: string, buildCommand: string, name: string, colour: string) => {
   return concurrently(

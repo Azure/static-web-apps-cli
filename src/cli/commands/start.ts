@@ -1,12 +1,10 @@
+import concurrently from "concurrently";
 import fs from "fs";
 import path from "path";
-// import shell from "shelljs";
-// import builder from "../../builder";
+import builder from "../../builder";
 import { createRuntimeHost } from "../../runtimeHost";
 import { isHttpUrl, isPortAvailable, readConfigFile, validateDevServerConfig } from "../../utils";
 import { DEFAULT_CONFIG } from "../config";
-import concurrently from "concurrently";
-import builder from "../../builder";
 
 export async function start(startContext: string, program: CLIConfig) {
   let useAppDevServer = undefined;
