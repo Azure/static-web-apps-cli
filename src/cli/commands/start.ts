@@ -93,7 +93,7 @@ export async function start(startContext: string, program: CLIConfig) {
   }
 
   // handle the API location config
-  let serveApiContent = undefined;
+  let serveApiContent = "echo No API found. Skipping";
   if (useApiDevServer) {
     serveApiContent = `echo 'using api dev server at ${useApiDevServer}'`;
   } else {
@@ -102,8 +102,6 @@ export async function start(startContext: string, program: CLIConfig) {
       // serve the api if and only if the user provides a folder via the --api-location flag
       if (fs.existsSync(configFile.apiLocation)) {
         serveApiContent = `cd ${configFile.apiLocation} && ${funcBinary} start --cors * --port ${program.apiPort}`;
-      } else {
-        serveApiContent = "echo No API found. Skipping";
       }
     }
   }
@@ -125,7 +123,7 @@ export async function start(startContext: string, program: CLIConfig) {
     { command: serveStaticContent, name: " app", env: concurrentlyEnv, prefixColor: "bgCyan.bold" },
 
     // serve the api, if it's available
-    { command: serveApiContent || "", name: " api", env: concurrentlyEnv, prefixColor: "bgGreen.bold" },
+    { command: serveApiContent, name: " api", env: concurrentlyEnv, prefixColor: "bgGreen.bold" },
   ];
   concurrently(concurrentlyCommands, {
     restartTries: 1,
