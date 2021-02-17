@@ -12,22 +12,6 @@ The Static Web Apps CLI, also known as SWA CLI, serves as a local development to
 - Serve API requests, or use the Azure Function dev server
 - Serve static static app assets, or use your app dev server
 
-## High-level architecture
-
-![swa cli architecture](./docs/swa-emu-architecture.png)
-
-The SWA CLI is built on top of the following components:
-
-- The Reverse Proxy: this is the heart of the SWA CLI, it's the piece that forwards all HTTP requests to the appropriate components:
-  - `/.auth/**` requests are forwarded to the Auth emulator server.
-  - `/api/**` requests are forwarded to the localhost API function (if available).
-  - `/**` all other requests are forwarded to the static assets server (serving the front-end app).
-- The Auth emulator server: emulates the whole authentication flow.
-- The Static content server: serves the local app static content.
-- The Serverless API server (served by the Azure Function App).
-
-Before SWA CLI bootstraps, it can also read (when using the `--build` options) the local SWA GitHub workflow file (created by [Azure Static Web Apps](https://docs.microsoft.com/azure/static-web-apps)) and builds both the static app and the API backend according based on the config. If the user isn't using an API backend, SWA CLI will skip the API backend build.
-
 ## Disclaimer
 
 SWA CLI is still in developer preview and not yet ready for prime time. You will encounter issues, so please report them or help us fix them. Your contributions will be very appreciated 🙏
@@ -166,6 +150,22 @@ When requesting the `.auth/me` endpoint, a `clientPrincipal` containing the fake
 ```
 
 > NOTE: user roles and ACL are not fully supported (see [#7](https://github.com/azure/static-web-apps-cli/issues/7)).
+
+## High-level architecture
+
+![swa cli architecture](./docs/swa-emu-architecture.png)
+
+The SWA CLI is built on top of the following components:
+
+- The Reverse Proxy: this is the heart of the SWA CLI, it's the piece that forwards all HTTP requests to the appropriate components:
+  - `/.auth/**` requests are forwarded to the Auth emulator server.
+  - `/api/**` requests are forwarded to the localhost API function (if available).
+  - `/**` all other requests are forwarded to the static assets server (serving the front-end app).
+- The Auth emulator server: emulates the whole authentication flow.
+- The Static content server: serves the local app static content.
+- The Serverless API server (served by the Azure Function App).
+
+Before SWA CLI bootstraps, it can also read (when using the `--build` options) the local SWA GitHub workflow file (created by [Azure Static Web Apps](https://docs.microsoft.com/azure/static-web-apps)) and builds both the static app and the API backend according based on the config. If the user isn't using an API backend, SWA CLI will skip the API backend build.
 
 ## Caveats
 
