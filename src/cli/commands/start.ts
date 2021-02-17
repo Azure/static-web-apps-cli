@@ -6,6 +6,7 @@ import { createRuntimeHost } from "../../runtimeHost";
 import { isHttpUrl, isPortAvailable, readConfigFile, validateDevServerConfig } from "../../utils";
 import { DEFAULT_CONFIG } from "../config";
 import concurrently from "concurrently";
+import builder from "../../builder";
 
 export async function start(startContext: string, program: CLIConfig) {
   let useAppDevServer = undefined;
@@ -125,34 +126,21 @@ export async function start(startContext: string, program: CLIConfig) {
     // serve the api, if it's available
     { command: serveApiContent, name: " api", env: concurrentlyEnv, prefixColor: "bgGreen.bold" },
   ];
-  concurrently(concurrentlyCommands, {
-    restartTries: 1,
-    prefix: "name",
-  });
 
   if (process.env.DEBUG) {
     console.log({ env: envVarsObj });
     console.log({ concurrentlyCommands });
   }
 
-  // if (program.build) {
-  //   // run the app/api builds
-  //   builder({
-  //     config: configFile as GithubActionSWAConfig,
-  //   });
-  // }
-  // // run concurrent commands
-  // shell.exec(
-  //   startCommand.join(" "),
-  //   {
-  //     // set the cwd to the installation folder
-  //     cwd: path.resolve(__dirname, ".."),
-  //     env: { ...process.env, ...envVarsObj },
-  //   },
-  //   (_code, _stdout, stderr) => {
-  //     if (stderr.length) {
-  //       console.error(stderr);
-  //     }
-  //   }
-  // );
+  if (program.build) {
+    // run the app/api builds
+    await builder({
+      config: configFile as GithubActionSWAConfig,
+    });
+  }
+
+  await concurrently(concurrentlyCommands, {
+    restartTries: 1,
+    prefix: "name",
+  });
 }

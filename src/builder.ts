@@ -3,43 +3,47 @@ import path from "path";
 import shell from "shelljs";
 import { detectRuntime, RuntimeType } from "./runtimes";
 import { readConfigFile } from "./utils";
-
-const exec = (command: string, options = {}) => shell.exec(command, { async: false, ...options });
-
-// use the concurrently binary provided by this emulator
-const concurrentlyBin = "concurrently";
+import concurrently from "concurrently";
 
 const nodeBuilder = (location: string, buildCommand: string, name: string, colour: string) => {
-  const appBuildCommand = [
-    "CI=1",
-    concurrentlyBin,
-    `--names ${name}`,
-    `-c '${colour}'`,
-    `--kill-others-on-fail`,
-    `"npm install && ${buildCommand}"`,
-    `--color=always`,
-  ].join(" ");
-  exec(appBuildCommand, {
-    cwd: location,
-  });
+  return concurrently(
+    [
+      {
+        command: `npm install && ${buildCommand}`,
+        name: name,
+        env: {
+          CI: "1",
+          cwd: location,
+        },
+        prefixColor: colour,
+      },
+    ],
+    {
+      killOthers: ["failure"],
+    }
+  );
 };
 
 const dotnetBuilder = (location: string, name: string, colour: string) => {
-  const appBuildCommand = [
-    "CI=1",
-    concurrentlyBin,
-    `--names ${name}`,
-    `-c '${colour}'`,
-    `--kill-others-on-fail`,
-    `"dotnet build"`,
-    `--color=always`,
-  ].join(" ");
-  exec(appBuildCommand, {
-    cwd: location,
-  });
+  return concurrently(
+    [
+      {
+        command: `dotnet build`,
+        name: name,
+        env: {
+          CI: "1",
+          cwd: location,
+        },
+        prefixColor: colour,
+      },
+    ],
+    {
+      killOthers: ["failure"],
+    }
+  );
 };
 
-const builder = ({ config }: { config: Partial<GithubActionSWAConfig> }) => {
+const builder = async ({ config }: { config: Partial<GithubActionSWAConfig> }) => {
   const configFile = readConfigFile();
   if (configFile) {
     let { appLocation, apiLocation, appBuildCommand, apiBuildCommand } = config as GithubActionSWAConfig;
@@ -50,14 +54,14 @@ const builder = ({ config }: { config: Partial<GithubActionSWAConfig> }) => {
         case RuntimeType.dotnet:
           {
             // build app
-            dotnetBuilder(appLocation as string, "app_build", "bgGreen.bold");
+            await dotnetBuilder(appLocation as string, "app_build", "bgGreen.bold");
 
             // NOTE: API is optional. Build it only if it exists
             // This may result in a double-compile of some libraries if they are shared between the
             // Blazor app and the API, but it's an acceptable outcome
             apiLocation = path.resolve(process.cwd(), apiLocation as string);
             if (fs.existsSync(apiLocation) === true && fs.existsSync(path.join(apiLocation, "host.json"))) {
-              dotnetBuilder(apiLocation, "api_build", "bgYellow.bold");
+              await dotnetBuilder(apiLocation, "api_build", "bgYellow.bold");
             }
           }
           break;
@@ -71,12 +75,12 @@ const builder = ({ config }: { config: Partial<GithubActionSWAConfig> }) => {
             }
 
             // build app
-            nodeBuilder(appLocation as string, appBuildCommand as string, "app_build", "bgGreen.bold");
+            await nodeBuilder(appLocation as string, appBuildCommand as string, "app_build", "bgGreen.bold");
 
             // NOTE: API is optional. Build it only if it exists
             apiLocation = path.resolve(process.cwd(), apiLocation as string);
             if (fs.existsSync(apiLocation) === true && fs.existsSync(path.join(apiLocation, "host.json"))) {
-              nodeBuilder(apiLocation, apiBuildCommand as string, "api_build", "bgYellow.bold");
+              await nodeBuilder(apiLocation, apiBuildCommand as string, "api_build", "bgYellow.bold");
             }
           }
           break;
