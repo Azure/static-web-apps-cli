@@ -109,35 +109,33 @@ export async function start(startContext: string, program: CLIConfig) {
   }
 
   const concurrentlyEnv = { ...process.env, ...envVarsObj };
-  concurrently(
-    [
-      // start the reverse proxy
-      { command: `node ${path.join(__dirname, "..", "..", "proxy.js")}`, name: " swa", env: concurrentlyEnv, prefixColor: "bgYellow.bold" },
+  const concurrentlyCommands = [
+    // start the reverse proxy
+    { command: `node ${path.join(__dirname, "..", "..", "proxy.js")}`, name: " swa", env: concurrentlyEnv, prefixColor: "bgYellow.bold" },
 
-      // emulate auth
-      {
-        command: `node ${path.join(__dirname, "..", "..", "auth", "server.js")} --host=${program.host} --port=${authPort}`,
-        name: "auth",
-        env: concurrentlyEnv,
-        prefixColor: "bgMagenta.bold",
-      },
-
-      // serve the app
-      { command: serveStaticContent, name: " app", env: concurrentlyEnv, prefixColor: "bgCyan.bold" },
-
-      // serve the api, if it's available
-      { command: serveApiContent || "", name: " api", env: concurrentlyEnv, prefixColor: "bgGreen.bold" },
-    ],
+    // emulate auth
     {
-      restartTries: 1,
-      prefix: "name",
-    }
-  );
+      command: `node ${path.join(__dirname, "..", "..", "auth", "server.js")} --host=${program.host} --port=${authPort}`,
+      name: "auth",
+      env: concurrentlyEnv,
+      prefixColor: "bgMagenta.bold",
+    },
 
-  // if (process.env.DEBUG) {
-  //   console.log({ env: envVarsObj });
-  //   console.log({ startCommand });
-  // }
+    // serve the app
+    { command: serveStaticContent, name: " app", env: concurrentlyEnv, prefixColor: "bgCyan.bold" },
+
+    // serve the api, if it's available
+    { command: serveApiContent || "", name: " api", env: concurrentlyEnv, prefixColor: "bgGreen.bold" },
+  ];
+  concurrently(concurrentlyCommands, {
+    restartTries: 1,
+    prefix: "name",
+  });
+
+  if (process.env.DEBUG) {
+    console.log({ env: envVarsObj });
+    console.log({ concurrentlyCommands });
+  }
 
   // if (program.build) {
   //   // run the app/api builds
