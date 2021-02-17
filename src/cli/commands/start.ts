@@ -98,9 +98,13 @@ export async function start(startContext: string, program: CLIConfig) {
     serveApiContent = `echo 'using api dev server at ${useApiDevServer}'`;
   } else {
     if (program.apiLocation && configFile?.apiLocation) {
-      const funcBinary = "func";
+      const funcBinary = "npx func";
       // serve the api if and only if the user provides a folder via the --api-location flag
-      serveApiContent = `([ -d '${configFile?.apiLocation}' ] && (cd ${configFile?.apiLocation}; ${funcBinary} start --cors * --port ${program.apiPort})) || echo 'No API found. Skipping.'`;
+      if (fs.existsSync(configFile.apiLocation)) {
+        serveApiContent = `cd ${configFile.apiLocation} && ${funcBinary} start --cors * --port ${program.apiPort}`;
+      } else {
+        serveApiContent = "echo No API found. Skipping";
+      }
     }
   }
 
