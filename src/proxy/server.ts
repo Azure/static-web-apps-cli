@@ -62,11 +62,11 @@ const serveStatic = (file: string, res: http.ServerResponse, status = 200) => {
   });
 };
 
-const injectClientPrincipalCookies = (cookie: string | undefined, proxyReqOrRes: http.ServerResponse | http.ClientRequest) => {
+const injectClientPrincipalCookies = (cookie: string | undefined, req: http.IncomingMessage) => {
   if (cookie && validateCookie(cookie)) {
     const user = decodeCookie(cookie);
     const buff = Buffer.from(JSON.stringify(user), "utf-8");
-    proxyReqOrRes.setHeader("x-ms-client-principal", buff.toString("base64"));
+    req.headers["x-ms-client-principal"] = buff.toString("base64");
   }
 };
 
@@ -160,19 +160,9 @@ const server = http.createServer(function (req, res) {
     const target = SWA_CLI_API_URI;
     console.log("api>", req.method, target + req.url);
 
+    injectClientPrincipalCookies(req.headers.cookie, req);
     proxyApi.web(req, res, {
       target,
-    });
-    proxyApi.on("error", function (err, req) {
-      console.log("api>>", req.method, target + req.url);
-      console.log(err.message);
-      proxyApi.close();
-    });
-    proxyApi.on("proxyReq", (proxyReq, req) => {
-      injectClientPrincipalCookies(req.headers.cookie, proxyReq);
-    });
-    proxyApi.on("proxyRes", function (_proxyRes, req) {
-      injectClientPrincipalCookies(req.headers.cookie, res);
     });
   }
 
