@@ -6,6 +6,7 @@ import path from "path";
 import YAML from "yaml";
 import { DEFAULT_CONFIG } from "../config";
 import { detectRuntime, RuntimeType } from "./runtimes";
+const { readdir } = require("fs").promises;
 
 export const response = ({ context, status, headers, cookies, body = "" }: ResponseOptions) => {
   if (typeof status !== "number") {
@@ -75,10 +76,13 @@ export const serializeCookie = (cookieName: string, cookieValue: string, options
 
 export type SwaProviders = "aad" | "github" | "twitter" | "facebook" | "google";
 
-export const decodeCookie = (cookieValue: any): ClientPrincipal => {
+export const decodeCookie = (cookieValue: any): ClientPrincipal | null => {
   const cookies = cookie.parse(cookieValue);
-  const decodedValue = Buffer.from(cookies.StaticWebAppsAuthCookie, "base64").toString();
-  return JSON.parse(decodedValue);
+  if (cookies.StaticWebAppsAuthCookie) {
+    const decodedValue = Buffer.from(cookies.StaticWebAppsAuthCookie, "base64").toString();
+    return JSON.parse(decodedValue);
+  }
+  return null;
 };
 
 function validateUserConfig(userConfig: Partial<GithubActionSWAConfig>) {
@@ -407,4 +411,26 @@ export function parsePort(port: string) {
     }
   }
   return portNumber;
+}
+
+async function* traverseFolder(folder: string): AsyncGenerator<string> {
+  const folders = await readdir(folder, { withFileTypes: true });
+  for (const folderEntry of folders) {
+    const entryPath = path.resolve(folder, folderEntry.name);
+    if (folderEntry.isDirectory()) {
+      yield* traverseFolder(entryPath);
+    } else {
+      yield entryPath;
+    }
+  }
+}
+
+export async function findFile(folder: string, filePattern: RegExp) {
+  for await (const file of traverseFolder(folder)) {
+    const basename = path.basename(file);
+    if (filePattern.test(basename)) {
+      return file;
+    }
+  }
+  return null;
 }

@@ -61,6 +61,7 @@ declare type SWACLIConfig = GithubActionSWAConfig & {
   apiPort?: number;
   appPort?: number;
   apiPrefix?: "api";
+  swaConfigFilePattern?: RegExp;
 };
 
 declare interface CLIConfig extends SWACLIConfig {
@@ -78,4 +79,42 @@ declare type ClientPrincipal = {
   userId: string;
   userDetails: string;
   userRoles: string[];
+};
+
+declare type UserDefinedRoute = {
+  route: string;
+  allowedRoles?: string[];
+  statusCode?: number;
+  serve?: string;
+  headers?: { [key: string]: string };
+  methods?: string[];
+  rewrite?: string;
+  redirect?: string;
+};
+
+declare type UserDefinedResponseOverride = {
+  statusCode?: number;
+  redirect?: string;
+  rewrite?: string;
+};
+
+declare type BadRequestOverride = {
+  "400": UserDefinedResponseOverride;
+};
+declare type UnauthorizedOverride = {
+  "401": UserDefinedResponseOverride;
+};
+declare type ForbiddenOverride = {
+  "403": UserDefinedResponseOverride;
+};
+declare type NotFoundOverride = {
+  "404": UserDefinedResponseOverride;
+};
+
+declare type UserConfig = {
+  userDefinedRoutes: UserDefinedRoute[];
+  userDefinedResponseOverrides?: Record<BadRequestOverride | UnauthorizedOverride | ForbiddenOverride | NotFoundOverride>;
+  navigationFallback?: Record<string, string>;
+  globalHeaders?: Record<string, string>;
+  mimeTypes?: Record<string, string>;
 };

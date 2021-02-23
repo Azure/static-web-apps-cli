@@ -66,7 +66,7 @@ export async function start(startContext: string, program: CLIConfig) {
   // handle the APP location config
   let serveStaticContent = undefined;
   if (useAppDevServer) {
-    serveStaticContent = `echo 'using app dev server at ${useAppDevServer}'`;
+    serveStaticContent = `echo Using app dev server at ${useAppDevServer}`;
     const { port } = parseUrl(useAppDevServer);
     appPort = port;
   } else {
@@ -101,7 +101,7 @@ export async function start(startContext: string, program: CLIConfig) {
   // handle the API location config
   let serveApiContent = undefined;
   if (useApiDevServer) {
-    serveApiContent = `echo 'using api dev server at ${useApiDevServer}'`;
+    serveApiContent = `echo Using api dev server at ${useApiDevServer}`;
     const { port } = parseUrl(useApiDevServer);
     apiPort = port;
   } else {
