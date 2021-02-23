@@ -59,6 +59,7 @@ export const processUserRoute = async (req: http.IncomingMessage, res: http.Serv
   }
 
   const userDefinedRoute = userDefinedRoutes.find((routeDef) => new RegExp(`^${routeDef.route}`).test(req.url!));
+  console.log({ userDefinedRoute });
 
   if (userDefinedRoute) {
     // set headers
