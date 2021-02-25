@@ -138,19 +138,12 @@ If you need to override the default values, provide the following options:
 
 The CLI allows you to mock and read authentication & authorization credentials.
 
-> **NOTE:** You must use port `4280` to access the authentication UI.
+> **NOTE:** The default port is to access the authentication UI is `4280`, but you can override using the `--port` option.
 
 ### Mocking credentials
 
 When requesting `http://localhost:4280/.auth/login/<PROVIDER_NAME>`, you have access a local authentication UI allowing you to set fake user information.
 
-Provider names available include:
-
-- aad
-- facebook
-- github
-- google
-- twitter
 
 ### Reading credentials 
 
