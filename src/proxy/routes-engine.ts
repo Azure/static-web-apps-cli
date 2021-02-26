@@ -74,10 +74,13 @@ export const processUserRoute = async (req: http.IncomingMessage, res: http.Serv
       if (route.startsWith(".auth")) {
         route = `app/${route}`;
       }
-      // temporarily redirect
-      res.writeHead(302, {
-        Location: route,
-      });
+
+      // temporarily redirect (adding checks to avoid ERR_TOO_MANY_REDIRECTS)
+      if (route !== req.url) {
+        res.writeHead(userDefinedRoute.statusCode || 302, {
+          Location: route,
+        });
+      }
     }
   }
 
