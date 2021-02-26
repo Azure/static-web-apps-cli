@@ -4,7 +4,7 @@ const fs = require("fs").promises;
 const path = require("path");
 
 const httpTrigger = async function (context: Context) {
-  const body = await fs.readFile(path.join(__dirname, "..", "..", "public", "index.html"));
+  const body = await fs.readFile(path.join(__dirname, "..", "..", "public", "auth.html"));
 
   context.res = response({
     context,
