@@ -121,6 +121,7 @@
                 <div class="col-8">
                   <textarea id="userRoles" name="userRoles" cols="40" rows="5" class="form-control" aria-describedby="userRolesHelpBlock"></textarea>
                   <small id="userRolesHelpBlock" class="form-text text-muted">Roles used during authorisation. One role per line</small>
+                  <small id="userRolesHelpBlock" class="form-text text-muted">Note: roles "anonymous" and "authenticated" will be added automatically.</small>
                 </div>
               </div>
               <div class="form-group row">
@@ -188,7 +189,8 @@
           providerElement.val(identityProviderName);
           providerElement.saveToLocalStorage();
         } else {
-          // @TODO handle custom routes
+          // custom routes: let the user enter their provider
+          providerElement.removeAttr("disabled");
         }
       }
       function hashStorageKey(element) {

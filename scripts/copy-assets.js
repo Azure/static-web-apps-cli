@@ -4,7 +4,7 @@ const fs = require("fs");
 (function () {
   // prettier-ignore
   const files = [
-    path.join("src", "public", "index.html"),
+    path.join("src", "public", "auth.html"),
     path.join("src", "public", "unauthorized.html"),
     path.join("src", "public", "404.html"),
   ];
