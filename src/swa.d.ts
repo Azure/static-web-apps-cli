@@ -61,7 +61,8 @@ declare type SWACLIConfig = GithubActionSWAConfig & {
   apiPort?: number;
   appPort?: number;
   apiPrefix?: "api";
-  swaConfigFilePattern?: RegExp;
+  swaConfigFilename?: "staticwebapp.config.json";
+  swaConfigFilenameLegacy?: "routes.json";
 };
 
 declare interface CLIConfig extends SWACLIConfig {
@@ -81,7 +82,7 @@ declare type ClientPrincipal = {
   userRoles: string[];
 };
 
-declare type UserDefinedRoute = {
+declare type SWAConfigFileRoute = {
   route: string;
   allowedRoles?: string[];
   statusCode?: number;
@@ -90,4 +91,21 @@ declare type UserDefinedRoute = {
   methods?: string[];
   rewrite?: string;
   redirect?: string;
+};
+
+declare type SWAConfigFile = {
+  routes: SWAConfigFileRoute[];
+  navigationFallback: {
+    rewrite: string;
+    exclude: string[];
+  };
+  responseOverrides: {
+    [key: string]: {
+      rewrite?: string;
+      statusCode?: number;
+      redirect?: string;
+    };
+  };
+  globalHeaders: { [key: string]: string };
+  mimeTypes: { [key: string]: string };
 };

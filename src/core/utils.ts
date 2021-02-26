@@ -5,7 +5,7 @@ import path from "path";
 import YAML from "yaml";
 import { DEFAULT_CONFIG } from "../config";
 import { detectRuntime, RuntimeType } from "./runtimes";
-const { readdir } = require("fs").promises;
+const { readdir, readFile } = require("fs").promises;
 
 export const response = ({ context, status, headers, cookies, body = "" }: ResponseOptions) => {
   if (typeof status !== "number") {
@@ -377,9 +377,13 @@ export function parsePort(port: string) {
   return portNumber;
 }
 
-async function* traverseFolder(folder: string): AsyncGenerator<string> {
-  const folders = await readdir(folder, { withFileTypes: true });
+export async function* traverseFolder(folder: string): AsyncGenerator<string> {
+  const folders = (await readdir(folder, { withFileTypes: true })) as fs.Dirent[];
   for (const folderEntry of folders) {
+    if (folderEntry.name.includes("node_modules")) {
+      // ignore folder
+      continue;
+    }
     const entryPath = path.resolve(folder, folderEntry.name);
     if (folderEntry.isDirectory()) {
       yield* traverseFolder(entryPath);
@@ -389,12 +393,33 @@ async function* traverseFolder(folder: string): AsyncGenerator<string> {
   }
 }
 
-export async function findFile(folder: string, filePattern: RegExp) {
+export async function findSWAConfigFile(folder: string) {
+  const configFiles = new Map<string, string>();
+
   for await (const file of traverseFolder(folder)) {
-    const basename = path.basename(file);
-    if (filePattern.test(basename)) {
-      return file;
+    const filename = path.basename(file) as string;
+
+    if (filename === DEFAULT_CONFIG.swaConfigFilename || filename === DEFAULT_CONFIG.swaConfigFilenameLegacy) {
+      const config = JSON.parse((await readFile(file)).toString("utf-8"));
+
+      // make sure we are using the right SWA config file.
+      // Note: some JS frameworks (eg. Nuxt, Scully) use routes.json as part of their config. We need to ignore those
+      const isValidSWAConfigFile = config.globalHeaders || config.mimeTypes || config.navigationFallback || config.responseOverrides || config.routes;
+      if (isValidSWAConfigFile) {
+        configFiles.set(filename, file);
+      }
     }
   }
+
+  // take staticwebapp.config.json if it exists (and ignore routes.json legacy file)
+  if (configFiles.has(DEFAULT_CONFIG.swaConfigFilename!)) {
+    return configFiles.get(DEFAULT_CONFIG.swaConfigFilename!);
+  }
+  // legacy config file
+  else if (configFiles.has(DEFAULT_CONFIG.swaConfigFilenameLegacy!)) {
+    return configFiles.get(DEFAULT_CONFIG.swaConfigFilenameLegacy!);
+  }
+
+  // no config file found
   return null;
 }

@@ -1,6 +1,6 @@
 import mockFs from "mock-fs";
 import path from "path";
-import { response, validateCookie, readConfigFile, argv, parsePort } from "./utils";
+import { argv, findSWAConfigFile, parsePort, readConfigFile, response, traverseFolder, validateCookie } from "./utils";
 
 describe("Utils", () => {
   const mockExit = jest.spyOn(process, "exit").mockImplementation(() => {
@@ -661,6 +661,199 @@ jobs:
     it("Ports between 1024 - 49151 should be valid", () => {
       const port = parsePort("1984");
       expect(port).toBe(1984);
+  describe("traverseFolder()", () => {
+    const asyncGeneratorToArray = async (gen: AsyncGenerator<string, string, unknown>) => {
+      const entries: string[] = [];
+      for await (const entry of gen) {
+        entries.push(entry);
+      }
+      return entries;
+    };
+
+    it("should handle empty folders", async () => {
+      mockFs();
+
+      const entry = await asyncGeneratorToArray(traverseFolder("."));
+      expect(entry).toEqual([]);
+
+      mockFs.restore();
+    });
+
+    describe("should handle flat folder", async () => {
+      it("with single entry", async () => {
+        mockFs({
+          "foo.txt": "fake content",
+        });
+
+        const entries = await asyncGeneratorToArray(traverseFolder("."));
+        expect(entries.length).toBe(1);
+
+        // entries are populated indeterminately because of async generator
+        expect(entries.find((entry) => entry.endsWith("foo.txt"))).toEndWith("foo.txt");
+
+        mockFs.restore();
+      });
+
+      it("with multiple entries", async () => {
+        mockFs({
+          "foo.txt": "fake content",
+          "bar.jpg": "fake content",
+        });
+
+        const entries = await asyncGeneratorToArray(traverseFolder("."));
+        expect(entries.length).toBe(2);
+
+        // entries are populated indeterminately because of async generator
+        expect(entries.find((entry) => entry.endsWith("bar.jpg"))).toEndWith("bar.jpg");
+        expect(entries.find((entry) => entry.endsWith("foo.txt"))).toEndWith("foo.txt");
+
+        mockFs.restore();
+      });
+    });
+
+    describe("should handle deep folders", async () => {
+      it("with single entry", async () => {
+        mockFs({
+          swa: {
+            "foo.txt": "fake content",
+          },
+        });
+
+        const entries = await asyncGeneratorToArray(traverseFolder("."));
+        expect(entries.length).toBe(1);
+
+        // entries are populated indeterminately because of async generator
+        expect(entries.find((entry) => entry.endsWith("swa/foo.txt"))).toEndWith("swa/foo.txt");
+
+        mockFs.restore();
+      });
+
+      it("with multiple entries", async () => {
+        mockFs({
+          swa: {
+            "foo.txt": "fake content",
+          },
+          "bar.jpg": "fake content",
+        });
+
+        const entries = await asyncGeneratorToArray(traverseFolder("."));
+        expect(entries.length).toBe(2);
+
+        // entries are populated indeterminately because of async generator
+        expect(entries.find((entry) => entry.endsWith("bar.jpg"))).toEndWith("bar.jpg");
+        expect(entries.find((entry) => entry.endsWith("swa/foo.txt"))).toEndWith("swa/foo.txt");
+
+        mockFs.restore();
+      });
+    });
+
+    describe("should exclude folders", async () => {
+      it("node_modules", async () => {
+        mockFs({
+          "foo.txt": "fake content",
+          swa: {
+            "bar.jpg": "fake content",
+          },
+          node_modules: {
+            "bar.txt": "fake content",
+          },
+        });
+
+        const entries = await asyncGeneratorToArray(traverseFolder("."));
+
+        expect(entries.length).toBe(2);
+
+        // entries are populated indeterminately because of async generator
+        expect(entries.find((entry) => entry.endsWith("swa/bar.jpg"))).toEndWith("swa/bar.jpg");
+        expect(entries.find((entry) => entry.endsWith("foo.txt"))).toEndWith("foo.txt");
+
+        mockFs.restore();
+      });
+    });
+  });
+
+  describe("findSWAConfigFile()", () => {
+    it("should find no config file", async () => {
+      mockFs({});
+
+      const file = await findSWAConfigFile(".");
+      expect(file).toBe(null);
+
+      mockFs.restore();
+    });
+
+    it("should find staticwebapp.config.json (at the root)", async () => {
+      mockFs({
+        "staticwebapp.config.json": `{ "routes": []}`,
+      });
+
+      const file = await findSWAConfigFile(".");
+      expect(file).toContain("staticwebapp.config.json");
+
+      mockFs.restore();
+    });
+
+    it("should find staticwebapp.config.json (recursively)", async () => {
+      mockFs({
+        s: {
+          w: {
+            a: {
+              "staticwebapp.config.json": `{ "routes": []}`,
+            },
+          },
+        },
+      });
+
+      const file = await findSWAConfigFile(".");
+      expect(file).toContain("staticwebapp.config.json");
+
+      mockFs.restore();
+    });
+
+    it("should find routes.json (at the root)", async () => {
+      mockFs({
+        "routes.json": `{ "routes": []}`,
+      });
+
+      const file = await findSWAConfigFile(".");
+      expect(file).toContain("routes.json");
+
+      mockFs.restore();
+    });
+
+    it("should find routes.json (recursively)", async () => {
+      mockFs({
+        s: {
+          w: {
+            a: {
+              "routes.json": `{ "routes": []}`,
+            },
+          },
+        },
+      });
+
+      const file = await findSWAConfigFile(".");
+      expect(file).toContain("routes.json");
+
+      mockFs.restore();
+    });
+
+    it("should ignore routes.json if a staticwebapp.config.json exists", async () => {
+      mockFs({
+        s: {
+          w: {
+            "staticwebapp.config.json": `{ "routes": []}`,
+            a: {
+              "routes.json": `{ "routes": []}`,
+            },
+          },
+        },
+      });
+
+      const file = await findSWAConfigFile(".");
+      expect(file).toContain("staticwebapp.config.json");
+
+      mockFs.restore();
     });
   });
 });
