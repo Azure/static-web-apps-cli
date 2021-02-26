@@ -4,7 +4,7 @@ import httpProxy from "http-proxy";
 import path from "path";
 import { DEFAULT_CONFIG } from "../config";
 import { decodeCookie, isHttpUrl, validateCookie } from "../core/utils";
-import { handleUserCustomRoutes, processUserRoute } from "./routes-engine";
+import { handleUserConfig, processUserRoute } from "./routes-engine";
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
@@ -16,6 +16,7 @@ const SWA_CLI_PORT = parseInt(process.env.SWA_CLI_PORT || "", 10);
 const SWA_CLI_APP_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_APP_PORT);
 const SWA_CLI_API_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
 const SWA_CLI_AUTH_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_AUTH_PORT);
+const SWA_CLI_APP_LOCATION = process.env.SWA_CLI_APP_LOCATION || ".";
 const SWA_CLI_APP_ARTIFACT_LOCATION = process.env.SWA_CLI_APP_ARTIFACT_LOCATION || ".";
 
 if (!isHttpUrl(SWA_CLI_APP_URI)) {
@@ -37,12 +38,12 @@ if (!isHttpUrl(SWA_CLI_AUTH_URI)) {
   process.exit(-1);
 }
 
-const SWA_404 = path.resolve(process.cwd(), "..", "public", "404.html");
-const SWA_401 = path.resolve(process.cwd(), "..", "public", "unauthorized.html");
+const SWA_NOT_FOUND = path.resolve(process.cwd(), "..", "public", "404.html");
+const SWA_UNAUTHORIZED = path.resolve(process.cwd(), "..", "public", "unauthorized.html");
 
 const serveStatic = (file: string, res: http.ServerResponse, status = 200) => {
   if (status !== 401) {
-    file = fs.existsSync(file) ? file : SWA_404;
+    file = fs.existsSync(file) ? file : SWA_NOT_FOUND;
   }
 
   fs.readFile(file, (err, data) => {
@@ -64,29 +65,34 @@ const injectClientPrincipalCookies = (cookie: string | undefined, req: http.Inco
   }
 };
 
-const requestHandler = (userDefinedRoutes: UserDefinedRoute[]) =>
+const requestHandler = (userConfig: SWAConfigFile | null) =>
   async function (req: http.IncomingMessage, res: http.ServerResponse) {
     // not quite sure how you'd hit an undefined url, but the types say you can
     if (!req.url) {
       return;
     }
 
-    const status = await processUserRoute(req, res, userDefinedRoutes);
+    if (userConfig) {
+      const status = await processUserRoute(req, res, userConfig.routes);
 
-    switch (status) {
-      case 401:
-        return serveStatic(SWA_401, res, 401);
-      case 404:
-        return serveStatic(SWA_404, res, 404);
-      default:
-        // ignore status -1
-        break;
+      switch (status) {
+        case 401:
+          return serveStatic(SWA_UNAUTHORIZED, res, 401);
+        case 403:
+          // @TODO provide a forbidden HTML template
+          return serveStatic(SWA_UNAUTHORIZED, res, 403);
+        case 404:
+          return serveStatic(SWA_NOT_FOUND, res, 404);
+        default:
+          // ignore status -1
+          break;
+      }
     }
 
     // don't serve user custom routes file
-    if (DEFAULT_CONFIG.swaConfigFilePattern?.test(req.url)) {
+    if (req.url.endsWith(DEFAULT_CONFIG.swaConfigFilename!) || req.url.endsWith(DEFAULT_CONFIG.swaConfigFilenameLegacy!)) {
       console.log("proxy>", req.method, req.headers.host + req.url);
-      serveStatic(SWA_404, res);
+      serveStatic(SWA_NOT_FOUND, res);
     }
 
     // proxy AUTH request to AUTH emulator
@@ -146,7 +152,7 @@ proxyApp.on("error", function (err) {
 // start server
 (async () => {
   http
-    .createServer(requestHandler(await handleUserCustomRoutes(SWA_CLI_APP_ARTIFACT_LOCATION)))
+    .createServer(requestHandler(await handleUserConfig(SWA_CLI_APP_LOCATION)))
     .on("upgrade", function (req, socket, head) {
       console.log("app>", "Upgrading WebSocket");
       proxyApp.ws(req, socket, head, {

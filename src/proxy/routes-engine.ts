@@ -1,37 +1,33 @@
 import fs from "fs";
 import http from "http";
-import { DEFAULT_CONFIG } from "../config";
-import { decodeCookie, findFile } from "../core/utils";
+import { decodeCookie, findSWAConfigFile } from "../core/utils";
 
-export const handleUserCustomRoutes = async (folder: string): Promise<UserDefinedRoute[]> => {
-  if (!fs.existsSync(folder)) {
-    return [];
+export const handleUserConfig = async (appLocation: string): Promise<SWAConfigFile | null> => {
+  if (!fs.existsSync(appLocation)) {
+    return null;
   }
 
-  const routesFile = await findFile(folder, DEFAULT_CONFIG.swaConfigFilePattern!);
-  if (!routesFile) {
-    return [];
+  const configFile = await findSWAConfigFile(appLocation);
+  if (!configFile) {
+    return null;
   }
 
-  let routes = [];
+  let config: SWAConfigFile | null = null;
   try {
-    routes = require(routesFile).routes || [];
+    config = require(configFile) as SWAConfigFile;
+    console.log("reading user config", configFile);
+    return config;
   } catch (error) {}
-
-  if (routes.length > 0) {
-    console.log("reading routes definition", routesFile);
-    return routes;
-  }
-  return routes;
+  return config;
 };
 
-export const processUserRoute = async (req: http.IncomingMessage, res: http.ServerResponse, userDefinedRoutes: UserDefinedRoute[]) => {
+export const processUserRoute = async (req: http.IncomingMessage, res: http.ServerResponse, userDefinedRoutes: SWAConfigFileRoute[]) => {
   if (!req) {
     return Promise.resolve(-1);
   }
 
   const userDefinedRoute = userDefinedRoutes.find((routeDef) => new RegExp(routeDef.route).test(req.url!));
-  console.log({ userDefinedRoute });
+  console.info("INFO: applying user config", userDefinedRoute);
 
   if (userDefinedRoute) {
     // set headers
@@ -51,9 +47,8 @@ export const processUserRoute = async (req: http.IncomingMessage, res: http.Serv
     // ACL
     if (userDefinedRoute.allowedRoles && req.headers.cookie) {
       const user = decodeCookie(req.headers.cookie);
-      console.log({ user });
       if (!userDefinedRoute.allowedRoles.some((role) => user?.userRoles.some((ur: string) => ur === role))) {
-        return Promise.resolve(401);
+        return Promise.resolve(403);
       }
     }
 

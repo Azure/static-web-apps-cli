@@ -10,5 +10,6 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   appArtifactLocation: `.${path.sep}`,
   appBuildCommand: "npm run build --if-present",
   apiBuildCommand: "npm run build --if-present",
-  swaConfigFilePattern: /(routes|staticwebappsconfig)\.json/,
+  swaConfigFilename: "staticwebapp.config.json",
+  swaConfigFilenameLegacy: "routes.json",
 };
