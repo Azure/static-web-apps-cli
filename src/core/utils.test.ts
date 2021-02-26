@@ -723,7 +723,7 @@ jobs:
         expect(entries.length).toBe(1);
 
         // entries are populated indeterminately because of async generator
-        expect(entries.find((entry) => entry.endsWith("swa/foo.txt"))).toEndWith("swa/foo.txt");
+        expect(entries.find((entry) => entry.endsWith(`swa${path.sep}foo.txt`))).toEndWith(`swa${path.sep}foo.txt`);
 
         mockFs.restore();
       });
@@ -741,7 +741,7 @@ jobs:
 
         // entries are populated indeterminately because of async generator
         expect(entries.find((entry) => entry.endsWith("bar.jpg"))).toEndWith("bar.jpg");
-        expect(entries.find((entry) => entry.endsWith("swa/foo.txt"))).toEndWith("swa/foo.txt");
+        expect(entries.find((entry) => entry.endsWith(`swa${path.sep}foo.txt`))).toEndWith(`swa${path.sep}foo.txt`);
 
         mockFs.restore();
       });
@@ -764,7 +764,7 @@ jobs:
         expect(entries.length).toBe(2);
 
         // entries are populated indeterminately because of async generator
-        expect(entries.find((entry) => entry.endsWith("swa/bar.jpg"))).toEndWith("swa/bar.jpg");
+        expect(entries.find((entry) => entry.endsWith(`swa${path.sep}bar.jpg`))).toEndWith(`swa${path.sep}bar.jpg`);
         expect(entries.find((entry) => entry.endsWith("foo.txt"))).toEndWith("foo.txt");
 
         mockFs.restore();
