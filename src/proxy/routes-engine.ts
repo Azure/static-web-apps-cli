@@ -26,10 +26,14 @@ export const processUserConfig = async (req: http.IncomingMessage, res: http.Ser
     return Promise.resolve(undefined);
   }
 
-  const userDefinedRoute = userDefinedRoutes.find((routeDef) => new RegExp(routeDef.route).test(req.url!));
+  const userDefinedRoute = userDefinedRoutes.find((routeDef) => {
+    const sanitizedUrl = new URL(req.url!, `http://${req.headers.host}`);
+    return new RegExp(`^${routeDef.route}`).test(sanitizedUrl.pathname);
+  });
 
   if (userDefinedRoute) {
     console.info("INFO: applying user config", userDefinedRoute);
+
     // set headers
     if (userDefinedRoute.headers) {
       for (const header in userDefinedRoute.headers) {
@@ -75,6 +79,10 @@ export const processUserConfig = async (req: http.IncomingMessage, res: http.Ser
         });
       }
     }
+    console.info("INFO: applied rule", {
+      ...res.getHeaders(),
+      statusCode: res.statusCode,
+    });
   }
 
   return Promise.resolve(undefined);
