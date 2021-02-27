@@ -22,6 +22,7 @@ describe("routes engine", () => {
     res = {
       setHeader: jest.fn(),
       writeHead: jest.fn(),
+      getHeaders: jest.fn(),
       end: jest.fn(),
     } as any;
 
@@ -193,6 +194,20 @@ describe("routes engine", () => {
           redirect: "/foo",
         },
       ];
+      await processUserConfig(req, res, userConfig);
+
+      expect(res.writeHead).not.toHaveBeenCalled();
+    });
+
+    it("should parse URL and ignore query params", async () => {
+      res.url = "/.auth/login/github?post_login_redirect_uri=/profile";
+      userConfig = [
+        {
+          route: res.url,
+          redirect: "/foo",
+        },
+      ];
+
       await processUserConfig(req, res, userConfig);
 
       expect(res.writeHead).not.toHaveBeenCalled();
