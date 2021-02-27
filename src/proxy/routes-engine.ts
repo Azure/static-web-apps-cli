@@ -47,10 +47,10 @@ export const processUserConfig = async (req: http.IncomingMessage, res: http.Ser
     }
 
     // ACL
-    if (userDefinedRoute.allowedRoles && req.headers.cookie) {
-      const user = decodeCookie(req.headers.cookie);
+    if (userDefinedRoute.allowedRoles) {
+      const user = req.headers.cookie ? decodeCookie(req.headers.cookie) : null;
 
-      if (!userDefinedRoute.allowedRoles.some((role) => user?.userRoles?.some((ur: string) => ur === role))) {
+      if (userDefinedRoute.allowedRoles.some((role) => user?.userRoles?.some((ur: string) => ur === role)) === false) {
         res.statusCode = 403;
       }
     }
