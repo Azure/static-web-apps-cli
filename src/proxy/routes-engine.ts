@@ -21,15 +21,15 @@ export const handleUserConfig = async (appLocation: string): Promise<SWAConfigFi
   return config;
 };
 
-export const processUserRoute = async (req: http.IncomingMessage, res: http.ServerResponse, userDefinedRoutes: SWAConfigFileRoute[]) => {
+export const processUserConfig = async (req: http.IncomingMessage, res: http.ServerResponse, userDefinedRoutes: SWAConfigFileRoute[]) => {
   if (!req) {
-    return Promise.resolve(-1);
+    return Promise.resolve(undefined);
   }
 
   const userDefinedRoute = userDefinedRoutes.find((routeDef) => new RegExp(routeDef.route).test(req.url!));
-  console.info("INFO: applying user config", userDefinedRoute);
 
   if (userDefinedRoute) {
+    console.info("INFO: applying user config", userDefinedRoute);
     // set headers
     if (userDefinedRoute.headers) {
       for (const header in userDefinedRoute.headers) {
@@ -39,28 +39,21 @@ export const processUserRoute = async (req: http.IncomingMessage, res: http.Serv
 
     // check allowed method
     if (userDefinedRoute.methods?.includes(req.method as string) === false) {
-      res.writeHead(405);
-      res.end();
-      return;
+      res.statusCode = 405;
     }
 
     // ACL
     if (userDefinedRoute.allowedRoles && req.headers.cookie) {
       const user = decodeCookie(req.headers.cookie);
-      if (!userDefinedRoute.allowedRoles.some((role) => user?.userRoles.some((ur: string) => ur === role))) {
-        return Promise.resolve(403);
+
+      if (!userDefinedRoute.allowedRoles.some((role) => user?.userRoles?.some((ur: string) => ur === role))) {
+        res.statusCode = 403;
       }
     }
 
     // specific status code but no attached route
     if (userDefinedRoute.statusCode && !userDefinedRoute.serve) {
-      if (userDefinedRoute.statusCode === 404) {
-        return Promise.resolve(404);
-      } else {
-        res.writeHead(userDefinedRoute.statusCode);
-        res.end();
-        return;
-      }
+      res.statusCode = userDefinedRoute.statusCode;
     }
 
     // rewrite
@@ -71,8 +64,8 @@ export const processUserRoute = async (req: http.IncomingMessage, res: http.Serv
     // redirect route
     if (userDefinedRoute.serve || userDefinedRoute.redirect) {
       let route = (userDefinedRoute.serve || userDefinedRoute.redirect) as string;
-      if (route.startsWith(".auth")) {
-        route = `app/${route}`;
+      if (route.startsWith("/.auth")) {
+        route = `/app${route}`;
       }
 
       // temporarily redirect (adding checks to avoid ERR_TOO_MANY_REDIRECTS)
@@ -84,5 +77,5 @@ export const processUserRoute = async (req: http.IncomingMessage, res: http.Serv
     }
   }
 
-  return Promise.resolve(-1);
+  return Promise.resolve(undefined);
 };
