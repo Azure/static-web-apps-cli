@@ -4,7 +4,7 @@ import httpProxy from "http-proxy";
 import path from "path";
 import { DEFAULT_CONFIG } from "../config";
 import { decodeCookie, isHttpUrl, validateCookie } from "../core/utils";
-import { handleUserConfig, processUserRoute } from "./routes-engine";
+import { handleUserConfig, processUserConfig } from "./routes-engine";
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
@@ -73,9 +73,9 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     }
 
     if (userConfig) {
-      const status = await processUserRoute(req, res, userConfig.routes);
+      await processUserConfig(req, res, userConfig.routes);
 
-      switch (status) {
+      switch (res.statusCode) {
         case 401:
           return serveStatic(SWA_UNAUTHORIZED, res, 401);
         case 403:
@@ -84,7 +84,6 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
         case 404:
           return serveStatic(SWA_NOT_FOUND, res, 404);
         default:
-          // ignore status -1
           break;
       }
     }
