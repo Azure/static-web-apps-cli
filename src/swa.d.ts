@@ -93,19 +93,31 @@ declare type SWAConfigFileRoute = {
   redirect?: string;
 };
 
+declare type SWAConfigFileGlobalHeaders = {
+  [key: string]: string;
+};
+
+declare type SWAConfigFileNavigationFallback = {
+  rewrite: string;
+  exclude: string[];
+};
+
+declare type SWAConfigFileResponseOverrides = {
+  [key: string]: {
+    rewrite?: string;
+    statusCode?: number;
+    redirect?: string;
+  };
+};
+
+declare type SWAConfigFileMimeTypes = {
+  [key: string]: string;
+};
+
 declare type SWAConfigFile = {
   routes: SWAConfigFileRoute[];
-  navigationFallback: {
-    rewrite: string;
-    exclude: string[];
-  };
-  responseOverrides: {
-    [key: string]: {
-      rewrite?: string;
-      statusCode?: number;
-      redirect?: string;
-    };
-  };
-  globalHeaders: { [key: string]: string };
-  mimeTypes: { [key: string]: string };
+  navigationFallback: SWAConfigFileNavigationFallback;
+  responseOverrides: SWAConfigFileResponseOverrides;
+  globalHeaders: SWAConfigFileGlobalHeaders;
+  mimeTypes: SWAConfigFileMimeTypes;
 };

@@ -4,7 +4,7 @@ import httpProxy from "http-proxy";
 import path from "path";
 import { DEFAULT_CONFIG } from "../config";
 import { decodeCookie, isHttpUrl, validateCookie } from "../core/utils";
-import { handleUserConfig, processUserConfig } from "./routes-engine";
+import { handleUserConfig, processCustomRoutes, processGlobalHeaders, processMimeTypes, processResponseOverrides } from "./routes-engine";
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
@@ -73,13 +73,17 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     }
 
     if (userConfig) {
-      await processUserConfig(req, res, userConfig.routes);
+      // Note: process custom config in this order because these calls mutate the res object
+      await processGlobalHeaders(req, res, userConfig.globalHeaders);
+      await processMimeTypes(req, res, userConfig.mimeTypes);
+      await processCustomRoutes(req, res, userConfig.routes);
+      await processResponseOverrides(req, res, userConfig.responseOverrides);
 
       switch (res.statusCode) {
         case 401:
           return serveStatic(SWA_UNAUTHORIZED, res, 401);
         case 403:
-          // @TODO provide a forbidden HTML template
+          // @TODO provide a Forbidden HTML template
           return serveStatic(SWA_UNAUTHORIZED, res, 403);
         case 404:
           return serveStatic(SWA_NOT_FOUND, res, 404);
