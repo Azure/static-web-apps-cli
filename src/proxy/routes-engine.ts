@@ -2,6 +2,9 @@ import fs from "fs";
 import http from "http";
 import { decodeCookie, findSWAConfigFile } from "../core/utils";
 
+// The routes engine implemetation is (and should always be) aligned with the documentation
+// see: https://docs.microsoft.com/en-us/azure/static-web-apps/configuration
+
 export const handleUserConfig = async (appLocation: string): Promise<SWAConfigFile | null> => {
   if (!fs.existsSync(appLocation)) {
     return null;
@@ -21,7 +24,7 @@ export const handleUserConfig = async (appLocation: string): Promise<SWAConfigFi
   return config;
 };
 
-export const processUserConfig = async (req: http.IncomingMessage, res: http.ServerResponse, userDefinedRoutes: SWAConfigFileRoute[]) => {
+export const processCustomRoutes = async (req: http.IncomingMessage, res: http.ServerResponse, userDefinedRoutes: SWAConfigFileRoute[]) => {
   if (!req) {
     return Promise.resolve(undefined);
   }
@@ -86,4 +89,49 @@ export const processUserConfig = async (req: http.IncomingMessage, res: http.Ser
   }
 
   return Promise.resolve(undefined);
+};
+
+export const processGlobalHeaders = async (_req: http.IncomingMessage, res: http.ServerResponse, globalHeaders: SWAConfigFileGlobalHeaders) => {
+  for (const header in globalHeaders) {
+    if (globalHeaders[header] === "") {
+      res.removeHeader(header);
+    } else {
+      res.setHeader(header, globalHeaders[header]);
+    }
+  }
+};
+
+export const processMimeTypes = async (req: http.IncomingMessage, res: http.ServerResponse, mimeTypes: SWAConfigFileMimeTypes) => {
+  if (req.url?.includes(".")) {
+    const fileExtentionFromURL = req.url?.split(".").pop();
+    const overrideMimeType = mimeTypes[`.${fileExtentionFromURL}`];
+
+    if (fileExtentionFromURL && overrideMimeType) {
+      res.setHeader("Content-Type", overrideMimeType);
+    }
+  }
+};
+
+export const processResponseOverrides = async (
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+  responseOverrides: SWAConfigFileResponseOverrides
+) => {
+  const statusCode = res.statusCode;
+
+  if (statusCode) {
+    const overridenStatusCode = responseOverrides[statusCode];
+
+    if (overridenStatusCode) {
+      if (overridenStatusCode.statusCode) {
+        res.statusCode = overridenStatusCode.statusCode;
+      }
+      if (overridenStatusCode.redirect) {
+        res.setHeader("Location", overridenStatusCode.redirect);
+      }
+      if (overridenStatusCode.rewrite && req.url !== overridenStatusCode.rewrite) {
+        req.url = overridenStatusCode.rewrite;
+      }
+    }
+  }
 };
