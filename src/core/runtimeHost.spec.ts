@@ -26,7 +26,7 @@ describe("runtimeHost", () => {
       });
 
       expect(spyDetectRuntime).toHaveBeenCalledWith(`.${path.sep}`);
-      expect(rh.command).toContain(`.bin${path.sep}http-server`);
+      expect(rh.command).toContain(`npx http-server`);
       expect(rh.args).toEqual(["./foobar", "-d", "false", "--host", "0.0.0.0", "--port", "8080", "--cache", "-1"]);
     });
 
@@ -35,8 +35,31 @@ describe("runtimeHost", () => {
         ...mockConfig,
         appArtifactLocation: undefined,
       });
-      expect(spyDetectRuntime).toHaveBeenCalled();
-      expect(rh.command).toContain(`.bin${path.sep}http-server`);
+
+      expect(spyDetectRuntime).toHaveBeenCalledWith(`.${path.sep}`);
+      expect(rh.command).toContain(`npx http-server`);
+      expect(rh.args).toEqual([`.${path.sep}`, "-d", "false", "--host", "0.0.0.0", "--port", "8080", "--cache", "-1"]);
+    });
+
+    it("proxyHost should be propagated in resulting command", () => {
+      const rh = createRuntimeHost({
+        ...mockConfig,
+        proxyHost: "127.0.0.1",
+      });
+
+      expect(spyDetectRuntime).toHaveBeenCalledWith(`.${path.sep}`);
+      expect(rh.command).toContain(`npx http-server`);
+      expect(rh.args).toEqual([`.${path.sep}`, "-d", "false", "--host", "127.0.0.1", "--port", "8080", "--cache", "-1"]);
+    });
+
+    it("proxyPort should be propagated in resulting command", () => {
+      const rh = createRuntimeHost({
+        ...mockConfig,
+        proxyPort: 3000,
+      });
+
+      expect(spyDetectRuntime).toHaveBeenCalledWith(`.${path.sep}`);
+      expect(rh.command).toContain(`npx http-server`);
       expect(rh.args).toEqual([`.${path.sep}`, "-d", "false", "--host", "0.0.0.0", "--port", "8080", "--cache", "-1"]);
     });
 
@@ -47,7 +70,7 @@ describe("runtimeHost", () => {
       });
 
       expect(spyDetectRuntime).toHaveBeenCalledWith("./foobar");
-      expect(rh.command).toContain(`.bin${path.sep}http-server`);
+      expect(rh.command).toContain(`npx http-server`);
       expect(rh.args).toEqual([`.${path.sep}`, "-d", "false", "--host", "0.0.0.0", "--port", "8080", "--cache", "-1"]);
     });
   });
