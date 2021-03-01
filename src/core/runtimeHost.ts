@@ -23,9 +23,7 @@ export const createRuntimeHost = ({ appPort, proxyHost, proxyPort, appLocation, 
       appArtifactLocation = appArtifactLocation || DEFAULT_CONFIG.appArtifactLocation;
       // See available options for http-server: https://github.com/http-party/http-server#available-options
       // Note: --proxy allows us to add fallback routes for SPA (https://github.com/http-party/http-server#catch-all-redirect)
-      const args = `${appArtifactLocation} -d false --host ${proxyHost} --port ${appPort} --cache -1 --proxy http://${proxyHost}:${proxyPort}/?`.split(
-        " "
-      );
+      const args = `${appArtifactLocation} -d false --host ${proxyHost} --port ${appPort} --cache -1`.split(" ");
 
       return {
         command,
