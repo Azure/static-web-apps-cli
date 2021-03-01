@@ -1,6 +1,6 @@
-import { processMimeTypes } from "./routes-engine";
+import { mimeTypes } from "./mimeTypes";
 
-describe("processMimeTypes()", () => {
+describe("mimeTypes()", () => {
   let req: any;
   let res: any;
   let userConfig: SWAConfigFileGlobalHeaders;
@@ -15,21 +15,21 @@ describe("processMimeTypes()", () => {
   });
 
   it("should not add mime types if empty config", async () => {
-    await processMimeTypes(req, res, userConfig);
+    await mimeTypes(req, res, userConfig);
 
     expect(res.setHeader).not.toHaveBeenCalled();
   });
 
   it("should not add mime types if URL doesnt include a file extension", async () => {
     req.url = "/foo";
-    await processMimeTypes(req, res, userConfig);
+    await mimeTypes(req, res, userConfig);
 
     expect(res.setHeader).not.toHaveBeenCalled();
   });
 
   it("should not add mime type if URL includes a file extension but no config match", async () => {
     req.url = "/foo.jpg";
-    await processMimeTypes(req, res, userConfig);
+    await mimeTypes(req, res, userConfig);
 
     expect(res.setHeader).not.toHaveBeenCalled();
   });
@@ -39,7 +39,7 @@ describe("processMimeTypes()", () => {
     userConfig = {
       ".jpg": "text/json",
     };
-    await processMimeTypes(req, res, userConfig);
+    await mimeTypes(req, res, userConfig);
 
     expect(res.setHeader).not.toHaveBeenCalled();
   });
@@ -49,7 +49,7 @@ describe("processMimeTypes()", () => {
     userConfig = {
       ".jpg": "text/json",
     };
-    await processMimeTypes(req, res, userConfig);
+    await mimeTypes(req, res, userConfig);
 
     expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "text/json");
   });
@@ -59,7 +59,7 @@ describe("processMimeTypes()", () => {
     userConfig = {
       ".jpg": "text/json",
     };
-    await processMimeTypes(req, res, userConfig);
+    await mimeTypes(req, res, userConfig);
 
     expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "text/json");
   });
