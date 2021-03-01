@@ -5,6 +5,7 @@ import path from "path";
 import { DEFAULT_CONFIG } from "../config";
 import { decodeCookie, findSWAConfigFile, isHttpUrl, validateCookie } from "../core/utils";
 import { customRoutes, globalHeaders, mimeTypes, responseOverrides } from "./routes-engine/index";
+import { navigationFallback } from "./routes-engine/rules/navigationFallback";
 
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
@@ -18,7 +19,6 @@ const SWA_CLI_APP_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_APP_PORT);
 const SWA_CLI_API_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
 const SWA_CLI_AUTH_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_AUTH_PORT);
 const SWA_CLI_APP_LOCATION = process.env.SWA_CLI_APP_LOCATION || ".";
-const SWA_CLI_APP_ARTIFACT_LOCATION = process.env.SWA_CLI_APP_ARTIFACT_LOCATION || ".";
 
 if (!isHttpUrl(SWA_CLI_APP_URI)) {
   console.log(`The provided app URI is not a valid`);
@@ -112,6 +112,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
         globalHeaders,
         mimeTypes,
         responseOverrides,
+        navigationFallback,
         customRoutes,
       );
       // prettier-ignore
@@ -122,6 +123,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
           userConfig.globalHeaders,
           userConfig.mimeTypes,
           userConfig.responseOverrides,
+          userConfig.navigationFallback,
           userConfig.routes,
         ]
         );
@@ -174,13 +176,6 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
       proxyApi.web(req, res, {
         target,
       });
-    }
-
-    // detected SPA mode (see https://github.com/http-party/http-server#catch-all-redirect)
-    else if (req.url?.startsWith("/?")) {
-      console.log("proxy>", req.method, req.headers.host + req.url);
-      const fileIndex = path.join(SWA_CLI_APP_ARTIFACT_LOCATION || "", "index.html");
-      serveStatic(fileIndex, res);
     }
 
     // proxy APP requests to local APP server

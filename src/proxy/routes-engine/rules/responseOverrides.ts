@@ -5,7 +5,7 @@ export const responseOverrides = async (req: http.IncomingMessage, res: http.Ser
   const statusCode = res.statusCode;
 
   if ([400, 401, 403, 404].includes(statusCode)) {
-    const overridenStatusCode = responseOverrides[statusCode];
+    const overridenStatusCode = responseOverrides[`${statusCode}`];
 
     if (overridenStatusCode) {
       if (overridenStatusCode.statusCode) {
