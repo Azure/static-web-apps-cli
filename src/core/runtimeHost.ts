@@ -1,12 +1,11 @@
 import { DEFAULT_CONFIG } from "../config";
 import { detectRuntime, RuntimeType } from "./runtimes";
-import { getBin } from "./utils";
 
-const httpServerBin = getBin("http-server");
+const httpServerBin = "npx http-server";
 export const createRuntimeHost = ({ appPort, proxyHost, proxyPort, appLocation, appArtifactLocation }: RuntimeHostConfig) => {
   const runtimeType = detectRuntime(appLocation);
 
-  console.log(">> detected runtime:", runtimeType);
+  console.info("INFO: Detected runtime:", runtimeType);
 
   switch (runtimeType) {
     // .NET runtime

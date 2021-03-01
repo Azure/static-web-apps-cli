@@ -44,3 +44,4 @@ __pycache__/
 
 dist
 *.tgz
+*.orig

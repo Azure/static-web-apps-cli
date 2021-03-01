@@ -1,4 +1,3 @@
-import { spawnSync } from "child_process";
 import cookie from "cookie";
 import fs from "fs";
 import net from "net";
@@ -121,10 +120,12 @@ function validateUserConfig(userConfig: Partial<GithubActionSWAConfig>) {
 }
 
 export const readConfigFile = ({ userConfig }: { userConfig?: Partial<GithubActionSWAConfig> } = {}): Partial<GithubActionSWAConfig> | undefined => {
+  const infoMessage = `INFO: GitHub Actions configuration was not found under ".github/workflows/"`;
   const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
 
   // does the config folder exist?
   if (fs.existsSync(githubActionFolder) === false) {
+    console.info(infoMessage);
     return userConfig && validateUserConfig(userConfig);
   }
 
@@ -137,6 +138,7 @@ export const readConfigFile = ({ userConfig }: { userConfig?: Partial<GithubActi
 
   // does the config file exist?
   if (!githubActionFile || fs.existsSync(githubActionFile)) {
+    console.info(infoMessage);
     return userConfig && validateUserConfig(userConfig);
   }
 
@@ -375,24 +377,6 @@ export function computeAppLocationFromArtifactLocation(appArtifactLocation: stri
     return path.dirname(appArtifactLocation).split(path.sep).pop();
   }
   return undefined;
-}
-
-export function getBin(binary: string) {
-  if (binary.indexOf(path.sep) >= 0) {
-    return path.isAbsolute(binary) ? binary : path.resolve(binary);
-  }
-
-  const binDirOutput = spawnSync(isWindows() ? "npm.cmd" : "npm", ["bin"], { cwd: __dirname });
-  const binDirErr = binDirOutput.stderr.toString();
-  if (binDirErr) {
-    console.error({ binDirErr });
-  }
-  const binDirOut = binDirOutput.stdout.toString().trim();
-  return path.resolve(binDirOut, isWindows() ? `${binary}.cmd` : binary);
-}
-
-export function isWindows() {
-  return process.platform === "win32" || /^(msys|cygwin)$/.test(process.env?.OSTYPE as string);
 }
 
 export function parsePort(port: string) {

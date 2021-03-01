@@ -95,7 +95,7 @@ Here is a list of the default ports used by popular dev servers:
 
 #### Serve with a local API backend dev server
 
-When developing your backend locally, it's often useful to use the local API backend dev server to serve your API backend content. Using the backend server allows you to use built-in features like debugging and rich editor support. 
+When developing your backend locally, it's often useful to use the local API backend dev server to serve your API backend content. Using the backend server allows you to use built-in features like debugging and rich editor support.
 
 To use the CLI with your local API backend dev server, follow these two steps:
 
@@ -144,8 +144,7 @@ The CLI allows you to mock and read authentication & authorization credentials.
 
 When requesting `http://localhost:4280/.auth/login/<PROVIDER_NAME>`, you have access a local authentication UI allowing you to set fake user information.
 
-
-### Reading credentials 
+### Reading credentials
 
 When requesting the `http://localhost:4280/.auth/me` endpoint, a `clientPrincipal` containing the fake information will be returned by the authentication API.
 

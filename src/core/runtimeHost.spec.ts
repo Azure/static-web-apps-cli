@@ -26,7 +26,7 @@ describe("runtimeHost", () => {
       });
 
       expect(spyDetectRuntime).toHaveBeenCalledWith(`.${path.sep}`);
-      expect(rh.command).toContain(`.bin${path.sep}http-server`);
+      expect(rh.command).toContain(`http-server`);
       expect(rh.args).toEqual([
         "./foobar",
         "-d",
@@ -49,7 +49,7 @@ describe("runtimeHost", () => {
       });
 
       expect(spyDetectRuntime).toHaveBeenCalledWith(`.${path.sep}`);
-      expect(rh.command).toContain(`.bin${path.sep}http-server`);
+      expect(rh.command).toContain(`http-server`);
       expect(rh.args).toEqual([
         `.${path.sep}`,
         "-d",
@@ -72,7 +72,7 @@ describe("runtimeHost", () => {
       });
 
       expect(spyDetectRuntime).toHaveBeenCalledWith(`.${path.sep}`);
-      expect(rh.command).toContain(`.bin${path.sep}http-server`);
+      expect(rh.command).toContain(`http-server`);
       expect(rh.args).toEqual([
         `.${path.sep}`,
         "-d",
@@ -95,7 +95,7 @@ describe("runtimeHost", () => {
       });
 
       expect(spyDetectRuntime).toHaveBeenCalledWith(`.${path.sep}`);
-      expect(rh.command).toContain(`.bin${path.sep}http-server`);
+      expect(rh.command).toContain(`http-server`);
       expect(rh.args).toEqual([
         `.${path.sep}`,
         "-d",
@@ -118,7 +118,7 @@ describe("runtimeHost", () => {
       });
 
       expect(spyDetectRuntime).toHaveBeenCalledWith("./foobar");
-      expect(rh.command).toContain(`.bin${path.sep}http-server`);
+      expect(rh.command).toContain(`http-server`);
       expect(rh.args).toEqual([
         `.${path.sep}`,
         "-d",
