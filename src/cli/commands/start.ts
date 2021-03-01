@@ -130,7 +130,7 @@ export async function start(startContext: string, program: CLIConfig) {
   const concurrentlyEnv = { ...process.env, ...envVarsObj };
   const concurrentlyCommands = [
     // start the reverse proxy
-    { command: `node ${path.join(__dirname, "..", "..", "proxy.js")}`, name: " swa", env: concurrentlyEnv, prefixColor: "bgYellow.bold" },
+    { command: `node ${path.join(__dirname, "..", "..", "proxy", "server.js")}`, name: " swa", env: concurrentlyEnv, prefixColor: "bgYellow.bold" },
 
     // emulate auth
     {
