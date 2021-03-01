@@ -3,8 +3,9 @@ import http from "http";
 import httpProxy from "http-proxy";
 import path from "path";
 import { DEFAULT_CONFIG } from "../config";
-import { decodeCookie, isHttpUrl, validateCookie } from "../core/utils";
-import { handleUserConfig, processCustomRoutes, processGlobalHeaders, processMimeTypes, processResponseOverrides } from "./routes-engine";
+import { decodeCookie, findSWAConfigFile, isHttpUrl, validateCookie } from "../core/utils";
+import { customRoutes, globalHeaders, mimeTypes, responseOverrides } from "./routes-engine/index";
+
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
@@ -65,6 +66,38 @@ const injectClientPrincipalCookies = (cookie: string | undefined, req: http.Inco
   }
 };
 
+const handleUserConfig = async (appLocation: string): Promise<SWAConfigFile | null> => {
+  if (!fs.existsSync(appLocation)) {
+    return null;
+  }
+
+  const configFile = await findSWAConfigFile(appLocation);
+  if (!configFile) {
+    return null;
+  }
+
+  let config: SWAConfigFile | null = null;
+  try {
+    config = require(configFile) as SWAConfigFile;
+    console.log("reading user config", configFile);
+    return config;
+  } catch (error) {}
+  return config;
+};
+
+const pipeRules = (...rules: Array<Function>) => async (
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+  args: Array<
+    SWAConfigFileGlobalHeaders | SWAConfigFileMimeTypes | SWAConfigFileNavigationFallback | SWAConfigFileResponseOverrides | SWAConfigFileRoute[]
+  >
+) => {
+  for (let i = 0; i < rules.length; i++) {
+    const rule = rules[i];
+    await rule(req, res, args[i]);
+  }
+};
+
 const requestHandler = (userConfig: SWAConfigFile | null) =>
   async function (req: http.IncomingMessage, res: http.ServerResponse) {
     // not quite sure how you'd hit an undefined url, but the types say you can
@@ -73,11 +106,25 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     }
 
     if (userConfig) {
-      // Note: process custom config in this order because these calls mutate the res object
-      await processGlobalHeaders(req, res, userConfig.globalHeaders);
-      await processMimeTypes(req, res, userConfig.mimeTypes);
-      await processCustomRoutes(req, res, userConfig.routes);
-      await processResponseOverrides(req, res, userConfig.responseOverrides);
+      // Note: process rules in this order (from left to right) because they mutate http.ServerResponse object
+      // prettier-ignore
+      const processRules = pipeRules(
+        globalHeaders,
+        mimeTypes,
+        responseOverrides,
+        customRoutes,
+      );
+      // prettier-ignore
+      await processRules(
+        req,
+        res,
+        [
+          userConfig.globalHeaders,
+          userConfig.mimeTypes,
+          userConfig.responseOverrides,
+          userConfig.routes,
+        ]
+        );
 
       switch (res.statusCode) {
         case 401:
@@ -129,14 +176,14 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
       });
     }
 
-    // detected SPA mode
+    // detected SPA mode (see https://github.com/http-party/http-server#catch-all-redirect)
     else if (req.url?.startsWith("/?")) {
       console.log("proxy>", req.method, req.headers.host + req.url);
       const fileIndex = path.join(SWA_CLI_APP_ARTIFACT_LOCATION || "", "index.html");
       serveStatic(fileIndex, res);
     }
 
-    // proxy APP request to local APP
+    // proxy APP requests to local APP server
     else {
       const target = SWA_CLI_APP_URI;
       console.log("app>", req.method, target + req.url);
@@ -144,6 +191,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
       proxyApp.web(req, res, {
         target,
         secure: false,
+        toProxy: true,
       });
     }
   };

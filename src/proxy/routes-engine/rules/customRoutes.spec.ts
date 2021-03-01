@@ -1,7 +1,7 @@
-import { processCustomRoutes } from "./routes-engine";
-import * as utils from "../core/utils";
+import { customRoutes } from "./customRoutes";
+import * as utils from "../../../core/utils";
 
-describe("processCustomRoutes()", () => {
+describe("customRoutes()", () => {
   let url: string;
   let method: string;
   let req: any;
@@ -31,14 +31,14 @@ describe("processCustomRoutes()", () => {
   it("should return undefined if req is not defined", async () => {
     req = undefined as any;
     res = undefined as any;
-    const status = await processCustomRoutes(req, res, userConfig);
+    const status = await customRoutes(req, res, userConfig);
     expect(status).toBeUndefined();
   });
 
   it("should return undefined if no routes", async () => {
     req = {} as any;
     res = {} as any;
-    const status = await processCustomRoutes(req, res, userConfig);
+    const status = await customRoutes(req, res, userConfig);
 
     expect(status).toBeUndefined();
   });
@@ -53,7 +53,7 @@ describe("processCustomRoutes()", () => {
         },
       },
     ];
-    await processCustomRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig);
 
     expect(res.setHeader).toHaveBeenCalledTimes(2);
   });
@@ -65,7 +65,7 @@ describe("processCustomRoutes()", () => {
         methods: ["FOO"],
       },
     ];
-    await processCustomRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig);
 
     expect(res.statusCode).toBe(405);
   });
@@ -81,7 +81,7 @@ describe("processCustomRoutes()", () => {
         allowedRoles: ["authenticated"],
       },
     ];
-    await processCustomRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig);
   });
 
   it("should return 403 if unmatched roles", async () => {
@@ -95,7 +95,7 @@ describe("processCustomRoutes()", () => {
         allowedRoles: ["authenticated"],
       },
     ];
-    await processCustomRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig);
   });
 
   it("should return 200 if matched roles", async () => {
@@ -109,7 +109,7 @@ describe("processCustomRoutes()", () => {
         allowedRoles: ["authenticated"],
       },
     ];
-    await processCustomRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig);
   });
 
   it("should set custom status code (418)", async () => {
@@ -119,7 +119,7 @@ describe("processCustomRoutes()", () => {
         statusCode: 418,
       },
     ];
-    await processCustomRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig);
 
     expect(res.statusCode).toBe(418);
   });
@@ -131,7 +131,7 @@ describe("processCustomRoutes()", () => {
         statusCode: 404,
       },
     ];
-    await processCustomRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig);
 
     expect(res.writeHead).not.toHaveBeenCalled();
     expect(res.end).not.toHaveBeenCalled();
@@ -144,7 +144,7 @@ describe("processCustomRoutes()", () => {
         rewrite: "/bar.html",
       },
     ];
-    await processCustomRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig);
 
     expect(req.url).toBe("/bar.html");
   });
@@ -156,7 +156,7 @@ describe("processCustomRoutes()", () => {
         redirect: "/bar.html",
       },
     ];
-    await processCustomRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig);
 
     expect(res.writeHead).toHaveBeenCalledWith(302, { Location: "/bar.html" });
   });
@@ -168,7 +168,7 @@ describe("processCustomRoutes()", () => {
         redirect: "/.auth/bar.html",
       },
     ];
-    await processCustomRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig);
 
     expect(res.writeHead).toHaveBeenCalledWith(302, { Location: "/app/.auth/bar.html" });
   });
@@ -181,7 +181,7 @@ describe("processCustomRoutes()", () => {
         statusCode: 301,
       },
     ];
-    await processCustomRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig);
 
     expect(res.writeHead).toHaveBeenCalledWith(301, { Location: "/app/.auth/bar.html" });
   });
@@ -193,7 +193,7 @@ describe("processCustomRoutes()", () => {
         redirect: "/foo",
       },
     ];
-    await processCustomRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig);
 
     expect(res.writeHead).not.toHaveBeenCalled();
   });
@@ -207,7 +207,7 @@ describe("processCustomRoutes()", () => {
       },
     ];
 
-    await processCustomRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig);
 
     expect(res.writeHead).not.toHaveBeenCalled();
   });
