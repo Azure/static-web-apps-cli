@@ -1,4 +1,4 @@
-import { decodeCookie, response, validateCookie } from "../../utils";
+import { decodeCookie, response, validateCookie } from "../../core/utils";
 
 const httpTrigger = async function (context: Context, req: ServerRequest) {
   const { cookie } = req.headers;

@@ -3,7 +3,7 @@ import fs from "fs";
 import net from "net";
 import path from "path";
 import YAML from "yaml";
-import { DEFAULT_CONFIG } from "./cli/config";
+import { DEFAULT_CONFIG } from "../config";
 import { detectRuntime, RuntimeType } from "./runtimes";
 
 export const response = ({ context, status, headers, cookies, body = "" }: ResponseOptions) => {
@@ -204,7 +204,9 @@ export const readConfigFile = ({ userConfig }: { userConfig?: Partial<GithubActi
   // - app_artifact_location
 
   app_location = path.normalize(path.join(process.cwd(), app_location));
-  api_location = path.normalize(path.join(process.cwd(), api_location || path.sep));
+  if (typeof api_location !== "undefined") {
+    api_location = path.normalize(path.join(process.cwd(), api_location || path.sep));
+  }
   app_artifact_location = path.normalize(app_artifact_location);
 
   const detectedRuntimeType = detectRuntime(app_location);
@@ -219,9 +221,9 @@ export const readConfigFile = ({ userConfig }: { userConfig?: Partial<GithubActi
   // if the user provides different app location, app artifact location or api location, use that information
   if (userConfig) {
     const { apiLocation, appArtifactLocation, appLocation } = validateUserConfig(userConfig);
-    app_location = userConfig.appLocation || appLocation;
-    app_artifact_location = userConfig.appArtifactLocation || appArtifactLocation;
-    api_location = userConfig.apiLocation || apiLocation;
+    app_location = appLocation;
+    app_artifact_location = appArtifactLocation;
+    api_location = apiLocation;
   }
 
   // convert variable names to camelCase
@@ -234,9 +236,7 @@ export const readConfigFile = ({ userConfig }: { userConfig?: Partial<GithubActi
     appArtifactLocation: app_artifact_location,
   };
 
-  console.log({ config });
-
-  console.info(`INFO: Using SWA configuration file: ${githubActionFile}`);
+  console.info(`INFO: Found SWA configuration file: ${githubActionFile}`);
   if (process.env.DEBUG) {
     console.info({ config });
   }

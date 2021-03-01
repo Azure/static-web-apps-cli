@@ -1,0 +1,11 @@
+"scope: core":
+  - src/core/*
+
+"scope: cli":
+  - src/cli/*
+  
+"scope: auth":
+  - src/auth/*
+ 
+"scope: proxy":
+  - src/proxy/*

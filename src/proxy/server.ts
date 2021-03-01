@@ -5,8 +5,8 @@ import httpProxy from "http-proxy";
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
-import { decodeCookie, isHttpUrl, validateCookie } from "./utils";
-import { DEFAULT_CONFIG } from "./cli/config";
+import { decodeCookie, isHttpUrl, validateCookie } from "../core/utils";
+import { DEFAULT_CONFIG } from "../config";
 
 const buildAdress = (host: string, port: number | string | undefined) => `http://${host}:${port}`;
 
@@ -15,6 +15,7 @@ const SWA_CLI_PORT = parseInt(process.env.SWA_CLI_PORT || "", 10);
 const SWA_CLI_APP_URI = buildAdress(SWA_CLI_HOST, process.env.SWA_CLI_APP_PORT);
 const SWA_CLI_API_URI = buildAdress(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
 const SWA_CLI_AUTH_URI = buildAdress(SWA_CLI_HOST, process.env.SWA_CLI_AUTH_PORT);
+const SWA_CLI_APP_ARTIFACT_LOCATION = process.env.SWA_CLI_APP_ARTIFACT_LOCATION;
 
 if (!isHttpUrl(SWA_CLI_APP_URI)) {
   console.log(`The provided app URI is not a valid`);
@@ -56,17 +57,16 @@ const serveStatic = (file: string, res: http.ServerResponse, status = 200) => {
       res.end(JSON.stringify(err));
       return;
     }
-    console.log("serving", file);
     res.writeHead(status);
     res.end(data);
   });
 };
 
-const injectClientPrincipalCookies = (cookie: string | undefined, proxyReqOrRes: http.ServerResponse | http.ClientRequest) => {
+const injectClientPrincipalCookies = (cookie: string | undefined, req: http.IncomingMessage) => {
   if (cookie && validateCookie(cookie)) {
     const user = decodeCookie(cookie);
     const buff = Buffer.from(JSON.stringify(user), "utf-8");
-    proxyReqOrRes.setHeader("x-ms-client-principal", buff.toString("base64"));
+    req.headers["x-ms-client-principal"] = buff.toString("base64");
   }
 };
 
@@ -84,7 +84,7 @@ const readRoutes = (folder: string): UserDefinedRoute[] => {
   return require(path.join(folder, routesFile)).routes || [];
 };
 
-const routes = readRoutes(process.env.SWA_CLI_APP_ARTIFACT_LOCATION || "");
+const routes = readRoutes(SWA_CLI_APP_ARTIFACT_LOCATION || "");
 
 const routeTest = (userDefinedRoute: string, currentRoute: string) => {
   if (userDefinedRoute === currentRoute) {
@@ -160,19 +160,9 @@ const server = http.createServer(function (req, res) {
     const target = SWA_CLI_API_URI;
     console.log("api>", req.method, target + req.url);
 
+    injectClientPrincipalCookies(req.headers.cookie, req);
     proxyApi.web(req, res, {
       target,
-    });
-    proxyApi.on("error", function (err, req) {
-      console.log("api>>", req.method, target + req.url);
-      console.log(err.message);
-      proxyApi.close();
-    });
-    proxyApi.on("proxyReq", (proxyReq, req) => {
-      injectClientPrincipalCookies(req.headers.cookie, proxyReq);
-    });
-    proxyApi.on("proxyRes", function (_proxyRes, req) {
-      injectClientPrincipalCookies(req.headers.cookie, res);
     });
   }
 
@@ -185,7 +175,7 @@ const server = http.createServer(function (req, res) {
   // detected SPA mode
   else if (req.url.startsWith("/?")) {
     console.log("proxy>", req.method, req.headers.host + req.url);
-    const fileIndex = path.join(process.env.SWA_CLI_APP_ARTIFACT_LOCATION || "", "index.html");
+    const fileIndex = path.join(SWA_CLI_APP_ARTIFACT_LOCATION || "", "index.html");
     serveStatic(fileIndex, res);
   }
 
@@ -198,16 +188,11 @@ const server = http.createServer(function (req, res) {
       target,
       secure: false,
     });
-
-    proxyApp.on("error", function (err) {
-      console.log("app>>", req.method, target + req.url);
-      res.writeHead(500, {
-        "Content-Type": "text/plain",
-      });
-
-      res.end(err.toString());
-    });
   }
+});
+
+proxyApp.on("error", function (err) {
+  console.error("app>", err.toString());
 });
 
 const port = SWA_CLI_PORT;
@@ -215,8 +200,9 @@ const host = SWA_CLI_HOST;
 const address = `http://${host}:${port}`;
 console.log(`SWA listening on ${address}`);
 server.on("upgrade", function (req, socket, head) {
+  console.log("app>", "Upgrading WebSocket");
   proxyApp.ws(req, socket, head, {
-    target: process.env.SWA_CLI_APP_URI,
+    target: SWA_CLI_APP_URI,
     secure: false,
   });
 });

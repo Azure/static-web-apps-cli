@@ -1,10 +1,10 @@
 import concurrently from "concurrently";
 import fs from "fs";
 import path from "path";
-import builder from "../../builder";
-import { createRuntimeHost } from "../../runtimeHost";
-import { isHttpUrl, isPortAvailable, readConfigFile, validateDevServerConfig } from "../../utils";
-import { DEFAULT_CONFIG } from "../config";
+import builder from "../../core/builder";
+import { createRuntimeHost } from "../../core/runtimeHost";
+import { isHttpUrl, isPortAvailable, parseUrl, readConfigFile, validateDevServerConfig } from "../../core/utils";
+import { DEFAULT_CONFIG } from "../../config";
 
 export async function start(startContext: string, program: CLIConfig) {
   let useAppDevServer = undefined;
@@ -43,9 +43,6 @@ export async function start(startContext: string, program: CLIConfig) {
     process.exit(0);
   }
 
-  // parse the APP URI port or use default
-  let appPort = (program.appPort || DEFAULT_CONFIG.appPort) as number;
-
   // get the app and api artifact locations
   let [appLocation, appArtifactLocation, apiLocation] = [
     program.appLocation as string,
@@ -63,24 +60,31 @@ export async function start(startContext: string, program: CLIConfig) {
     },
   });
 
-  // set env vars for current command
-  const envVarsObj = {
-    DEBUG: program.verbose ? "*" : "",
-    SWA_CLI_AUTH_PORT: `${program.authPort}`,
-    SWA_CLI_API_PORT: `${program.apiPort}`,
-    SWA_CLI_APP_PORT: `${program.appPort}`,
-    SWA_CLI_APP_LOCATION: configFile?.appLocation as string,
-    SWA_CLI_APP_ARTIFACT_LOCATION: configFile?.appArtifactLocation as string,
-    SWA_CLI_API_LOCATION: configFile?.apiLocation as string,
-    SWA_CLI_HOST: program.host,
-    SWA_CLI_PORT: `${program.port}`,
-  };
+  // parse the APP URI port
+  let appPort = (program.appPort || DEFAULT_CONFIG.appPort) as number;
 
   // handle the APP location config
   let serveStaticContent = undefined;
   if (useAppDevServer) {
     serveStaticContent = `echo 'using app dev server at ${useAppDevServer}'`;
+    const { port } = parseUrl(useAppDevServer);
+    appPort = port;
   } else {
+    if (
+      (await isPortAvailable({
+        port: appPort,
+      })) === false
+    ) {
+      const randomPort = Math.floor(Math.random() * 49150) + 1024;
+      // @Todo: don't block and just define a random port for static server
+      // program.appPort = randomPort;
+
+      console.info(`INFO: Cannot start static server at "http://${program.host}:${appPort}". Port is already in use.`);
+      console.info(`INFO: Choose a different port (1024 to 49151).`);
+      console.info(`Hint: Try swa start ${startContext} --app-port=${randomPort}`);
+      process.exit(0);
+    }
+
     const { command: hostCommand, args: hostArgs } = createRuntimeHost({
       appPort: appPort,
       proxyHost: program.host as string,
@@ -91,10 +95,15 @@ export async function start(startContext: string, program: CLIConfig) {
     serveStaticContent = `${hostCommand} ${hostArgs.join(" ")}`;
   }
 
+  // parse the API URI port
+  let apiPort = (program.apiPort || DEFAULT_CONFIG.apiPort) as number;
+
   // handle the API location config
   let serveApiContent = "echo No API found. Skipping";
   if (useApiDevServer) {
     serveApiContent = `echo 'using api dev server at ${useApiDevServer}'`;
+    const { port } = parseUrl(useApiDevServer);
+    apiPort = port;
   } else {
     if (program.apiLocation && configFile?.apiLocation) {
       const funcBinary = "npx func";
@@ -104,6 +113,19 @@ export async function start(startContext: string, program: CLIConfig) {
       }
     }
   }
+
+  // set env vars for current command
+  const envVarsObj = {
+    DEBUG: program.verbose ? "*" : "",
+    SWA_CLI_AUTH_PORT: `${program.authPort}`,
+    SWA_CLI_API_PORT: `${apiPort}`,
+    SWA_CLI_APP_PORT: `${appPort}`,
+    SWA_CLI_APP_LOCATION: configFile?.appLocation as string,
+    SWA_CLI_APP_ARTIFACT_LOCATION: configFile?.appArtifactLocation as string,
+    SWA_CLI_API_LOCATION: configFile?.apiLocation as string,
+    SWA_CLI_HOST: program.host,
+    SWA_CLI_PORT: `${program.port}`,
+  };
 
   const concurrentlyEnv = { ...process.env, ...envVarsObj };
   const concurrentlyCommands = [
