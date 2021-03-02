@@ -21,6 +21,18 @@ describe("globalHeaders()", () => {
     expect(res.setHeader).not.toHaveBeenCalled();
   });
 
+  it("should check for undefined config", async () => {
+    await globalHeaders(req, res, undefined as any);
+
+    expect(res.setHeader).not.toHaveBeenCalled();
+  });
+
+  it("should check for null config", async () => {
+    await globalHeaders(req, res, null as any);
+
+    expect(res.setHeader).not.toHaveBeenCalled();
+  });
+
   it("should add new headers", async () => {
     userConfig = {
       "Cache-Control": "public, max-age=604800",

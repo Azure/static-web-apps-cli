@@ -22,6 +22,20 @@ describe("responseOverrides()", () => {
     expect(res.setHeader).not.toHaveBeenCalled();
   });
 
+  it("should check for undefined config", async () => {
+    req.url = "/foo";
+    await responseOverrides(req, res, undefined as any);
+
+    expect(res.setHeader).not.toHaveBeenCalled();
+  });
+
+  it("should check for null config", async () => {
+    req.url = "/foo";
+    await responseOverrides(req, res, null as any);
+
+    expect(res.setHeader).not.toHaveBeenCalled();
+  });
+
   it("should not override response if no statusCode", async () => {
     res.statusCode = null;
     await responseOverrides(req, res, userConfig);

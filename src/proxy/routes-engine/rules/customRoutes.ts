@@ -6,7 +6,7 @@ export const customRoutes = async (req: http.IncomingMessage, res: http.ServerRe
     return Promise.resolve(undefined);
   }
 
-  const userDefinedRoute = userDefinedRoutes.find((routeDef) => {
+  const userDefinedRoute = userDefinedRoutes?.find((routeDef) => {
     const sanitizedUrl = new URL(req.url!, `http://${req.headers.host}`);
 
     // convert wildchars in route into a valid regex * quantifier
@@ -34,6 +34,8 @@ export const customRoutes = async (req: http.IncomingMessage, res: http.ServerRe
 
       if (userDefinedRoute.allowedRoles.some((role) => user?.userRoles?.some((ur: string) => ur === role)) === false) {
         res.statusCode = 403;
+      } else {
+        res.statusCode = 200;
       }
     }
 
