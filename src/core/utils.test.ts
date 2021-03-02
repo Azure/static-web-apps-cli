@@ -1,6 +1,6 @@
 import mockFs from "mock-fs";
 import path from "path";
-import { argv, findSWAConfigFile, parsePort, readConfigFile, response, traverseFolder, validateCookie } from "./utils";
+import { address, argv, findSWAConfigFile, parsePort, readConfigFile, response, traverseFolder, validateCookie } from "./utils";
 
 describe("Utils", () => {
   const mockExit = jest.spyOn(process, "exit").mockImplementation(() => {
@@ -661,6 +661,9 @@ jobs:
     it("Ports between 1024 - 49151 should be valid", () => {
       const port = parsePort("1984");
       expect(port).toBe(1984);
+    });
+  });
+
   describe("traverseFolder()", () => {
     const asyncGeneratorToArray = async (gen: AsyncGenerator<string, string, unknown>) => {
       const entries: string[] = [];
@@ -852,8 +855,47 @@ jobs:
 
       const file = await findSWAConfigFile(".");
       expect(file).toContain("staticwebapp.config.json");
+    });
 
-      mockFs.restore();
+  });
+
+  describe("parsePort()", () => {
+    it("Ports below 1024 should be invalid", () => {
+      parsePort("0");
+      expect(mockExit).toBeCalledWith(-1);
+    });
+    it("Ports above 49151 should be invalid", () => {
+      parsePort("98765");
+      expect(mockExit).toBeCalledWith(-1);
+    });
+    it("Non-number ports should be invalid", () => {
+      parsePort("not a number");
+      expect(mockExit).toBeCalledWith(-1);
+    });
+    it("Ports between 1024 - 49151 should be valid", () => {
+      const port = parsePort("1984");
+      expect(port).toBe(1984);
     });
   });
+
+  describe("address()", () => {
+    it("should throw for malformed URI", () => {
+      expect(() => address("", undefined)).toThrowError(/is not set/);
+      expect(() => address("", 80)).toThrowError(/is not set/);
+      expect(() => address("¬˚˜∆˙¨√√†®ç†®∂œƒçƒ∂ß®´ß`®´£¢´®¨¥†øˆ¨ø(*&*ˆ%&ˆ%$#%@!", 80)).toThrowError(/malformed/);
+      expect(() => address("123.45.43.56234", undefined)).toThrowError(/malformed/);
+    });
+
+    it("should handle valid URIs", () => {
+      expect(address("foo", undefined)).toBe("http://foo");
+      expect(address("foo.com", undefined)).toBe("http://foo.com");
+      expect(address("foo.com", 80)).toBe("http://foo.com:80");
+      expect(address("foo.bar.com", 80)).toBe("http://foo.bar.com:80");
+      expect(address("foo.com", "4200")).toBe("http://foo.com:4200");
+      expect(address("127.0.0.1", "4200")).toBe("http://127.0.0.1:4200");
+      expect(address("127.0.0.1", "4200")).toBe("http://127.0.0.1:4200");
+      expect(address("[::1]", "4200")).toBe("http://[::1]:4200");
+    });
+  });
+
 });
