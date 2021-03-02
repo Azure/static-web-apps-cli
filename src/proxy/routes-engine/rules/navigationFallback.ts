@@ -19,7 +19,7 @@ export const navigationFallback = async (
   }
 
   // exit if no rewrite rule provided
-  if (!navigationFallback.rewrite) {
+  if (!navigationFallback?.rewrite) {
     return;
   }
 
@@ -30,7 +30,6 @@ export const navigationFallback = async (
 
   // is the requested file available on disk?
   const filename = originlUrl?.endsWith("/") ? `${originlUrl}/index.html` : originlUrl;
-  console.log({ originlUrl, filename });
 
   const filepath = path.join(process.env.SWA_CLI_APP_ARTIFACT_LOCATION!, filename!);
 
@@ -70,6 +69,8 @@ export const navigationFallback = async (
   // if a file doesn't exist on disk, and match exclusion => 404
   // if a file exists on disk, and doesn't match exclusion => /index.html
   // if a file doesn't exist on disk, and doesn't match exclusion => /index.html
+
+  // note: given the complexity of all possible combinations, don't refactor the code below
   let newUrl = req.url;
   if (!navigationFallback.exclude || navigationFallback.exclude.length === 0) {
     newUrl = navigationFallback.rewrite;

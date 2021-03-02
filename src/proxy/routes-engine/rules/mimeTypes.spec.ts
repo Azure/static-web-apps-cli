@@ -20,6 +20,20 @@ describe("mimeTypes()", () => {
     expect(res.setHeader).not.toHaveBeenCalled();
   });
 
+  it("should check for undefined config", async () => {
+    req.url = "/foo";
+    await mimeTypes(req, res, undefined as any);
+
+    expect(res.setHeader).not.toHaveBeenCalled();
+  });
+
+  it("should check for null config", async () => {
+    req.url = "/foo";
+    await mimeTypes(req, res, null as any);
+
+    expect(res.setHeader).not.toHaveBeenCalled();
+  });
+
   it("should not add mime types if URL doesnt include a file extension", async () => {
     req.url = "/foo";
     await mimeTypes(req, res, userConfig);

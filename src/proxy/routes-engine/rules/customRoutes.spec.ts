@@ -1,5 +1,5 @@
-import { customRoutes } from "./customRoutes";
 import * as utils from "../../../core/utils";
+import { customRoutes } from "./customRoutes";
 
 describe("customRoutes()", () => {
   let url: string;
@@ -32,6 +32,7 @@ describe("customRoutes()", () => {
     req = undefined as any;
     res = undefined as any;
     const status = await customRoutes(req, res, userConfig);
+
     expect(status).toBeUndefined();
   });
 
@@ -39,6 +40,20 @@ describe("customRoutes()", () => {
     req = {} as any;
     res = {} as any;
     const status = await customRoutes(req, res, userConfig);
+
+    expect(status).toBeUndefined();
+  });
+
+  it("should check for undefined config", async () => {
+    req.url = "/foo";
+    const status = await customRoutes(req, res, undefined as any);
+
+    expect(status).toBeUndefined();
+  });
+
+  it("should check for null config", async () => {
+    req.url = "/foo";
+    const status = await customRoutes(req, res, null as any);
 
     expect(status).toBeUndefined();
   });
@@ -82,6 +97,8 @@ describe("customRoutes()", () => {
       },
     ];
     await customRoutes(req, res, userConfig);
+
+    expect(res.statusCode).toBe(403);
   });
 
   it("should return 403 if unmatched roles", async () => {
@@ -96,6 +113,8 @@ describe("customRoutes()", () => {
       },
     ];
     await customRoutes(req, res, userConfig);
+
+    expect(res.statusCode).toBe(403);
   });
 
   it("should return 200 if matched roles", async () => {
@@ -110,6 +129,8 @@ describe("customRoutes()", () => {
       },
     ];
     await customRoutes(req, res, userConfig);
+
+    expect(res.statusCode).toBe(200);
   });
 
   it("should set custom status code (418)", async () => {

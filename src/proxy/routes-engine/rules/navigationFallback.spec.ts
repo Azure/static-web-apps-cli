@@ -18,6 +18,20 @@ describe("navigationFallback()", () => {
     expect(req.url).toBe("/foo");
   });
 
+  it("should check for undefined config", async () => {
+    req.url = "/foo";
+    await navigationFallback(req, res, undefined as any);
+
+    expect(req.url).toBe("/foo");
+  });
+
+  it("should check for null config", async () => {
+    req.url = "/foo";
+    await navigationFallback(req, res, null as any);
+
+    expect(req.url).toBe("/foo");
+  });
+
   it("should not process fallbacks if /.auth/**", async () => {
     req.url = "/.auth/login/github?post_login_redirect_uri=/profile";
     await navigationFallback(req, res, userConfig);
