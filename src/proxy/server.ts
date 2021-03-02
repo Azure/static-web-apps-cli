@@ -3,7 +3,7 @@ import http from "http";
 import httpProxy from "http-proxy";
 import path from "path";
 import { DEFAULT_CONFIG } from "../config";
-import { decodeCookie, findSWAConfigFile, isHttpUrl, validateCookie } from "../core/utils";
+import { address, decodeCookie, findSWAConfigFile, isHttpUrl, validateCookie } from "../core/utils";
 import { customRoutes, globalHeaders, mimeTypes, responseOverrides } from "./routes-engine/index";
 import { navigationFallback } from "./routes-engine/rules/navigationFallback";
 
@@ -11,14 +11,12 @@ const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
 
-const address = (host: string, port: number | string | undefined) => `http://${host}:${port}`;
-
 const SWA_CLI_HOST = process.env.SWA_CLI_HOST as string;
-const SWA_CLI_PORT = parseInt(process.env.SWA_CLI_PORT || "", 10);
+const SWA_CLI_PORT = parseInt((process.env.SWA_CLI_PORT || DEFAULT_CONFIG.port) as string, 10);
 const SWA_CLI_APP_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_APP_PORT);
 const SWA_CLI_API_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
 const SWA_CLI_AUTH_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_AUTH_PORT);
-const SWA_CLI_APP_LOCATION = process.env.SWA_CLI_APP_LOCATION || ".";
+const SWA_CLI_APP_LOCATION = (process.env.SWA_CLI_APP_LOCATION || DEFAULT_CONFIG.appLocation) as string;
 
 if (!isHttpUrl(SWA_CLI_APP_URI)) {
   console.log(`The provided app URI is not a valid`);

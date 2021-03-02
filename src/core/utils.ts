@@ -423,3 +423,20 @@ export async function findSWAConfigFile(folder: string) {
   // no config file found
   return null;
 }
+
+export const address = (host: string, port: number | string | undefined) => {
+  const protocol = `http`;
+  if (!host) {
+    throw new Error(`Host value is not set`);
+  }
+
+  let uri = port ? `${protocol}://${host}:${port}` : `${protocol}://${host}`;
+
+  try {
+    new URL(uri);
+  } catch (error) {
+    throw new Error(`Address: ${uri} is malformed!`);
+  }
+
+  return uri;
+};
