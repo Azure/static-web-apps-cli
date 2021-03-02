@@ -1,5 +1,9 @@
 {
-    "recommendations": [
-        "ms-azuretools.vscode-azurefunctions"
-    ]
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "editorconfig.editorconfig",
+    "esbenp.prettier-vscode",
+    "eg2.vscode-npm-script",
+    "visualstudioexptteam.vscodeintellicode"
+  ]
 }
