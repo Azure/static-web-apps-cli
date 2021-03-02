@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import builder from "../../core/builder";
 import { createRuntimeHost } from "../../core/runtimeHost";
-import { isHttpUrl, isPortAvailable, parseUrl, readConfigFile, validateDevServerConfig } from "../../core/utils";
+import { isHttpUrl, isAcceptingTcpConnections, parseUrl, readConfigFile, validateDevServerConfig } from "../../core/utils";
 import { DEFAULT_CONFIG } from "../../config";
 
 export async function start(startContext: string, program: CLIConfig) {
@@ -37,9 +37,10 @@ export async function start(startContext: string, program: CLIConfig) {
   // parse the Auth URI port or use default
   const authPort = (program.authPort || DEFAULT_CONFIG.authPort) as number;
 
-  const authPortAvailable = await isPortAvailable({ port: authPort });
-  if (authPortAvailable === false) {
-    console.info(`INFO: Port "${authPortAvailable}" is already in use. Choose a different port (1024 to 49151).`);
+  const appListening = await isAcceptingTcpConnections({ port: authPort });
+
+  if (appListening === true) {
+    console.info(`INFO: It looks like another instance of the CLI is already running (reason: auth server).`);
     process.exit(0);
   }
 
@@ -71,9 +72,9 @@ export async function start(startContext: string, program: CLIConfig) {
     appPort = port;
   } else {
     if (
-      (await isPortAvailable({
+      (await isAcceptingTcpConnections({
         port: appPort,
-      })) === false
+      })) === true
     ) {
       const randomPort = Math.floor(Math.random() * 49150) + 1024;
       // @Todo: don't block and just define a random port for static server

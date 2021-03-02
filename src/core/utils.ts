@@ -320,26 +320,6 @@ export function isHttpUrl(input: string) {
   }
 }
 
-export async function isPortAvailable({ host = "127.0.0.1", port }: { host?: string; port: number }) {
-  return new Promise<boolean>((resolve, reject) => {
-    const server = net.createServer();
-
-    server
-      .once("error", (err: NodeJS.ErrnoException) => {
-        if (err.code !== "EADDRINUSE") {
-          reject(err);
-        } else {
-          resolve(false);
-        }
-      })
-      .once("listening", () => {
-        server.close();
-        resolve(true);
-      })
-      .listen(port, host);
-  });
-}
-
 export async function validateDevServerConfig(context: string) {
   let { hostname, port } = parseUrl(context);
 
