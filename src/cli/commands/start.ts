@@ -106,7 +106,7 @@ export async function start(startContext: string, program: CLIConfig) {
     apiPort = port;
   } else {
     if (program.apiLocation && configFile?.apiLocation) {
-      const funcBinary = "npx func";
+      const funcBinary = "func";
       // serve the api if and only if the user provides a folder via the --api-location flag
       if (fs.existsSync(configFile.apiLocation)) {
         serveApiContent = `cd ${configFile.apiLocation} && ${funcBinary} start --cors * --port ${program.apiPort}`;
