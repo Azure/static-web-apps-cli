@@ -5,7 +5,9 @@ import path from "path";
 import YAML from "yaml";
 import { DEFAULT_CONFIG } from "../config";
 import { detectRuntime, RuntimeType } from "./runtimes";
-const { readdir, readFile } = require("fs").promises;
+import { promises as fsPromises } from "fs";
+
+const { readdir, readFile } = fsPromises;
 
 export const response = ({ context, status, headers, cookies, body = "" }: ResponseOptions) => {
   if (typeof status !== "number") {
