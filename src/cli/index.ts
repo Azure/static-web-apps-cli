@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const [, , ...args] = process.argv;
+const args = process.argv.slice(2);
 process.title = ["swa", ...args].join(" ");
 
 import program from "commander";
