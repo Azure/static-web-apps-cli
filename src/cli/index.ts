@@ -24,7 +24,6 @@ import { DEFAULT_CONFIG } from "../config";
     .option("--api, --api-location <apiLocation>", "set the API folder or URI", DEFAULT_CONFIG.apiLocation)
 
     // CLI config
-    .option<number>("--auth-port <authPort>", "set the authentication server port", parsePort, DEFAULT_CONFIG.authPort)
     .option<number>("--api-port <apiPort>", "set the API backend port", parsePort, DEFAULT_CONFIG.apiPort)
     .option<number>("--app-port <appPort>", "set the static server port", parsePort, DEFAULT_CONFIG.appPort)
     .option("--host <host>", "set the cli host address", DEFAULT_CONFIG.host)

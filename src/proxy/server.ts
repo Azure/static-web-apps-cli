@@ -2,6 +2,7 @@ import fs from "fs";
 import http from "http";
 import httpProxy from "http-proxy";
 import path from "path";
+import { processAuth } from "../auth/";
 import { DEFAULT_CONFIG } from "../config";
 import { address, decodeCookie, findSWAConfigFile, isHttpUrl, validateCookie } from "../core/utils";
 import { customRoutes, globalHeaders, mimeTypes, responseOverrides } from "./routes-engine/index";
@@ -9,13 +10,11 @@ import { navigationFallback } from "./routes-engine/rules/navigationFallback";
 
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
-const proxyAuth = httpProxy.createProxyServer({ autoRewrite: false });
 
 const SWA_CLI_HOST = process.env.SWA_CLI_HOST as string;
 const SWA_CLI_PORT = parseInt((process.env.SWA_CLI_PORT || DEFAULT_CONFIG.port) as string, 10);
 const SWA_CLI_APP_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_APP_PORT);
 const SWA_CLI_API_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
-const SWA_CLI_AUTH_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_AUTH_PORT);
 const SWA_CLI_APP_LOCATION = (process.env.SWA_CLI_APP_LOCATION || DEFAULT_CONFIG.appLocation) as string;
 
 if (!isHttpUrl(SWA_CLI_APP_URI)) {
@@ -27,12 +26,6 @@ if (!isHttpUrl(SWA_CLI_APP_URI)) {
 if (!isHttpUrl(SWA_CLI_API_URI)) {
   console.log(`The provided API URI is not a valid`);
   console.log(`Got: ${SWA_CLI_API_URI}`);
-  console.log(`Abort.`);
-  process.exit(-1);
-}
-if (!isHttpUrl(SWA_CLI_AUTH_URI)) {
-  console.log(`The provided auth URI is not a valid`);
-  console.log(`Got: ${SWA_CLI_AUTH_URI}`);
   console.log(`Abort.`);
   process.exit(-1);
 }
@@ -147,22 +140,10 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
 
     // proxy AUTH request to AUTH emulator
     else if (req.url?.startsWith("/.auth")) {
-      const target = SWA_CLI_AUTH_URI;
       req.url = `/app${req.url}`;
 
-      console.log("auth>", req.method, target + req.url);
-      proxyAuth.web(req, res, {
-        target,
-      });
-      proxyAuth.on("proxyRes", function (proxyRes, req) {
-        console.log("auth>>", req.method, target + req.url);
-        console.log(JSON.stringify(proxyRes.headers, undefined, 2));
-      });
-      proxyAuth.on("error", function (err, req) {
-        console.log("auth>>", req.method, target + req.url);
-        console.log(err.message);
-        proxyAuth.close();
-      });
+      console.log("auth>", req.method, req.url);
+      await processAuth(req, res);
     }
 
     // proxy API request to local API

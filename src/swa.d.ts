@@ -2,7 +2,6 @@ declare global {
   namespace NodeJS {
     interface ProcessEnv {
       DEBUG: string;
-      SWA_CLI_AUTH_URI: string;
       SWA_CLI_API_URI: string;
       SWA_CLI_APP_URI: string;
       SWA_CLI_APP_ARTIFACT_LOCATION: string;
@@ -57,7 +56,6 @@ declare type GithubActionSWAConfig = {
 declare type SWACLIConfig = GithubActionSWAConfig & {
   port?: number;
   host?: string;
-  authPort?: number;
   apiPort?: number;
   appPort?: number;
   apiPrefix?: "api";

@@ -118,7 +118,6 @@ swa start http://<APP_DEV_SERVER> --api=http://<API_DEV_SERVER>
 
 SWA CLI binds to these default hosts and ports:
 
-- `http://0.0.0.0:4242`: for the authentication server.
 - `http://0.0.0.0:4200`: for the static app (the front-end app)
 - `http://localhost:7071`: for the API backend (baked by the Azure Function App)
 
@@ -128,7 +127,6 @@ If you need to override the default values, provide the following options:
 | -------------------------------- | -------------------------------------------- | ----------- | ----------------------------- |
 | `--app, --app-artifact-location` | set app artifact (dist) folder or dev server | `./`        | `--app=./my-dist`             |
 | `--api, --api-artifact-location` | set the API folder or dev server             |             | `--api=http://localhost:8083` |
-| `--auth-port`                    | set the Auth server port                     | `4242`      | `--auth-port=8083`            |
 | `--api-port`                     | set the API server port                      | `7071`      | `--api-port=8082`             |
 | `--app-port`                     | set the app server port                      | `4200`      | `--app-port=8081`             |
 | `--host`                         | set the emulator host address                | `localhost` | `--host=192.168.68.80`        |
