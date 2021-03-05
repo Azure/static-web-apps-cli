@@ -116,27 +116,19 @@ swa start http://<APP_DEV_SERVER> --api=http://<API_DEV_SERVER>
 
 ## Configuration
 
-SWA CLI binds to these default hosts and ports:
-
-- `http://0.0.0.0:4200`: for the static app (the front-end app)
-- `http://localhost:7071`: for the API backend (baked by the Azure Function App)
-
 If you need to override the default values, provide the following options:
 
-| Options                          | Description                                  | Default     | Example                       |
-| -------------------------------- | -------------------------------------------- | ----------- | ----------------------------- |
-| `--app, --app-artifact-location` | set app artifact (dist) folder or dev server | `./`        | `--app=./my-dist`             |
-| `--api, --api-artifact-location` | set the API folder or dev server             |             | `--api=http://localhost:8083` |
-| `--api-port`                     | set the API server port                      | `7071`      | `--api-port=8082`             |
-| `--app-port`                     | set the app server port                      | `4200`      | `--app-port=8081`             |
-| `--host`                         | set the emulator host address                | `localhost` | `--host=192.168.68.80`        |
-| `--port`                         | set the emulator port value                  | `4280`      | `--port=8080`                 |
+| Options                          | Description                                  | Default     | Example                                            |
+| -------------------------------- | -------------------------------------------- | ----------- | -------------------------------------------------- |
+| `--app, --app-artifact-location` | set app artifact (dist) folder or dev server | `./`        | `--app=./my-dist` or `--app=http://localhost:4200` |
+| `--api, --api-artifact-location` | set the API folder or dev server             |             | `--api=./api` or `--api=http://localhost:8083`     |
+| `--api-port`                     | set the API server port                      | `7071`      | `--api-port=8082`                                  |
+| `--host`                         | set the emulator host address                | `localhost` | `--host=192.168.68.80`                             |
+| `--port`                         | set the emulator port value                  | `4280`      | `--port=8080`                                      |
 
 ## Local authentication & authorization emulation
 
 The CLI allows you to mock and read authentication & authorization credentials.
-
-> **NOTE:** The default port is to access the authentication UI is `4280`, but you can override using the `--port` option.
 
 ### Mocking credentials
 

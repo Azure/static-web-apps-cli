@@ -112,9 +112,14 @@ function validateUserConfig(userConfig: Partial<GithubActionSWAConfig>) {
   }
 
   if (userConfig.appArtifactLocation) {
-    appArtifactLocation = path.normalize(path.join(process.cwd(), userConfig.appArtifactLocation || `.${path.sep}`));
-    if (path.isAbsolute(userConfig.appArtifactLocation)) {
+    // is dev server url
+    if (isHttpUrl(userConfig.appArtifactLocation)) {
       appArtifactLocation = userConfig.appArtifactLocation;
+    } else {
+      appArtifactLocation = path.normalize(path.join(process.cwd(), userConfig.appArtifactLocation || `.${path.sep}`));
+      if (path.isAbsolute(userConfig.appArtifactLocation)) {
+        appArtifactLocation = userConfig.appArtifactLocation;
+      }
     }
   }
 
@@ -441,4 +446,19 @@ export const address = (host: string, port: number | string | undefined) => {
   }
 
   return uri;
+};
+
+export const registerProcessExit = (fn: Function) => {
+  let terminated = false;
+
+  const wrapper = () => {
+    if (!terminated) {
+      terminated = true;
+      fn();
+    }
+  };
+
+  process.on("SIGINT", wrapper);
+  process.on("SIGTERM", wrapper);
+  process.on("exit", wrapper);
 };

@@ -25,7 +25,6 @@ import { DEFAULT_CONFIG } from "../config";
 
     // CLI config
     .option<number>("--api-port <apiPort>", "set the API backend port", parsePort, DEFAULT_CONFIG.apiPort)
-    .option<number>("--app-port <appPort>", "set the static server port", parsePort, DEFAULT_CONFIG.appPort)
     .option("--host <host>", "set the cli host address", DEFAULT_CONFIG.host)
     .option<number>("--port <port>", "set the cli port", parsePort, DEFAULT_CONFIG.port)
     .option("--build", "build the API and APP before starting the emulator", false)

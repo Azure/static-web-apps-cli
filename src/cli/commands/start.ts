@@ -1,17 +1,15 @@
 import concurrently from "concurrently";
 import fs from "fs";
 import path from "path";
-import builder from "../../core/builder";
-import { createRuntimeHost } from "../../core/runtimeHost";
-import { isHttpUrl, isAcceptingTcpConnections, parseUrl, readConfigFile, validateDevServerConfig } from "../../core/utils";
 import { DEFAULT_CONFIG } from "../../config";
+import builder from "../../core/builder";
+import { isHttpUrl, parseUrl, readConfigFile, validateDevServerConfig } from "../../core/utils";
 
 export async function start(startContext: string, program: CLIConfig) {
-  let useAppDevServer = undefined;
   let useApiDevServer = undefined;
 
   if (isHttpUrl(startContext)) {
-    useAppDevServer = await validateDevServerConfig(startContext);
+    program.appArtifactLocation = await validateDevServerConfig(startContext);
   } else {
     // start the emulator from a specific artifact folder, if folder exists
     if (fs.existsSync(startContext)) {
@@ -51,55 +49,21 @@ export async function start(startContext: string, program: CLIConfig) {
     },
   });
 
-  // parse the APP URI port
-  let appPort = (program.appPort || DEFAULT_CONFIG.appPort) as number;
-
-  // handle the APP location config
-  let serveStaticContent = undefined;
-  if (useAppDevServer) {
-    serveStaticContent = `echo 'using app dev server at ${useAppDevServer}'`;
-    const { port } = parseUrl(useAppDevServer);
-    appPort = port;
-  } else {
-    if (
-      (await isAcceptingTcpConnections({
-        port: appPort,
-      })) === true
-    ) {
-      const randomPort = Math.floor(Math.random() * 49150) + 1024;
-      // @Todo: don't block and just define a random port for static server
-      // program.appPort = randomPort;
-
-      console.info(`INFO: Cannot start static server at "http://${program.host}:${appPort}". Port is already in use.`);
-      console.info(`INFO: Choose a different port (1024 to 49151).`);
-      console.info(`Hint: Try swa start ${startContext} --app-port=${randomPort}`);
-      process.exit(0);
-    }
-
-    const { command: hostCommand, args: hostArgs } = createRuntimeHost({
-      appPort: appPort,
-      proxyHost: program.host as string,
-      proxyPort: program.port as number,
-      appLocation: configFile?.appLocation,
-      appArtifactLocation: configFile?.appArtifactLocation,
-    });
-    serveStaticContent = `${hostCommand} ${hostArgs.join(" ")}`;
-  }
-
   // parse the API URI port
   let apiPort = (program.apiPort || DEFAULT_CONFIG.apiPort) as number;
+  const isApiLocationExistsOnDisk = fs.existsSync(configFile?.apiLocation!);
 
   // handle the API location config
   let serveApiContent = "echo No API found. Skipping";
   if (useApiDevServer) {
-    serveApiContent = `echo 'using api dev server at ${useApiDevServer}'`;
+    serveApiContent = `echo 'using API dev server at ${useApiDevServer}'`;
     const { port } = parseUrl(useApiDevServer);
     apiPort = port;
   } else {
     if (program.apiLocation && configFile?.apiLocation) {
       const funcBinary = "func";
       // serve the api if and only if the user provides a folder via the --api-location flag
-      if (fs.existsSync(configFile.apiLocation)) {
+      if (isApiLocationExistsOnDisk) {
         serveApiContent = `cd ${configFile.apiLocation} && ${funcBinary} start --cors * --port ${program.apiPort}`;
       }
     }
@@ -109,7 +73,6 @@ export async function start(startContext: string, program: CLIConfig) {
   const envVarsObj = {
     DEBUG: program.verbose ? "*" : "",
     SWA_CLI_API_PORT: `${apiPort}`,
-    SWA_CLI_APP_PORT: `${appPort}`,
     SWA_CLI_APP_LOCATION: configFile?.appLocation as string,
     SWA_CLI_APP_ARTIFACT_LOCATION: configFile?.appArtifactLocation as string,
     SWA_CLI_API_LOCATION: configFile?.apiLocation as string,
@@ -120,14 +83,15 @@ export async function start(startContext: string, program: CLIConfig) {
   const concurrentlyEnv = { ...process.env, ...envVarsObj };
   const concurrentlyCommands = [
     // start the reverse proxy
-    { command: `node ${path.join(__dirname, "..", "..", "proxy", "server.js")}`, name: " swa", env: concurrentlyEnv, prefixColor: "bgYellow.bold" },
-
-    // serve the app
-    { command: serveStaticContent, name: " app", env: concurrentlyEnv, prefixColor: "bgCyan.bold" },
-
-    // serve the api, if it's available
-    { command: serveApiContent, name: " api", env: concurrentlyEnv, prefixColor: "bgGreen.bold" },
+    { command: `node ${path.join(__dirname, "..", "..", "proxy", "server.js")}`, name: "swa", env: concurrentlyEnv, prefixColor: "bgMagenta.bold" },
   ];
+
+  if (isApiLocationExistsOnDisk) {
+    concurrentlyCommands.push(
+      // serve the api, if it's available
+      { command: serveApiContent, name: "api", env: concurrentlyEnv, prefixColor: "bgGreen.bold" }
+    );
+  }
 
   if (process.env.DEBUG) {
     console.log({ env: envVarsObj });
@@ -144,5 +108,8 @@ export async function start(startContext: string, program: CLIConfig) {
   await concurrently(concurrentlyCommands, {
     restartTries: 1,
     prefix: "name",
-  });
+  }).then(
+    () => process.exit(),
+    () => process.exit()
+  );
 }
