@@ -34,16 +34,6 @@ export async function start(startContext: string, program: CLIConfig) {
     }
   }
 
-  // parse the Auth URI port or use default
-  const authPort = (program.authPort || DEFAULT_CONFIG.authPort) as number;
-
-  const appListening = await isAcceptingTcpConnections({ port: authPort });
-
-  if (appListening === true) {
-    console.info(`INFO: It looks like another instance of the CLI is already running (reason: auth server).`);
-    process.exit(0);
-  }
-
   // get the app and api artifact locations
   let [appLocation, appArtifactLocation, apiLocation] = [
     program.appLocation as string,
@@ -118,7 +108,6 @@ export async function start(startContext: string, program: CLIConfig) {
   // set env vars for current command
   const envVarsObj = {
     DEBUG: program.verbose ? "*" : "",
-    SWA_CLI_AUTH_PORT: `${program.authPort}`,
     SWA_CLI_API_PORT: `${apiPort}`,
     SWA_CLI_APP_PORT: `${appPort}`,
     SWA_CLI_APP_LOCATION: configFile?.appLocation as string,
@@ -132,14 +121,6 @@ export async function start(startContext: string, program: CLIConfig) {
   const concurrentlyCommands = [
     // start the reverse proxy
     { command: `node ${path.join(__dirname, "..", "..", "proxy", "server.js")}`, name: " swa", env: concurrentlyEnv, prefixColor: "bgYellow.bold" },
-
-    // emulate auth
-    {
-      command: `node ${path.join(__dirname, "..", "..", "auth", "server.js")} --host=${program.host} --port=${authPort}`,
-      name: "auth",
-      env: concurrentlyEnv,
-      prefixColor: "bgMagenta.bold",
-    },
 
     // serve the app
     { command: serveStaticContent, name: " app", env: concurrentlyEnv, prefixColor: "bgCyan.bold" },

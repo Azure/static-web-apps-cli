@@ -1,9 +1,6 @@
-import { createServer, ServerResponse } from "http";
-import { argv, serializeCookie } from "../core/utils";
+import { ServerResponse } from "http";
 import url from "url";
-
-const port = argv<number>("--port") || 4242;
-const host = argv<string>("--host") || "localhost";
+import { serializeCookie } from "../core/utils";
 
 const authPaths: Path[] = [
   {
@@ -43,7 +40,7 @@ async function routeMatcher(url = "/"): Promise<{ func: Function | undefined; bi
   return { func: undefined, bindingData: undefined };
 }
 
-export async function requestHandler(request: ServerRequest, response: ServerResponse) {
+export async function processAuth(request: ServerRequest, response: ServerResponse) {
   let defaultStatus = 200;
   const context: Context = {
     invocationId: new Date().getTime().toString(36) + Math.random().toString(36).slice(2),
@@ -109,10 +106,10 @@ export async function requestHandler(request: ServerRequest, response: ServerRes
   response.end(context.res.body);
 }
 
-const server = createServer(requestHandler);
+// const server = createServer(requestHandler);
 
-server.listen(Number(port), host, () => {
-  const { address, port } = server.address() as any; /* AddressInfo */
-  const host = `http://${address}:${port}`;
-  console.log(`Auth server listening on ${host}`);
-});
+// server.listen(Number(port), host, () => {
+//   const { address, port } = server.address() as any; /* AddressInfo */
+//   const host = `http://${address}:${port}`;
+//   console.log(`Auth server listening on ${host}`);
+// });
