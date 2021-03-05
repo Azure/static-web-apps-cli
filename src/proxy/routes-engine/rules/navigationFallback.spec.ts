@@ -11,6 +11,10 @@ describe("navigationFallback()", () => {
     userConfig = {} as any;
   });
 
+  afterEach(() => {
+    mockFs.restore();
+  });
+
   it("should not process fallbacks if empty config", async () => {
     req.url = "/foo";
     await navigationFallback(req, res, userConfig);
@@ -74,8 +78,6 @@ describe("navigationFallback()", () => {
     await navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/images/foo.png");
-
-    mockFs.restore();
   });
 
   it("should not process fallbacks if file not found but matched exclude filter", async () => {
@@ -93,8 +95,6 @@ describe("navigationFallback()", () => {
     await navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/images/foo.png");
-
-    mockFs.restore();
   });
 
   it("should process fallbacks if file found but not matched exclude filter", async () => {
@@ -112,8 +112,6 @@ describe("navigationFallback()", () => {
     await navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/bar");
-
-    mockFs.restore();
   });
 
   it("should process fallbacks if file not found and not matched exclude filter", async () => {
@@ -131,8 +129,6 @@ describe("navigationFallback()", () => {
     await navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/bar");
-
-    mockFs.restore();
   });
 
   it("should expand wildcards (/*.{png}) into valid glob wildcards (/**/*.{png})", async () => {
@@ -150,8 +146,6 @@ describe("navigationFallback()", () => {
     await navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/images/foo/bar.png");
-
-    mockFs.restore();
   });
 
   it("should expand wildcards (/images/*.{png}) into valid glob wildcards (/images/**/*.{png})", async () => {
@@ -169,7 +163,5 @@ describe("navigationFallback()", () => {
     await navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/images/foo/bar.png");
-
-    mockFs.restore();
   });
 });
