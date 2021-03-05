@@ -57,7 +57,6 @@ declare type SWACLIConfig = GithubActionSWAConfig & {
   port?: number;
   host?: string;
   apiPort?: number;
-  appPort?: number;
   apiPrefix?: "api";
   swaConfigFilename?: "staticwebapp.config.json";
   swaConfigFilenameLegacy?: "routes.json";

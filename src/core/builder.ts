@@ -1,7 +1,6 @@
 import concurrently from "concurrently";
 import fs from "fs";
 import path from "path";
-import shell from "shelljs";
 import { detectRuntime, RuntimeType } from "./runtimes";
 import { readConfigFile } from "./utils";
 
@@ -86,7 +85,7 @@ const builder = async ({ config }: { config: Partial<GithubActionSWAConfig> }) =
           break;
       }
     } catch (stderr) {
-      shell.echo(stderr);
+      console.log(stderr);
     }
   }
 };

@@ -5,18 +5,18 @@ import { serializeCookie } from "../core/utils";
 const authPaths: Path[] = [
   {
     method: "GET",
-    route: /^\/app\/\.auth\/login\/(?<provider>aad|github|twitter|google|facebook|[a-z]+)/,
-    function: "app_auth_login_provider",
+    route: /^\/\.auth\/login\/(?<provider>aad|github|twitter|google|facebook|[a-z]+)/,
+    function: "auth_login_provider",
   },
   {
     method: "GET",
-    route: /^\/app\/\.auth\/me/,
-    function: "app_auth_me",
+    route: /^\/\.auth\/me/,
+    function: "auth_me",
   },
   {
     method: "GET",
-    route: /^\/app\/\.auth\/logout/,
-    function: "app_auth_logout",
+    route: /^\/\.auth\/logout/,
+    function: "auth_logout",
   },
 ];
 
@@ -105,11 +105,3 @@ export async function processAuth(request: ServerRequest, response: ServerRespon
   response.writeHead(context.res.status || defaultStatus);
   response.end(context.res.body);
 }
-
-// const server = createServer(requestHandler);
-
-// server.listen(Number(port), host, () => {
-//   const { address, port } = server.address() as any; /* AddressInfo */
-//   const host = `http://${address}:${port}`;
-//   console.log(`Auth server listening on ${host}`);
-// });

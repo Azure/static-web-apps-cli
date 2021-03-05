@@ -3,7 +3,6 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   port: 4280,
   host: "0.0.0.0",
   apiPort: 7071,
-  appPort: 4200,
   apiPrefix: "api",
   appLocation: `.${path.sep}`,
   appArtifactLocation: `.${path.sep}`,
