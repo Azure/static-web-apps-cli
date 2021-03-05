@@ -12,6 +12,10 @@ describe("Utils", () => {
     process.argv = [];
   });
 
+  afterEach(() => {
+    mockFs.restore();
+  });
+
   describe("argv()", () => {
     it("process.argv = []", () => {
       process.argv = [];
@@ -357,8 +361,6 @@ describe("Utils", () => {
       });
 
       expect(readConfigFile()).toBe(undefined);
-
-      mockFs.restore();
     });
 
     it("invalid YAML file should throw", () => {
@@ -367,8 +369,6 @@ describe("Utils", () => {
       });
 
       expect(() => readConfigFile()).toThrow(/could not parse the SWA workflow file/);
-
-      mockFs.restore();
     });
 
     describe("checking workflow properties", () => {
@@ -378,8 +378,6 @@ describe("Utils", () => {
         });
 
         expect(() => readConfigFile()).toThrow(/missing property 'jobs'/);
-
-        mockFs.restore();
       });
 
       it("missing property 'jobs.build_and_deploy_job' should throw", () => {
@@ -390,8 +388,6 @@ jobs:
 `,
         });
         expect(() => readConfigFile()).toThrow(/missing property 'jobs.build_and_deploy_job'/);
-
-        mockFs.restore();
       });
 
       it("missing property 'jobs.build_and_deploy_job.steps' should throw", () => {
@@ -404,8 +400,6 @@ jobs:
         });
 
         expect(() => readConfigFile()).toThrow(/missing property 'jobs.build_and_deploy_job.steps'/);
-
-        mockFs.restore();
       });
 
       it("invalid property 'jobs.build_and_deploy_job.steps' should throw", () => {
@@ -417,8 +411,6 @@ jobs:
 `,
         });
         expect(() => readConfigFile()).toThrow(/missing property 'jobs.build_and_deploy_job.steps'/);
-
-        mockFs.restore();
       });
 
       it("invalid property 'jobs.build_and_deploy_job.steps[]' should throw", () => {
@@ -432,8 +424,6 @@ jobs:
         });
 
         expect(() => readConfigFile()).toThrow(/invalid property 'jobs.build_and_deploy_job.steps\[\]'/);
-
-        mockFs.restore();
       });
 
       it("missing property 'jobs.build_and_deploy_job.steps[].with' should throw", () => {
@@ -448,8 +438,6 @@ jobs:
         });
 
         expect(() => readConfigFile()).toThrow(/missing property 'jobs.build_and_deploy_job.steps\[\].with'/);
-
-        mockFs.restore();
       });
     });
 
@@ -469,8 +457,6 @@ jobs:
 
         expect(readConfigFile()).toBeTruthy();
         expect(readConfigFile()?.appLocation).toBe(path.normalize(process.cwd() + "/"));
-
-        mockFs.restore();
       });
 
       it("property 'app_location' should be set to '/' if missing", () => {
@@ -487,8 +473,6 @@ jobs:
         });
         expect(readConfigFile()).toBeTruthy();
         expect(readConfigFile()?.appLocation).toBe(path.normalize(process.cwd() + "/"));
-
-        mockFs.restore();
       });
 
       it("property 'api_location' should be set", () => {
@@ -506,8 +490,6 @@ jobs:
 
         expect(readConfigFile()).toBeTruthy();
         expect(readConfigFile()?.apiLocation).toBe(path.normalize(process.cwd() + "/api"));
-
-        mockFs.restore();
       });
 
       it("property 'api_location' should be undefined if missing", () => {
@@ -525,8 +507,6 @@ jobs:
 
         expect(readConfigFile()).toBeTruthy();
         expect(readConfigFile()?.apiLocation).toBeUndefined();
-
-        mockFs.restore();
       });
 
       it("property 'app_artifact_location' should be set", () => {
@@ -544,8 +524,6 @@ jobs:
 
         expect(readConfigFile()).toBeTruthy();
         expect(readConfigFile()?.appArtifactLocation).toBe(path.normalize(process.cwd() + "/"));
-
-        mockFs.restore();
       });
 
       it("property 'app_artifact_location' should be set to '/' if missing", () => {
@@ -563,8 +541,6 @@ jobs:
 
         expect(readConfigFile()).toBeTruthy();
         expect(readConfigFile()?.appArtifactLocation).toBe(path.normalize(process.cwd() + "/"));
-
-        mockFs.restore();
       });
 
       it("property 'app_build_command' should be set", () => {
@@ -582,8 +558,6 @@ jobs:
 
         expect(readConfigFile()).toBeTruthy();
         expect(readConfigFile()?.appBuildCommand).toBe("echo test");
-
-        mockFs.restore();
       });
 
       it("property 'app_build_command' should be set to default if missing", () => {
@@ -601,8 +575,6 @@ jobs:
 
         expect(readConfigFile()).toBeTruthy();
         expect(readConfigFile()?.appBuildCommand).toBe("npm run build --if-present");
-
-        mockFs.restore();
       });
 
       it("property 'api_build_command' should be set", () => {
@@ -620,8 +592,6 @@ jobs:
 
         expect(readConfigFile()).toBeTruthy();
         expect(readConfigFile()?.apiBuildCommand).toBe("echo test");
-
-        mockFs.restore();
       });
 
       it("property 'api_build_command' should be set to default if missing", () => {
@@ -639,8 +609,6 @@ jobs:
 
         expect(readConfigFile()).toBeTruthy();
         expect(readConfigFile()?.apiBuildCommand).toBe("npm run build --if-present");
-
-        mockFs.restore();
       });
     });
   });
@@ -678,8 +646,6 @@ jobs:
 
       const entry = await asyncGeneratorToArray(traverseFolder("."));
       expect(entry).toEqual([]);
-
-      mockFs.restore();
     });
 
     describe("should handle flat folder", async () => {
@@ -693,8 +659,6 @@ jobs:
 
         // entries are populated indeterminately because of async generator
         expect(entries.find((entry) => entry.endsWith("foo.txt"))).toEndWith("foo.txt");
-
-        mockFs.restore();
       });
 
       it("with multiple entries", async () => {
@@ -709,8 +673,6 @@ jobs:
         // entries are populated indeterminately because of async generator
         expect(entries.find((entry) => entry.endsWith("bar.jpg"))).toEndWith("bar.jpg");
         expect(entries.find((entry) => entry.endsWith("foo.txt"))).toEndWith("foo.txt");
-
-        mockFs.restore();
       });
     });
 
@@ -727,8 +689,6 @@ jobs:
 
         // entries are populated indeterminately because of async generator
         expect(entries.find((entry) => entry.endsWith(`swa${path.sep}foo.txt`))).toEndWith(`swa${path.sep}foo.txt`);
-
-        mockFs.restore();
       });
 
       it("with multiple entries", async () => {
@@ -745,8 +705,6 @@ jobs:
         // entries are populated indeterminately because of async generator
         expect(entries.find((entry) => entry.endsWith("bar.jpg"))).toEndWith("bar.jpg");
         expect(entries.find((entry) => entry.endsWith(`swa${path.sep}foo.txt`))).toEndWith(`swa${path.sep}foo.txt`);
-
-        mockFs.restore();
       });
     });
 
@@ -769,8 +727,6 @@ jobs:
         // entries are populated indeterminately because of async generator
         expect(entries.find((entry) => entry.endsWith(`swa${path.sep}bar.jpg`))).toEndWith(`swa${path.sep}bar.jpg`);
         expect(entries.find((entry) => entry.endsWith("foo.txt"))).toEndWith("foo.txt");
-
-        mockFs.restore();
       });
     });
   });
@@ -781,8 +737,6 @@ jobs:
 
       const file = await findSWAConfigFile(".");
       expect(file).toBe(null);
-
-      mockFs.restore();
     });
 
     it("should find staticwebapp.config.json (at the root)", async () => {
@@ -792,8 +746,6 @@ jobs:
 
       const file = await findSWAConfigFile(".");
       expect(file).toContain("staticwebapp.config.json");
-
-      mockFs.restore();
     });
 
     it("should find staticwebapp.config.json (recursively)", async () => {
@@ -809,8 +761,6 @@ jobs:
 
       const file = await findSWAConfigFile(".");
       expect(file).toContain("staticwebapp.config.json");
-
-      mockFs.restore();
     });
 
     it("should find routes.json (at the root)", async () => {
@@ -820,8 +770,6 @@ jobs:
 
       const file = await findSWAConfigFile(".");
       expect(file).toContain("routes.json");
-
-      mockFs.restore();
     });
 
     it("should find routes.json (recursively)", async () => {
@@ -837,8 +785,6 @@ jobs:
 
       const file = await findSWAConfigFile(".");
       expect(file).toContain("routes.json");
-
-      mockFs.restore();
     });
 
     it("should ignore routes.json if a staticwebapp.config.json exists", async () => {
@@ -856,7 +802,6 @@ jobs:
       const file = await findSWAConfigFile(".");
       expect(file).toContain("staticwebapp.config.json");
     });
-
   });
 
   describe("parsePort()", () => {
@@ -897,5 +842,4 @@ jobs:
       expect(address("[::1]", "4200")).toBe("http://[::1]:4200");
     });
   });
-
 });

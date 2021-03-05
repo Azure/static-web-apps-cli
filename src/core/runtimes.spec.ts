@@ -33,7 +33,6 @@ describe("runtime", () => {
         [appLocation]: {},
       });
       const runtime = detectRuntime(appLocation);
-      mockFs.restore();
       expect(runtime).toBe(RuntimeType.unknown);
     });
 
