@@ -1,3 +1,4 @@
+import finalhandler from "finalhandler";
 import fs from "fs";
 import http from "http";
 import httpProxy from "http-proxy";
@@ -27,8 +28,21 @@ if (!isHttpUrl(SWA_CLI_API_URI)) {
   process.exit(-1);
 }
 
-const SWA_NOT_FOUND = path.resolve(process.cwd(), "..", "public", "404.html");
-const SWA_UNAUTHORIZED = path.resolve(process.cwd(), "..", "public", "unauthorized.html");
+const SWA_PUBLIC_DIR = path.resolve(__dirname, "..", "public");
+
+const serve = (root: string, req: http.IncomingMessage, res: http.ServerResponse) => {
+  // if the requested file is not foud on disk
+  // or if routes rule config is 404
+  // send our 404 custom page instead of serve-static's one.
+  const file = path.join(root, req.url!);
+  if (fs.existsSync(file) === false) {
+    req.url = "404.html";
+    root = SWA_PUBLIC_DIR;
+  }
+
+  const done = finalhandler(req, res) as any;
+  return serveStatic(root, { extensions: ["html"] })(req, res, done);
+};
 
 const onConnectionLost = (res: http.ServerResponse | net.Socket, target: string) => (error: Error) => {
   if (error.message.includes("ECONNREFUSED")) {
@@ -93,37 +107,42 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
         responseOverrides,
         navigationFallback,
         customRoutes,
-      );
+        );
       // prettier-ignore
       await processRules(
-        req,
-        res,
-        [
-          userConfig.globalHeaders,
-          userConfig.mimeTypes,
-          userConfig.responseOverrides,
-          userConfig.navigationFallback,
-          userConfig.routes,
-        ]
-        );
+          req,
+          res,
+          [
+            userConfig.globalHeaders,
+            userConfig.mimeTypes,
+            userConfig.responseOverrides,
+            userConfig.navigationFallback,
+            userConfig.routes,
+          ]
+          );
 
-      switch (res.statusCode) {
-        case 401:
-          return serveStatic(SWA_UNAUTHORIZED)(req, res, () => res.end());
-        case 403:
-          // @TODO provide a Forbidden HTML template
-          return serveStatic(SWA_UNAUTHORIZED)(req, res, () => res.end());
-        case 404:
-          return serveStatic(SWA_NOT_FOUND)(req, res, () => res.end());
-        default:
-          break;
+      if ([401, 403, 404].includes(res.statusCode)) {
+        switch (res.statusCode) {
+          case 401:
+            req.url = "unauthorized.html";
+            break;
+          case 403:
+            // @TODO provide a Forbidden HTML template
+            req.url = "unauthorized.html";
+            break;
+          case 404:
+            req.url = "404.html";
+            break;
+        }
+        return serve(SWA_PUBLIC_DIR, req, res);
       }
     }
 
     // don't serve user custom routes file
     if (req.url.endsWith(DEFAULT_CONFIG.swaConfigFilename!) || req.url.endsWith(DEFAULT_CONFIG.swaConfigFilenameLegacy!)) {
       console.log("proxy>", req.method, req.headers.host + req.url);
-      serveStatic(SWA_NOT_FOUND)(req, res, () => res.end());
+      req.url = "404.html";
+      serve(SWA_PUBLIC_DIR, req, res);
     }
 
     // proxy AUTH request to AUTH emulator
@@ -162,7 +181,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
         );
       } else {
         console.log("app>", req.method, req.url);
-        serveStatic(target)(req, res, () => res.end());
+        serve(target, req, res);
       }
     }
   };
