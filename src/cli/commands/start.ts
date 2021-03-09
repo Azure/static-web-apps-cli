@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
 import builder from "../../core/builder";
-import { isHttpUrl, parseUrl, readConfigFile, validateDevServerConfig } from "../../core/utils";
+import { isAcceptingTcpConnections, isHttpUrl, parseUrl, readConfigFile, validateDevServerConfig } from "../../core/utils";
 
 export async function start(startContext: string, program: CLIConfig) {
   let useApiDevServer = undefined;
@@ -12,6 +12,11 @@ export async function start(startContext: string, program: CLIConfig) {
     program.appArtifactLocation = await validateDevServerConfig(startContext);
   } else {
     // start the emulator from a specific artifact folder, if folder exists
+    if (await isAcceptingTcpConnections({ host: program.host, port: program.port! })) {
+      console.info(`INFO: Port ${program.port} is already used. Choose a different port.`);
+      process.exit(0);
+    }
+
     if (fs.existsSync(startContext)) {
       program.appArtifactLocation = startContext;
     } else {
