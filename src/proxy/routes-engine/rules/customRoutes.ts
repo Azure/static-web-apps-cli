@@ -8,14 +8,21 @@ export const customRoutes = async (req: http.IncomingMessage, res: http.ServerRe
 
   const userDefinedRoute = userDefinedRoutes?.find((routeDef) => {
     const sanitizedUrl = new URL(req.url!, `http://${req.headers.host}`);
+    let route = routeDef.route;
 
     // convert wildchars in route into a valid regex * quantifier
-    routeDef.route = routeDef.route.replace(/\*/g, ".*");
+    if (route === "/*") {
+      route = "/.*";
+    } else {
+      route = route.replace(/\*/g, ".*");
+    }
 
-    return new RegExp(`^${routeDef.route}$`).test(sanitizedUrl.pathname);
+    return new RegExp(`^${route}$`).test(sanitizedUrl.pathname);
   });
 
   if (userDefinedRoute) {
+    console.log(">>>> applying rule", userDefinedRoute);
+
     // set headers
     if (userDefinedRoute.headers) {
       for (const header in userDefinedRoute.headers) {
@@ -53,17 +60,13 @@ export const customRoutes = async (req: http.IncomingMessage, res: http.ServerRe
     if (userDefinedRoute.serve || userDefinedRoute.redirect) {
       let route = (userDefinedRoute.serve || userDefinedRoute.redirect) as string;
 
-      // make sure we are forwarding .auth requests to local auth server
-      if (route.startsWith("/.auth")) {
-        route = `/app${route}`;
-      }
-
       // redirects
       // note: adding checks to avoid ERR_TOO_MANY_REDIRECTS
       if (route !== req.url) {
         res.writeHead(userDefinedRoute.statusCode || 302, {
           Location: route,
         });
+        res.end();
       }
     }
   }
