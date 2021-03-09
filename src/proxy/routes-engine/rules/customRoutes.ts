@@ -21,8 +21,6 @@ export const customRoutes = async (req: http.IncomingMessage, res: http.ServerRe
   });
 
   if (userDefinedRoute) {
-    console.log(">>>> applying rule", userDefinedRoute);
-
     // set headers
     if (userDefinedRoute.headers) {
       for (const header in userDefinedRoute.headers) {
