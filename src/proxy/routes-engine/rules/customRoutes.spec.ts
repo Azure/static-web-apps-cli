@@ -182,31 +182,6 @@ describe("customRoutes()", () => {
     expect(res.writeHead).toHaveBeenCalledWith(302, { Location: "/bar.html" });
   });
 
-  it("should handle auth redirects", async () => {
-    userConfig = [
-      {
-        route: url,
-        redirect: "/.auth/bar.html",
-      },
-    ];
-    await customRoutes(req, res, userConfig);
-
-    expect(res.writeHead).toHaveBeenCalledWith(302, { Location: "/app/.auth/bar.html" });
-  });
-
-  it("should handle auth redirects with custom status code", async () => {
-    userConfig = [
-      {
-        route: url,
-        redirect: "/.auth/bar.html",
-        statusCode: 301,
-      },
-    ];
-    await customRoutes(req, res, userConfig);
-
-    expect(res.writeHead).toHaveBeenCalledWith(301, { Location: "/app/.auth/bar.html" });
-  });
-
   it("should protect against ERR_TOO_MANY_REDIRECTS", async () => {
     userConfig = [
       {
