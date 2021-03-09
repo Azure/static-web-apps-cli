@@ -146,10 +146,10 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     // proxy APP requests
     else {
       const target = SWA_CLI_APP_ARTIFACT_LOCATION;
-      console.log("app>", req.method, target + req.url);
 
       // is this a dev server?
       if (isStaticDevServer) {
+        console.log("app>", req.method, target + req.url);
         proxyApp.web(
           req,
           res,
@@ -161,6 +161,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
           onConnectionLost(res, target)
         );
       } else {
+        console.log("app>", req.method, req.url);
         serveStatic(target)(req, res, () => res.end());
       }
     }
