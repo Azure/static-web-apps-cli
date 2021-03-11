@@ -117,4 +117,5 @@ declare type SWAConfigFile = {
   responseOverrides: SWAConfigFileResponseOverrides;
   globalHeaders: SWAConfigFileGlobalHeaders;
   mimeTypes: SWAConfigFileMimeTypes;
+  isLegacyConfigFile: boolean;
 };

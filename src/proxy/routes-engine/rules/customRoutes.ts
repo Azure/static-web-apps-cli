@@ -4,7 +4,7 @@ import globrex from "globrex";
 
 import { decodeCookie } from "../../../core/utils";
 
-export const matchRoute = (req: http.IncomingMessage, _res: http.ServerResponse) => {
+export const matchRoute = (req: http.IncomingMessage, _res: http.ServerResponse, isLegacyConfigFile: boolean) => {
   const sanitizedUrl = new URL(req.url!, `http://${req?.headers?.host}`);
 
   return (routeDef: SWAConfigFileRoute) => {
@@ -15,13 +15,23 @@ export const matchRoute = (req: http.IncomingMessage, _res: http.ServerResponse)
 
     const originlUrl = sanitizedUrl.pathname;
 
+    // In the legacy config file,
+    // the /* rule should only match routes segments (eg. /about), but not file paths (eg. image.png)
+    // bypass rules for /api and /.auth routes
+    if (isLegacyConfigFile && filter === "/*") {
+      if (originlUrl.startsWith("/api") || originlUrl.startsWith("/.auth")) {
+        return false;
+      } else if (originlUrl.includes(".") && !originlUrl.startsWith("/.auth")) {
+        return false;
+      }
+    }
+
     // we don't support full globs in the config file.
     // add this little workaround to convert a wildcard into a valid glob pattern
     filter = filter.replace("/*", "/**/*");
 
     // extract glob metadata
     const globSegments = globalyzer(filter);
-
     // if filter and url segments don't have a commom base path
     // don't process regex, just return false
     if (originlUrl.startsWith(globSegments.base)) {
@@ -44,12 +54,17 @@ export const matchRoute = (req: http.IncomingMessage, _res: http.ServerResponse)
   };
 };
 
-export const customRoutes = async (req: http.IncomingMessage, res: http.ServerResponse, userDefinedRoutes: SWAConfigFileRoute[]) => {
+export const customRoutes = async (
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+  userDefinedRoutes: SWAConfigFileRoute[],
+  isLegacyConfigFile: boolean
+) => {
   if (!req) {
     return Promise.resolve(undefined);
   }
 
-  const userDefinedRoute = userDefinedRoutes?.find(matchRoute(req, res));
+  const userDefinedRoute = userDefinedRoutes?.find(matchRoute(req, res, isLegacyConfigFile));
 
   if (userDefinedRoute) {
     // set headers
@@ -68,7 +83,7 @@ export const customRoutes = async (req: http.IncomingMessage, res: http.ServerRe
     if (userDefinedRoute.allowedRoles) {
       const user = req.headers.cookie ? decodeCookie(req.headers.cookie) : null;
 
-      if (userDefinedRoute.allowedRoles.some((role) => user?.userRoles?.some((ur: string) => ur === role)) === false) {
+      if (userDefinedRoute.allowedRoles.some((role) => user?.userRoles?.some((userRole: string) => userRole === role)) === false) {
         res.statusCode = 403;
       } else {
         res.statusCode = 200;
