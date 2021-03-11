@@ -1,18 +1,16 @@
 import * as utils from "../../../core/utils";
-import { customRoutes } from "./customRoutes";
+import { customRoutes, matchRoute } from "./customRoutes";
 
 describe("customRoutes()", () => {
-  let url: string;
   let method: string;
   let req: any;
   let res: any;
   let userConfig: SWAConfigFileRoute[];
   beforeEach(() => {
-    url = "/foo";
     method = "GET";
 
     req = {
-      url,
+      url: "/foo",
       method,
       headers: {
         cookie: "foo",
@@ -20,6 +18,7 @@ describe("customRoutes()", () => {
     } as any;
 
     res = {
+      statusCode: 200,
       setHeader: jest.fn(),
       writeHead: jest.fn(),
       getHeaders: jest.fn(),
@@ -61,7 +60,7 @@ describe("customRoutes()", () => {
   it("should set headers", async () => {
     userConfig = [
       {
-        route: url,
+        route: "/foo",
         headers: {
           "Cache-Control": "public, max-age=604800, immutable",
           "Keep-Alive": "timeout=5, max=1000",
@@ -76,7 +75,7 @@ describe("customRoutes()", () => {
   it("should process HTTP methods", async () => {
     userConfig = [
       {
-        route: url,
+        route: "/foo",
         methods: ["FOO"],
       },
     ];
@@ -92,7 +91,7 @@ describe("customRoutes()", () => {
 
     userConfig = [
       {
-        route: url,
+        route: "/foo",
         allowedRoles: ["authenticated"],
       },
     ];
@@ -108,7 +107,7 @@ describe("customRoutes()", () => {
 
     userConfig = [
       {
-        route: url,
+        route: "/foo",
         allowedRoles: ["authenticated"],
       },
     ];
@@ -124,7 +123,7 @@ describe("customRoutes()", () => {
 
     userConfig = [
       {
-        route: url,
+        route: "/foo",
         allowedRoles: ["authenticated"],
       },
     ];
@@ -136,7 +135,7 @@ describe("customRoutes()", () => {
   it("should set custom status code (418)", async () => {
     userConfig = [
       {
-        route: url,
+        route: "/foo",
         statusCode: 418,
       },
     ];
@@ -148,7 +147,7 @@ describe("customRoutes()", () => {
   it("should set custom status code (404)", async () => {
     userConfig = [
       {
-        route: url,
+        route: "/foo",
         statusCode: 404,
       },
     ];
@@ -161,7 +160,7 @@ describe("customRoutes()", () => {
   it("should rewrite URLs", async () => {
     userConfig = [
       {
-        route: url,
+        route: "/foo",
         rewrite: "/bar.html",
       },
     ];
@@ -173,7 +172,7 @@ describe("customRoutes()", () => {
   it("should handle 302 redirects", async () => {
     userConfig = [
       {
-        route: url,
+        route: "/foo",
         redirect: "/bar.html",
       },
     ];
@@ -182,10 +181,77 @@ describe("customRoutes()", () => {
     expect(res.writeHead).toHaveBeenCalledWith(302, { Location: "/bar.html" });
   });
 
+  it("should serve with redirect (statusCode=302)", async () => {
+    userConfig = [
+      {
+        route: "/foo",
+        serve: "/bar",
+        statusCode: 302,
+      },
+    ];
+    await customRoutes(req, res, userConfig);
+
+    expect(res.writeHead).toHaveBeenCalledWith(302, { Location: "/bar" });
+  });
+
+  it("should serve with redirect (statusCode=301)", async () => {
+    userConfig = [
+      {
+        route: "/foo",
+        serve: "/bar",
+        statusCode: 301,
+      },
+    ];
+    await customRoutes(req, res, userConfig);
+
+    expect(res.writeHead).toHaveBeenCalledWith(301, { Location: "/bar" });
+  });
+
+  it("should not serve with redirect (statusCode=200)", async () => {
+    userConfig = [
+      {
+        route: "/foo",
+        serve: "/bar",
+        statusCode: 200,
+      },
+    ];
+    await customRoutes(req, res, userConfig);
+
+    expect(res.writeHead).not.toHaveBeenCalled();
+  });
+
+  it("should serve with rewrite (statusCode=200)", async () => {
+    userConfig = [
+      {
+        route: "/foo",
+        serve: "/bar",
+        statusCode: 200,
+      },
+    ];
+    await customRoutes(req, res, userConfig);
+
+    expect(res.writeHead).not.toHaveBeenCalled();
+    expect(req.url).toBe("/bar");
+  });
+
+  it("should serve with rewrite (statusCode = undefined)", async () => {
+    userConfig = [
+      {
+        route: "/foo",
+        serve: "/bar",
+      },
+    ];
+    await customRoutes(req, res, userConfig);
+
+    expect(req.url).toBe("/bar");
+    expect(res.writeHead).not.toHaveBeenCalled();
+    expect(res.statusCode).toBe(200);
+  });
+
   it("should protect against ERR_TOO_MANY_REDIRECTS", async () => {
     userConfig = [
       {
-        route: url,
+        route: "/foo",
         redirect: "/foo",
       },
     ];
@@ -195,16 +261,78 @@ describe("customRoutes()", () => {
   });
 
   it("should parse URL and ignore query params", async () => {
-    res.url = "/.auth/login/github?post_login_redirect_uri=/profile";
+    req.url = "/.auth/login/github?post_login_redirect_uri=/profile";
     userConfig = [
       {
-        route: res.url,
-        redirect: "/foo",
+        route: "/.auth/login/github",
+        statusCode: 403,
       },
     ];
 
     await customRoutes(req, res, userConfig);
 
-    expect(res.writeHead).not.toHaveBeenCalled();
+    expect(res.statusCode).toBe(403);
+  });
+
+  describe("Wildcards", () => {
+    it("should match root wildcards /*", async () => {
+      req.url = "/.auth/login/github?post_login_redirect_uri=/profile";
+      userConfig = [
+        {
+          route: "/*",
+        },
+      ];
+
+      const regex = matchRoute(req, res)(userConfig[0]);
+      expect(regex).toBe(true);
+    });
+
+    it("should match sub paths wildcards", async () => {
+      req.url = "/.auth/login/github";
+      userConfig = [
+        {
+          route: "/.auth/*",
+        },
+      ];
+
+      const regex = matchRoute(req, res)(userConfig[0]);
+      expect(regex).toBe(true);
+    });
+
+    it("should not match wrong sub paths wildcards", async () => {
+      req.url = "/.xyz/login/github";
+      userConfig = [
+        {
+          route: "/.auth/*",
+        },
+      ];
+
+      const regex = matchRoute(req, res)(userConfig[0]);
+      expect(regex).toBe(false);
+    });
+
+    it("should match file-based wildcards", async () => {
+      req.url = "/assets/foo.png";
+      userConfig = [
+        {
+          route: "/assets/*.{png,svg}",
+        },
+      ];
+
+      const regex = matchRoute(req, res)(userConfig[0]);
+      expect(regex).toBe(true);
+    });
+
+    it("should not match wrong file-based wildcards", async () => {
+      req.url = "/assets/foo.svg";
+      userConfig = [
+        {
+          route: "/assets/*.{png}",
+        },
+      ];
+
+      const regex = matchRoute(req, res)(userConfig[0]);
+      expect(regex).toBe(false);
+    });
   });
 });
