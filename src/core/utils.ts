@@ -401,7 +401,7 @@ export async function* traverseFolder(folder: string): AsyncGenerator<string> {
 }
 
 export async function findSWAConfigFile(folder: string) {
-  const configFiles = new Map<string, string>();
+  const configFiles = new Map<string, { file: string; isLegacyConfigFile: boolean }>();
 
   for await (const file of traverseFolder(folder)) {
     const filename = path.basename(file) as string;
@@ -413,7 +413,8 @@ export async function findSWAConfigFile(folder: string) {
       // Note: some JS frameworks (eg. Nuxt, Scully) use routes.json as part of their config. We need to ignore those
       const isValidSWAConfigFile = config.globalHeaders || config.mimeTypes || config.navigationFallback || config.responseOverrides || config.routes;
       if (isValidSWAConfigFile) {
-        configFiles.set(filename, file);
+        const isLegacyConfigFile = filename === DEFAULT_CONFIG.swaConfigFilenameLegacy;
+        configFiles.set(filename, { file, isLegacyConfigFile });
       }
     }
   }

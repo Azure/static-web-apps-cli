@@ -69,25 +69,39 @@ const handleUserConfig = async (appLocation: string): Promise<SWAConfigFile | nu
     return null;
   }
 
-  let config: SWAConfigFile | null = null;
+  let configJson: SWAConfigFile | null = null;
   try {
-    config = require(configFile) as SWAConfigFile;
-    console.log("reading user config", configFile);
-    return config;
+    configJson = require(configFile.file) as SWAConfigFile;
+    configJson.isLegacyConfigFile = configFile.isLegacyConfigFile;
+
+    console.log("reading user config", configFile.file);
+    return configJson;
   } catch (error) {}
-  return config;
+  return configJson;
 };
 
 const pipeRules = (...rules: Array<Function>) => async (
   req: http.IncomingMessage,
   res: http.ServerResponse,
   args: Array<
-    SWAConfigFileGlobalHeaders | SWAConfigFileMimeTypes | SWAConfigFileNavigationFallback | SWAConfigFileResponseOverrides | SWAConfigFileRoute[]
+    Array<
+      | boolean
+      | SWAConfigFileGlobalHeaders
+      | SWAConfigFileMimeTypes
+      | SWAConfigFileNavigationFallback
+      | SWAConfigFileResponseOverrides
+      | SWAConfigFileRoute[]
+    >
   >
 ) => {
   for (let i = 0; i < rules.length; i++) {
     const rule = rules[i];
-    await rule(req, res, args[i]);
+    const arg = args[i];
+    if (Array.isArray(arg)) {
+      await rule(req, res, ...arg);
+    } else {
+      await rule(req, res, arg);
+    }
   }
 };
 
@@ -113,11 +127,11 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
           req,
           res,
           [
-            userConfig.globalHeaders,
-            userConfig.mimeTypes,
-            userConfig.responseOverrides,
-            userConfig.navigationFallback,
-            userConfig.routes,
+            [userConfig.globalHeaders],
+            [userConfig.mimeTypes],
+            [userConfig.responseOverrides],
+            [userConfig.navigationFallback],
+            [userConfig.routes, userConfig.isLegacyConfigFile],
           ]
           );
 

@@ -30,7 +30,7 @@ describe("customRoutes()", () => {
   it("should return undefined if req is not defined", async () => {
     req = undefined as any;
     res = undefined as any;
-    const status = await customRoutes(req, res, userConfig);
+    const status = await customRoutes(req, res, userConfig, false);
 
     expect(status).toBeUndefined();
   });
@@ -38,21 +38,21 @@ describe("customRoutes()", () => {
   it("should return undefined if no routes", async () => {
     req = {} as any;
     res = {} as any;
-    const status = await customRoutes(req, res, userConfig);
+    const status = await customRoutes(req, res, userConfig, false);
 
     expect(status).toBeUndefined();
   });
 
   it("should check for undefined config", async () => {
     req.url = "/foo";
-    const status = await customRoutes(req, res, undefined as any);
+    const status = await customRoutes(req, res, undefined as any, false);
 
     expect(status).toBeUndefined();
   });
 
   it("should check for null config", async () => {
     req.url = "/foo";
-    const status = await customRoutes(req, res, null as any);
+    const status = await customRoutes(req, res, null as any, false);
 
     expect(status).toBeUndefined();
   });
@@ -67,7 +67,7 @@ describe("customRoutes()", () => {
         },
       },
     ];
-    await customRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig, false);
 
     expect(res.setHeader).toHaveBeenCalledTimes(2);
   });
@@ -79,7 +79,7 @@ describe("customRoutes()", () => {
         methods: ["FOO"],
       },
     ];
-    await customRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig, false);
 
     expect(res.statusCode).toBe(405);
   });
@@ -95,7 +95,7 @@ describe("customRoutes()", () => {
         allowedRoles: ["authenticated"],
       },
     ];
-    await customRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig, false);
 
     expect(res.statusCode).toBe(403);
   });
@@ -111,7 +111,7 @@ describe("customRoutes()", () => {
         allowedRoles: ["authenticated"],
       },
     ];
-    await customRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig, false);
 
     expect(res.statusCode).toBe(403);
   });
@@ -127,7 +127,7 @@ describe("customRoutes()", () => {
         allowedRoles: ["authenticated"],
       },
     ];
-    await customRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig, false);
 
     expect(res.statusCode).toBe(200);
   });
@@ -139,7 +139,7 @@ describe("customRoutes()", () => {
         statusCode: 418,
       },
     ];
-    await customRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig, false);
 
     expect(res.statusCode).toBe(418);
   });
@@ -151,7 +151,7 @@ describe("customRoutes()", () => {
         statusCode: 404,
       },
     ];
-    await customRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig, false);
 
     expect(res.writeHead).not.toHaveBeenCalled();
     expect(res.end).not.toHaveBeenCalled();
@@ -164,7 +164,7 @@ describe("customRoutes()", () => {
         rewrite: "/bar.html",
       },
     ];
-    await customRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig, false);
 
     expect(req.url).toBe("/bar.html");
   });
@@ -176,7 +176,7 @@ describe("customRoutes()", () => {
         redirect: "/bar.html",
       },
     ];
-    await customRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig, false);
 
     expect(res.writeHead).toHaveBeenCalledWith(302, { Location: "/bar.html" });
   });
@@ -189,7 +189,7 @@ describe("customRoutes()", () => {
         statusCode: 302,
       },
     ];
-    await customRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig, false);
 
     expect(res.writeHead).toHaveBeenCalledWith(302, { Location: "/bar" });
   });
@@ -202,7 +202,7 @@ describe("customRoutes()", () => {
         statusCode: 301,
       },
     ];
-    await customRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig, false);
 
     expect(res.writeHead).toHaveBeenCalledWith(301, { Location: "/bar" });
   });
@@ -215,7 +215,7 @@ describe("customRoutes()", () => {
         statusCode: 200,
       },
     ];
-    await customRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig, false);
 
     expect(res.writeHead).not.toHaveBeenCalled();
   });
@@ -228,7 +228,7 @@ describe("customRoutes()", () => {
         statusCode: 200,
       },
     ];
-    await customRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig, false);
 
     expect(res.writeHead).not.toHaveBeenCalled();
     expect(req.url).toBe("/bar");
@@ -241,7 +241,7 @@ describe("customRoutes()", () => {
         serve: "/bar",
       },
     ];
-    await customRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig, false);
 
     expect(req.url).toBe("/bar");
     expect(res.writeHead).not.toHaveBeenCalled();
@@ -255,7 +255,7 @@ describe("customRoutes()", () => {
         redirect: "/foo",
       },
     ];
-    await customRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig, false);
 
     expect(res.writeHead).not.toHaveBeenCalled();
   });
@@ -269,13 +269,13 @@ describe("customRoutes()", () => {
       },
     ];
 
-    await customRoutes(req, res, userConfig);
+    await customRoutes(req, res, userConfig, false);
 
     expect(res.statusCode).toBe(403);
   });
 
   describe("Wildcards", () => {
-    it("should match root wildcards /*", async () => {
+    it("should match root wildcards /* (non-legacy config file)", async () => {
       req.url = "/.auth/login/github?post_login_redirect_uri=/profile";
       userConfig = [
         {
@@ -283,11 +283,59 @@ describe("customRoutes()", () => {
         },
       ];
 
-      const regex = matchRoute(req, res)(userConfig[0]);
+      const regex = matchRoute(req, res, false)(userConfig[0]);
       expect(regex).toBe(true);
     });
 
-    it("should match sub paths wildcards", async () => {
+    it("should not match root wildcards /* when requesting /.auth (for legacy config file)", async () => {
+      req.url = "/.auth/login/github?post_login_redirect_uri=/profile";
+      userConfig = [
+        {
+          route: "/*",
+        },
+      ];
+
+      const regex = matchRoute(req, res, true)(userConfig[0]);
+      expect(regex).toBe(false);
+    });
+
+    it("should not match root wildcards /* when requesting file assets (for legacy config file)", async () => {
+      req.url = "/foo/bar/image.jpg";
+      userConfig = [
+        {
+          route: "/*",
+        },
+      ];
+
+      const regex = matchRoute(req, res, true)(userConfig[0]);
+      expect(regex).toBe(false);
+    });
+
+    it("should not match root wildcards /* when requesting /api (for legacy config file)", async () => {
+      req.url = "/api/foo/bar";
+      userConfig = [
+        {
+          route: "/*",
+        },
+      ];
+
+      const regex = matchRoute(req, res, true)(userConfig[0]);
+      expect(regex).toBe(false);
+    });
+
+    it("should match root wildcards /* when requesting app route (for legacy config file)", async () => {
+      req.url = "/foo/bar";
+      userConfig = [
+        {
+          route: "/*",
+        },
+      ];
+
+      const regex = matchRoute(req, res, true)(userConfig[0]);
+      expect(regex).toBe(true);
+    });
+
+    it("should match sub paths wildcards (non-legacy config file)", async () => {
       req.url = "/.auth/login/github";
       userConfig = [
         {
@@ -295,7 +343,19 @@ describe("customRoutes()", () => {
         },
       ];
 
-      const regex = matchRoute(req, res)(userConfig[0]);
+      const regex = matchRoute(req, res, false)(userConfig[0]);
+      expect(regex).toBe(true);
+    });
+
+    it("should match sub paths wildcards (legacy config file)", async () => {
+      req.url = "/.auth/login/github";
+      userConfig = [
+        {
+          route: "/.auth/*",
+        },
+      ];
+
+      const regex = matchRoute(req, res, true)(userConfig[0]);
       expect(regex).toBe(true);
     });
 
@@ -307,7 +367,7 @@ describe("customRoutes()", () => {
         },
       ];
 
-      const regex = matchRoute(req, res)(userConfig[0]);
+      const regex = matchRoute(req, res, false)(userConfig[0]);
       expect(regex).toBe(false);
     });
 
@@ -319,7 +379,7 @@ describe("customRoutes()", () => {
         },
       ];
 
-      const regex = matchRoute(req, res)(userConfig[0]);
+      const regex = matchRoute(req, res, false)(userConfig[0]);
       expect(regex).toBe(true);
     });
 
@@ -331,7 +391,7 @@ describe("customRoutes()", () => {
         },
       ];
 
-      const regex = matchRoute(req, res)(userConfig[0]);
+      const regex = matchRoute(req, res, false)(userConfig[0]);
       expect(regex).toBe(false);
     });
   });
