@@ -16,6 +16,10 @@ const httpTrigger = async function (context: Context, req: ServerRequest) {
 
   const clientPrincipal = decodeCookie(cookie);
 
+  if (clientPrincipal?.userRoles.includes("authenticated") === false) {
+    clientPrincipal?.userRoles.push("authenticated");
+  }
+
   context.res = response({
     context,
     status: 200,
