@@ -1,24 +1,55 @@
 import http from "http";
+import globalyzer from "globalyzer";
+import globrex from "globrex";
+
 import { decodeCookie } from "../../../core/utils";
+
+export const matchRoute = (req: http.IncomingMessage, _res: http.ServerResponse) => {
+  const sanitizedUrl = new URL(req.url!, `http://${req?.headers?.host}`);
+
+  return (routeDef: SWAConfigFileRoute) => {
+    let filter = routeDef.route;
+    if (!filter) {
+      return false;
+    }
+
+    const originlUrl = sanitizedUrl.pathname;
+
+    // we don't support full globs in the config file.
+    // add this little workaround to convert a wildcard into a valid glob pattern
+    filter = filter.replace("/*", "/**/*");
+
+    // extract glob metadata
+    const globSegments = globalyzer(filter);
+
+    // if filter and url segments don't have a commom base path
+    // don't process regex, just return false
+    if (originlUrl.startsWith(globSegments.base)) {
+      const { regex } = globrex(globSegments.glob, { globstar: true, extended: true });
+
+      // extract the last segment (what comes after the base) from the URL:
+      // /                    => <empty string>
+      // /bar.gif             => bar.gif
+      // /images/foo/bar.gif  => bar.gif
+      let lastSegmentFromUrl = originlUrl.replace(`${globSegments.base}`, "");
+
+      // globrex generates regex that doesn't match leading forwardslash, so we remove it
+      // before processing the regex
+      lastSegmentFromUrl = lastSegmentFromUrl.replace(/^\//, "");
+
+      return regex.test(lastSegmentFromUrl!);
+    } else {
+      return false;
+    }
+  };
+};
 
 export const customRoutes = async (req: http.IncomingMessage, res: http.ServerResponse, userDefinedRoutes: SWAConfigFileRoute[]) => {
   if (!req) {
     return Promise.resolve(undefined);
   }
 
-  const userDefinedRoute = userDefinedRoutes?.find((routeDef) => {
-    const sanitizedUrl = new URL(req.url!, `http://${req.headers.host}`);
-    let route = routeDef.route;
-
-    // convert wildchars in route into a valid regex * quantifier
-    if (route === "/*") {
-      route = "/.*";
-    } else {
-      route = route.replace(/\*/g, ".*");
-    }
-
-    return new RegExp(`^${route}$`).test(sanitizedUrl.pathname);
-  });
+  const userDefinedRoute = userDefinedRoutes?.find(matchRoute(req, res));
 
   if (userDefinedRoute) {
     // set headers
@@ -50,12 +81,14 @@ export const customRoutes = async (req: http.IncomingMessage, res: http.ServerRe
     }
 
     // rewrite
-    if (userDefinedRoute.rewrite) {
-      req.url = userDefinedRoute.rewrite;
+    const isServeWrite = userDefinedRoute.serve && ![301, 302].includes(userDefinedRoute.statusCode!);
+    if (isServeWrite || userDefinedRoute.rewrite) {
+      req.url = userDefinedRoute.serve || userDefinedRoute.rewrite;
     }
 
     // redirect route
-    if (userDefinedRoute.serve || userDefinedRoute.redirect) {
+    const isServeRedirect = userDefinedRoute.serve && [301, 302].includes(userDefinedRoute.statusCode!);
+    if (isServeRedirect || userDefinedRoute.redirect) {
       let route = (userDefinedRoute.serve || userDefinedRoute.redirect) as string;
 
       // redirects
