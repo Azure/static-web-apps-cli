@@ -51,7 +51,8 @@ const onConnectionLost = (res: http.ServerResponse | net.Socket, target: string)
   res.end();
 };
 
-const injectClientPrincipalCookies = (cookie: string | undefined, req: http.IncomingMessage) => {
+const injectClientPrincipalCookies = (req: http.IncomingMessage) => {
+  const cookie = req.headers.cookie;
   if (cookie && validateCookie(cookie)) {
     const user = decodeCookie(cookie);
     const buff = Buffer.from(JSON.stringify(user), "utf-8");
@@ -154,15 +155,15 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
 
     // don't serve user custom routes file
     if (req.url.endsWith(DEFAULT_CONFIG.swaConfigFilename!) || req.url.endsWith(DEFAULT_CONFIG.swaConfigFilenameLegacy!)) {
-      console.log("proxy>", req.method, req.headers.host + req.url);
+      console.log("proxy>", req.method, `http://` + req.headers.host + req.url, 404);
       req.url = "404.html";
       serve(SWA_PUBLIC_DIR, req, res);
     }
 
     // proxy AUTH request to AUTH emulator
     else if (req.url?.startsWith("/.auth")) {
-      console.log("auth>", req.method, req.headers.host + req.url);
-      await processAuth(req, res);
+      const statusCode = await processAuth(req, res);
+      console.log("auth>", req.method, `http://` + req.headers.host! + req.url, statusCode);
     }
 
     // proxy API request to Azure Functions emulator
@@ -170,7 +171,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
       const target = SWA_CLI_API_URI;
       console.log("api>", req.method, target + req.url);
 
-      injectClientPrincipalCookies(req.headers.cookie, req);
+      injectClientPrincipalCookies(req);
       proxyApi.web(req, res, {
         target,
       });
@@ -194,7 +195,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
           onConnectionLost(res, target)
         );
       } else {
-        console.log("app>", req.method, req.url);
+        console.log("app>", req.method, `http://` + req.headers.host + req.url);
         serve(target, req, res);
       }
     }

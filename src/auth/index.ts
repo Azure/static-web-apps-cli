@@ -1,5 +1,4 @@
 import { ServerResponse } from "http";
-import url from "url";
 import { serializeCookie } from "../core/utils";
 
 const authPaths: Path[] = [
@@ -53,7 +52,7 @@ export async function processAuth(request: ServerRequest, response: ServerRespon
     context.bindingData = bindingData;
     try {
       // populate the query property so other functions can access it.
-      request.query = url.parse(request?.url || "", true).query;
+      request.query = new URL(request?.url || "", `${request.protocol}://${request.host}`).pathname;
 
       await func(context, request);
 
@@ -101,7 +100,9 @@ export async function processAuth(request: ServerRequest, response: ServerRespon
     defaultStatus = 404;
   }
 
-  console.log("Response Headers", JSON.stringify(response.getHeaders(), null, 2));
-  response.writeHead(context.res.status || defaultStatus);
+  const statusCode = context.res.status || defaultStatus;
+  response.writeHead(statusCode);
   response.end(context.res.body);
+
+  return statusCode;
 }
