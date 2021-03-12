@@ -84,6 +84,25 @@
                   <option value="openid"></option>
                 </datalist>
               </div>
+
+              <div class="form-group row">
+                <label for="userId" class="col-4 col-form-label">User ID</label>
+                <div class="col-8">
+                  <input
+                    disabled
+                    id="userId"
+                    name="userId"
+                    autocomplete="off"
+                    placeholder="Choose a user ID"
+                    type="text"
+                    aria-describedby="userIdHelpBlock"
+                    required="required"
+                    class="form-control"
+                  />
+                  <small id="userIdHelpBlock" class="form-text text-muted">An Azure Static Web Apps-specific unique ID for the user</small>
+                </div>
+              </div>
+
               <div class="form-group row">
                 <label for="userDetails" class="col-4 col-form-label">Username</label>
                 <div class="col-8">
@@ -100,30 +119,18 @@
                   <small id="userDetailsHelpBlock" class="form-text text-muted">Username or email address of the user</small>
                 </div>
               </div>
-              <div class="form-group row">
-                <label for="userId" class="col-4 col-form-label">User ID</label>
-                <div class="col-8">
-                  <input
-                    id="userId"
-                    name="userId"
-                    autocomplete="off"
-                    placeholder="Choose a user ID"
-                    type="text"
-                    aria-describedby="userIdHelpBlock"
-                    required="required"
-                    class="form-control"
-                  />
-                  <small id="userIdHelpBlock" class="form-text text-muted">An Azure Static Web Apps-specific unique ID for the user</small>
-                </div>
-              </div>
+
               <div class="form-group row">
                 <label for="userRoles" class="col-4 col-form-label">User’s roles</label>
                 <div class="col-8">
                   <textarea id="userRoles" name="userRoles" cols="40" rows="5" class="form-control" aria-describedby="userRolesHelpBlock"></textarea>
-                  <small id="userRolesHelpBlock" class="form-text text-muted">Roles used during authorisation. One role per line</small>
-                  <small id="userRolesHelpBlock" class="form-text text-muted">Note: roles "anonymous" and "authenticated" will be added automatically.</small>
+                  <small id="userRolesHelpBlock" class="form-text text-muted">Roles used during authorisation. One role per line.</small>
+                  <small id="userRolesHelpBlock" class="form-text text-muted"
+                    >Note: roles "authenticated" will be added automatically if not provided.</small
+                  >
                 </div>
               </div>
+
               <div class="form-group row">
                 <div class="col-4"></div>
                 <div class="col-8 text-right">
@@ -199,6 +206,9 @@
         const formName = formElement.attr("name");
         return `${formName}@${providerName}`;
       }
+      function generateUserId() {
+        return [...Array(32)].map(() => Math.floor(Math.random() * 16).toString(16)).join("");
+      }
       $.fn.saveToLocalStorage = function saveToLocalStorage(options) {
         const settings = $.extend({}, options);
 
@@ -262,6 +272,10 @@
             } else if (inputName === "identityProvider") {
               // don't restore provider name from storage.
               // this value will be taken from the URL
+            } else if (inputName === "userId") {
+              const userId = data[inputName] || generateUserId();
+              input.val(userId);
+              input.saveToLocalStorage();
             } else if (input.attr("type") !== "submit") {
               const value = data[inputName];
               input.val(value);
@@ -291,6 +305,7 @@
         $("#clear").click(() => {
           form.find("input[type=text]:not(#identityProvider)").val("");
           form.find("textarea").val(defaultRoles.join("\n"));
+          form.find("#userId").val(generateUserId());
           form.find("input, textarea").each((idx, element) => $(element).saveToLocalStorage());
         });
 
