@@ -92,24 +92,27 @@ export const customRoutes = async (
 
     // specific status code but no attached route
     if (userDefinedRoute.statusCode && !userDefinedRoute.serve) {
-      res.statusCode = userDefinedRoute.statusCode;
+      const code = Number(userDefinedRoute.statusCode);
+      if (isNaN(code) === false) {
+        res.statusCode = code;
+      }
     }
 
     // rewrite
-    const isServeWrite = userDefinedRoute.serve && ![301, 302].includes(userDefinedRoute.statusCode!);
+    const isServeWrite = userDefinedRoute.serve && ![301, 302].includes(Number(userDefinedRoute.statusCode));
     if (isServeWrite || userDefinedRoute.rewrite) {
       req.url = userDefinedRoute.serve || userDefinedRoute.rewrite;
     }
 
     // redirect route
-    const isServeRedirect = userDefinedRoute.serve && [301, 302].includes(userDefinedRoute.statusCode!);
+    const isServeRedirect = userDefinedRoute.serve && [301, 302].includes(Number(userDefinedRoute.statusCode));
     if (isServeRedirect || userDefinedRoute.redirect) {
       let route = (userDefinedRoute.serve || userDefinedRoute.redirect) as string;
 
       // redirects
       // note: adding checks to avoid ERR_TOO_MANY_REDIRECTS
       if (route !== req.url) {
-        res.writeHead(userDefinedRoute.statusCode || 302, {
+        res.writeHead(Number(userDefinedRoute.statusCode) || 302, {
           Location: route,
         });
         res.end();

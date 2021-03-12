@@ -3,9 +3,12 @@
 
 "scope: cli":
   - src/cli/*
-  
+
 "scope: auth":
   - src/auth/*
- 
+
+"scope: rules engine":
+  - src/proxy/routes-engine/*
+
 "scope: proxy":
   - src/proxy/*
