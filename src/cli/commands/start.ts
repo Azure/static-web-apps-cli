@@ -111,7 +111,7 @@ export async function start(startContext: string, program: CLIConfig) {
   }
 
   await concurrently(concurrentlyCommands, {
-    restartTries: 1,
+    restartTries: 0,
     prefix: "name",
   }).then(
     () => process.exit(),
