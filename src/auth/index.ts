@@ -101,8 +101,10 @@ export async function processAuth(request: ServerRequest, response: ServerRespon
   }
 
   const statusCode = context.res.status || defaultStatus;
-  response.writeHead(statusCode);
-  response.end(context.res.body);
+  if (statusCode === 200) {
+    response.writeHead(statusCode);
+    response.end(context.res.body);
+  }
 
   return statusCode;
 }
