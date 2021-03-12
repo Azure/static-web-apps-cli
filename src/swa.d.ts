@@ -82,7 +82,7 @@ declare type ClientPrincipal = {
 declare type SWAConfigFileRoute = {
   route: string;
   allowedRoles?: string[];
-  statusCode?: number;
+  statusCode?: number | string;
   serve?: string;
   headers?: { [key: string]: string };
   methods?: string[];

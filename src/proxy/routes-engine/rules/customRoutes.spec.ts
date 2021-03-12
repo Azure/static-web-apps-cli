@@ -132,7 +132,7 @@ describe("customRoutes()", () => {
     expect(res.statusCode).toBe(200);
   });
 
-  it("should set custom status code (418)", async () => {
+  it("should set custom status code as number (statusCode=418)", async () => {
     userConfig = [
       {
         route: "/foo",
@@ -144,7 +144,31 @@ describe("customRoutes()", () => {
     expect(res.statusCode).toBe(418);
   });
 
-  it("should set custom status code (404)", async () => {
+  it("should set custom status code as string (statusCode='418')", async () => {
+    userConfig = [
+      {
+        route: "/foo",
+        statusCode: "418",
+      },
+    ];
+    await customRoutes(req, res, userConfig, false);
+
+    expect(res.statusCode).toBe(418);
+  });
+
+  it("should not set custom status code if invalid code (statusCode='NaN')", async () => {
+    userConfig = [
+      {
+        route: "/foo",
+        statusCode: "NaN",
+      },
+    ];
+    await customRoutes(req, res, userConfig, false);
+
+    expect(res.statusCode).toBe(200);
+  });
+
+  it("should set custom status code (statusCode=404)", async () => {
     userConfig = [
       {
         route: "/foo",
@@ -234,7 +258,7 @@ describe("customRoutes()", () => {
     expect(req.url).toBe("/bar");
   });
 
-  it("should serve with rewrite (statusCode = undefined)", async () => {
+  it("should serve with rewrite (statusCode=undefined)", async () => {
     userConfig = [
       {
         route: "/foo",
