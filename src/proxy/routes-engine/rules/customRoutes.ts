@@ -23,6 +23,8 @@ export const matchRoute = (req: http.IncomingMessage, _res: http.ServerResponse,
         return false;
       } else if (originlUrl.includes(".") && !originlUrl.startsWith("/.auth")) {
         return false;
+      } else if (originlUrl.includes("sockjs")) {
+        return false;
       }
     }
 

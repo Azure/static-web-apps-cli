@@ -311,6 +311,18 @@ describe("customRoutes()", () => {
       expect(regex).toBe(true);
     });
 
+    it("should not match root wildcards /* when requesting socketjs (for legacy config file)", async () => {
+      req.url = "/sockjs-node/366/fskzyskg/websocket";
+      userConfig = [
+        {
+          route: "/*",
+        },
+      ];
+
+      const regex = matchRoute(req, res, true)(userConfig[0]);
+      expect(regex).toBe(false);
+    });
+
     it("should not match root wildcards /* when requesting /.auth (for legacy config file)", async () => {
       req.url = "/.auth/login/github?post_login_redirect_uri=/profile";
       userConfig = [
