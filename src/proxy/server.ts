@@ -161,9 +161,14 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     }
 
     // proxy AUTH request to AUTH emulator
-    else if (req.url?.startsWith("/.auth")) {
+    else if (req.url.startsWith("/.auth")) {
       const statusCode = await processAuth(req, res);
       console.log("auth>", req.method, `http://` + req.headers.host! + req.url, statusCode);
+
+      if (statusCode === 404) {
+        req.url = "404.html";
+        serve(SWA_PUBLIC_DIR, req, res);
+      }
     }
 
     // proxy API request to Azure Functions emulator
