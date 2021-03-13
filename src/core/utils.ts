@@ -6,6 +6,7 @@ import YAML from "yaml";
 import { DEFAULT_CONFIG } from "../config";
 import { detectRuntime, RuntimeType } from "./runtimes";
 import { promises as fsPromises } from "fs";
+import chalk from "chalk";
 
 const { readdir, readFile } = fsPromises;
 
@@ -141,7 +142,7 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
   }
 
   // find the SWA GitHub action file
-  // @TODO handle multiple config file
+  // TODO: handle multiple workflow files
   let githubActionFile = fs
     .readdirSync(githubActionFolder)
     .filter((file) => file.includes("azure-static-web-apps") && file.endsWith(".yml"))
@@ -249,7 +250,7 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
     files,
   };
 
-  console.info(`INFO: Found SWA configuration file: ${githubActionFile}`);
+  process.env.SWA_WORKFLOW_CONFIG_FILE = githubActionFile;
   if (process.env.DEBUG) {
     console.info({ config });
   }
@@ -339,18 +340,20 @@ export async function validateDevServerConfig(context: string) {
   try {
     const appListening = await isAcceptingTcpConnections({ port, host: hostname });
     if (appListening === false) {
-      console.info(`INFO: Could not connect to "${context}". Is the server up and running?`);
-      process.exit(0);
+      console.error(chalk.red(`Could not connect to "${context}". Is the server up and running?`));
+      process.exit(-1);
     } else {
       return context;
     }
   } catch (err) {
     if (err.message.includes("EACCES")) {
-      console.info(`INFO: Port "${port}" cannot be used. You might need elevated or admin privileges. Or, use a valid port: 1024 to 49151.`);
+      console.error(
+        chalk.red(`INFO: Port "${port}" cannot be used. You might need elevated or admin privileges. Or, use a valid port: 1024 to 49151.`)
+      );
     } else {
-      console.error(err.message);
+      console.error(chalk.red(err.message));
     }
-    process.exit(0);
+    process.exit(-1);
   }
 }
 
@@ -375,11 +378,11 @@ export function computeAppLocationFromArtifactLocation(appArtifactLocation: stri
 export function parsePort(port: string) {
   const portNumber = parseInt(port, 10);
   if (isNaN(portNumber)) {
-    console.error(`Port "${port}" is not a number.`);
+    console.error(chalk.red(`Port "${port}" is not a number.`));
     process.exit(-1);
   } else {
     if (portNumber < 1024 || portNumber > 49151) {
-      console.error(`Port "${port}" is out of range. Allowed ports are from 1024 to 49151.`);
+      console.error(chalk.red(`Port "${port}" is out of range. Allowed ports are from 1024 to 49151.`));
       process.exit(-1);
     }
   }

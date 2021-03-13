@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import concurrently from "concurrently";
 import fs from "fs";
 import path from "path";
@@ -14,17 +15,17 @@ export async function start(startContext: string, program: SWACLIConfig) {
   } else {
     // start the emulator from a specific artifact folder, if folder exists
     if (await isAcceptingTcpConnections({ host: program.host, port: program.port! })) {
-      console.info(`INFO: Port ${program.port} is already used. Choose a different port.`);
-      process.exit(0);
+      console.error(chalk.red(`INFO: Port ${program.port} is already used. Choose a different port.`));
+      process.exit(-1);
     }
 
     if (fs.existsSync(startContext)) {
       program.appArtifactLocation = startContext;
     } else {
-      console.info(
-        `INFO: The dist folder "${startContext}" is not found. Make sure that this folder exists or use the --build option to pre-build the app.`
+      console.error(
+        chalk.red(`The dist folder "${startContext}" is not found. Make sure that this folder exists or use the --build option to pre-build the app.`)
       );
-      process.exit(0);
+      process.exit(-1);
     }
   }
 
