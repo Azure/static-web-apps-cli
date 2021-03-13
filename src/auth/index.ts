@@ -101,7 +101,7 @@ export async function processAuth(request: ServerRequest, response: ServerRespon
   }
 
   const statusCode = context.res.status || defaultStatus;
-  if (statusCode === 200) {
+  if (statusCode === 200 || statusCode === 302) {
     response.writeHead(statusCode);
     response.end(context.res.body);
   }
