@@ -1,10 +1,9 @@
-import http from "http";
 import globalyzer from "globalyzer";
 import globrex from "globrex";
-
+import http from "http";
 import { decodeCookie } from "../../../core/utils";
 
-export const matchRoute = (req: http.IncomingMessage, _res: http.ServerResponse, isLegacyConfigFile: boolean) => {
+export const matchRoute = (req: http.IncomingMessage, isLegacyConfigFile: boolean) => {
   const sanitizedUrl = new URL(req.url!, `http://${req?.headers?.host}`);
 
   return (routeDef: SWAConfigFileRoute) => {
@@ -56,17 +55,10 @@ export const matchRoute = (req: http.IncomingMessage, _res: http.ServerResponse,
   };
 };
 
-export const customRoutes = async (
-  req: http.IncomingMessage,
-  res: http.ServerResponse,
-  userDefinedRoutes: SWAConfigFileRoute[],
-  isLegacyConfigFile: boolean
-) => {
+export const customRoutes = async (req: http.IncomingMessage, res: http.ServerResponse, userDefinedRoute: SWAConfigFileRoute | undefined) => {
   if (!req) {
     return Promise.resolve(undefined);
   }
-
-  const userDefinedRoute = userDefinedRoutes?.find(matchRoute(req, res, isLegacyConfigFile));
 
   if (userDefinedRoute) {
     // set headers

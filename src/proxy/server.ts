@@ -8,8 +8,7 @@ import serveStatic from "serve-static";
 import { processAuth } from "../auth/";
 import { DEFAULT_CONFIG } from "../config";
 import { address, decodeCookie, findSWAConfigFile, isHttpUrl, registerProcessExit, validateCookie } from "../core/utils";
-import { customRoutes, globalHeaders, mimeTypes, responseOverrides } from "./routes-engine/index";
-import { navigationFallback } from "./routes-engine/rules/navigationFallback";
+import { applyRules } from "./routes-engine/index";
 
 const SWA_CLI_HOST = process.env.SWA_CLI_HOST as string;
 const SWA_CLI_PORT = parseInt((process.env.SWA_CLI_PORT || DEFAULT_CONFIG.port) as string, 10);
@@ -37,6 +36,7 @@ const serve = (root: string, req: http.IncomingMessage, res: http.ServerResponse
   const file = path.join(root, req.url!);
   if (fs.existsSync(file) === false) {
     req.url = "404.html";
+    res.statusCode = 404;
     root = SWA_PUBLIC_DIR;
   }
 
@@ -81,31 +81,6 @@ const handleUserConfig = async (appLocation: string): Promise<SWAConfigFile | nu
   return configJson;
 };
 
-const pipeRules = (...rules: Array<Function>) => async (
-  req: http.IncomingMessage,
-  res: http.ServerResponse,
-  args: Array<
-    Array<
-      | boolean
-      | SWAConfigFileGlobalHeaders
-      | SWAConfigFileMimeTypes
-      | SWAConfigFileNavigationFallback
-      | SWAConfigFileResponseOverrides
-      | SWAConfigFileRoute[]
-    >
-  >
-) => {
-  for (let i = 0; i < rules.length; i++) {
-    const rule = rules[i];
-    const arg = args[i];
-    if (Array.isArray(arg)) {
-      await rule(req, res, ...arg);
-    } else {
-      await rule(req, res, arg);
-    }
-  }
-};
-
 const requestHandler = (userConfig: SWAConfigFile | null) =>
   async function (req: http.IncomingMessage, res: http.ServerResponse) {
     // not quite sure how you'd hit an undefined url, but the types say you can
@@ -114,27 +89,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     }
 
     if (userConfig) {
-      // Note: process rules in this order (from left to right) because they mutate http.ServerResponse object
-      // prettier-ignore
-      const processRules = pipeRules(
-        globalHeaders,
-        mimeTypes,
-        responseOverrides,
-        navigationFallback,
-        customRoutes,
-        );
-      // prettier-ignore
-      await processRules(
-          req,
-          res,
-          [
-            [userConfig.globalHeaders],
-            [userConfig.mimeTypes],
-            [userConfig.responseOverrides],
-            [userConfig.navigationFallback],
-            [userConfig.routes, userConfig.isLegacyConfigFile],
-          ]
-          );
+      await applyRules(req, res, userConfig);
 
       if ([401, 403, 404].includes(res.statusCode)) {
         switch (res.statusCode) {
@@ -157,6 +112,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     if (req.url.endsWith(DEFAULT_CONFIG.swaConfigFilename!) || req.url.endsWith(DEFAULT_CONFIG.swaConfigFilenameLegacy!)) {
       console.log("proxy>", req.method, `http://` + req.headers.host + req.url, 404);
       req.url = "404.html";
+      res.statusCode = 404;
       serve(SWA_PUBLIC_DIR, req, res);
     }
 
@@ -167,6 +123,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
 
       if (statusCode === 404) {
         req.url = "404.html";
+        res.statusCode = 404;
         serve(SWA_PUBLIC_DIR, req, res);
       }
     }
