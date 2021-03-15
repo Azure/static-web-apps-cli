@@ -1,6 +1,7 @@
+import { IncomingMessage } from "http";
 import { decodeCookie, response, validateCookie } from "../../core/utils";
 
-const httpTrigger = async function (context: Context, req: ServerRequest) {
+const httpTrigger = async function (context: Context, req: IncomingMessage) {
   const { cookie } = req.headers;
 
   if (!cookie || !validateCookie(cookie)) {

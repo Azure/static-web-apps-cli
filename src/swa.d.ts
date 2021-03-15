@@ -11,9 +11,6 @@ declare global {
   }
 }
 
-declare type ServerRequest = IncomingMessage & {
-  query: ParsedUrlQuery;
-};
 declare interface Context {
   bindingData: undefined | { provider: string };
   invocationId?: string;
