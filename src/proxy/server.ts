@@ -246,7 +246,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     console.log(`    ${chalk.green(address(`${localIpAdress}`, SWA_CLI_PORT))}`);
     console.log(`    ${chalk.green(address(SWA_CLI_HOST, SWA_CLI_PORT))}`);
     console.log();
-    console.log(`Press CTRL+C to exit`);
+    console.log(`Azure Static Web Apps emulator started. Press CTRL+C to exit.`);
     console.log();
 
     registerProcessExit(() => {
