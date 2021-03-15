@@ -1,4 +1,4 @@
-import { ServerResponse } from "http";
+import { ServerResponse, IncomingMessage } from "http";
 import { serializeCookie } from "../core/utils";
 
 const authPaths: Path[] = [
@@ -39,7 +39,7 @@ async function routeMatcher(url = "/"): Promise<{ func: Function | undefined; bi
   return { func: undefined, bindingData: undefined };
 }
 
-export async function processAuth(request: ServerRequest, response: ServerResponse) {
+export async function processAuth(request: IncomingMessage, response: ServerResponse) {
   let defaultStatus = 200;
   const context: Context = {
     invocationId: new Date().getTime().toString(36) + Math.random().toString(36).slice(2),
@@ -51,9 +51,6 @@ export async function processAuth(request: ServerRequest, response: ServerRespon
   if (func) {
     context.bindingData = bindingData;
     try {
-      // populate the query property so other functions can access it.
-      request.query = new URL(request?.url || "", `${request.protocol}://${request.host}`).pathname;
-
       await func(context, request);
 
       for (const key in context.res.headers) {
