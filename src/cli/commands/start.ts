@@ -3,13 +3,14 @@ import fs from "fs";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
 import builder from "../../core/builder";
-import { isAcceptingTcpConnections, isHttpUrl, parseUrl, readConfigFile, validateDevServerConfig } from "../../core/utils";
+import { isAcceptingTcpConnections, isHttpUrl, parseUrl, readWorkflowFile, validateDevServerConfig } from "../../core/utils";
 
-export async function start(startContext: string, program: CLIConfig) {
+export async function start(startContext: string, program: SWACLIConfig) {
+  let useAppDevServer = undefined;
   let useApiDevServer = undefined;
 
   if (isHttpUrl(startContext)) {
-    program.appArtifactLocation = await validateDevServerConfig(startContext);
+    useAppDevServer = await validateDevServerConfig(startContext);
   } else {
     // start the emulator from a specific artifact folder, if folder exists
     if (await isAcceptingTcpConnections({ host: program.host, port: program.port! })) {
@@ -44,32 +45,42 @@ export async function start(startContext: string, program: CLIConfig) {
     program.apiLocation as string,
   ];
 
-  // retrieve the project's build configuration
-  // use any specific config that the user might provide
-  const configFile = readConfigFile({
-    userConfig: {
-      appLocation,
-      appArtifactLocation,
-      apiLocation,
-    },
-  });
-
-  // parse the API URI port
   let apiPort = (program.apiPort || DEFAULT_CONFIG.apiPort) as number;
-  const isApiLocationExistsOnDisk = fs.existsSync(configFile?.apiLocation!);
+  let userConfig: Partial<GithubActionWorkflow> | undefined = {
+    appLocation,
+    appArtifactLocation,
+    apiLocation,
+  };
+
+  if (useAppDevServer) {
+    // if we are using an app dev server, don't apply workflow files
+  } else {
+    // mix CLI args with the project's build workflow configuration (if any)
+    // use any specific workflow config that the user might provide undef ".github/workflows/"
+    // Note: CLI args will take precedence over workflow config
+    userConfig = readWorkflowFile({
+      userConfig,
+    });
+  }
+
+  const isApiLocationExistsOnDisk = fs.existsSync(userConfig?.apiLocation!);
+  // parse the API URI port
 
   // handle the API location config
-  let serveApiContent = "echo No API found. Skipping";
+  let serveApiCommand = "echo No API found. Skipping";
+
   if (useApiDevServer) {
-    serveApiContent = `echo 'using API dev server at ${useApiDevServer}'`;
-    const { port } = parseUrl(useApiDevServer);
-    apiPort = port;
+    serveApiCommand = `echo 'using API dev server at ${useApiDevServer}'`;
+
+    // get the API port from the dev server
+    apiPort = parseUrl(useApiDevServer)?.port;
   } else {
-    if (program.apiLocation && configFile?.apiLocation) {
+    if (program.apiLocation && userConfig?.apiLocation) {
+      // @todo check if the func binary is globally available
       const funcBinary = "func";
       // serve the api if and only if the user provides a folder via the --api-location flag
       if (isApiLocationExistsOnDisk) {
-        serveApiContent = `cd ${configFile.apiLocation} && ${funcBinary} start --cors * --port ${program.apiPort}`;
+        serveApiCommand = `cd ${userConfig.apiLocation} && ${funcBinary} start --cors * --port ${program.apiPort}`;
       }
     }
   }
@@ -78,11 +89,12 @@ export async function start(startContext: string, program: CLIConfig) {
   const envVarsObj = {
     DEBUG: program.verbose ? "*" : "",
     SWA_CLI_API_PORT: `${apiPort}`,
-    SWA_CLI_APP_LOCATION: configFile?.appLocation as string,
-    SWA_CLI_APP_ARTIFACT_LOCATION: configFile?.appArtifactLocation as string,
-    SWA_CLI_API_LOCATION: configFile?.apiLocation as string,
+    SWA_CLI_APP_LOCATION: userConfig?.appLocation as string,
+    SWA_CLI_APP_ARTIFACT_LOCATION: useAppDevServer || (userConfig?.appArtifactLocation as string),
+    SWA_CLI_API_LOCATION: useApiDevServer || (userConfig?.apiLocation as string),
     SWA_CLI_HOST: program.host,
     SWA_CLI_PORT: `${program.port}`,
+    SWA_WORKFLOW_FILES: userConfig?.files?.join(","),
   };
 
   const concurrentlyEnv = { ...process.env, ...envVarsObj };
@@ -94,7 +106,7 @@ export async function start(startContext: string, program: CLIConfig) {
   if (isApiLocationExistsOnDisk) {
     concurrentlyCommands.push(
       // serve the api, if it's available
-      { command: serveApiContent, name: "api", env: concurrentlyEnv, prefixColor: "bgGreen.bold" }
+      { command: serveApiCommand, name: "api", env: concurrentlyEnv, prefixColor: "bgGreen.bold" }
     );
   }
 
@@ -106,7 +118,7 @@ export async function start(startContext: string, program: CLIConfig) {
   if (program.build) {
     // run the app/api builds
     await builder({
-      config: configFile as GithubActionSWAConfig,
+      config: userConfig as GithubActionWorkflow,
     });
   }
 

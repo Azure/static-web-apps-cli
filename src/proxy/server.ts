@@ -202,5 +202,10 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     });
   };
 
-  const server = http.createServer(requestHandler(await handleUserConfig(SWA_CLI_APP_LOCATION))).listen(SWA_CLI_PORT, SWA_CLI_HOST, onServerStart);
+  // load user custom rules if running in local mode (non-dev server)
+  let userConfig = null;
+  if (!isHttpUrl(process.env.SWA_CLI_APP_ARTIFACT_LOCATION!)) {
+    userConfig = await handleUserConfig(SWA_CLI_APP_LOCATION);
+  }
+  const server = http.createServer(requestHandler(userConfig)).listen(SWA_CLI_PORT, SWA_CLI_HOST, onServerStart);
 })();

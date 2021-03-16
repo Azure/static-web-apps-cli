@@ -86,7 +86,7 @@ export const decodeCookie = (cookieValue: any): ClientPrincipal | null => {
   return null;
 };
 
-function validateUserConfig(userConfig: Partial<GithubActionSWAConfig>) {
+function validateUserConfig(userConfig: Partial<GithubActionWorkflow>) {
   let appLocation = undefined;
   let apiLocation = undefined;
   let appArtifactLocation = undefined;
@@ -130,7 +130,7 @@ function validateUserConfig(userConfig: Partial<GithubActionSWAConfig>) {
   };
 }
 
-export const readConfigFile = ({ userConfig }: { userConfig?: Partial<GithubActionSWAConfig> } = {}): Partial<GithubActionSWAConfig> | undefined => {
+export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubActionWorkflow> } = {}): Partial<GithubActionWorkflow> | undefined => {
   const infoMessage = `INFO: GitHub Actions configuration was not found under ".github/workflows/"`;
   const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
 
@@ -239,12 +239,14 @@ export const readConfigFile = ({ userConfig }: { userConfig?: Partial<GithubActi
 
   // convert variable names to camelCase
   // instead of snake_case
-  const config = {
+  const files = [githubActionFile];
+  const config: Partial<GithubActionWorkflow> = {
     appBuildCommand: app_build_command,
     apiBuildCommand: api_build_command,
     appLocation: app_location,
     apiLocation: api_location,
     appArtifactLocation: app_artifact_location,
+    files,
   };
 
   console.info(`INFO: Found SWA configuration file: ${githubActionFile}`);
