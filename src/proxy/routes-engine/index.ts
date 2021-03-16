@@ -4,6 +4,7 @@
 import fs from "fs";
 import { IncomingMessage, ServerResponse } from "http";
 import path from "path";
+import { logger } from "../../core/utils";
 import { customRoutes, matchRoute } from "./rules/customRoutes";
 import { globalHeaders } from "./rules/globalHeaders";
 import { mimeTypes } from "./rules/mimeTypes";
@@ -20,19 +21,20 @@ import { responseOverrides } from "./rules/responseOverrides";
 export async function applyRules(req: IncomingMessage, res: ServerResponse, userConfig: SWAConfigFile) {
   const userDefinedRoute = userConfig.routes?.find(matchRoute(req, userConfig.isLegacyConfigFile));
   const filepath = path.join(process.env.SWA_CLI_APP_ARTIFACT_LOCATION!, req.url!);
-  const contentExists = fs.existsSync(filepath);
+  const isFileFound = fs.existsSync(filepath);
 
-  console.log({
-    SWA_CLI_APP_ARTIFACT_LOCATION: process.env.SWA_CLI_APP_ARTIFACT_LOCATION,
-    userDefinedRoute,
+  logger.silly("checking rule...");
+  logger.silly({
+    appArticatLocation: process.env.SWA_CLI_APP_ARTIFACT_LOCATION,
+    matchedRoute: userDefinedRoute,
     filepath,
-    contentExists,
+    isFileFound,
   });
 
-  if (contentExists === false && userConfig.navigationFallback) {
+  if (isFileFound === false && userConfig.navigationFallback) {
     await navigationFallback(req, res, userConfig.navigationFallback);
   }
-  if (contentExists === false && userConfig.globalHeaders) {
+  if (isFileFound === false && userConfig.globalHeaders) {
     await globalHeaders(req, res, userConfig.globalHeaders);
     await mimeTypes(req, res, userConfig.mimeTypes);
   }

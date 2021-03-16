@@ -1,14 +1,14 @@
 import mockFs from "mock-fs";
 import path from "path";
-import { address, argv, findSWAConfigFile, parsePort, readWorkflowFile, response, traverseFolder, validateCookie } from "./utils";
+import { address, argv, findSWAConfigFile, logger, parsePort, readWorkflowFile, response, traverseFolder, validateCookie } from "./utils";
 
 describe("Utils", () => {
-  const mockExit = jest.spyOn(process, "exit").mockImplementation(() => {
+  const mockLoggerError = jest.spyOn(logger, "error").mockImplementation(() => {
     return undefined as never;
   });
 
   beforeEach(() => {
-    process.env.DEBUG = "";
+    process.env.SWA_CLI_DEBUG = "";
     process.argv = [];
   });
 
@@ -62,7 +62,7 @@ describe("Utils", () => {
         });
       }).toThrow();
     });
-    it("context.bindingData = {foo:bar} (DEBUG off)", () => {
+    it("context.bindingData = {foo:bar}", () => {
       expect(
         response({
           status: 200,
@@ -78,22 +78,6 @@ describe("Utils", () => {
         headers: { "Content-Type": "application/json", status: 200 },
         status: 200,
       });
-    });
-    it("context.bindingData = {foo:bar} (DEBUG on)", () => {
-      process.env.DEBUG = "*";
-
-      const res = response({
-        status: 200,
-        context: {
-          bindingData: {
-            foo: "bar",
-          },
-        },
-      });
-      expect(typeof res.body).toBe("string");
-      expect(JSON.parse(res.body).debug).toBeDefined();
-      expect(JSON.parse(res.body).debug.context).toBeDefined();
-      expect(JSON.parse(res.body).debug.context.foo).toBe("bar");
     });
 
     it("status = null", () => {
@@ -118,7 +102,7 @@ describe("Utils", () => {
       expect(res.headers.status).toBe(200);
     });
 
-    it("body = null (DEBUG off)", () => {
+    it("body = null", () => {
       const res = response({
         status: 200,
         context: {
@@ -129,25 +113,7 @@ describe("Utils", () => {
       expect(res.body).toBe(null);
     });
 
-    it("body = null (DEBUG on)", () => {
-      process.env.DEBUG = "*";
-
-      const res = response({
-        status: 200,
-        context: {
-          bindingData: {
-            foo: "bar",
-          },
-        },
-        body: null,
-      });
-      expect(typeof res.body).toBe("string");
-      expect(JSON.parse(res.body).debug).toBeDefined();
-      expect(JSON.parse(res.body).debug.context).toBeDefined();
-      expect(JSON.parse(res.body).debug.context.foo).toBe("bar");
-    });
-
-    it("body = {foo:bar} (DEBUG off)", () => {
+    it("body = {foo:bar}", () => {
       const res = response({
         status: 200,
         context: {
@@ -163,7 +129,7 @@ describe("Utils", () => {
     });
 
     it("body = {foo:bar} (DEBUG on)", () => {
-      process.env.DEBUG = "*";
+      process.env.SWA_CLI_DEBUG = "*";
 
       const res = response({
         status: 200,
@@ -179,7 +145,7 @@ describe("Utils", () => {
       expect(res.body.foo).toBe("bar");
     });
 
-    it("headers = null (DEBUG off)", () => {
+    it("headers = null", () => {
       const res = response({
         status: 200,
         context: {
@@ -193,7 +159,7 @@ describe("Utils", () => {
     });
 
     it("headers = null (DEBUG on)", () => {
-      process.env.DEBUG = "*";
+      process.env.SWA_CLI_DEBUG = "*";
 
       const res = response({
         status: 200,
@@ -207,7 +173,7 @@ describe("Utils", () => {
       expect(res.headers["Content-Type"]).toBe("application/json");
     });
 
-    it("headers = { foo: bar } (DEBUG off)", () => {
+    it("headers = { foo: bar }", () => {
       const res = response({
         status: 200,
         context: {
@@ -224,7 +190,7 @@ describe("Utils", () => {
     });
 
     it("headers = { foo: bar } (DEBUG on)", () => {
-      process.env.DEBUG = "*";
+      process.env.SWA_CLI_DEBUG = "*";
 
       const res = response({
         status: 200,
@@ -241,7 +207,7 @@ describe("Utils", () => {
       expect(res.headers["Content-Type"]).toBe("application/json");
     });
 
-    it("headers = { location: null } (DEBUG off)", () => {
+    it("headers = { location: null }", () => {
       const res = response({
         status: 200,
         context: {
@@ -258,7 +224,7 @@ describe("Utils", () => {
     });
 
     it("headers = { location: null } (DEBUG on)", () => {
-      process.env.DEBUG = "*";
+      process.env.SWA_CLI_DEBUG = "*";
 
       const res = response({
         status: 200,
@@ -275,7 +241,7 @@ describe("Utils", () => {
       expect(res.headers["Content-Type"]).toBe("application/json");
     });
 
-    it("headers = { location: 'wassim.dev' } (DEBUG off)", () => {
+    it("headers = { location: 'wassim.dev' }", () => {
       const res = response({
         status: 200,
         context: {
@@ -287,24 +253,6 @@ describe("Utils", () => {
       });
       expect(res.headers).toBeDefined();
       expect(res.headers.location).toBe("wassim.dev");
-      expect(res.headers.status).toBe(200);
-      expect(res.headers["Content-Type"]).toBe("application/json");
-    });
-
-    it("headers = { location: 'wassim.dev' } (DEBUG on)", () => {
-      process.env.DEBUG = "*";
-
-      const res = response({
-        status: 200,
-        context: {
-          bindingData: {},
-        },
-        headers: {
-          location: "wassim.dev",
-        },
-      });
-      expect(res.headers).toBeDefined();
-      expect(res.headers.location).toBe(null);
       expect(res.headers.status).toBe(200);
       expect(res.headers["Content-Type"]).toBe("application/json");
     });
@@ -616,15 +564,15 @@ jobs:
   describe("parsePort()", () => {
     it("Ports below 1024 should be invalid", () => {
       parsePort("0");
-      expect(mockExit).toBeCalledWith(-1);
+      expect(mockLoggerError).toBeCalled();
     });
     it("Ports above 49151 should be invalid", () => {
       parsePort("98765");
-      expect(mockExit).toBeCalledWith(-1);
+      expect(mockLoggerError).toBeCalled();
     });
     it("Non-number ports should be invalid", () => {
       parsePort("not a number");
-      expect(mockExit).toBeCalledWith(-1);
+      expect(mockLoggerError).toBeCalled();
     });
     it("Ports between 1024 - 49151 should be valid", () => {
       const port = parsePort("1984");
@@ -801,25 +749,6 @@ jobs:
 
       const config = await findSWAConfigFile(".");
       expect(config?.file).toContain("staticwebapp.config.json");
-    });
-  });
-
-  describe("parsePort()", () => {
-    it("Ports below 1024 should be invalid", () => {
-      parsePort("0");
-      expect(mockExit).toBeCalledWith(-1);
-    });
-    it("Ports above 49151 should be invalid", () => {
-      parsePort("98765");
-      expect(mockExit).toBeCalledWith(-1);
-    });
-    it("Non-number ports should be invalid", () => {
-      parsePort("not a number");
-      expect(mockExit).toBeCalledWith(-1);
-    });
-    it("Ports between 1024 - 49151 should be valid", () => {
-      const port = parsePort("1984");
-      expect(port).toBe(1984);
     });
   });
 

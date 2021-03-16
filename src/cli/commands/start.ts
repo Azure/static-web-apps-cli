@@ -1,12 +1,12 @@
-import chalk from "chalk";
+import program from "commander";
 import concurrently from "concurrently";
 import fs from "fs";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
 import builder from "../../core/builder";
-import { isAcceptingTcpConnections, isHttpUrl, parseUrl, readWorkflowFile, validateDevServerConfig } from "../../core/utils";
+import { isAcceptingTcpConnections, isHttpUrl, logger, parseUrl, readWorkflowFile, validateDevServerConfig } from "../../core/utils";
 
-export async function start(startContext: string, program: SWACLIConfig) {
+export async function start(startContext: string, program: SWACLIConfig & program.Command) {
   let useAppDevServer = undefined;
   let useApiDevServer = undefined;
 
@@ -15,17 +15,18 @@ export async function start(startContext: string, program: SWACLIConfig) {
   } else {
     // start the emulator from a specific artifact folder, if folder exists
     if (await isAcceptingTcpConnections({ host: program.host, port: program.port! })) {
-      console.error(chalk.red(`INFO: Port ${program.port} is already used. Choose a different port.`));
-      process.exit(-1);
+      logger.error(`Port ${program.port} is already used. Choose a different port.`, true);
     }
 
     if (fs.existsSync(startContext)) {
       program.appArtifactLocation = startContext;
     } else {
-      console.error(
-        chalk.red(`The dist folder "${startContext}" is not found. Make sure that this folder exists or use the --build option to pre-build the app.`)
+      // prettier-ignore
+      logger.error(
+        `The dist folder "${startContext}" is not found.\n` +
+        `Make sure that this folder exists or use the --build option to pre-build the static app.`,
+        true
       );
-      process.exit(-1);
     }
   }
 
@@ -35,7 +36,7 @@ export async function start(startContext: string, program: SWACLIConfig) {
     }
     // make sure api folder exists
     else if (fs.existsSync(program.apiLocation) === false) {
-      console.info(`INFO: Skipping API because folder "${program.apiLocation}" is missing.`);
+      logger.info(`Skipping API because folder "${program.apiLocation}" is missing.`);
     }
   }
 
@@ -88,7 +89,7 @@ export async function start(startContext: string, program: SWACLIConfig) {
 
   // set env vars for current command
   const envVarsObj = {
-    DEBUG: program.verbose ? "*" : "",
+    SWA_CLI_DEBUG: program.verbose,
     SWA_CLI_API_PORT: `${apiPort}`,
     SWA_CLI_APP_LOCATION: userConfig?.appLocation as string,
     SWA_CLI_APP_ARTIFACT_LOCATION: useAppDevServer || (userConfig?.appArtifactLocation as string),
@@ -98,22 +99,25 @@ export async function start(startContext: string, program: SWACLIConfig) {
     SWA_WORKFLOW_FILES: userConfig?.files?.join(","),
   };
 
-  const concurrentlyEnv = { ...process.env, ...envVarsObj };
+  if (program.verbose?.includes("silly")) {
+    // when silly level is set,
+    // propagate debugging level to other tools using the DEBUG environment variable
+    process.env.DEBUG = "*";
+  }
+  // merge SWA env variables with process.env
+  process.env = { ...process.env, ...envVarsObj };
+
+  const { env } = process;
   const concurrentlyCommands = [
     // start the reverse proxy
-    { command: `node ${path.join(__dirname, "..", "..", "proxy", "server.js")}`, name: "swa", env: concurrentlyEnv, prefixColor: "bgMagenta.bold" },
+    { command: `node ${path.join(__dirname, "..", "..", "proxy", "server.js")}`, name: "swa", env, prefixColor: "gray.dim" },
   ];
 
   if (isApiLocationExistsOnDisk) {
     concurrentlyCommands.push(
       // serve the api, if it's available
-      { command: serveApiCommand, name: "api", env: concurrentlyEnv, prefixColor: "bgGreen.bold" }
+      { command: serveApiCommand, name: "api", env, prefixColor: "gray.dim" }
     );
-  }
-
-  if (program.verbose) {
-    console.log({ env: envVarsObj });
-    console.log({ concurrentlyCommands });
   }
 
   if (program.build) {
@@ -122,6 +126,8 @@ export async function start(startContext: string, program: SWACLIConfig) {
       config: userConfig as GithubActionWorkflow,
     });
   }
+
+  logger.silly({ envVarsObj, concurrentlyCommands }, "start");
 
   await concurrently(concurrentlyCommands, {
     restartTries: 0,

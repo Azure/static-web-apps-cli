@@ -4,6 +4,7 @@ const args = process.argv.slice(2);
 process.title = ["swa", ...args].join(" ");
 
 import program from "commander";
+import path from "path";
 import { parsePort } from "../core/utils";
 import { start } from "./commands/start";
 import { DEFAULT_CONFIG } from "../config";
@@ -28,18 +29,14 @@ import { DEFAULT_CONFIG } from "../config";
     .option("--host <host>", "set the cli host address", DEFAULT_CONFIG.host)
     .option<number>("--port <port>", "set the cli port", parsePort, DEFAULT_CONFIG.port)
     .option("--build", "build the API and APP before starting the emulator", false)
-    .option("--verbose", "show debug logs", false);
+    .option("--verbose [prefix]", "enable verbose output. Value are: silly,info,log,silent", "log");
 
   program
     .command("start [context]")
-    .description("start the emulator from a directory or with a specific port and host address")
-    .action(async (context: string = "./") => {
+    .description("start the emulator from a directory or bind to a dev server")
+    .action(async (context: string = `${path.sep}`) => {
       await start(context, cli);
     });
 
   await program.parseAsync(process.argv);
-
-  if (program.verbose) {
-    process.env.DEBUG = "*";
-  }
 })();

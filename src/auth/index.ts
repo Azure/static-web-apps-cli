@@ -1,5 +1,5 @@
 import { ServerResponse, IncomingMessage } from "http";
-import { serializeCookie } from "../core/utils";
+import { logger, serializeCookie } from "../core/utils";
 
 const authPaths: Path[] = [
   {
@@ -86,7 +86,7 @@ export async function processAuth(request: IncomingMessage, response: ServerResp
         context.res.body = JSON.stringify(context.res.body) as string;
       }
     } catch (error) {
-      console.error(error);
+      logger.error(error);
 
       defaultStatus = 500;
       context.res.body = {

@@ -9,7 +9,7 @@ import path from "path";
 import serveStatic from "serve-static";
 import { processAuth } from "../auth/";
 import { DEFAULT_CONFIG } from "../config";
-import { address, decodeCookie, findSWAConfigFile, isHttpUrl, registerProcessExit, validateCookie } from "../core/utils";
+import { address, decodeCookie, findSWAConfigFile, logger, isHttpUrl, registerProcessExit, validateCookie } from "../core/utils";
 import { applyRules } from "./routes-engine/index";
 
 const SWA_WORKFLOW_CONFIG_FILE = process.env.SWA_WORKFLOW_CONFIG_FILE as string;
@@ -26,26 +26,28 @@ const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const isStaticDevServer = isHttpUrl(SWA_CLI_APP_ARTIFACT_LOCATION);
 
 if (!isHttpUrl(SWA_CLI_API_URI)) {
-  console.error(chalk.red(`The provided API URI ${SWA_CLI_API_URI} is not a valid. Exiting.`));
-  process.exit(-1);
+  logger.error(`The provided API URI ${SWA_CLI_API_URI} is not a valid. Exiting.`, true);
 }
 
-// TODO: handle multiple workflow files
+// TODO: handle multiple workflow files (see #32)
 if (SWA_WORKFLOW_CONFIG_FILE) {
-  console.log(`Found workflow file:`);
-  console.log(`    ${chalk.green(SWA_WORKFLOW_CONFIG_FILE)}`);
+  logger.info(`\nFound workflow file:\n    ${chalk.green(SWA_WORKFLOW_CONFIG_FILE)}`);
 }
 
 const SWA_PUBLIC_DIR = path.resolve(__dirname, "..", "public");
 
 const logRequest = (req: http.IncomingMessage, target: string | null = null, statusCode: number | null = null) => {
+  if (process.env.SWA_CLI_BEBUG?.includes("req") === false) {
+    return;
+  }
+
   const host = target || `${PROTOCOL}${req.headers.host}`;
   const url = req.url?.startsWith("/") ? req.url : `/${req.url}`;
 
   if (statusCode) {
-    console.log(chalk.cyan(req.method), host + url, "-", chalk.green(statusCode));
+    logger.log(`${chalk.cyan(req.method)} ${host}${url} - ${chalk.green(statusCode)}`);
   } else {
-    console.log(chalk.yellow(`${req.method} ${host + url} (proxy)`));
+    logger.log(chalk.yellow(`${req.method} ${host + url} (proxy)`));
   }
 };
 
@@ -64,11 +66,16 @@ const serve = (root: string, req: http.IncomingMessage, res: http.ServerResponse
   return serveStatic(root, { extensions: ["html"] })(req, res, done);
 };
 
-const onConnectionLost = (res: http.ServerResponse | net.Socket, target: string) => (error: Error) => {
+const onConnectionLost = (req: http.IncomingMessage, res: http.ServerResponse | net.Socket, target: string) => (error: Error) => {
   if (error.message.includes("ECONNREFUSED")) {
-    console.error(chalk.red(`** Cannot reach ${target} **`));
+    const statusCode = 502;
+    (res as http.ServerResponse).statusCode = statusCode;
+    const uri = `${target}${req.url}`;
+    logger.error(`${req.method} ${uri} - ${statusCode} (Bad Gateway)`);
+  } else {
+    logger.error(`${error.message}`);
   }
-  (res as http.ServerResponse).statusCode = 500;
+  logger.silly({ error });
   res.end();
 };
 
@@ -96,14 +103,11 @@ const handleUserConfig = async (appLocation: string): Promise<SWAConfigFile | nu
     configJson = require(configFile.file) as SWAConfigFile;
     configJson.isLegacyConfigFile = configFile.isLegacyConfigFile;
 
-    console.log();
-    console.log("Found configuration file:");
-    console.log(`    ${chalk.green(configFile.file)}`);
+    logger.info(`\nFound configuration file:\n    ${chalk.green(configFile.file)}`);
 
     if (configFile.isLegacyConfigFile) {
-      console.log(`    ${chalk.yellow(`WARNING: Functionality defined in the routes.json file is now deprecated.`)}`);
-      console.log(`    ${chalk.yellow(`Read more: https://docs.microsoft.com/azure/static-web-apps/configuration#routes`)}`);
-      console.log();
+      logger.info(`    ${chalk.yellow(`WARNING: Functionality defined in the routes.json file is now deprecated.`)}`);
+      logger.info(`    ${chalk.yellow(`Read more: https://docs.microsoft.com/azure/static-web-apps/configuration#routes`)}`);
     }
 
     return configJson;
@@ -122,6 +126,8 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
       await applyRules(req, res, userConfig);
 
       if ([401, 403, 404].includes(res.statusCode)) {
+        logRequest(req, null, res.statusCode);
+
         switch (res.statusCode) {
           case 401:
             req.url = "unauthorized.html";
@@ -140,10 +146,11 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
 
     // don't serve user custom routes file
     if (req.url.endsWith(DEFAULT_CONFIG.swaConfigFilename!) || req.url.endsWith(DEFAULT_CONFIG.swaConfigFilenameLegacy!)) {
-      console.log("proxy>", req.method, PROTOCOL + req.headers.host + req.url, 404);
       req.url = "404.html";
       res.statusCode = 404;
       serve(SWA_PUBLIC_DIR, req, res);
+
+      logRequest(req, PROTOCOL + req.headers.host + req.url, 404);
     }
 
     // proxy AUTH request to AUTH emulator
@@ -163,13 +170,14 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
       const target = SWA_CLI_API_URI;
 
       injectClientPrincipalCookies(req);
+
       proxyApi.web(
         req,
         res,
         {
           target,
         },
-        onConnectionLost(res, target)
+        onConnectionLost(req, res, target)
       );
       proxyApi.once("proxyRes", (proxyRes: http.IncomingMessage, req: http.IncomingMessage) => {
         logRequest(req, null, proxyRes.statusCode);
@@ -192,7 +200,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
             secure: false,
             toProxy: true,
           },
-          onConnectionLost(res, target)
+          onConnectionLost(req, res, target)
         );
         proxyApp.once("proxyRes", (proxyRes: http.IncomingMessage, req: http.IncomingMessage) => {
           logRequest(req, null, proxyRes.statusCode);
@@ -215,7 +223,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     socketConnection = socket;
     const target = SWA_CLI_APP_ARTIFACT_LOCATION;
     if (isStaticDevServer) {
-      console.log(chalk.green("** WebSocket connection established **"));
+      logger.log(chalk.green("** WebSocket connection established **"));
 
       proxyApp.ws(
         req,
@@ -225,33 +233,39 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
           target,
           secure: false,
         },
-        onConnectionLost(socket, target)
+        onConnectionLost(req, socket, target)
       );
     }
   };
 
   const onServerStart = async () => {
     if (isStaticDevServer) {
-      console.log(`Using dev server:`);
-      console.log(`    ${chalk.green(SWA_CLI_APP_ARTIFACT_LOCATION)}`);
+      // prettier-ignore
+      logger.log(
+        `\nUsing dev server:\n`+
+        `    ${chalk.green(SWA_CLI_APP_ARTIFACT_LOCATION)}`
+      );
 
       server.on("upgrade", onWsUpgrade);
     } else {
-      console.log(`Serving static content:`);
-      console.log(`    ${chalk.green(SWA_CLI_APP_ARTIFACT_LOCATION)}`);
+      // prettier-ignore
+      logger.log(
+        `\nServing static content:\n` +
+        `    ${chalk.green(SWA_CLI_APP_ARTIFACT_LOCATION)}`
+        );
     }
 
-    console.log();
-    console.log(`Available on:`);
-    console.log(`    ${chalk.green(address(`${localIpAdress}`, SWA_CLI_PORT))}`);
-    console.log(`    ${chalk.green(address(SWA_CLI_HOST, SWA_CLI_PORT))}`);
-    console.log();
-    console.log(`Azure Static Web Apps emulator started. Press CTRL+C to exit.`);
-    console.log();
+    // prettier-ignore
+    logger.log(
+      `\nAvailable on:\n` +
+      `    ${chalk.green(address(`${localIpAdress}`, SWA_CLI_PORT))}\n` +
+      `    ${chalk.green(address(SWA_CLI_HOST, SWA_CLI_PORT))}\n\n` +
+      `Azure Static Web Apps emulator started. Press CTRL+C to exit.\n\n`
+    );
 
     registerProcessExit(() => {
-      socketConnection?.end(() => console.log("\nWebSocket connection closed."));
-      server.close(() => console.log("\nServer stopped."));
+      socketConnection?.end(() => logger.info("WebSocket connection closed."));
+      server.close(() => logger.log("Server stopped."));
       proxyApi.close();
       proxyApp.close();
     });
