@@ -7,6 +7,7 @@ declare global {
       SWA_CLI_APP_ARTIFACT_LOCATION: string;
       SWA_CLI_HOST: string;
       SWA_CLI_PORT: string;
+      SWA_WORKFLOW_FILE: string;
     }
   }
 }
@@ -42,29 +43,27 @@ declare type RuntimeHostConfig = {
   appArtifactLocation: string | undefined;
 };
 
-declare type GithubActionSWAConfig = {
+declare type GithubActionWorkflow = {
   appBuildCommand?: string;
   apiBuildCommand?: string;
   appLocation?: string;
   apiLocation?: string;
   appArtifactLocation?: string;
+  files?: string[];
 };
 
-declare type SWACLIConfig = GithubActionSWAConfig & {
+declare type SWACLIConfig = GithubActionWorkflow & {
   port?: number;
   host?: string;
   apiPort?: number;
   apiPrefix?: "api";
   swaConfigFilename?: "staticwebapp.config.json";
   swaConfigFilenameLegacy?: "routes.json";
-};
-
-declare interface CLIConfig extends SWACLIConfig {
   app?: string;
   api?: string;
   build?: boolean;
   verbose?: boolean;
-}
+};
 
 declare type ResponseOptions = {
   [key: string]: any;

@@ -9,7 +9,7 @@ import { start } from "./commands/start";
 import { DEFAULT_CONFIG } from "../config";
 
 (async function () {
-  const cli: CLIConfig & program.Command = program
+  const cli: SWACLIConfig & program.Command = program
     .name("swa")
     .usage("[options] <command>")
     .version(require("../../package.json").version, "-v, --version")

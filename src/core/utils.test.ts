@@ -1,6 +1,6 @@
 import mockFs from "mock-fs";
 import path from "path";
-import { address, argv, findSWAConfigFile, parsePort, readConfigFile, response, traverseFolder, validateCookie } from "./utils";
+import { address, argv, findSWAConfigFile, parsePort, readWorkflowFile, response, traverseFolder, validateCookie } from "./utils";
 
 describe("Utils", () => {
   const mockExit = jest.spyOn(process, "exit").mockImplementation(() => {
@@ -350,9 +350,9 @@ describe("Utils", () => {
     });
   });
 
-  describe("readConfigFile()", () => {
+  describe("readWorkflowFile()", () => {
     it("config file not found should return undefined", () => {
-      expect(readConfigFile()).toBe(undefined);
+      expect(readWorkflowFile()).toBe(undefined);
     });
 
     it("config file with wrong filename should return undefined", () => {
@@ -360,7 +360,7 @@ describe("Utils", () => {
         ".github/workflows/wrong-file-name-pattern.yml": "",
       });
 
-      expect(readConfigFile()).toBe(undefined);
+      expect(readWorkflowFile()).toBe(undefined);
     });
 
     it("invalid YAML file should throw", () => {
@@ -368,7 +368,7 @@ describe("Utils", () => {
         ".github/workflows/azure-static-web-apps__not-valid.yml": "",
       });
 
-      expect(() => readConfigFile()).toThrow(/could not parse the SWA workflow file/);
+      expect(() => readWorkflowFile()).toThrow(/could not parse the SWA workflow file/);
     });
 
     describe("checking workflow properties", () => {
@@ -377,7 +377,7 @@ describe("Utils", () => {
           ".github/workflows/azure-static-web-apps__not-valid.yml": `name: Azure Static Web Apps CI/CD`,
         });
 
-        expect(() => readConfigFile()).toThrow(/missing property 'jobs'/);
+        expect(() => readWorkflowFile()).toThrow(/missing property 'jobs'/);
       });
 
       it("missing property 'jobs.build_and_deploy_job' should throw", () => {
@@ -387,7 +387,7 @@ jobs:
   invalid_property:
 `,
         });
-        expect(() => readConfigFile()).toThrow(/missing property 'jobs.build_and_deploy_job'/);
+        expect(() => readWorkflowFile()).toThrow(/missing property 'jobs.build_and_deploy_job'/);
       });
 
       it("missing property 'jobs.build_and_deploy_job.steps' should throw", () => {
@@ -399,7 +399,7 @@ jobs:
 `,
         });
 
-        expect(() => readConfigFile()).toThrow(/missing property 'jobs.build_and_deploy_job.steps'/);
+        expect(() => readWorkflowFile()).toThrow(/missing property 'jobs.build_and_deploy_job.steps'/);
       });
 
       it("invalid property 'jobs.build_and_deploy_job.steps' should throw", () => {
@@ -410,7 +410,7 @@ jobs:
     steps:
 `,
         });
-        expect(() => readConfigFile()).toThrow(/missing property 'jobs.build_and_deploy_job.steps'/);
+        expect(() => readWorkflowFile()).toThrow(/missing property 'jobs.build_and_deploy_job.steps'/);
       });
 
       it("invalid property 'jobs.build_and_deploy_job.steps[]' should throw", () => {
@@ -423,7 +423,7 @@ jobs:
 `,
         });
 
-        expect(() => readConfigFile()).toThrow(/invalid property 'jobs.build_and_deploy_job.steps\[\]'/);
+        expect(() => readWorkflowFile()).toThrow(/invalid property 'jobs.build_and_deploy_job.steps\[\]'/);
       });
 
       it("missing property 'jobs.build_and_deploy_job.steps[].with' should throw", () => {
@@ -437,7 +437,7 @@ jobs:
 `,
         });
 
-        expect(() => readConfigFile()).toThrow(/missing property 'jobs.build_and_deploy_job.steps\[\].with'/);
+        expect(() => readWorkflowFile()).toThrow(/missing property 'jobs.build_and_deploy_job.steps\[\].with'/);
       });
     });
 
@@ -455,8 +455,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile()).toBeTruthy();
-        expect(readConfigFile()?.appLocation).toBe(path.normalize(process.cwd() + "/"));
+        expect(readWorkflowFile()).toBeTruthy();
+        expect(readWorkflowFile()?.appLocation).toBe(path.normalize(process.cwd() + "/"));
       });
 
       it("property 'app_location' should be set to '/' if missing", () => {
@@ -471,8 +471,8 @@ jobs:
           foo: bar
 `,
         });
-        expect(readConfigFile()).toBeTruthy();
-        expect(readConfigFile()?.appLocation).toBe(path.normalize(process.cwd() + "/"));
+        expect(readWorkflowFile()).toBeTruthy();
+        expect(readWorkflowFile()?.appLocation).toBe(path.normalize(process.cwd() + "/"));
       });
 
       it("property 'api_location' should be set", () => {
@@ -488,8 +488,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile()).toBeTruthy();
-        expect(readConfigFile()?.apiLocation).toBe(path.normalize(process.cwd() + "/api"));
+        expect(readWorkflowFile()).toBeTruthy();
+        expect(readWorkflowFile()?.apiLocation).toBe(path.normalize(process.cwd() + "/api"));
       });
 
       it("property 'api_location' should be undefined if missing", () => {
@@ -505,8 +505,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile()).toBeTruthy();
-        expect(readConfigFile()?.apiLocation).toBeUndefined();
+        expect(readWorkflowFile()).toBeTruthy();
+        expect(readWorkflowFile()?.apiLocation).toBeUndefined();
       });
 
       it("property 'app_artifact_location' should be set", () => {
@@ -522,8 +522,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile()).toBeTruthy();
-        expect(readConfigFile()?.appArtifactLocation).toBe(path.normalize(process.cwd() + "/"));
+        expect(readWorkflowFile()).toBeTruthy();
+        expect(readWorkflowFile()?.appArtifactLocation).toBe(path.normalize(process.cwd() + "/"));
       });
 
       it("property 'app_artifact_location' should be set to '/' if missing", () => {
@@ -539,8 +539,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile()).toBeTruthy();
-        expect(readConfigFile()?.appArtifactLocation).toBe(path.normalize(process.cwd() + "/"));
+        expect(readWorkflowFile()).toBeTruthy();
+        expect(readWorkflowFile()?.appArtifactLocation).toBe(path.normalize(process.cwd() + "/"));
       });
 
       it("property 'app_build_command' should be set", () => {
@@ -556,8 +556,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile()).toBeTruthy();
-        expect(readConfigFile()?.appBuildCommand).toBe("echo test");
+        expect(readWorkflowFile()).toBeTruthy();
+        expect(readWorkflowFile()?.appBuildCommand).toBe("echo test");
       });
 
       it("property 'app_build_command' should be set to default if missing", () => {
@@ -573,8 +573,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile()).toBeTruthy();
-        expect(readConfigFile()?.appBuildCommand).toBe("npm run build --if-present");
+        expect(readWorkflowFile()).toBeTruthy();
+        expect(readWorkflowFile()?.appBuildCommand).toBe("npm run build --if-present");
       });
 
       it("property 'api_build_command' should be set", () => {
@@ -590,8 +590,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile()).toBeTruthy();
-        expect(readConfigFile()?.apiBuildCommand).toBe("echo test");
+        expect(readWorkflowFile()).toBeTruthy();
+        expect(readWorkflowFile()?.apiBuildCommand).toBe("echo test");
       });
 
       it("property 'api_build_command' should be set to default if missing", () => {
@@ -607,8 +607,8 @@ jobs:
 `,
         });
 
-        expect(readConfigFile()).toBeTruthy();
-        expect(readConfigFile()?.apiBuildCommand).toBe("npm run build --if-present");
+        expect(readWorkflowFile()).toBeTruthy();
+        expect(readWorkflowFile()?.apiBuildCommand).toBe("npm run build --if-present");
       });
     });
   });

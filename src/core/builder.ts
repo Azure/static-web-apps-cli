@@ -2,7 +2,7 @@ import concurrently from "concurrently";
 import fs from "fs";
 import path from "path";
 import { detectRuntime, RuntimeType } from "./runtimes";
-import { readConfigFile } from "./utils";
+import { readWorkflowFile } from "./utils";
 
 const nodeBuilder = (location: string, buildCommand: string, name: string, colour: string) => {
   return concurrently(
@@ -42,10 +42,10 @@ const dotnetBuilder = (location: string, name: string, colour: string) => {
   );
 };
 
-const builder = async ({ config }: { config: Partial<GithubActionSWAConfig> }) => {
-  const configFile = readConfigFile();
+const builder = async ({ config }: { config: Partial<GithubActionWorkflow> }) => {
+  const configFile = readWorkflowFile();
   if (configFile) {
-    let { appLocation, apiLocation, appBuildCommand, apiBuildCommand } = config as GithubActionSWAConfig;
+    let { appLocation, apiLocation, appBuildCommand, apiBuildCommand } = config as GithubActionWorkflow;
     const runtimeType = detectRuntime(appLocation);
 
     try {
