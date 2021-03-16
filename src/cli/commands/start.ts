@@ -98,7 +98,7 @@ export async function start(startContext: string, program: CLIConfig) {
     );
   }
 
-  if (process.env.DEBUG) {
+  if (program.verbose) {
     console.log({ env: envVarsObj });
     console.log({ concurrentlyCommands });
   }
