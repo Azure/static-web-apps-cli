@@ -1,54 +1,85 @@
+import chalk from "chalk";
 import cookie from "cookie";
-import fs from "fs";
+import fs, { promises as fsPromises } from "fs";
 import net from "net";
 import path from "path";
 import YAML from "yaml";
 import { DEFAULT_CONFIG } from "../config";
 import { detectRuntime, RuntimeType } from "./runtimes";
-import { promises as fsPromises } from "fs";
-import chalk from "chalk";
 
 const { readdir, readFile } = fsPromises;
 
-export const response = ({ context, status, headers, cookies, body = "" }: ResponseOptions) => {
+export const logger = {
+  _print(prefix: string | null, data: string) {
+    if (prefix) {
+      console.log(chalk.dim.gray(`[${prefix}]`), data);
+    } else {
+      console.log(data);
+    }
+  },
+
+  _traverseObjectProperties(o: any, fn: (_prop: string, _value: any, _indent: string) => void, indent = "") {
+    for (const i in o) {
+      if (o[i] !== null && typeof o[i] === "object") {
+        fn(i, null, `${indent}`);
+        this._traverseObjectProperties(o[i], fn, ` ${indent}`);
+      } else {
+        fn(i, o[i], ` ${indent}`);
+      }
+    }
+  },
+
+  // public methods
+  info(data: string | object) {
+    this.silly(data, null, "info");
+  },
+
+  log(data: string | object) {
+    this.silly(data, null, "log");
+  },
+
+  error(data: string | object, exit = false) {
+    const { SWA_CLI_DEBUG } = process.env;
+    if (!SWA_CLI_DEBUG || SWA_CLI_DEBUG?.includes("silent")) {
+      return;
+    }
+
+    console.error(chalk.red(data));
+    if (exit) {
+      process.exit(-1);
+    }
+  },
+
+  silly(data: string | object, prefix: string | null = null, debugFilter: DebugFilterLevel = "silly") {
+    const { SWA_CLI_DEBUG } = process.env;
+    if (!SWA_CLI_DEBUG || SWA_CLI_DEBUG?.includes("silent")) {
+      return;
+    }
+
+    if (SWA_CLI_DEBUG?.includes("silly") || SWA_CLI_DEBUG?.includes(debugFilter)) {
+      if (typeof data === "object") {
+        this._traverseObjectProperties(data, (key: string, value: string | null, indent: string) => {
+          if (value !== null) {
+            value = typeof value === "undefined" ? chalk.gray("<undefined>") : value;
+            this._print(prefix, `${indent}- ${key}: ${chalk.green(value)}`);
+          } else {
+            this._print(prefix, `${indent}- ${key}:`);
+          }
+        });
+      } else {
+        // data is not an object so just print its value even if it's null or undefined
+        this._print(prefix, data);
+      }
+    }
+  },
+};
+
+export const response = ({ status, headers, cookies, body = "" }: ResponseOptions) => {
   if (typeof status !== "number") {
     throw Error("TypeError: status code must be a number.");
   }
 
-  let location;
-  if (headers) {
-    ({ location } = headers);
-    headers = {
-      ...headers,
-      location: process.env.DEBUG ? null : location,
-    };
-  }
-
   body = body || null;
-  if (process.env.DEBUG) {
-    body =
-      body ||
-      JSON.stringify(
-        {
-          location,
-          debug: {
-            response: {
-              cookies: {
-                ...cookies,
-              },
-              headers: {
-                ...headers,
-              },
-            },
-            context: {
-              ...context.bindingData,
-            },
-          },
-        },
-        null,
-        2
-      );
-  }
 
   const res = {
     status,
@@ -251,9 +282,7 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
   };
 
   process.env.SWA_WORKFLOW_CONFIG_FILE = githubActionFile;
-  if (process.env.DEBUG) {
-    console.info({ config });
-  }
+  logger.silly({ config }, "utils");
   return config;
 };
 /**
@@ -340,18 +369,16 @@ export async function validateDevServerConfig(context: string) {
   try {
     const appListening = await isAcceptingTcpConnections({ port, host: hostname });
     if (appListening === false) {
-      console.error(chalk.red(`Could not connect to "${context}". Is the server up and running?`));
+      logger.error(`Could not connect to "${context}". Is the server up and running?`);
       process.exit(-1);
     } else {
       return context;
     }
   } catch (err) {
     if (err.message.includes("EACCES")) {
-      console.error(
-        chalk.red(`INFO: Port "${port}" cannot be used. You might need elevated or admin privileges. Or, use a valid port: 1024 to 49151.`)
-      );
+      logger.error(`Port "${port}" cannot be used. You might need elevated or admin privileges. Or, use a valid port: 1024 to 49151.`);
     } else {
-      console.error(chalk.red(err.message));
+      logger.error(err.message);
     }
     process.exit(-1);
   }
@@ -378,12 +405,10 @@ export function computeAppLocationFromArtifactLocation(appArtifactLocation: stri
 export function parsePort(port: string) {
   const portNumber = parseInt(port, 10);
   if (isNaN(portNumber)) {
-    console.error(chalk.red(`Port "${port}" is not a number.`));
-    process.exit(-1);
+    logger.error(`Port "${port}" is not a number.`, true);
   } else {
     if (portNumber < 1024 || portNumber > 49151) {
-      console.error(chalk.red(`Port "${port}" is out of range. Allowed ports are from 1024 to 49151.`));
-      process.exit(-1);
+      logger.error(`Port "${port}" is out of range. Allowed ports are from 1024 to 49151.`, true);
     }
   }
   return portNumber;

@@ -1,7 +1,7 @@
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      DEBUG: string;
+      SWA_CLI_DEBUG: DebugFilterLevel;
       SWA_CLI_API_URI: string;
       SWA_CLI_APP_URI: string;
       SWA_CLI_APP_ARTIFACT_LOCATION: string;
@@ -62,7 +62,7 @@ declare type SWACLIConfig = GithubActionWorkflow & {
   app?: string;
   api?: string;
   build?: boolean;
-  verbose?: boolean;
+  verbose?: string;
 };
 
 declare type ResponseOptions = {
@@ -115,3 +115,5 @@ declare type SWAConfigFile = {
   mimeTypes: SWAConfigFileMimeTypes;
   isLegacyConfigFile: boolean;
 };
+
+declare type DebugFilterLevel = "silly" | "silent" | "log" | "info" | "error";

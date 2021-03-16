@@ -13,7 +13,7 @@ const mockConfig = {
 
 describe("runtimeHost", () => {
   beforeEach(() => {
-    process.env.DEBUG = "";
+    process.env.SWA_CLI_DEBUG = "";
     spyDetectRuntime = jest.spyOn(detectRuntime, "detectRuntime");
     spyDetectRuntime.mockReturnValue(detectRuntime.RuntimeType.unknown);
   });
