@@ -204,7 +204,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
 
   // load user custom rules if running in local mode (non-dev server)
   let userConfig = null;
-  if (!isHttpUrl(process.env.SWA_CLI_APP_ARTIFACT_LOCATION!)) {
+  if (!isStaticDevServer) {
     userConfig = await handleUserConfig(SWA_CLI_APP_LOCATION);
   }
   const server = http.createServer(requestHandler(userConfig)).listen(SWA_CLI_PORT, SWA_CLI_HOST, onServerStart);
