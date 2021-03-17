@@ -16,6 +16,14 @@ import { DEFAULT_CONFIG } from "../config";
     .version(require("../../package.json").version, "-v, --version")
 
     // SWA config
+    .option("--verbose [prefix]", "enable verbose output. Value are: silly,info,log,silent", "log");
+
+  program
+    .command("start [context]")
+    .description("start the emulator from a directory or bind to a dev server")
+    .action(async (context: string = `${path.sep}`) => {
+      await start(context, cli);
+    })
     .option("--app-location <appLocation>", "set app folder (location for the application code)", DEFAULT_CONFIG.appLocation)
     .option(
       "--app, --app-artifact-location <appArtifactLocation>",
@@ -28,15 +36,7 @@ import { DEFAULT_CONFIG } from "../config";
     .option<number>("--api-port <apiPort>", "set the API backend port", parsePort, DEFAULT_CONFIG.apiPort)
     .option("--host <host>", "set the cli host address", DEFAULT_CONFIG.host)
     .option<number>("--port <port>", "set the cli port", parsePort, DEFAULT_CONFIG.port)
-    .option("--build", "build the API and APP before starting the emulator", false)
-    .option("--verbose [prefix]", "enable verbose output. Value are: silly,info,log,silent", "log");
-
-  program
-    .command("start [context]")
-    .description("start the emulator from a directory or bind to a dev server")
-    .action(async (context: string = `${path.sep}`) => {
-      await start(context, cli);
-    });
+    .option("--build", "build the API and APP before starting the emulator", false);
 
   await program.parseAsync(process.argv);
 })();
