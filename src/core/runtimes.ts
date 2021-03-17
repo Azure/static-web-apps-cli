@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { logger } from "./utils";
 
 export enum RuntimeType {
   dotnet = "dotnet",
@@ -9,7 +10,7 @@ export enum RuntimeType {
 
 export const detectRuntime = (appLocation: string | undefined) => {
   if (!appLocation || fs.existsSync(appLocation) === false) {
-    console.warn(`WARNING: The provided app location "${appLocation}" was not found. Can't detect runtime!`);
+    logger.info(`The provided app location "${appLocation}" was not found. Can't detect runtime!`);
     return RuntimeType.unknown;
   }
 
