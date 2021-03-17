@@ -5,9 +5,9 @@ process.title = ["swa", ...args].join(" ");
 
 import program from "commander";
 import path from "path";
+import { DEFAULT_CONFIG } from "../config";
 import { parsePort } from "../core/utils";
 import { start } from "./commands/start";
-import { DEFAULT_CONFIG } from "../config";
 
 (async function () {
   const cli: SWACLIConfig & program.Command = program

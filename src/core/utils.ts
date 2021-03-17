@@ -20,18 +20,20 @@ export const logger = {
 
   _traverseObjectProperties(o: any, fn: (_prop: string, _value: any, _indent: string) => void, indent = "") {
     for (const i in o) {
-      if (o[i] !== null && typeof o[i] === "object") {
-        fn(i, null, `${indent}`);
-        this._traverseObjectProperties(o[i], fn, ` ${indent}`);
-      } else {
-        fn(i, o[i], ` ${indent}`);
+      if (Array.isArray(o) || (typeof o === "object" && o.hasOwnProperty(i))) {
+        if (o[i] !== null && typeof o[i] === "object") {
+          fn(i, null, `${indent}`);
+          this._traverseObjectProperties(o[i], fn, ` ${indent}`);
+        } else {
+          fn(i, o[i], ` ${indent}`);
+        }
       }
     }
   },
 
   // public methods
-  info(data: string | object) {
-    this.silly(data, null, "info");
+  info(data: string | object, prefix: string | null = "swa") {
+    this.silly(data, prefix, "info");
   },
 
   log(data: string | object) {
@@ -56,6 +58,7 @@ export const logger = {
       return;
     }
 
+    this._print(prefix, ``);
     if (SWA_CLI_DEBUG?.includes("silly") || SWA_CLI_DEBUG?.includes(debugFilter)) {
       if (typeof data === "object") {
         this._traverseObjectProperties(data, (key: string, value: string | null, indent: string) => {
@@ -163,17 +166,24 @@ function validateUserConfig(userConfig: Partial<GithubActionWorkflow>) {
 }
 
 export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubActionWorkflow> } = {}): Partial<GithubActionWorkflow> | undefined => {
-  const infoMessage = `INFO: GitHub Actions configuration was not found under ".github/workflows/"`;
+  // is dev servers? Skip reading workflow file
+  const isAppDevServer = isHttpUrl(userConfig?.appArtifactLocation!);
+  const isApiDevServer = isHttpUrl(userConfig?.apiLocation!);
+  if (isAppDevServer && isApiDevServer) {
+    return validateUserConfig(userConfig!);
+  }
+
+  const infoMessage = `GitHub Actions configuration was not found under ".github/workflows/"`;
   const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
 
   // does the config folder exist?
   if (fs.existsSync(githubActionFolder) === false) {
-    console.info(infoMessage);
-    return userConfig && validateUserConfig(userConfig);
+    logger.info(infoMessage);
+    return validateUserConfig(userConfig!);
   }
 
   // find the SWA GitHub action file
-  // TODO: handle multiple workflow files
+  // TODO: handle multiple workflow files (see #32)
   let githubActionFile = fs
     .readdirSync(githubActionFolder)
     .filter((file) => file.includes("azure-static-web-apps") && file.endsWith(".yml"))
@@ -181,8 +191,8 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
 
   // does the config file exist?
   if (!githubActionFile || fs.existsSync(githubActionFile)) {
-    console.info(infoMessage);
-    return userConfig && validateUserConfig(userConfig);
+    logger.info(infoMessage);
+    return validateUserConfig(userConfig!);
   }
 
   githubActionFile = path.resolve(githubActionFolder, githubActionFile);
@@ -269,22 +279,22 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
     api_location = apiLocation;
   }
 
+  const files = isAppDevServer && isApiDevServer ? undefined : [githubActionFile];
   // convert variable names to camelCase
   // instead of snake_case
-  const files = [githubActionFile];
   const config: Partial<GithubActionWorkflow> = {
-    appBuildCommand: app_build_command,
-    apiBuildCommand: api_build_command,
+    appBuildCommand: isAppDevServer ? undefined : app_build_command,
+    apiBuildCommand: isApiDevServer ? undefined : api_build_command,
     appLocation: app_location,
     apiLocation: api_location,
     appArtifactLocation: app_artifact_location,
     files,
   };
 
-  process.env.SWA_WORKFLOW_CONFIG_FILE = githubActionFile;
   logger.silly({ config }, "utils");
   return config;
 };
+
 /**
  * Parse process.argv and retrieve a specific flag value.
  * Usage:
