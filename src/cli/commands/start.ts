@@ -1,4 +1,3 @@
-import program from "commander";
 import concurrently from "concurrently";
 import fs from "fs";
 import path from "path";
@@ -6,7 +5,7 @@ import { DEFAULT_CONFIG } from "../../config";
 import builder from "../../core/builder";
 import { isAcceptingTcpConnections, isHttpUrl, logger, parseUrl, readWorkflowFile, validateDevServerConfig } from "../../core/utils";
 
-export async function start(startContext: string, program: SWACLIConfig & program.Command) {
+export async function start(startContext: string, options: SWACLIConfig) {
   let useAppDevServer = undefined;
   let useApiDevServer = undefined;
 
@@ -14,12 +13,12 @@ export async function start(startContext: string, program: SWACLIConfig & progra
     useAppDevServer = await validateDevServerConfig(startContext);
   } else {
     // start the emulator from a specific artifact folder, if folder exists
-    if (await isAcceptingTcpConnections({ host: program.host, port: program.port! })) {
-      logger.error(`Port ${program.port} is already used. Choose a different port.`, true);
+    if (await isAcceptingTcpConnections({ host: options.host, port: options.port! })) {
+      logger.error(`Port ${options.port} is already used. Choose a different port.`, true);
     }
 
     if (fs.existsSync(startContext)) {
-      program.appArtifactLocation = startContext;
+      options.appArtifactLocation = startContext;
     } else {
       // prettier-ignore
       logger.error(
@@ -30,24 +29,24 @@ export async function start(startContext: string, program: SWACLIConfig & progra
     }
   }
 
-  if (program.apiLocation) {
-    if (isHttpUrl(program.apiLocation)) {
-      useApiDevServer = await validateDevServerConfig(program.apiLocation);
+  if (options.apiLocation) {
+    if (isHttpUrl(options.apiLocation)) {
+      useApiDevServer = await validateDevServerConfig(options.apiLocation);
     }
     // make sure api folder exists
-    else if (fs.existsSync(program.apiLocation) === false) {
-      logger.info(`Skipping API because folder "${program.apiLocation}" is missing.`);
+    else if (fs.existsSync(options.apiLocation) === false) {
+      logger.info(`Skipping API because folder "${options.apiLocation}" is missing.`);
     }
   }
 
   // get the app and api artifact locations
   let [appLocation, appArtifactLocation, apiLocation] = [
-    program.appLocation as string,
-    program.appArtifactLocation as string,
-    program.apiLocation as string,
+    options.appLocation as string,
+    options.appArtifactLocation as string,
+    options.apiLocation as string,
   ];
 
-  let apiPort = (program.apiPort || DEFAULT_CONFIG.apiPort) as number;
+  let apiPort = (options.apiPort || DEFAULT_CONFIG.apiPort) as number;
   let userConfig: Partial<GithubActionWorkflow> | undefined = {
     appLocation,
     appArtifactLocation,
@@ -77,29 +76,29 @@ export async function start(startContext: string, program: SWACLIConfig & progra
     // get the API port from the dev server
     apiPort = parseUrl(useApiDevServer)?.port;
   } else {
-    if (program.apiLocation && userConfig?.apiLocation) {
+    if (options.apiLocation && userConfig?.apiLocation) {
       // @todo check if the func binary is globally available
       const funcBinary = "func";
       // serve the api if and only if the user provides a folder via the --api-location flag
       if (isApiLocationExistsOnDisk) {
-        serveApiCommand = `cd ${userConfig.apiLocation} && ${funcBinary} start --cors * --port ${program.apiPort}`;
+        serveApiCommand = `cd ${userConfig.apiLocation} && ${funcBinary} start --cors * --port ${options.apiPort}`;
       }
     }
   }
 
   // set env vars for current command
   const envVarsObj = {
-    SWA_CLI_DEBUG: program.verbose,
+    SWA_CLI_DEBUG: options.verbose,
     SWA_CLI_API_PORT: `${apiPort}`,
     SWA_CLI_APP_LOCATION: userConfig?.appLocation as string,
     SWA_CLI_APP_ARTIFACT_LOCATION: useAppDevServer || (userConfig?.appArtifactLocation as string),
     SWA_CLI_API_LOCATION: useApiDevServer || (userConfig?.apiLocation as string),
-    SWA_CLI_HOST: program.host,
-    SWA_CLI_PORT: `${program.port}`,
+    SWA_CLI_HOST: options.host,
+    SWA_CLI_PORT: `${options.port}`,
     SWA_WORKFLOW_FILES: userConfig?.files?.join(","),
   };
 
-  if (program.verbose?.includes("silly")) {
+  if (options.verbose?.includes("silly")) {
     // when silly level is set,
     // propagate debugging level to other tools using the DEBUG environment variable
     process.env.DEBUG = "*";
@@ -120,7 +119,7 @@ export async function start(startContext: string, program: SWACLIConfig & progra
     );
   }
 
-  if (program.build) {
+  if (options.build) {
     // run the app/api builds
     await builder({
       config: userConfig as GithubActionWorkflow,
