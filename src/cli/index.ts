@@ -21,19 +21,19 @@ import { DEFAULT_CONFIG } from "../config";
   program
     .command("start [context]")
     .description("start the emulator from a directory or bind to a dev server")
-    .option("--app-location <appLocation>", "set app folder (location for the application code)", DEFAULT_CONFIG.appLocation)
+    .option("--app-location <appLocation>", "set location for the static app source code", DEFAULT_CONFIG.appLocation)
     .option(
       "--app, --app-artifact-location <appArtifactLocation>",
-      "set app artifact folder (location where app files are built for production)",
+      "set the location where static files are built for production",
       DEFAULT_CONFIG.appArtifactLocation
     )
-    .option("--api, --api-location <apiLocation>", "set the API folder or URI", DEFAULT_CONFIG.apiLocation)
+    .option("--api, --api-location <apiLocation>", "set the API folder or Azure Functions emulator address", DEFAULT_CONFIG.apiLocation)
 
     // CLI config
     .option<number>("--api-port <apiPort>", "set the API backend port", parsePort, DEFAULT_CONFIG.apiPort)
     .option("--host <host>", "set the cli host address", DEFAULT_CONFIG.host)
     .option<number>("--port <port>", "set the cli port", parsePort, DEFAULT_CONFIG.port)
-    .option("--build", "build the API and APP before starting the emulator", false)
+    .option("--build", "build the app and API before starting the emulator", false)
     .action(async (context: string = `.${path.sep}`, options: any) => {
       options = {
         ...options,
