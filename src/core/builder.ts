@@ -1,8 +1,9 @@
+import chalk from "chalk";
 import concurrently from "concurrently";
 import fs from "fs";
 import path from "path";
 import { detectRuntime, RuntimeType } from "./runtimes";
-import { readWorkflowFile } from "./utils";
+import { isHttpUrl, logger } from "./utils";
 
 const nodeBuilder = (location: string, buildCommand: string, name: string, colour: string) => {
   return concurrently(
@@ -10,14 +11,14 @@ const nodeBuilder = (location: string, buildCommand: string, name: string, colou
       {
         command: `npm install && ${buildCommand}`,
         name: name,
+        prefixColor: colour,
         env: {
           CI: "1",
-          cwd: location,
         },
-        prefixColor: colour,
       },
     ],
     {
+      cwd: location,
       killOthers: ["failure"],
     }
   );
@@ -31,36 +32,43 @@ const dotnetBuilder = (location: string, name: string, colour: string) => {
         name: name,
         env: {
           CI: "1",
-          cwd: location,
         },
         prefixColor: colour,
       },
     ],
     {
+      cwd: location,
       killOthers: ["failure"],
     }
   );
 };
 
 const builder = async ({ config }: { config: Partial<GithubActionWorkflow> }) => {
-  const configFile = readWorkflowFile();
-  if (configFile) {
+  if (config) {
     let { appLocation, apiLocation, appBuildCommand, apiBuildCommand } = config as GithubActionWorkflow;
     const runtimeType = detectRuntime(appLocation);
+
+    logger.silly(
+      {
+        config,
+        runtimeType,
+      },
+      "swa"
+    );
 
     try {
       switch (runtimeType) {
         case RuntimeType.dotnet:
           {
             // build app
-            await dotnetBuilder(appLocation as string, "app_build", "bgGreen.bold");
+            await dotnetBuilder(appLocation!, "dot", "dim.gray");
 
             // NOTE: API is optional. Build it only if it exists
             // This may result in a double-compile of some libraries if they are shared between the
             // Blazor app and the API, but it's an acceptable outcome
-            apiLocation = path.resolve(process.cwd(), apiLocation as string);
+            apiLocation = path.resolve(process.cwd(), apiLocation!);
             if (fs.existsSync(apiLocation) === true && fs.existsSync(path.join(apiLocation, "host.json"))) {
-              await dotnetBuilder(apiLocation, "api_build", "bgYellow.bold");
+              await dotnetBuilder(apiLocation, "api", "dim.gray");
             }
           }
           break;
@@ -69,24 +77,36 @@ const builder = async ({ config }: { config: Partial<GithubActionWorkflow> }) =>
         default:
           {
             // figure out if appLocation exists
-            if (fs.existsSync(appLocation as string) === false) {
-              appLocation = process.cwd();
-            }
+            const isPackageJsonExists = fs.existsSync(appLocation!) && fs.existsSync(path.join(appLocation!, "package.json"));
+            const isAppDevServer = isHttpUrl(config.appArtifactLocation!);
 
             // build app
-            await nodeBuilder(appLocation as string, appBuildCommand as string, "app_build", "bgGreen.bold");
+            if (isPackageJsonExists) {
+              logger.silly(chalk.green("Building app..."), "npm");
+
+              await nodeBuilder(appLocation!, appBuildCommand!, "npm", "dim.gray");
+            } else if (isAppDevServer) {
+              logger.silly(chalk.yellow(`Skipping app build: App served from ${config.appArtifactLocation}`), "npm");
+            } else {
+              logger.silly(chalk.yellow("Skipping app build: No package.json found."), "npm");
+            }
 
             // NOTE: API is optional. Build it only if it exists
-            apiLocation = path.resolve(process.cwd(), apiLocation as string);
-            if (fs.existsSync(apiLocation) === true && fs.existsSync(path.join(apiLocation, "host.json"))) {
-              await nodeBuilder(apiLocation, apiBuildCommand as string, "api_build", "bgYellow.bold");
+            const isAzureFunctionsProject =
+              apiLocation && fs.existsSync(apiLocation!) === true && fs.existsSync(path.join(apiLocation!, "host.json"));
+            const isApiDevServer = isHttpUrl(config.apiLocation!);
+            if (isAzureFunctionsProject) {
+              logger.silly(chalk.green("Building API..."), "npm");
+              await nodeBuilder(apiLocation!, apiBuildCommand!, "npm", "dim.gray");
+            } else if (isApiDevServer) {
+              logger.silly(chalk.yellow(`Skipping API build: API served from ${apiLocation}`), "npm");
+            } else {
+              logger.silly(chalk.yellow("Skipping API build: Not a valid Azure Functions project."), "npm");
             }
           }
           break;
       }
-    } catch (stderr) {
-      console.log(stderr);
-    }
+    } catch (stderr) {}
   }
 };
 export default builder;
