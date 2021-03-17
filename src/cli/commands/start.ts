@@ -11,6 +11,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
 
   if (isHttpUrl(startContext)) {
     useAppDevServer = await validateDevServerConfig(startContext);
+    options.appArtifactLocation = useAppDevServer;
   } else {
     // start the emulator from a specific artifact folder, if folder exists
     if (await isAcceptingTcpConnections({ host: options.host, port: options.port! })) {
@@ -32,6 +33,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
   if (options.apiLocation) {
     if (isHttpUrl(options.apiLocation)) {
       useApiDevServer = await validateDevServerConfig(options.apiLocation);
+      options.apiLocation = useApiDevServer;
     }
     // make sure api folder exists
     else if (fs.existsSync(options.apiLocation) === false) {
@@ -53,16 +55,12 @@ export async function start(startContext: string, options: SWACLIConfig) {
     apiLocation,
   };
 
-  if (useAppDevServer) {
-    // if we are using an app dev server, don't apply workflow files
-  } else {
-    // mix CLI args with the project's build workflow configuration (if any)
-    // use any specific workflow config that the user might provide undef ".github/workflows/"
-    // Note: CLI args will take precedence over workflow config
-    userConfig = readWorkflowFile({
-      userConfig,
-    });
-  }
+  // mix CLI args with the project's build workflow configuration (if any)
+  // use any specific workflow config that the user might provide undef ".github/workflows/"
+  // Note: CLI args will take precedence over workflow config
+  userConfig = readWorkflowFile({
+    userConfig,
+  });
 
   const isApiLocationExistsOnDisk = fs.existsSync(userConfig?.apiLocation!);
   // parse the API URI port
@@ -91,8 +89,8 @@ export async function start(startContext: string, options: SWACLIConfig) {
     SWA_CLI_DEBUG: options.verbose,
     SWA_CLI_API_PORT: `${apiPort}`,
     SWA_CLI_APP_LOCATION: userConfig?.appLocation as string,
-    SWA_CLI_APP_ARTIFACT_LOCATION: useAppDevServer || (userConfig?.appArtifactLocation as string),
-    SWA_CLI_API_LOCATION: useApiDevServer || (userConfig?.apiLocation as string),
+    SWA_CLI_APP_ARTIFACT_LOCATION: userConfig?.appArtifactLocation as string,
+    SWA_CLI_API_LOCATION: userConfig?.apiLocation as string,
     SWA_CLI_HOST: options.host,
     SWA_CLI_PORT: `${options.port}`,
     SWA_WORKFLOW_FILES: userConfig?.files?.join(","),
@@ -126,7 +124,20 @@ export async function start(startContext: string, options: SWACLIConfig) {
     });
   }
 
-  logger.silly({ envVarsObj, concurrentlyCommands }, "start");
+  console.log({
+    options,
+  });
+
+  logger.silly(
+    {
+      env: envVarsObj,
+      commands: {
+        app: concurrentlyCommands[0].command,
+        api: concurrentlyCommands?.[1]?.command,
+      },
+    },
+    "swa"
+  );
 
   await concurrently(concurrentlyCommands, {
     restartTries: 0,
