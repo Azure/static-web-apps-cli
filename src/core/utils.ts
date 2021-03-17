@@ -121,19 +121,19 @@ export const decodeCookie = (cookieValue: any): ClientPrincipal | null => {
   return null;
 };
 
-function validateUserConfig(userConfig: Partial<GithubActionWorkflow>) {
+export function validateUserConfig(userConfig: Partial<GithubActionWorkflow> | undefined): Partial<GithubActionWorkflow> | undefined {
   let appLocation = undefined;
   let apiLocation = undefined;
   let appArtifactLocation = undefined;
 
-  if (userConfig.appLocation) {
+  if (userConfig?.appLocation) {
     appLocation = path.normalize(path.join(process.cwd(), userConfig.appLocation || `.${path.sep}`));
     if (path.isAbsolute(userConfig.appLocation)) {
       appLocation = userConfig.appLocation;
     }
   }
 
-  if (userConfig.apiLocation) {
+  if (userConfig?.apiLocation) {
     if (isHttpUrl(userConfig.apiLocation)) {
       apiLocation = userConfig.apiLocation;
     } else {
@@ -146,7 +146,7 @@ function validateUserConfig(userConfig: Partial<GithubActionWorkflow>) {
     }
   }
 
-  if (userConfig.appArtifactLocation) {
+  if (userConfig?.appArtifactLocation) {
     // is dev server url
     if (isHttpUrl(userConfig.appArtifactLocation)) {
       appArtifactLocation = userConfig.appArtifactLocation;
@@ -166,11 +166,15 @@ function validateUserConfig(userConfig: Partial<GithubActionWorkflow>) {
 }
 
 export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubActionWorkflow> } = {}): Partial<GithubActionWorkflow> | undefined => {
-  // is dev servers? Skip reading workflow file
-  const isAppDevServer = isHttpUrl(userConfig?.appArtifactLocation!);
-  const isApiDevServer = isHttpUrl(userConfig?.apiLocation!);
-  if (isAppDevServer && isApiDevServer) {
-    return validateUserConfig(userConfig!);
+  let isAppDevServer = false;
+  let isApiDevServer = false;
+  if (userConfig) {
+    // is dev servers? Skip reading workflow file
+    isAppDevServer = isHttpUrl(userConfig?.appArtifactLocation!);
+    isApiDevServer = isHttpUrl(userConfig?.apiLocation!);
+    if (isAppDevServer && isApiDevServer) {
+      return userConfig && validateUserConfig(userConfig);
+    }
   }
 
   const infoMessage = `GitHub Actions configuration was not found under ".github/workflows/"`;
@@ -179,7 +183,7 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
   // does the config folder exist?
   if (fs.existsSync(githubActionFolder) === false) {
     logger.info(infoMessage);
-    return validateUserConfig(userConfig!);
+    return userConfig && validateUserConfig(userConfig);
   }
 
   // find the SWA GitHub action file
@@ -192,7 +196,7 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
   // does the config file exist?
   if (!githubActionFile || fs.existsSync(githubActionFile)) {
     logger.info(infoMessage);
-    return validateUserConfig(userConfig!);
+    return userConfig && validateUserConfig(userConfig);
   }
 
   githubActionFile = path.resolve(githubActionFolder, githubActionFile);
@@ -273,10 +277,10 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
   // override SWA config with user's config (if provided):
   // if the user provides different app location, app artifact location or api location, use that information
   if (userConfig) {
-    const { apiLocation, appArtifactLocation, appLocation } = validateUserConfig(userConfig);
-    app_location = appLocation;
-    app_artifact_location = appArtifactLocation;
-    api_location = apiLocation;
+    userConfig = validateUserConfig(userConfig);
+    app_location = userConfig?.appLocation;
+    app_artifact_location = userConfig?.appArtifactLocation;
+    api_location = userConfig?.apiLocation;
   }
 
   const files = isAppDevServer && isApiDevServer ? undefined : [githubActionFile];
