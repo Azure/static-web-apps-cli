@@ -124,10 +124,6 @@ export async function start(startContext: string, options: SWACLIConfig) {
     });
   }
 
-  console.log({
-    options,
-  });
-
   logger.silly(
     {
       env: envVarsObj,
