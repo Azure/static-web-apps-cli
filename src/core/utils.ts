@@ -476,8 +476,7 @@ export async function findSWAConfigFile(folder: string) {
   return null;
 }
 
-export const address = (host: string, port: number | string | undefined) => {
-  const protocol = `http`;
+export const address = (host: string, port: number | string | undefined, protocol = `http`) => {
   if (!host) {
     throw new Error(`Host value is not set`);
   }
