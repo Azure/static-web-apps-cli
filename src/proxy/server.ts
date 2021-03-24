@@ -19,11 +19,11 @@ const SWA_CLI_PORT = parseInt((process.env.SWA_CLI_PORT || DEFAULT_CONFIG.port) 
 const SWA_CLI_API_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
 const SWA_CLI_APP_LOCATION = (process.env.SWA_CLI_APP_LOCATION || DEFAULT_CONFIG.appLocation) as string;
 const SWA_CLI_APP_ARTIFACT_LOCATION = (process.env.SWA_CLI_APP_ARTIFACT_LOCATION || DEFAULT_CONFIG.appArtifactLocation) as string;
-const SWA_CLI_APP_USE_HTTPS = process.env.SWA_CLI_APP_USE_HTTPS === "true" || DEFAULT_CONFIG.useHttps === true;
+const SWA_CLI_APP_SSL = process.env.SWA_CLI_APP_SSL === "true" || DEFAULT_CONFIG.ssl === true;
 const SWA_CLI_APP_SSL_KEY = process.env.SWA_CLI_APP_SSL_KEY as string;
 const SWA_CLI_APP_SSL_CERT = process.env.SWA_CLI_APP_SSL_CERT as string;
 
-const PROTOCOL = SWA_CLI_APP_USE_HTTPS ? `https` : `http`;
+const PROTOCOL = SWA_CLI_APP_SSL ? `https` : `http`;
 
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
@@ -38,11 +38,11 @@ if (SWA_WORKFLOW_CONFIG_FILE) {
   logger.info(`\nFound workflow file:\n    ${chalk.green(SWA_WORKFLOW_CONFIG_FILE)}`);
 }
 
-if (SWA_CLI_APP_USE_HTTPS && (SWA_CLI_APP_SSL_KEY === undefined || SWA_CLI_APP_SSL_CERT === undefined)) {
+if (SWA_CLI_APP_SSL && (SWA_CLI_APP_SSL_KEY === undefined || SWA_CLI_APP_SSL_CERT === undefined)) {
   logger.error(`SSL Key or SSL Cert are required when using HTTPS`, true);
 }
 
-const httpsServerOptions: Pick<https.ServerOptions, "cert" | "key"> | null = SWA_CLI_APP_USE_HTTPS
+const httpsServerOptions: Pick<https.ServerOptions, "cert" | "key"> | null = SWA_CLI_APP_SSL
   ? {
       cert: fs.readFileSync(SWA_CLI_APP_SSL_CERT, "utf8"),
       key: fs.readFileSync(SWA_CLI_APP_SSL_KEY, "utf8"),
@@ -292,7 +292,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     userConfig = await handleUserConfig(SWA_CLI_APP_LOCATION);
   }
   const createServer = () => {
-    if (SWA_CLI_APP_USE_HTTPS && httpsServerOptions !== null) {
+    if (SWA_CLI_APP_SSL && httpsServerOptions !== null) {
       return https.createServer(httpsServerOptions, requestHandler(userConfig));
     }
     return http.createServer(requestHandler(userConfig));

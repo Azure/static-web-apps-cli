@@ -56,7 +56,7 @@ declare type SWACLIConfig = GithubActionWorkflow & {
   port?: number;
   host?: string;
   apiPort?: number;
-  useHttps?: boolean;
+  ssl?: boolean;
   apiPrefix?: "api";
   swaConfigFilename?: "staticwebapp.config.json";
   swaConfigFilenameLegacy?: "routes.json";
