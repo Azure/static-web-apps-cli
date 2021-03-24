@@ -39,7 +39,7 @@ if (SWA_WORKFLOW_CONFIG_FILE) {
 }
 
 if (SWA_CLI_APP_USE_HTTPS && (SWA_CLI_APP_SSL_KEY === undefined || SWA_CLI_APP_SSL_CERT === undefined)) {
-  logger.error(`If use HTTPS, must be set SWA_CLI_APP_SSL_KEY and SWA_CLI_APP_SSL_CERT`, true);
+  logger.error(`SSL Key or SSL Cert are required when using HTTPS`, true);
 }
 
 const httpsServerOptions: Pick<https.ServerOptions, "cert" | "key"> | null = SWA_CLI_APP_USE_HTTPS
