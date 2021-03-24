@@ -8,6 +8,9 @@ declare global {
       SWA_CLI_HOST: string;
       SWA_CLI_PORT: string;
       SWA_WORKFLOW_FILE: string;
+      SWA_CLI_APP_SSL: boolean;
+      SWA_CLI_APP_SSL_KEY: string;
+      SWA_CLI_APP_SSL_CERT: string;
     }
   }
 }
