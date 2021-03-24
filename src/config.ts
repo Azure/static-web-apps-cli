@@ -7,6 +7,8 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   ssl: false,
   appLocation: `.${path.sep}`,
   appArtifactLocation: `.${path.sep}`,
+  sslCert: undefined,
+  sslKey: undefined,
   appBuildCommand: "npm run build --if-present",
   apiBuildCommand: "npm run build --if-present",
   swaConfigFilename: "staticwebapp.config.json",

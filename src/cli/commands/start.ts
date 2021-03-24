@@ -94,6 +94,9 @@ export async function start(startContext: string, options: SWACLIConfig) {
     SWA_CLI_HOST: options.host,
     SWA_CLI_PORT: `${options.port}`,
     SWA_WORKFLOW_FILES: userConfig?.files?.join(","),
+    SWA_CLI_APP_SSL: `${options.ssl}`,
+    SWA_CLI_APP_SSL_CERT: options.sslCert,
+    SWA_CLI_APP_SSL_KEY: options.sslKey,
   };
 
   if (options.verbose?.includes("silly")) {
