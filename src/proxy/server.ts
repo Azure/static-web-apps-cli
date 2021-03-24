@@ -38,10 +38,6 @@ if (SWA_WORKFLOW_CONFIG_FILE) {
   logger.info(`\nFound workflow file:\n    ${chalk.green(SWA_WORKFLOW_CONFIG_FILE)}`);
 }
 
-if (SWA_CLI_APP_SSL && (SWA_CLI_APP_SSL_KEY === undefined || SWA_CLI_APP_SSL_CERT === undefined)) {
-  logger.error(`SSL Key or SSL Cert are required when using HTTPS`, true);
-}
-
 const httpsServerOptions: Pick<https.ServerOptions, "cert" | "key"> | null = SWA_CLI_APP_SSL
   ? {
       cert: fs.readFileSync(SWA_CLI_APP_SSL_CERT, "utf8"),

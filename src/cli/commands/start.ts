@@ -84,6 +84,23 @@ export async function start(startContext: string, options: SWACLIConfig) {
     }
   }
 
+  let sslCertLocation = options.sslCert;
+  let sslKeyLocation = options.sslKey;
+
+  if (options.ssl) {
+    if (options.sslCert === undefined || options.sslKey === undefined) {
+      const defaultSslCertLocation = path.join("ssl", "localhost.crt");
+      const defaultSslKeyLocation = path.join("ssl", "localhost.key");
+      const isSslCertExistsOnDefaultLocation = fs.existsSync(defaultSslCertLocation);
+      const isSslKeyExistsOnDefaultLocation = fs.existsSync(defaultSslKeyLocation);
+      if (isSslCertExistsOnDefaultLocation === false || isSslKeyExistsOnDefaultLocation === false) {
+        logger.error(`SSL Key or SSL Cert are required when using HTTPS`, true);
+      }
+      sslCertLocation = defaultSslCertLocation;
+      sslKeyLocation = defaultSslKeyLocation;
+    }
+  }
+
   // set env vars for current command
   const envVarsObj = {
     SWA_CLI_DEBUG: options.verbose,
@@ -95,8 +112,8 @@ export async function start(startContext: string, options: SWACLIConfig) {
     SWA_CLI_PORT: `${options.port}`,
     SWA_WORKFLOW_FILES: userConfig?.files?.join(","),
     SWA_CLI_APP_SSL: `${options.ssl}`,
-    SWA_CLI_APP_SSL_CERT: options.sslCert,
-    SWA_CLI_APP_SSL_KEY: options.sslKey,
+    SWA_CLI_APP_SSL_CERT: sslCertLocation,
+    SWA_CLI_APP_SSL_KEY: sslKeyLocation,
   };
 
   if (options.verbose?.includes("silly")) {
