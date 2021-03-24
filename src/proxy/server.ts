@@ -19,7 +19,7 @@ const SWA_CLI_PORT = parseInt((process.env.SWA_CLI_PORT || DEFAULT_CONFIG.port) 
 const SWA_CLI_API_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
 const SWA_CLI_APP_LOCATION = (process.env.SWA_CLI_APP_LOCATION || DEFAULT_CONFIG.appLocation) as string;
 const SWA_CLI_APP_ARTIFACT_LOCATION = (process.env.SWA_CLI_APP_ARTIFACT_LOCATION || DEFAULT_CONFIG.appArtifactLocation) as string;
-const SWA_CLI_APP_USE_HTTPS = (process.env.SWA_CLI_APP_USE_HTTPS || DEFAULT_CONFIG.useHttps) === "true";
+const SWA_CLI_APP_USE_HTTPS = process.env.SWA_CLI_APP_USE_HTTPS === "true" || DEFAULT_CONFIG.useHttps === true;
 const SWA_CLI_APP_SSL_KEY = process.env.SWA_CLI_APP_SSL_KEY as string;
 const SWA_CLI_APP_SSL_CERT = process.env.SWA_CLI_APP_SSL_CERT as string;
 

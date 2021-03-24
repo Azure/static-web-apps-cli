@@ -4,7 +4,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   host: "0.0.0.0",
   apiPort: 7071,
   apiPrefix: "api",
-  useHttps: "false",
+  useHttps: false,
   appLocation: `.${path.sep}`,
   appArtifactLocation: `.${path.sep}`,
   appBuildCommand: "npm run build --if-present",
