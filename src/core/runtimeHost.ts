@@ -5,8 +5,6 @@ const httpServerBin = "npx http-server";
 export const createRuntimeHost = ({ appPort, proxyHost, appLocation, appArtifactLocation }: RuntimeHostConfig) => {
   const runtimeType = detectRuntime(appLocation);
 
-  console.info("INFO: Detected runtime:", runtimeType);
-
   switch (runtimeType) {
     // .NET runtime
     case RuntimeType.dotnet:

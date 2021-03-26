@@ -16,7 +16,7 @@ export const detectRuntime = (appLocation: string | undefined) => {
 
   const files = fs.readdirSync(appLocation);
 
-  if (files.some((file) => path.extname(file) === ".csproj")) {
+  if (files.some((file) => [".csproj", ".sln"].includes(path.extname(file)))) {
     return RuntimeType.dotnet;
   }
 
@@ -24,5 +24,6 @@ export const detectRuntime = (appLocation: string | undefined) => {
     return RuntimeType.node;
   }
 
+  logger.silly(`Detected runtime: ${RuntimeType}`);
   return RuntimeType.unknown;
 };

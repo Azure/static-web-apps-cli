@@ -8,9 +8,18 @@ describe("runtime", () => {
   });
 
   describe("detectRuntime()", () => {
-    it(`should detect ${RuntimeType.dotnet} runtime`, () => {
+    it(`should detect ${RuntimeType.dotnet} runtime (csproj)`, () => {
       mockFs({
         [appLocation]: { "Example.csproj": `<?xml version="1.0" encoding="utf-8"?>` },
+      });
+      const runtime = detectRuntime(appLocation);
+
+      expect(runtime).toBe(RuntimeType.dotnet);
+    });
+
+    it(`should detect ${RuntimeType.dotnet} runtime (sln)`, () => {
+      mockFs({
+        [appLocation]: { "Example.sln": `<?xml version="1.0" encoding="utf-8"?>` },
       });
       const runtime = detectRuntime(appLocation);
 
