@@ -32,7 +32,7 @@ export const logger = {
   },
 
   // public methods
-  info(data: string | object, prefix: string | null = "swa") {
+  info(data: string | object, prefix: string | null = null) {
     this.silly(data, prefix, "info");
   },
 
@@ -295,7 +295,7 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
     files,
   };
 
-  logger.silly({ config }, "utils");
+  logger.silly({ config }, "swa");
   return config;
 };
 

@@ -117,8 +117,10 @@ const handleUserConfig = async (appLocation: string): Promise<SWAConfigFile | nu
     logger.info(`\nFound configuration file:\n    ${chalk.green(configFile.file)}`);
 
     if (configFile.isLegacyConfigFile) {
-      logger.info(`    ${chalk.yellow(`WARNING: Functionality defined in the routes.json file is now deprecated.`)}`);
-      logger.info(`    ${chalk.yellow(`Read more: https://docs.microsoft.com/azure/static-web-apps/configuration#routes`)}`);
+      logger.info(
+        `    ${chalk.yellow(`WARNING: Functionality defined in the routes.json file is now deprecated.`)}\n` +
+          `    ${chalk.yellow(`Read more: https://docs.microsoft.com/azure/static-web-apps/configuration#routes`)}`
+      );
     }
 
     return configJson;
