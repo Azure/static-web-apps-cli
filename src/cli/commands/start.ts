@@ -11,7 +11,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
 
   if (isHttpUrl(startContext)) {
     useAppDevServer = await validateDevServerConfig(startContext);
-    options.appArtifactLocation = useAppDevServer;
+    options.outputLocation = useAppDevServer;
   } else {
     // start the emulator from a specific artifact folder, if folder exists
     if (await isAcceptingTcpConnections({ host: options.host, port: options.port! })) {
@@ -19,7 +19,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
     }
 
     if (fs.existsSync(startContext)) {
-      options.appArtifactLocation = startContext;
+      options.outputLocation = startContext;
     } else {
       // prettier-ignore
       logger.error(
@@ -42,16 +42,12 @@ export async function start(startContext: string, options: SWACLIConfig) {
   }
 
   // get the app and api artifact locations
-  let [appLocation, appArtifactLocation, apiLocation] = [
-    options.appLocation as string,
-    options.appArtifactLocation as string,
-    options.apiLocation as string,
-  ];
+  let [appLocation, outputLocation, apiLocation] = [options.appLocation as string, options.outputLocation as string, options.apiLocation as string];
 
   let apiPort = (options.apiPort || DEFAULT_CONFIG.apiPort) as number;
   let userConfig: Partial<GithubActionWorkflow> | undefined = {
     appLocation,
-    appArtifactLocation,
+    outputLocation,
     apiLocation,
   };
 
@@ -95,7 +91,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
     SWA_CLI_DEBUG: options.verbose,
     SWA_CLI_API_PORT: `${apiPort}`,
     SWA_CLI_APP_LOCATION: userConfig?.appLocation as string,
-    SWA_CLI_APP_ARTIFACT_LOCATION: userConfig?.appArtifactLocation as string,
+    SWA_CLI_APP_ARTIFACT_LOCATION: userConfig?.outputLocation as string,
     SWA_CLI_API_LOCATION: userConfig?.apiLocation as string,
     SWA_CLI_HOST: options.host,
     SWA_CLI_PORT: `${options.port}`,

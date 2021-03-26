@@ -124,7 +124,7 @@ export const decodeCookie = (cookieValue: any): ClientPrincipal | null => {
 export function validateUserConfig(userConfig: Partial<GithubActionWorkflow> | undefined): Partial<GithubActionWorkflow> | undefined {
   let appLocation = undefined;
   let apiLocation = undefined;
-  let appArtifactLocation = undefined;
+  let outputLocation = undefined;
 
   if (userConfig?.appLocation) {
     appLocation = path.normalize(path.join(process.cwd(), userConfig.appLocation || `.${path.sep}`));
@@ -146,14 +146,14 @@ export function validateUserConfig(userConfig: Partial<GithubActionWorkflow> | u
     }
   }
 
-  if (userConfig?.appArtifactLocation) {
+  if (userConfig?.outputLocation) {
     // is dev server url
-    if (isHttpUrl(userConfig.appArtifactLocation)) {
-      appArtifactLocation = userConfig.appArtifactLocation;
+    if (isHttpUrl(userConfig.outputLocation)) {
+      outputLocation = userConfig.outputLocation;
     } else {
-      appArtifactLocation = path.normalize(path.join(process.cwd(), userConfig.appArtifactLocation || `.${path.sep}`));
-      if (path.isAbsolute(userConfig.appArtifactLocation)) {
-        appArtifactLocation = userConfig.appArtifactLocation;
+      outputLocation = path.normalize(path.join(process.cwd(), userConfig.outputLocation || `.${path.sep}`));
+      if (path.isAbsolute(userConfig.outputLocation)) {
+        outputLocation = userConfig.outputLocation;
       }
     }
   }
@@ -161,7 +161,7 @@ export function validateUserConfig(userConfig: Partial<GithubActionWorkflow> | u
   return {
     appLocation,
     apiLocation,
-    appArtifactLocation,
+    outputLocation,
   };
 }
 
@@ -170,7 +170,7 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
   let isApiDevServer = false;
   if (userConfig) {
     // is dev servers? Skip reading workflow file
-    isAppDevServer = isHttpUrl(userConfig?.appArtifactLocation!);
+    isAppDevServer = isHttpUrl(userConfig?.outputLocation!);
     isApiDevServer = isHttpUrl(userConfig?.apiLocation!);
     if (isAppDevServer && isApiDevServer) {
       return userConfig && validateUserConfig(userConfig);
@@ -251,27 +251,27 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
     app_build_command = DEFAULT_CONFIG.appBuildCommand,
     api_build_command = DEFAULT_CONFIG.apiBuildCommand,
     app_location = DEFAULT_CONFIG.appLocation,
-    app_artifact_location = DEFAULT_CONFIG.appArtifactLocation,
+    output_location = DEFAULT_CONFIG.outputLocation,
     api_location = DEFAULT_CONFIG.apiLocation,
   } = swaBuildConfig.with;
 
   // the following locations (extracted from the config) should be under the user's project folder:
   // - app_location
   // - api_location
-  // - app_artifact_location
+  // - output_location
 
   app_location = path.normalize(path.join(process.cwd(), app_location));
   if (typeof api_location !== "undefined") {
     api_location = path.normalize(path.join(process.cwd(), api_location || path.sep));
   }
-  app_artifact_location = path.normalize(app_artifact_location);
+  output_location = path.normalize(output_location);
 
   const detectedRuntimeType = detectRuntime(app_location);
   if (detectedRuntimeType === RuntimeType.dotnet) {
     // TODO: work out what runtime is being used for .NET rather than hard-coded
-    app_artifact_location = path.join(app_location, "bin", "Debug", "netstandard2.1", "publish", app_artifact_location);
+    output_location = path.join(app_location, "bin", "Debug", "netstandard2.1", "publish", output_location);
   } else {
-    app_artifact_location = path.join(app_location, app_artifact_location);
+    output_location = path.join(app_location, output_location);
   }
 
   // override SWA config with user's config (if provided):
@@ -279,7 +279,7 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
   if (userConfig) {
     userConfig = validateUserConfig(userConfig);
     app_location = userConfig?.appLocation;
-    app_artifact_location = userConfig?.appArtifactLocation;
+    output_location = userConfig?.outputLocation;
     api_location = userConfig?.apiLocation;
   }
 
@@ -291,7 +291,7 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
     apiBuildCommand: isApiDevServer ? undefined : api_build_command,
     appLocation: app_location,
     apiLocation: api_location,
-    appArtifactLocation: app_artifact_location,
+    outputLocation: output_location,
     files,
   };
 
@@ -409,9 +409,9 @@ export function parseUrl(url: string) {
 }
 
 // @TODO
-export function computeAppLocationFromArtifactLocation(appArtifactLocation: string | undefined) {
-  if (appArtifactLocation) {
-    return path.dirname(appArtifactLocation).split(path.sep).pop();
+export function computeAppLocationFromArtifactLocation(outputLocation: string | undefined) {
+  if (outputLocation) {
+    return path.dirname(outputLocation).split(path.sep).pop();
   }
   return undefined;
 }

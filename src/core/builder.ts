@@ -78,7 +78,7 @@ const builder = async ({ config }: { config: Partial<GithubActionWorkflow> }) =>
           {
             // figure out if appLocation exists
             const isPackageJsonExists = fs.existsSync(appLocation!) && fs.existsSync(path.join(appLocation!, "package.json"));
-            const isAppDevServer = isHttpUrl(config.appArtifactLocation!);
+            const isAppDevServer = isHttpUrl(config.outputLocation!);
 
             // build app
             if (isPackageJsonExists) {
@@ -86,7 +86,7 @@ const builder = async ({ config }: { config: Partial<GithubActionWorkflow> }) =>
 
               await nodeBuilder(appLocation!, appBuildCommand!, "npm", "dim.gray");
             } else if (isAppDevServer) {
-              logger.silly(chalk.yellow(`Skipping app build: App served from ${config.appArtifactLocation}`), "npm");
+              logger.silly(chalk.yellow(`Skipping app build: App served from ${config.outputLocation}`), "npm");
             } else {
               logger.silly(chalk.yellow("Skipping app build: No package.json found."), "npm");
             }

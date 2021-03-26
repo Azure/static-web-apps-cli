@@ -23,9 +23,9 @@ import { start } from "./commands/start";
     .description("start the emulator from a directory or bind to a dev server")
     .option("--app-location <appLocation>", "set location for the static app source code", DEFAULT_CONFIG.appLocation)
     .option(
-      "--app, --app-artifact-location <appArtifactLocation>",
-      "set the location where static files are built for production",
-      DEFAULT_CONFIG.appArtifactLocation
+      "--app, --app-artifact-location <outputLocation>",
+      "set the location of the build output directory relative to the --app-location.",
+      DEFAULT_CONFIG.outputLocation
     )
     .option("--api, --api-location <apiLocation>", "set the API folder or Azure Functions emulator address", DEFAULT_CONFIG.apiLocation)
 

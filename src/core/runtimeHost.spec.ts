@@ -5,7 +5,7 @@ import * as detectRuntime from "./runtimes";
 let spyDetectRuntime: jest.SpyInstance;
 const mockConfig = {
   appPort: 8080,
-  appArtifactLocation: `.${path.sep}`,
+  outputLocation: `.${path.sep}`,
   appLocation: `.${path.sep}`,
   proxyHost: "0.0.0.0",
   proxyPort: 4242,
@@ -19,10 +19,10 @@ describe("runtimeHost", () => {
   });
 
   describe("createRuntimeHost()", () => {
-    it("appArtifactLocation should be propagated in resulting command", () => {
+    it("outputLocation should be propagated in resulting command", () => {
       const rh = createRuntimeHost({
         ...mockConfig,
-        appArtifactLocation: "./foobar",
+        outputLocation: "./foobar",
       });
 
       expect(spyDetectRuntime).toHaveBeenCalledWith(`.${path.sep}`);
@@ -30,10 +30,10 @@ describe("runtimeHost", () => {
       expect(rh.args).toEqual(["./foobar", "-d", "false", "--host", "0.0.0.0", "--port", "8080", "--cache", "-1"]);
     });
 
-    it("appArtifactLocation should default to ./ if undefined", () => {
+    it("outputLocation should default to ./ if undefined", () => {
       const rh = createRuntimeHost({
         ...mockConfig,
-        appArtifactLocation: undefined,
+        outputLocation: undefined,
       });
 
       expect(spyDetectRuntime).toHaveBeenCalledWith(`.${path.sep}`);

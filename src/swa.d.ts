@@ -43,7 +43,7 @@ declare type RuntimeHostConfig = {
   proxyHost: string;
   proxyPort: number;
   appLocation: string | undefined;
-  appArtifactLocation: string | undefined;
+  outputLocation: string | undefined;
 };
 
 declare type GithubActionWorkflow = {
@@ -51,7 +51,7 @@ declare type GithubActionWorkflow = {
   apiBuildCommand?: string;
   appLocation?: string;
   apiLocation?: string;
-  appArtifactLocation?: string;
+  outputLocation?: string;
   files?: string[];
 };
 

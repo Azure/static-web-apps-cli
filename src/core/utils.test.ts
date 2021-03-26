@@ -457,7 +457,7 @@ jobs:
         expect(readWorkflowFile()?.apiLocation).toBeUndefined();
       });
 
-      it("property 'app_artifact_location' should be set", () => {
+      it("property 'output_location' should be set", () => {
         mockFs({
           ".github/workflows/azure-static-web-apps.yml": `
 jobs:
@@ -466,15 +466,15 @@ jobs:
       - name: Build And Deploy
         uses: Azure/static-web-apps-deploy@v0.0.1-preview
         with:
-          app_artifact_location: "/"
+          output_location: "/"
 `,
         });
 
         expect(readWorkflowFile()).toBeTruthy();
-        expect(readWorkflowFile()?.appArtifactLocation).toBe(path.normalize(process.cwd() + "/"));
+        expect(readWorkflowFile()?.outputLocation).toBe(path.normalize(process.cwd() + "/"));
       });
 
-      it("property 'app_artifact_location' should be set to '/' if missing", () => {
+      it("property 'output_location' should be set to '/' if missing", () => {
         mockFs({
           ".github/workflows/azure-static-web-apps.yml": `
 jobs:
@@ -488,7 +488,7 @@ jobs:
         });
 
         expect(readWorkflowFile()).toBeTruthy();
-        expect(readWorkflowFile()?.appArtifactLocation).toBe(path.normalize(process.cwd() + "/"));
+        expect(readWorkflowFile()?.outputLocation).toBe(path.normalize(process.cwd() + "/"));
       });
 
       it("property 'app_build_command' should be set", () => {

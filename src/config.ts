@@ -6,7 +6,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   apiPrefix: "api",
   ssl: false,
   appLocation: `.${path.sep}`,
-  appArtifactLocation: `.${path.sep}`,
+  outputLocation: `.${path.sep}`,
   sslCert: undefined,
   sslKey: undefined,
   appBuildCommand: "npm run build --if-present",

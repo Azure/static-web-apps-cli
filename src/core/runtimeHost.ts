@@ -2,7 +2,7 @@ import { DEFAULT_CONFIG } from "../config";
 import { detectRuntime, RuntimeType } from "./runtimes";
 
 const httpServerBin = "npx http-server";
-export const createRuntimeHost = ({ appPort, proxyHost, appLocation, appArtifactLocation }: RuntimeHostConfig) => {
+export const createRuntimeHost = ({ appPort, proxyHost, appLocation, outputLocation }: RuntimeHostConfig) => {
   const runtimeType = detectRuntime(appLocation);
 
   switch (runtimeType) {
@@ -18,10 +18,10 @@ export const createRuntimeHost = ({ appPort, proxyHost, appLocation, appArtifact
     case RuntimeType.unknown:
     default:
       const command = httpServerBin;
-      appArtifactLocation = appArtifactLocation || DEFAULT_CONFIG.appArtifactLocation;
+      outputLocation = outputLocation || DEFAULT_CONFIG.outputLocation;
       // See available options for http-server: https://github.com/http-party/http-server#available-options
       // Note: --proxy allows us to add fallback routes for SPA (https://github.com/http-party/http-server#catch-all-redirect)
-      const args = `${appArtifactLocation} -d false --host ${proxyHost} --port ${appPort} --cache -1`.split(" ");
+      const args = `${outputLocation} -d false --host ${proxyHost} --port ${appPort} --cache -1`.split(" ");
 
       return {
         command,
