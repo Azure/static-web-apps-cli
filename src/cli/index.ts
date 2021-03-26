@@ -34,6 +34,9 @@ import { start } from "./commands/start";
     .option("--host <host>", "set the cli host address", DEFAULT_CONFIG.host)
     .option<number>("--port <port>", "set the cli port", parsePort, DEFAULT_CONFIG.port)
     .option("--build", "build the app and API before starting the emulator", false)
+    .option("--ssl", "serving the app and API over HTTPS", DEFAULT_CONFIG.ssl)
+    .option("--ssl-cert <sslCertLocation>", "SSL certificate to use for serving HTTPS", DEFAULT_CONFIG.sslCert)
+    .option("--ssl-key <sslKeyLocation>", "SSL key to use for serving HTTPS", DEFAULT_CONFIG.sslKey)
     .action(async (context: string = `.${path.sep}`, options: any) => {
       options = {
         ...options,

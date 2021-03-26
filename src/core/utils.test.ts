@@ -770,5 +770,10 @@ jobs:
       expect(address("127.0.0.1", "4200")).toBe("http://127.0.0.1:4200");
       expect(address("[::1]", "4200")).toBe("http://[::1]:4200");
     });
+
+    it("should accept protocol both HTTP and HTTPS protocols", () => {
+      expect(address("127.0.0.1", "4200", "http")).toBe("http://127.0.0.1:4200");
+      expect(address("127.0.0.1", "4200", "https")).toBe("https://127.0.0.1:4200");
+    });
   });
 });

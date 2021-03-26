@@ -8,6 +8,9 @@ declare global {
       SWA_CLI_HOST: string;
       SWA_CLI_PORT: string;
       SWA_WORKFLOW_FILE: string;
+      SWA_CLI_APP_SSL: boolean;
+      SWA_CLI_APP_SSL_KEY: string;
+      SWA_CLI_APP_SSL_CERT: string;
     }
   }
 }
@@ -56,7 +59,10 @@ declare type SWACLIConfig = GithubActionWorkflow & {
   port?: number;
   host?: string;
   apiPort?: number;
+  ssl?: boolean;
   apiPrefix?: "api";
+  sslCert?: string;
+  sslKey?: string;
   swaConfigFilename?: "staticwebapp.config.json";
   swaConfigFilenameLegacy?: "routes.json";
   app?: string;

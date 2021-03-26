@@ -3,6 +3,7 @@ import fs from "fs";
 import chalk from "chalk";
 import internalIp from "internal-ip";
 import http from "http";
+import https from "https";
 import httpProxy from "http-proxy";
 import net from "net";
 import path from "path";
@@ -18,8 +19,11 @@ const SWA_CLI_PORT = parseInt((process.env.SWA_CLI_PORT || DEFAULT_CONFIG.port) 
 const SWA_CLI_API_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
 const SWA_CLI_APP_LOCATION = (process.env.SWA_CLI_APP_LOCATION || DEFAULT_CONFIG.appLocation) as string;
 const SWA_CLI_APP_ARTIFACT_LOCATION = (process.env.SWA_CLI_APP_ARTIFACT_LOCATION || DEFAULT_CONFIG.appArtifactLocation) as string;
+const SWA_CLI_APP_SSL = process.env.SWA_CLI_APP_SSL === "true" || DEFAULT_CONFIG.ssl === true;
+const SWA_CLI_APP_SSL_KEY = process.env.SWA_CLI_APP_SSL_KEY as string;
+const SWA_CLI_APP_SSL_CERT = process.env.SWA_CLI_APP_SSL_CERT as string;
 
-const PROTOCOL = `http://`;
+const PROTOCOL = SWA_CLI_APP_SSL ? `https` : `http`;
 
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
@@ -34,6 +38,13 @@ if (SWA_WORKFLOW_CONFIG_FILE) {
   logger.info(`\nFound workflow file:\n    ${chalk.green(SWA_WORKFLOW_CONFIG_FILE)}`);
 }
 
+const httpsServerOptions: Pick<https.ServerOptions, "cert" | "key"> | null = SWA_CLI_APP_SSL
+  ? {
+      cert: fs.readFileSync(SWA_CLI_APP_SSL_CERT, "utf8"),
+      key: fs.readFileSync(SWA_CLI_APP_SSL_KEY, "utf8"),
+    }
+  : null;
+
 const SWA_PUBLIC_DIR = path.resolve(__dirname, "..", "public");
 
 const logRequest = (req: http.IncomingMessage, target: string | null = null, statusCode: number | null = null) => {
@@ -41,7 +52,7 @@ const logRequest = (req: http.IncomingMessage, target: string | null = null, sta
     return;
   }
 
-  const host = target || `${PROTOCOL}${req.headers.host}`;
+  const host = target || `${PROTOCOL}://${req.headers.host}`;
   const url = req.url?.startsWith("/") ? req.url : `/${req.url}`;
 
   if (statusCode) {
@@ -150,7 +161,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
       res.statusCode = 404;
       serve(SWA_PUBLIC_DIR, req, res);
 
-      logRequest(req, PROTOCOL + req.headers.host + req.url, 404);
+      logRequest(req, PROTOCOL + "://" + req.headers.host + req.url, 404);
     }
 
     // proxy AUTH request to AUTH emulator
@@ -258,8 +269,8 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     // prettier-ignore
     logger.log(
       `\nAvailable on:\n` +
-      `    ${chalk.green(address(`${localIpAdress}`, SWA_CLI_PORT))}\n` +
-      `    ${chalk.green(address(SWA_CLI_HOST, SWA_CLI_PORT))}\n\n` +
+      `    ${chalk.green(address(`${localIpAdress}`, SWA_CLI_PORT, PROTOCOL))}\n` +
+      `    ${chalk.green(address(SWA_CLI_HOST, SWA_CLI_PORT, PROTOCOL))}\n\n` +
       `Azure Static Web Apps emulator started. Press CTRL+C to exit.\n\n`
     );
 
@@ -272,11 +283,17 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
   };
 
   // load user custom rules if running in local mode (non-dev server)
-  let userConfig = null;
+  let userConfig: SWAConfigFile | null = null;
   if (!isStaticDevServer) {
     userConfig = await handleUserConfig(SWA_CLI_APP_LOCATION);
   }
-  const server = http.createServer(requestHandler(userConfig));
+  const createServer = () => {
+    if (SWA_CLI_APP_SSL && httpsServerOptions !== null) {
+      return https.createServer(httpsServerOptions, requestHandler(userConfig));
+    }
+    return http.createServer(requestHandler(userConfig));
+  };
+  const server = createServer();
   server.listen(SWA_CLI_PORT, SWA_CLI_HOST, onServerStart);
   server.listen(SWA_CLI_PORT, localIpAdress);
 })();
