@@ -3,11 +3,23 @@ import fs from "fs";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
 import builder from "../../core/builder";
-import { isAcceptingTcpConnections, isHttpUrl, logger, parseUrl, readWorkflowFile, validateDevServerConfig } from "../../core/utils";
+import {
+  createStartupScriptCommand,
+  isAcceptingTcpConnections,
+  isHttpUrl,
+  logger,
+  parseUrl,
+  readWorkflowFile,
+  validateDevServerConfig,
+} from "../../core/utils";
 
 export async function start(startContext: string, options: SWACLIConfig) {
-  let useAppDevServer = undefined;
-  let useApiDevServer = undefined;
+  // WARNING: code below doesn't have access to SWA CLI env vars which are defined later below
+  // make sure this code (or code from utils) does't depend on SWA CLI env vars!
+
+  let useAppDevServer: string | undefined | null = undefined;
+  let useApiDevServer: string | undefined | null = undefined;
+  let startupCommand: string | undefined | null = undefined;
 
   if (isHttpUrl(startContext)) {
     useAppDevServer = await validateDevServerConfig(startContext);
@@ -59,7 +71,6 @@ export async function start(startContext: string, options: SWACLIConfig) {
   });
 
   const isApiLocationExistsOnDisk = fs.existsSync(userConfig?.apiLocation!);
-  // parse the API URI port
 
   // handle the API location config
   let serveApiCommand = "echo No API found. Skipping";
@@ -86,6 +97,12 @@ export async function start(startContext: string, options: SWACLIConfig) {
     }
   }
 
+  if (options.run) {
+    startupCommand = createStartupScriptCommand(options.run, options);
+  }
+
+  // WARNING: code from above doesn't have access to env vars which are only defined below
+
   // set env vars for current command
   const envVarsObj = {
     SWA_CLI_DEBUG: options.verbose,
@@ -99,13 +116,16 @@ export async function start(startContext: string, options: SWACLIConfig) {
     SWA_CLI_APP_SSL: `${options.ssl}`,
     SWA_CLI_APP_SSL_CERT: options.sslCert,
     SWA_CLI_APP_SSL_KEY: options.sslKey,
+    SWA_CLI_STARTUP_COMMAND: startupCommand as string,
   };
 
   // merge SWA env variables with process.env
   process.env = { ...process.env, ...envVarsObj };
 
+  // INFO: from here code may access SWA CLI env vars.
+
   const { env } = process;
-  const concurrentlyCommands = [
+  const concurrentlyCommands: concurrently.CommandObj[] = [
     // start the reverse proxy
     { command: `node ${path.join(__dirname, "..", "..", "proxy", "server.js")}`, name: "swa", env, prefixColor: "gray.dim" },
   ];
@@ -114,6 +134,13 @@ export async function start(startContext: string, options: SWACLIConfig) {
     concurrentlyCommands.push(
       // serve the api, if it's available
       { command: serveApiCommand, name: "api", env, prefixColor: "gray.dim" }
+    );
+  }
+
+  if (startupCommand) {
+    concurrentlyCommands.push(
+      // run an external script, if it's available
+      { command: `cd ${userConfig?.appLocation} && ${startupCommand}`, name: "run", env, prefixColor: "gray.dim" }
     );
   }
 
@@ -129,8 +156,9 @@ export async function start(startContext: string, options: SWACLIConfig) {
       ssl: [options.ssl, options.sslCert, options.sslKey],
       env: envVarsObj,
       commands: {
-        app: concurrentlyCommands[0].command,
-        api: concurrentlyCommands?.[1]?.command,
+        swa: concurrentlyCommands.find((c) => c.name === "swa")?.command,
+        api: concurrentlyCommands.find((c) => c.name === "api")?.command,
+        run: concurrentlyCommands.find((c) => c.name === "run")?.command,
       },
     },
     "swa"
