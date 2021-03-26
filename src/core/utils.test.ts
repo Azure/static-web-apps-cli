@@ -872,7 +872,7 @@ jobs:
           "/bar/script.sh": "",
         });
         const cmd = createStartupScriptCommand("script.sh", { appLocation: `${path.sep}bar` });
-        expect(cmd).toBe(path.join(path.sep, "bar", "script.sh"));
+        expect(cmd).toInclude(path.join(path.sep, "bar", "script.sh"));
         mockFs.restore();
       });
 
