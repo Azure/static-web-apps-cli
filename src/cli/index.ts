@@ -42,6 +42,15 @@ import { start } from "./commands/start";
         ...options,
         verbose: cli.verbose,
       };
+
+      // make sure the start command gets the right verbosity level
+      process.env.SWA_CLI_DEBUG = options.verbose;
+      if (options.verbose?.includes("silly")) {
+        // when silly level is set,
+        // propagate debugging level to other tools using the DEBUG environment variable
+        process.env.DEBUG = "*";
+      }
+
       await start(context, options);
     });
 

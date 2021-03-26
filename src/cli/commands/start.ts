@@ -105,11 +105,6 @@ export async function start(startContext: string, options: SWACLIConfig) {
     SWA_CLI_APP_SSL_KEY: options.sslKey,
   };
 
-  if (options.verbose?.includes("silly")) {
-    // when silly level is set,
-    // propagate debugging level to other tools using the DEBUG environment variable
-    process.env.DEBUG = "*";
-  }
   // merge SWA env variables with process.env
   process.env = { ...process.env, ...envVarsObj };
 
@@ -135,6 +130,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
 
   logger.silly(
     {
+      ssl: [options.ssl, options.sslCert, options.sslKey],
       env: envVarsObj,
       commands: {
         app: concurrentlyCommands[0].command,
