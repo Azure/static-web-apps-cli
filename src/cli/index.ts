@@ -37,7 +37,10 @@ import { start } from "./commands/start";
     .option("--ssl", "serving the app and API over HTTPS", DEFAULT_CONFIG.ssl)
     .option("--ssl-cert <sslCertLocation>", "SSL certificate to use for serving HTTPS", DEFAULT_CONFIG.sslCert)
     .option("--ssl-key <sslKeyLocation>", "SSL key to use for serving HTTPS", DEFAULT_CONFIG.sslKey)
-    .action(async (context: string = `.${path.sep}`, options: any) => {
+
+    .option("--run <startupScript>", "run a external program or npm/yarn script on startup", DEFAULT_CONFIG.run)
+
+    .action(async (context: string = `.${path.sep}`, options: SWACLIConfig) => {
       options = {
         ...options,
         verbose: cli.verbose,

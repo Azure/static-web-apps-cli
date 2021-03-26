@@ -11,6 +11,7 @@ declare global {
       SWA_CLI_APP_SSL: boolean;
       SWA_CLI_APP_SSL_KEY: string;
       SWA_CLI_APP_SSL_CERT: string;
+      SWA_CLI_STARTUP_COMMAND: string;
     }
   }
 }
@@ -69,6 +70,7 @@ declare type SWACLIConfig = GithubActionWorkflow & {
   api?: string;
   build?: boolean;
   verbose?: string;
+  run?: string;
 };
 
 declare type ResponseOptions = {

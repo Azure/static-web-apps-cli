@@ -1,6 +1,17 @@
 import mockFs from "mock-fs";
 import path from "path";
-import { address, argv, findSWAConfigFile, logger, parsePort, readWorkflowFile, response, traverseFolder, validateCookie } from "./utils";
+import {
+  address,
+  argv,
+  createStartupScriptCommand,
+  findSWAConfigFile,
+  logger,
+  parsePort,
+  readWorkflowFile,
+  response,
+  traverseFolder,
+  validateCookie,
+} from "./utils";
 
 describe("Utils", () => {
   const mockLoggerError = jest.spyOn(logger, "error").mockImplementation(() => {
@@ -774,6 +785,133 @@ jobs:
     it("should accept protocol both HTTP and HTTPS protocols", () => {
       expect(address("127.0.0.1", "4200", "http")).toBe("http://127.0.0.1:4200");
       expect(address("127.0.0.1", "4200", "https")).toBe("https://127.0.0.1:4200");
+    });
+  });
+
+  describe("createStartupScriptCommand()", () => {
+    describe("npm", () => {
+      it("should parse npm scripts (simple)", () => {
+        const cmd = createStartupScriptCommand("npm:start", {});
+        expect(cmd).toBe("npm run start --if-present");
+      });
+      it("should parse npm scripts (with -)", () => {
+        const cmd = createStartupScriptCommand("npm:start-foo", {});
+        expect(cmd).toBe("npm run start-foo --if-present");
+      });
+      it("should parse npm scripts (with :)", () => {
+        const cmd = createStartupScriptCommand("npm:start:foo", {});
+        expect(cmd).toBe("npm run start:foo --if-present");
+      });
+      it("should parse npm scripts (with #)", () => {
+        const cmd = createStartupScriptCommand("npm:start#foo", {});
+        expect(cmd).toBe("npm run start#foo --if-present");
+      });
+    });
+    describe("yarn", () => {
+      it("should parse yarn scripts (simple)", () => {
+        const cmd = createStartupScriptCommand("yarn:start", {});
+        expect(cmd).toBe("yarn run start --if-present");
+      });
+      it("should parse yarn scripts (with -)", () => {
+        const cmd = createStartupScriptCommand("yarn:start-foo", {});
+        expect(cmd).toBe("yarn run start-foo --if-present");
+      });
+      it("should parse yarn scripts (with :)", () => {
+        const cmd = createStartupScriptCommand("yarn:start:foo", {});
+        expect(cmd).toBe("yarn run start:foo --if-present");
+      });
+      it("should parse yarn scripts (with #)", () => {
+        const cmd = createStartupScriptCommand("yarn:start#foo", {});
+        expect(cmd).toBe("yarn run start#foo --if-present");
+      });
+    });
+    describe("npx", () => {
+      it("should parse npx command (simple)", () => {
+        const cmd = createStartupScriptCommand("npx:foo", {});
+        expect(cmd).toBe("npx foo");
+      });
+      it("should parse npx command (with -)", () => {
+        const cmd = createStartupScriptCommand("npx:start-foo", {});
+        expect(cmd).toBe("npx start-foo");
+      });
+      it("should parse npx command (with :)", () => {
+        const cmd = createStartupScriptCommand("npx:start:foo", {});
+        expect(cmd).toBe("npx start:foo");
+      });
+      it("should parse npx command (with #)", () => {
+        const cmd = createStartupScriptCommand("npx:start#foo", {});
+        expect(cmd).toBe("npx start#foo");
+      });
+    });
+    describe("npm, npm and npx with optional args", () => {
+      it("should parse npm options", () => {
+        const cmd = createStartupScriptCommand("npm:foo --foo1 --foo2", {});
+        expect(cmd).toBe("npm run foo --foo1 --foo2 --if-present");
+      });
+      it("should parse yarn options", () => {
+        const cmd = createStartupScriptCommand("yarn:foo --foo1 --foo2", {});
+        expect(cmd).toBe("yarn run foo --foo1 --foo2 --if-present");
+      });
+      it("should parse npx options", () => {
+        const cmd = createStartupScriptCommand("npx:foo --foo1 --foo2", {});
+        expect(cmd).toBe("npx foo --foo1 --foo2");
+      });
+    });
+    describe("an external script", () => {
+      it("should parse relative script file ./script.sh", () => {
+        mockFs({
+          "script.sh": "",
+        });
+        const cmd = createStartupScriptCommand("script.sh", {});
+        expect(cmd).toBe(`${process.cwd()}${path.sep}script.sh`);
+        mockFs.restore();
+      });
+
+      it("should parse relative script file ./script.sh from the root of --app-location", () => {
+        mockFs({
+          "/bar/script.sh": "",
+        });
+        const cmd = createStartupScriptCommand("script.sh", { appLocation: `${path.sep}bar` });
+        expect(cmd).toBe(path.join(path.sep, "bar", "script.sh"));
+        mockFs.restore();
+      });
+
+      it("should parse absolute script file /foo/script.sh", () => {
+        mockFs({
+          "/foo": {
+            "script.sh": "",
+          },
+        });
+        const cmd = createStartupScriptCommand("/foo/script.sh", {});
+        expect(cmd).toBe("/foo/script.sh");
+        mockFs.restore();
+      });
+    });
+    describe("non-valid use cases", () => {
+      it("should handle non-valid npm patterns", () => {
+        const cmd = createStartupScriptCommand("npm", {});
+        expect(cmd).toBe(null);
+      });
+      it("should handle non-valid yarn patterns", () => {
+        const cmd = createStartupScriptCommand("yarn", {});
+        expect(cmd).toBe(null);
+      });
+      it("should handle non-valid npx patterns", () => {
+        const cmd = createStartupScriptCommand("npx", {});
+        expect(cmd).toBe(null);
+      });
+      it("should handle non-existant scripts (relative)", () => {
+        const cmd = createStartupScriptCommand("script.sh", {});
+        expect(cmd).toBe(null);
+      });
+      it("should handle non-existant scripts (asbolute)", () => {
+        const cmd = createStartupScriptCommand("/foo/bar/script.sh", {});
+        expect(cmd).toBe(null);
+      });
+      it("should handle non-existant scripts (asbolute)", () => {
+        const cmd = createStartupScriptCommand(`"npm:µ˜¬…˚πº–ª¶§∞¢£¢™§_)(*!#˜%@)`, {});
+        expect(cmd).toBe(null);
+      });
     });
   });
 });

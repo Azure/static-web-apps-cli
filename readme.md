@@ -118,17 +118,18 @@ swa start http://<APP_DEV_SERVER> --api=http://<API_DEV_SERVER>
 
 If you need to override the default values, provide the following options:
 
-| Options                          | Description                                         | Default   | Example                                              |
-| -------------------------------- | --------------------------------------------------- | --------- | ---------------------------------------------------- |
-| `--app-location`                 | set location for the static app source code         | `./`      | `--app-location="./my-project"`                      |
-| `--app, --app-artifact-location` | set app artifact (dist) folder or dev server        | `./`      | `--app="./my-dist"` or `--app=http://localhost:4200` |
-| `--api, --api-artifact-location` | set the API folder or dev server                    |           | `--api="./api"` or `--api=http://localhost:8083`     |
-| `--api-port`                     | set the API server port                             | `7071`    | `--api-port=8082`                                    |
-| `--host`                         | set the emulator host address                       | `0.0.0.0` | `--host=192.168.68.80`                               |
-| `--port`                         | set the emulator port value                         | `4280`    | `--port=8080`                                        |
-| `--ssl`                          | serving the app and API over HTTPS (default: false) | `false`   | `--ssl` or `--ssl=true`                              |
-| `--ssl-cert`                     | SSL certificate to use for serving HTTPS            |           | `--ssl-cert="/home/user/ssl/example.crt"`            |
-| `--ssl-key`                      | SSL key to use for serving HTTPS                    |           | `--ssl-key="/home/user/ssl/example.key"`             |
+| Options                          | Description                                          | Default   | Example                                              |
+| -------------------------------- | ---------------------------------------------------- | --------- | ---------------------------------------------------- |
+| `--app-location`                 | set location for the static app source code          | `./`      | `--app-location="./my-project"`                      |
+| `--app, --app-artifact-location` | set app artifact (dist) folder or dev server         | `./`      | `--app="./my-dist"` or `--app=http://localhost:4200` |
+| `--api, --api-artifact-location` | set the API folder or dev server                     |           | `--api="./api"` or `--api=http://localhost:8083`     |
+| `--api-port`                     | set the API server port                              | `7071`    | `--api-port=8082`                                    |
+| `--host`                         | set the emulator host address                        | `0.0.0.0` | `--host=192.168.68.80`                               |
+| `--port`                         | set the emulator port value                          | `4280`    | `--port=8080`                                        |
+| `--ssl`                          | serving the app and API over HTTPS (default: false)  | `false`   | `--ssl` or `--ssl=true`                              |
+| `--ssl-cert`                     | SSL certificate to use for serving HTTPS             |           | `--ssl-cert="/home/user/ssl/example.crt"`            |
+| `--ssl-key`                      | SSL key to use for serving HTTPS                     |           | `--ssl-key="/home/user/ssl/example.key"`             |
+| `--run`                          | run a external program or npm/yarn script on startup |           | `--run="npm:start"` or `--run="script.sh"`           |
 
 ## Local authentication & authorization emulation
 
