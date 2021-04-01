@@ -1,9 +1,11 @@
 import chalk from "chalk";
 import cookie from "cookie";
 import fs, { promises as fsPromises } from "fs";
+import ora from "ora";
 import net from "net";
 import path from "path";
 import YAML from "yaml";
+import waitOn from "wait-on";
 import { DEFAULT_CONFIG } from "../config";
 import { detectRuntime, RuntimeType } from "./runtimes";
 
@@ -36,8 +38,8 @@ export const logger = {
     this.silly(data, prefix, "info");
   },
 
-  log(data: string | object) {
-    this.silly(data, null, "log");
+  log(data: string | object, prefix: string | null = null) {
+    this.silly(data, prefix, "log");
   },
 
   error(data: string | object, exit = false) {
@@ -58,7 +60,6 @@ export const logger = {
       return;
     }
 
-    this._print(prefix, ``);
     if (SWA_CLI_DEBUG?.includes("silly") || SWA_CLI_DEBUG?.includes(debugFilter)) {
       if (typeof data === "object") {
         this._traverseObjectProperties(data, (key: string, value: string | null, indent: string) => {
@@ -383,10 +384,26 @@ export async function validateDevServerConfig(context: string) {
   try {
     const appListening = await isAcceptingTcpConnections({ port, host: hostname });
     if (appListening === false) {
-      logger.error(`Could not connect to "${context}". Is the server up and running?`);
-      process.exit(-1);
-    } else {
-      return context;
+      const spinner = ora();
+      try {
+        spinner.start(`Waiting for ${chalk.green(context)} to be ready...`);
+        await waitOn({
+          resources: [address(hostname, port)],
+          delay: 1000, // initial delay in ms, default 0
+          interval: 100, // poll interval in ms, default 250ms
+          simultaneous: 1, // limit to 1 connection per resource at a time
+          timeout: 30000, // timeout in ms, default Infinity
+          tcpTimeout: 1000, // tcp timeout in ms, default 300ms
+          window: 1000, // stabilization time in ms, default 750ms
+          strictSSL: false,
+        });
+        spinner.succeed(`Connected to ${chalk.green(context)} successfully.`);
+        spinner.clear();
+      } catch (err) {
+        spinner.fail();
+        logger.error(`Could not connect to "${context}". Is the server up and running?`);
+        process.exit(-1);
+      }
     }
   } catch (err) {
     if (err.message.includes("EACCES")) {
@@ -396,6 +413,8 @@ export async function validateDevServerConfig(context: string) {
     }
     process.exit(-1);
   }
+
+  return context;
 }
 
 export function parseUrl(url: string) {
