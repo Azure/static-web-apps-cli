@@ -19,6 +19,7 @@ const SWA_CLI_PORT = parseInt((process.env.SWA_CLI_PORT || DEFAULT_CONFIG.port) 
 const SWA_CLI_API_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
 const SWA_CLI_APP_LOCATION = (process.env.SWA_CLI_APP_LOCATION || DEFAULT_CONFIG.appLocation) as string;
 const SWA_CLI_APP_ARTIFACT_LOCATION = (process.env.SWA_CLI_APP_ARTIFACT_LOCATION || DEFAULT_CONFIG.outputLocation) as string;
+const SWA_CLI_API_LOCATION = (process.env.SWA_CLI_API_LOCATION || DEFAULT_CONFIG.apiLocation) as string;
 const SWA_CLI_APP_SSL = process.env.SWA_CLI_APP_SSL === "true" || DEFAULT_CONFIG.ssl === true;
 const SWA_CLI_APP_SSL_KEY = process.env.SWA_CLI_APP_SSL_KEY as string;
 const SWA_CLI_APP_SSL_CERT = process.env.SWA_CLI_APP_SSL_CERT as string;
@@ -28,6 +29,7 @@ const PROTOCOL = SWA_CLI_APP_SSL ? `https` : `http`;
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 const isStaticDevServer = isHttpUrl(SWA_CLI_APP_ARTIFACT_LOCATION);
+const isApiDevServer = isHttpUrl(SWA_CLI_API_LOCATION);
 
 if (!isHttpUrl(SWA_CLI_API_URI)) {
   logger.error(`The provided API URI ${SWA_CLI_API_URI} is not a valid. Exiting.`, true);
@@ -255,16 +257,28 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     if (isStaticDevServer) {
       // prettier-ignore
       logger.log(
-        `\nUsing dev server:\n`+
+        `\nUsing dev server for static content:\n`+
         `    ${chalk.green(SWA_CLI_APP_ARTIFACT_LOCATION)}`
       );
-
-      server.on("upgrade", onWsUpgrade);
     } else {
       // prettier-ignore
       logger.log(
         `\nServing static content:\n` +
         `    ${chalk.green(SWA_CLI_APP_ARTIFACT_LOCATION)}`
+        );
+    }
+
+    if (isApiDevServer) {
+      // prettier-ignore
+      logger.log(
+        `\nUsing dev server for API:\n`+
+        `    ${chalk.green(SWA_CLI_API_LOCATION)}`
+      );
+    } else {
+      // prettier-ignore
+      logger.log(
+        `\nServing API:\n` +
+        `    ${chalk.green(SWA_CLI_API_LOCATION)}`
         );
     }
 
@@ -275,6 +289,8 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
       `    ${chalk.green(address(SWA_CLI_HOST, SWA_CLI_PORT, PROTOCOL))}\n\n` +
       `Azure Static Web Apps emulator started. Press CTRL+C to exit.\n\n`
     );
+
+    server.on("upgrade", onWsUpgrade);
 
     registerProcessExit(() => {
       socketConnection?.end(() => logger.info("WebSocket connection closed."));
