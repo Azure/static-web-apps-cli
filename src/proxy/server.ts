@@ -1,16 +1,16 @@
+import chalk from "chalk";
 import finalhandler from "finalhandler";
 import fs from "fs";
-import chalk from "chalk";
-import internalIp from "internal-ip";
 import http from "http";
-import https from "https";
 import httpProxy from "http-proxy";
+import https from "https";
+import internalIp from "internal-ip";
 import net from "net";
 import path from "path";
 import serveStatic from "serve-static";
 import { processAuth } from "../auth/";
 import { DEFAULT_CONFIG } from "../config";
-import { address, decodeCookie, findSWAConfigFile, logger, isHttpUrl, registerProcessExit, validateCookie } from "../core/utils";
+import { address, decodeCookie, findSWAConfigFile, isHttpUrl, logger, registerProcessExit, validateCookie } from "../core/utils";
 import { applyRules } from "./routes-engine/index";
 
 const SWA_WORKFLOW_CONFIG_FILE = process.env.SWA_WORKFLOW_CONFIG_FILE as string;
@@ -18,6 +18,7 @@ const SWA_CLI_HOST = process.env.SWA_CLI_HOST as string;
 const SWA_CLI_PORT = parseInt((process.env.SWA_CLI_PORT || DEFAULT_CONFIG.port) as string, 10);
 const SWA_CLI_API_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
 const SWA_CLI_APP_LOCATION = (process.env.SWA_CLI_APP_LOCATION || DEFAULT_CONFIG.appLocation) as string;
+const SWA_CLI_ROUTES_LOCATION = (process.env.SWA_CLI_ROUTES_LOCATION || DEFAULT_CONFIG.routesLocation) as string;
 const SWA_CLI_APP_ARTIFACT_LOCATION = (process.env.SWA_CLI_APP_ARTIFACT_LOCATION || DEFAULT_CONFIG.outputLocation) as string;
 const SWA_CLI_APP_SSL = process.env.SWA_CLI_APP_SSL === "true" || DEFAULT_CONFIG.ssl === true;
 const SWA_CLI_APP_SSL_KEY = process.env.SWA_CLI_APP_SSL_KEY as string;
@@ -287,7 +288,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
   // load user custom rules if running in local mode (non-dev server)
   let userConfig: SWAConfigFile | null = null;
   if (!isStaticDevServer) {
-    userConfig = await handleUserConfig(SWA_CLI_APP_LOCATION);
+    userConfig = await handleUserConfig(SWA_CLI_ROUTES_LOCATION || SWA_CLI_APP_LOCATION);
   }
   const createServer = () => {
     if (SWA_CLI_APP_SSL && httpsServerOptions !== null) {
