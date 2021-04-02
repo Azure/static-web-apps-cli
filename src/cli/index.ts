@@ -28,6 +28,11 @@ import { start } from "./commands/start";
       DEFAULT_CONFIG.outputLocation
     )
     .option("--api, --api-location <apiLocation>", "set the API folder or Azure Functions emulator address", DEFAULT_CONFIG.apiLocation)
+    .option(
+      "--routes, --routes-location <routesLocation>",
+      "set the directory location where the staticwebapp.config.json file is found. This location is relative to the root of the project",
+      DEFAULT_CONFIG.routesLocation
+    )
 
     // CLI config
     .option<number>("--api-port <apiPort>", "set the API backend port", parsePort, DEFAULT_CONFIG.apiPort)

@@ -111,6 +111,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
     SWA_CLI_APP_LOCATION: userConfig?.appLocation as string,
     SWA_CLI_APP_ARTIFACT_LOCATION: userConfig?.outputLocation as string,
     SWA_CLI_API_LOCATION: userConfig?.apiLocation as string,
+    SWA_CLI_ROUTES_LOCATION: options.routesLocation,
     SWA_CLI_HOST: options.host,
     SWA_CLI_PORT: `${options.port}`,
     SWA_WORKFLOW_FILES: userConfig?.files?.join(","),
