@@ -99,7 +99,7 @@ When developing your backend locally, it's often useful to use the local API bac
 
 To use the CLI with your local API backend dev server, follow these two steps:
 
-1. Start your local API backend dev server (as usual): `func start host`.
+1. Start your local API backend dev server (as usual): `func host start`.
 2. Run the SWA CLI with the `--api` flag of the URI provided by the API backend dev server, in the following format:
 
 ```bash
