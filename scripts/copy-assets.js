@@ -1,5 +1,10 @@
 const path = require("path");
 const fs = require("fs");
+const child_process = require("child_process");
+const branch = child_process.execSync(`git rev-parse --abbrev-ref HEAD`).toString("utf-8").trim();
+const hash = child_process.execSync(`git rev-parse --short HEAD`).toString("utf-8").trim();
+const build = `<a rel="noopener noreferrer" target="_blank" href="https://github.com/Azure/static-web-apps-cli/commit/${hash}">${branch}+sha.${hash}</a>`;
+
 // main
 (function () {
   // prettier-ignore
@@ -17,5 +22,9 @@ const fs = require("fs");
     }
 
     fs.copyFileSync(file, distFile);
+
+    let content = fs.readFileSync(distFile).toString('utf-8');
+    content = content.replace(/#STAMP#/, build);
+    fs.writeFileSync(distFile, content);
   });
 })();
