@@ -294,10 +294,12 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     server.on("upgrade", onWsUpgrade);
 
     registerProcessExit(() => {
+      const timeout = setTimeout(() => process.exit(0), 2000);
       socketConnection?.end(() => logger.info("WebSocket connection closed."));
       server.close(() => logger.log("Server stopped."));
       proxyApi.close();
       proxyApp.close();
+      clearTimeout(timeout);
     });
   };
 
