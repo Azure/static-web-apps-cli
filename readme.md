@@ -162,7 +162,7 @@ Here is an example:
 
 ## High-level architecture
 
-![swa cli architecture](./docs/swa-emu-architecture.png)
+![swa cli architecture](./docs/swa-cli-architecture.png)
 
 The SWA CLI is built on top of the following components:
 
