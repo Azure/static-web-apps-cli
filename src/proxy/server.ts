@@ -269,18 +269,20 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
         );
     }
 
-    if (isApiDevServer) {
-      // prettier-ignore
-      logger.log(
-        `\nUsing dev server for API:\n`+
-        `    ${chalk.green(SWA_CLI_API_LOCATION)}`
-      );
-    } else {
-      // prettier-ignore
-      logger.log(
-        `\nServing API:\n` +
-        `    ${chalk.green(SWA_CLI_API_LOCATION)}`
+    if (SWA_CLI_API_LOCATION) {
+      if (isApiDevServer) {
+        // prettier-ignore
+        logger.log(
+          `\nUsing dev server for API:\n`+
+          `    ${chalk.green(SWA_CLI_API_LOCATION)}`
         );
+      } else {
+        // prettier-ignore
+        logger.log(
+          `\nServing API:\n` +
+          `    ${chalk.green(SWA_CLI_API_LOCATION)}`
+          );
+      }
     }
 
     // prettier-ignore
@@ -294,12 +296,12 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     server.on("upgrade", onWsUpgrade);
 
     registerProcessExit(() => {
-      const timeout = setTimeout(() => process.exit(0), 2000);
+      console.log("Shutting down...");
       socketConnection?.end(() => logger.info("WebSocket connection closed."));
       server.close(() => logger.log("Server stopped."));
-      proxyApi.close();
-      proxyApp.close();
-      clearTimeout(timeout);
+      proxyApi.close(() => logger.log("Api proxy stopped."));
+      proxyApp.close(() => logger.log("App proxy stopped."));
+      process.exit(0);
     });
   };
 
