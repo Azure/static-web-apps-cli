@@ -23,7 +23,7 @@
     "@types/globalyzer": "^0.1.0",
     "@types/globrex": "^0.1.0",
     "chalk": "^4.1.0",
-    "commander": "^5.1.0",
+    "commander": "^7.2.0",
     "concurrently": "^6.0.0",
     "cookie": "^0.4.1",
     "finalhandler": "^1.1.2",
