@@ -45,3 +45,4 @@ __pycache__/
 dist
 *.tgz
 *.orig
+cypress/videos/
