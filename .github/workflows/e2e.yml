@@ -3,7 +3,8 @@ name: E2E
 on: push
 
 jobs:
-  Build:
+
+  e2e:
     strategy:
       matrix:
         os: ["ubuntu-latest", "windows-latest", "macos-latest"]
@@ -13,57 +14,18 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
-
-      - name: Cypress run
-        uses: cypress-io/github-action@v2
-        with:
-          runTests: false
       - run: |
-          npm ci
-          npm run build
-        env:
-          CI: 1
-
-      - name: Save dist folders
-        uses: actions/upload-artifact@v2
-        with:
-          name: dist
-          path: dist
-
-  E2E:
-    needs: Build
-    strategy:
-      matrix:
-        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-        node-version: [10.x, 12.x, 14.x]
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@master
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Download built folders ⏬
-        uses: actions/download-artifact@v2
-        with:
-          name: dist
+          npm i -g azure-functions-core-tools@3 --unsafe-perm true
 
       - name: Cypress run
         uses: cypress-io/github-action@v2
         env:
           CI: 1
         with:
-          command: |
-            npm i -g azure-functions-core-tools@3 --unsafe-perm true
-            npm run e2e
+          command: npm run e2e
