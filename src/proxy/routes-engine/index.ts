@@ -34,10 +34,9 @@ export async function applyRules(req: IncomingMessage, res: ServerResponse, user
   if (isFileFound === false && userConfig.navigationFallback) {
     await navigationFallback(req, res, userConfig.navigationFallback);
   }
-  if (isFileFound === false && userConfig.globalHeaders) {
-    await globalHeaders(req, res, userConfig.globalHeaders);
-    await mimeTypes(req, res, userConfig.mimeTypes);
-  }
+
+  await globalHeaders(req, res, userConfig.globalHeaders);
+  await mimeTypes(req, res, userConfig.mimeTypes);
 
   await customRoutes(req, res, userDefinedRoute);
   await responseOverrides(req, res, userConfig.responseOverrides);
