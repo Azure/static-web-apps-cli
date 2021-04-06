@@ -10,14 +10,10 @@ import { parsePort } from "../core/utils";
 import { start } from "./commands/start";
 
 (async function () {
-  const cli: SWACLIConfig & program.Command = program
+  program
     .name("swa")
     .usage("<command> [options]")
     .version(require("../../package.json").version, "-v, --version")
-
-    // SWA config
-    .option("--verbose [prefix]", "enable verbose output. Value are: silly,info,log,silent", "log")
-
     .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development");
 
   program
@@ -53,12 +49,9 @@ import { start } from "./commands/start";
 
     .addOption(new Option("--run <startupScript>", "run a external program or npm/yarn script on startup").default(DEFAULT_CONFIG.run).hideHelp())
 
-    .action(async (context: string = `.${path.sep}`, options: SWACLIConfig) => {
-      options = {
-        ...options,
-        verbose: cli.verbose,
-      };
+    .option("--verbose [prefix]", "enable verbose output. Value are: silly,info,log,silent", "log")
 
+    .action(async (context: string = `.${path.sep}`, options: SWACLIConfig) => {
       // make sure the start command gets the right verbosity level
       process.env.SWA_CLI_DEBUG = options.verbose;
       if (options.verbose?.includes("silly")) {
