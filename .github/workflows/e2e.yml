@@ -24,12 +24,12 @@ jobs:
         uses: cypress-io/github-action@v2
         with:
           runTests: false
-        env:
-          CI: 1
-        run: |
+      - run: |
           npm ci
           npm i -g azure-functions-core-tools@3 --unsafe-perm true
           npm run build
+        env:
+          CI: 1
 
       - name: Save dist folders
         uses: actions/upload-artifact@v2
