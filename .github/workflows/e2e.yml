@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-        node-version: [10.x, 12.x, 14.x]
+        node-version: [12.x, 14.x, 15.x]
 
     runs-on: ${{ matrix.os }}
 
@@ -29,3 +29,15 @@ jobs:
           CI: 1
         with:
           command: npm run e2e
+
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+      # Test run video was always captured, so this action uses "always()" condition
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: cypress-videos
+          path: cypress/videos
