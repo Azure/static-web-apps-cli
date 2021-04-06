@@ -16,7 +16,7 @@ import { start } from "./commands/start";
     .version(require("../../package.json").version, "-v, --version")
 
     // SWA config
-    .option("--verbose [prefix]", "enable verbose output. Value are: silly,info,log,silent", "log")
+    .option("--verbose [prefix]", "enable verbose output. Values are: silly,info,log,silent", DEFAULT_CONFIG.verbose)
 
     .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development");
 
@@ -56,7 +56,7 @@ import { start } from "./commands/start";
     .action(async (context: string = `.${path.sep}`, options: SWACLIConfig) => {
       options = {
         ...options,
-        verbose: cli.verbose,
+        verbose: cli.opts().verbose,
       };
 
       // make sure the start command gets the right verbosity level
@@ -74,7 +74,7 @@ import { start } from "./commands/start";
       "after",
       `
 Examples:
-  
+
   Serve static content from the current folder
   swa start
 
