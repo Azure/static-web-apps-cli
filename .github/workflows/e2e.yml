@@ -26,7 +26,6 @@ jobs:
           runTests: false
       - run: |
           npm ci
-          npm i -g azure-functions-core-tools@3 --unsafe-perm true
           npm run build
         env:
           CI: 1
@@ -65,7 +64,9 @@ jobs:
         env:
           CI: 1
         with:
-          command: npm run e2e
+          command: |
+            npm i -g azure-functions-core-tools@3 --unsafe-perm true
+            npm run e2e
 
   Artifacts:
     needs: E2E
