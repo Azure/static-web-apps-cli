@@ -37,6 +37,7 @@ context("route rules engine", () => {
     cy.request({
       url: "/",
       redirect: "manual",
+      failOnStatusCode: false
     }).as("response");
 
     cy.get("@response").should((response) => {
@@ -44,15 +45,11 @@ context("route rules engine", () => {
     });
   });
 
-  // it("function response contains global headers", async () => {
-  //     const response = await fetch(`${baseUrl}/api/headers`);
-  //     expect(response.headers.get("a")).to.be("b");
-  // })
-
   it("route headers override global headers", async () => {
     cy.request({
       url: "/rewrite_index2",
       redirect: "manual",
+      failOnStatusCode: false
     }).as("response");
 
     cy.get("@response").should((response) => {
@@ -64,6 +61,7 @@ context("route rules engine", () => {
     cy.request({
       url: "/redirect/foo",
       redirect: "manual",
+      failOnStatusCode: false
     }).as("response");
 
     cy.get("@response").should((response) => {
@@ -76,6 +74,7 @@ context("route rules engine", () => {
     cy.request({
       url: "/redirect/302",
       redirect: "manual",
+      failOnStatusCode: false
     }).as("response");
 
     cy.get("@response").should((response) => {
@@ -88,6 +87,7 @@ context("route rules engine", () => {
     cy.request({
       url: "/redirect/301",
       redirect: "manual",
+      failOnStatusCode: false
     }).as("response");
 
     cy.get("@response").should((response) => {
@@ -100,6 +100,7 @@ context("route rules engine", () => {
     cy.request({
       url: "/test.swaconfig",
       redirect: "manual",
+      failOnStatusCode: false
     }).as("response");
 
     cy.get("@response").should((response) => {
@@ -121,6 +122,7 @@ context("route rules engine", () => {
     cy.request({
       url: "/does_not_exist.txt",
       redirect: "manual",
+      failOnStatusCode: false
     }).as("response");
 
     cy.get("@response").should((response) => {
@@ -132,6 +134,7 @@ context("route rules engine", () => {
     cy.request({
       url: "/thing.foo",
       redirect: "manual",
+      failOnStatusCode: false
     }).as("response");
 
     cy.get("@response").should((response) => {
@@ -143,6 +146,7 @@ context("route rules engine", () => {
     cy.request({
       url: "/thing.jpg",
       redirect: "manual",
+      failOnStatusCode: false
     }).as("response");
 
     cy.get("@response").should((response) => {
@@ -154,6 +158,7 @@ context("route rules engine", () => {
     cy.request({
       url: "/thing.png",
       redirect: "manual",
+      failOnStatusCode: false
     }).as("response1");
 
     cy.get("@response1").should((response) => {
@@ -163,6 +168,7 @@ context("route rules engine", () => {
     cy.request({
       url: "/thing.gif",
       redirect: "manual",
+      failOnStatusCode: false
     }).as("response2");
 
     cy.get("@response2").should((response) => {
@@ -174,6 +180,7 @@ context("route rules engine", () => {
     cy.request({
       url: "/something.google",
       redirect: "manual",
+      failOnStatusCode: false
     }).as("response");
 
     cy.get("@response").should((response) => {
