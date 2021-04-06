@@ -3,7 +3,7 @@
   "version": "0.2.2-alpha",
   "description": "Azure Static Web Apps Emulator for Auth, API and static content",
   "scripts": {
-    "start": "node ./dist/cli/index.js start ./cypress/fixtures/static --api=./cypress/fixtures/api --port 1234",
+    "start": "node ./dist/cli/index.js start ./cypress/fixtures/static --api=./cypress/fixtures/api --port 1234 --verbose silly",
     "prestart": "npm run build",
     "pretest": "npm run build",
     "test": "jest --detectOpenHandles --silent --verbose",
