@@ -3,51 +3,7 @@ name: E2E
 on: push
 
 jobs:
-  Install:
-    strategy:
-      matrix:
-        os: [macos-latest, windows-latest, ubuntu-18.04]
-        node-version: [10.x, 12.x, 14.x]
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@master
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Cache central NPM modules
-        uses: actions/cache@v1
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ github.ref }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ github.ref }}-${{ hashFiles('**/package-lock.json') }}
-      - name: Cache Cypress binary
-        uses: actions/cache@v1
-        with:
-          path: ~/.cache/Cypress
-          key: cypress-${{ runner.os }}-cypress-${{ github.ref }}-${{ hashFiles('**/package.json') }}
-          restore-keys: |
-            cypress-${{ runner.os }}-cypress-${{ github.ref }}-${{ hashFiles('**/package.json') }}
-
-      # Cache local node_modules to pass to testing jobs
-      - name: Cache local node_modules
-        uses: actions/cache@v1
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-modules-${{ github.ref }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-${{ github.ref }}-
-      - name: Install root dependencies
-        env:
-          CI: 1
-        run: npm ci
-
-  E2E:
-    needs: Install
+  Build:
     strategy:
       matrix:
         os: ["ubuntu-latest", "windows-latest", "macos-latest"]
@@ -56,40 +12,60 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@master
+      - name: Checkout
+        uses: actions/checkout@master
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
 
-      # Restore just local node_modules and the Cypress binary archives.
-      - name: Cache Cypress binary
-        uses: actions/cache@v1
+      - name: Cypress run
+        uses: cypress-io/github-action@v2
         with:
-          path: ~/.cache/Cypress
-          key: cypress-${{ runner.os }}-cypress-${{ github.ref }}-${{ hashFiles('**/package.json') }}
-          restore-keys: |
-            cypress-${{ runner.os }}-cypress-${{ github.ref }}-
-
-      - name: Cache local node_modules
-        uses: actions/cache@v1
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-modules-${{ github.ref }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-
-
-      # check the restored Cypress binary
-      - name: Check binary
-        run: |
-          npx cypress cache path
-          npx cypress cache list
-
-      - name: e2e
+          runTests: false
         env:
           CI: 1
         run: |
-          npm run e2e
+          npm ci
+          npm i -g azure-functions-core-tools@3 --unsafe-perm true
+          npm run build
+
+      - name: Save dist folders
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: dist
+
+  E2E:
+    needs: Build
+    strategy:
+      matrix:
+        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
+        node-version: [10.x, 12.x, 14.x]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Download built folders ⏬
+        uses: actions/download-artifact@v2
+        with:
+          name: dist
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v2
+        env:
+          CI: 1
+        with:
+          command: npm run e2e
 
   Artifacts:
     needs: E2E
