@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-context("route rules engine", () => {
+context("route rules engine", { defaultCommandTimeout: 10000 }, () => {
   beforeEach(() => {
     cy.visit("http://0.0.0.0:1234");
   });
@@ -137,24 +137,24 @@ context("route rules engine", () => {
     cy.request("/thing.png").as("response1");
 
     cy.get("@response1")
-    .its("headers")
-    .then((headers) => {
-      expect(headers).to.deep.include({
-        status: "302",
-        location: "http://0.0.0.0:1234/png_gif.html",
+      .its("headers")
+      .then((headers) => {
+        expect(headers).to.deep.include({
+          status: "302",
+          location: "http://0.0.0.0:1234/png_gif.html",
+        });
       });
-    });
 
     cy.request("/thing.gif").as("response2");
 
     cy.get("@response2")
-    .its("headers")
-    .then((headers) => {
-      expect(headers).to.deep.include({
-        status: "302",
-        location: "http://0.0.0.0:1234/png_gif.html",
+      .its("headers")
+      .then((headers) => {
+        expect(headers).to.deep.include({
+          status: "302",
+          location: "http://0.0.0.0:1234/png_gif.html",
+        });
       });
-    });
   });
 
   it("redirect can redirect to external URL", async () => {
