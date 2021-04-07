@@ -158,8 +158,6 @@ Here is an example:
 }
 ```
 
-> **NOTE:** User roles and ACL are not fully supported (see [#7](https://github.com/azure/static-web-apps-cli/issues/7)).
-
 ## High-level architecture
 
 ![swa cli architecture](./docs/swa-cli-architecture.png)
