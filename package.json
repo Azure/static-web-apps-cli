@@ -3,7 +3,7 @@
   "version": "0.3.1-alpha",
   "description": "Azure Static Web Apps CLI",
   "scripts": {
-    "start": "node ./dist/cli/index.js start ./cypress/fixtures/static --api=./cypress/fixtures/api --port 1234 --verbose silly",
+    "start": "node ./dist/cli/bin.js start ./cypress/fixtures/static --api=./cypress/fixtures/api --port 1234 --verbose silly",
     "prestart": "npm run build",
     "pretest": "npm run build",
     "test": "jest --detectOpenHandles --silent --verbose",
@@ -17,8 +17,8 @@
     "prepare": "npm run build"
   },
   "bin": {
-    "swa": "dist/cli/index.js",
-    "swa-emu": "dist/cli/index.js"
+    "swa": "dist/cli/bin.js",
+    "swa-emu": "dist/cli/bin.js"
   },
   "author": "Microsoft Corporation",
   "dependencies": {
