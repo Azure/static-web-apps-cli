@@ -169,8 +169,9 @@
       function redirectToApp() {
         const defaultRedirectPath = "/";
         try {
-          const redirectPath = window.location.search || defaultRedirectPath;
-          const urlSearch = location.search.replace("?", "");
+          const metaSearch = document.querySelector(`meta[name="swa:originalSearch"]`)?.content || "";
+          const redirectPath = metaSearch || window.location.search || defaultRedirectPath;
+          const urlSearch = (metaSearch || location.search).replace("?", "");
           const urlQuery = urlSearch && Object.fromEntries(new Map(urlSearch.split("&").map((query) => query.split("="))));
           const postLoginRedirectUri = urlQuery ? urlQuery["post_login_redirect_uri"] : redirectPath;
           window.location.href = postLoginRedirectUri || defaultRedirectPath;
@@ -180,7 +181,7 @@
         }
       }
       function parseIdentityProviderFromUrl() {
-        const pathname = window.location.pathname;
+        const pathname = document.querySelector(`meta[name="swa:originalPath"]`)?.content || window.location.pathname;
         if (pathname.startsWith("/.auth/login")) {
           return pathname.split("/").pop();
         } else {
