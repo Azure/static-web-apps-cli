@@ -1,15 +1,10 @@
-#!/usr/bin/env node
-
-const args = process.argv.slice(2);
-process.title = ["swa", ...args].join(" ");
-
 import program, { Option } from "commander";
 import path from "path";
 import { DEFAULT_CONFIG } from "../config";
 import { parsePort } from "../core/utils";
 import { start } from "./commands/start";
 
-(async function () {
+exports.main = async function () {
   const cli: SWACLIConfig & program.Command = program
     .name("swa")
     .usage("<command> [options]")
@@ -90,4 +85,4 @@ Examples:
     );
 
   await program.parseAsync(process.argv);
-})();
+};
