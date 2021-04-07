@@ -87,7 +87,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
       const funcBinary = "func";
       // serve the api if and only if the user provides a folder via the --api-location flag
       if (isApiLocationExistsOnDisk) {
-        serveApiCommand = `cd ${userConfig.apiLocation} && ${funcBinary} start --cors * --port ${options.apiPort}`;
+        serveApiCommand = `cd ${userConfig.apiLocation} && ${funcBinary} start --cors "*" --port ${options.apiPort}`;
       }
     }
   }
