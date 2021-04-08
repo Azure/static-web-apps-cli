@@ -11,7 +11,7 @@ import {
   parseUrl,
   readWorkflowFile,
   validateDevServerConfig,
-} from "../../core/utils";
+} from "../../core";
 
 export async function start(startContext: string, options: SWACLIConfig) {
   // WARNING: code below doesn't have access to SWA CLI env vars which are defined later below

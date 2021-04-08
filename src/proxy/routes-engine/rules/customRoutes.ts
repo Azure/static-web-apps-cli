@@ -1,7 +1,7 @@
 import globalyzer from "globalyzer";
 import globrex from "globrex";
 import http from "http";
-import { decodeCookie } from "../../../core/utils";
+import { decodeCookie } from "../../../core";
 
 export const matchRoute = (req: http.IncomingMessage, isLegacyConfigFile: boolean) => {
   const sanitizedUrl = new URL(req.url!, `http://${req?.headers?.host}`);

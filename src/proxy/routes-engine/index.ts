@@ -4,7 +4,7 @@
 import fs from "fs";
 import { IncomingMessage, ServerResponse } from "http";
 import path from "path";
-import { logger } from "../../core/utils";
+import { logger } from "../../core";
 import { customRoutes, matchRoute } from "./rules/customRoutes";
 import { globalHeaders } from "./rules/globalHeaders";
 import { mimeTypes } from "./rules/mimeTypes";

@@ -1,4 +1,4 @@
-import * as utils from "../../../core/utils";
+import * as decodeCookie from "../../../core/utils/cookie";
 import { customRoutes, matchRoute } from "./customRoutes";
 
 describe("customRoutes()", () => {
@@ -81,7 +81,7 @@ describe("customRoutes()", () => {
   });
 
   it("should return 403 if no user roles in cookie", async () => {
-    jest.spyOn(utils, "decodeCookie").mockReturnValue({
+    jest.spyOn(decodeCookie, "decodeCookie").mockReturnValue({
       userRoles: [],
     } as any);
 
@@ -95,7 +95,7 @@ describe("customRoutes()", () => {
   });
 
   it("should return 403 if unmatched roles", async () => {
-    jest.spyOn(utils, "decodeCookie").mockReturnValue({
+    jest.spyOn(decodeCookie, "decodeCookie").mockReturnValue({
       userRoles: ["foo"],
     } as any);
 
@@ -109,7 +109,7 @@ describe("customRoutes()", () => {
   });
 
   it("should return 200 if matched roles", async () => {
-    jest.spyOn(utils, "decodeCookie").mockReturnValue({
+    jest.spyOn(decodeCookie, "decodeCookie").mockReturnValue({
       userRoles: ["authenticated"],
     } as any);
 

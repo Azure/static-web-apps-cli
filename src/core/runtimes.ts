@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { logger } from "./utils";
+import { logger } from "./utils/index";
 
 export enum RuntimeType {
   dotnet = "dotnet",
