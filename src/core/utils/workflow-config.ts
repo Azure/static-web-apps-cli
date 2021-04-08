@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import YAML from "YAML";
+import YAML from "yaml";
 import { DEFAULT_CONFIG } from "../../config";
 import { detectRuntime, RuntimeType } from "../runtimes";
 import { logger } from "./logger";
