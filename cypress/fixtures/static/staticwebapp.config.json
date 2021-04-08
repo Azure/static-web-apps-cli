@@ -45,6 +45,14 @@
     {
       "route": "/rewrite-to-function",
       "rewrite": "/api/headers"
+    },
+    {
+      "route": "/login-github",
+      "rewrite": "/.auth/login/github"
+    },
+    {
+      "route": "/logout",
+      "rewrite": "/.auth/logout"
     }
   ],
   "navigationFallback": {
