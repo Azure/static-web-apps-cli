@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-context("route rules engine", { defaultCommandTimeout: 10000 }, () => {
+context("route rules engine", { defaultCommandTimeout: 20000 /* set this for Windows */ }, () => {
   beforeEach(() => {
     cy.visit("http://0.0.0.0:1234");
   });

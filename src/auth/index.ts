@@ -1,5 +1,5 @@
 import { ServerResponse, IncomingMessage } from "http";
-import { logger, serializeCookie } from "../core/utils";
+import { logger, serializeCookie } from "../core";
 
 const authPaths: Path[] = [
   {

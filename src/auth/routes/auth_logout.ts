@@ -1,5 +1,5 @@
 import http from "http";
-import { response } from "../../core/utils";
+import { response } from "../../core";
 
 const httpTrigger = async function (context: Context, req: http.IncomingMessage) {
   const host = req?.headers?.host;

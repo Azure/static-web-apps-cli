@@ -1,7 +1,7 @@
 import program, { Option } from "commander";
 import path from "path";
 import { DEFAULT_CONFIG } from "../config";
-import { parsePort } from "../core/utils";
+import { parsePort } from "../core";
 import { start } from "./commands/start";
 
 exports.main = async function () {

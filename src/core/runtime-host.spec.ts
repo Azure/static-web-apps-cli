@@ -1,5 +1,5 @@
 import path from "path";
-import { createRuntimeHost } from "./runtimeHost";
+import { createRuntimeHost } from "./runtime-host";
 import * as detectRuntime from "./runtimes";
 
 let spyDetectRuntime: jest.SpyInstance;

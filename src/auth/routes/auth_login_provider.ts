@@ -1,5 +1,5 @@
 import { IncomingMessage } from "http";
-import { response } from "../../core/utils";
+import { response } from "../../core";
 
 const fs = require("fs").promises;
 const path = require("path");

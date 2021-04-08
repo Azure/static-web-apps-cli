@@ -10,7 +10,7 @@ import path from "path";
 import serveStatic from "serve-static";
 import { processAuth } from "../auth/";
 import { DEFAULT_CONFIG } from "../config";
-import { address, decodeCookie, findSWAConfigFile, isHttpUrl, logger, registerProcessExit, validateCookie } from "../core/utils";
+import { address, decodeCookie, findSWAConfigFile, isHttpUrl, logger, registerProcessExit, validateCookie } from "../core";
 import { applyRules } from "./routes-engine/index";
 
 const SWA_WORKFLOW_CONFIG_FILE = process.env.SWA_WORKFLOW_CONFIG_FILE as string;
