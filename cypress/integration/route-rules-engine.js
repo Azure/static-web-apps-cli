@@ -108,7 +108,7 @@ context("route rules engine", { defaultCommandTimeout: 20000 /* set this for Win
   });
 
   it("/*.foo matches extension", async () => {
-    cy.request("/thing.foo").as("response");
+    cy.request({ url: "/thing.foo", failOnStatusCode: false }).as("response");
 
     cy.get("@response")
       .its("headers")

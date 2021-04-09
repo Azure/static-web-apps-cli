@@ -1,3 +1,4 @@
+import { DEFAULT_CONFIG } from "../../../config";
 import { responseOverrides } from "./responseOverrides";
 
 describe("responseOverrides()", () => {
@@ -52,7 +53,7 @@ describe("responseOverrides()", () => {
     };
     await responseOverrides(req, res, userConfig);
 
-    expect(req.url).toBe("/foo");
+    expect(req.url).toBe(`${DEFAULT_CONFIG.customUrlScheme}/foo`);
   });
 
   it("should override redirect rule", async () => {

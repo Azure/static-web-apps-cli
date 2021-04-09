@@ -20,24 +20,26 @@ import { responseOverrides } from "./rules/responseOverrides";
  */
 export async function applyRules(req: IncomingMessage, res: ServerResponse, userConfig: SWAConfigFile) {
   const userDefinedRoute = userConfig.routes?.find(matchRoute(req, userConfig.isLegacyConfigFile));
-  const filepath = path.join(process.env.SWA_CLI_APP_ARTIFACT_LOCATION!, req.url!);
+  const filepath = path.join(process.env.SWA_CLI_OUTPUT_LOCATION!, req.url!);
   const isFileFound = fs.existsSync(filepath);
 
-  logger.silly("checking rule...");
-  logger.silly({
-    appArticatLocation: process.env.SWA_CLI_APP_ARTIFACT_LOCATION,
-    matchedRoute: userDefinedRoute,
-    filepath,
-    isFileFound,
-  });
+  logger.silly("checking rules...");
 
-  if (isFileFound === false && userConfig.navigationFallback) {
-    await navigationFallback(req, res, userConfig.navigationFallback);
-  }
+  // note: these rules are mutating the req and res objects
+
+  await navigationFallback(req, res, userConfig.navigationFallback);
 
   await globalHeaders(req, res, userConfig.globalHeaders);
   await mimeTypes(req, res, userConfig.mimeTypes);
 
   await customRoutes(req, res, userDefinedRoute);
   await responseOverrides(req, res, userConfig.responseOverrides);
+
+  logger.silly({
+    outputLocation: process.env.SWA_CLI_OUTPUT_LOCATION,
+    matchedRoute: userDefinedRoute,
+    filepath,
+    isFileFound,
+    navigationFallback: { statusCode: res.statusCode, url: req.url },
+  });
 }

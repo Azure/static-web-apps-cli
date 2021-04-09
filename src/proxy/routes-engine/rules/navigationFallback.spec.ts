@@ -56,7 +56,7 @@ describe("navigationFallback()", () => {
       rewrite: "/bar",
       exclude: [],
     };
-    process.env.SWA_CLI_APP_ARTIFACT_LOCATION = "/";
+    process.env.SWA_CLI_OUTPUT_LOCATION = "/";
 
     await navigationFallback(req, res, userConfig);
 
@@ -69,7 +69,7 @@ describe("navigationFallback()", () => {
       rewrite: "/bar",
       exclude: ["/images/*.{png,jpg,gif}"],
     };
-    process.env.SWA_CLI_APP_ARTIFACT_LOCATION = "/";
+    process.env.SWA_CLI_OUTPUT_LOCATION = "/";
 
     mockFs({
       "/images/foo.png": "",
@@ -86,7 +86,7 @@ describe("navigationFallback()", () => {
       rewrite: "/bar",
       exclude: ["/images/*.{png,jpg,gif}"],
     };
-    process.env.SWA_CLI_APP_ARTIFACT_LOCATION = "/";
+    process.env.SWA_CLI_OUTPUT_LOCATION = "/";
 
     mockFs({
       "/no-file": "",
@@ -103,7 +103,7 @@ describe("navigationFallback()", () => {
       rewrite: "/bar",
       exclude: ["/images/*.{gif}"],
     };
-    process.env.SWA_CLI_APP_ARTIFACT_LOCATION = "/";
+    process.env.SWA_CLI_OUTPUT_LOCATION = "/";
 
     mockFs({
       "/images/foo.png": "",
@@ -120,7 +120,7 @@ describe("navigationFallback()", () => {
       rewrite: "/bar",
       exclude: ["/images/*.{gif}"],
     };
-    process.env.SWA_CLI_APP_ARTIFACT_LOCATION = "/";
+    process.env.SWA_CLI_OUTPUT_LOCATION = "/";
 
     mockFs({
       "/no-file": "",
@@ -137,7 +137,7 @@ describe("navigationFallback()", () => {
       rewrite: "/bar",
       exclude: ["/*.{png}"],
     };
-    process.env.SWA_CLI_APP_ARTIFACT_LOCATION = "/";
+    process.env.SWA_CLI_OUTPUT_LOCATION = "/";
 
     mockFs({
       "/no-file": "",
@@ -154,7 +154,7 @@ describe("navigationFallback()", () => {
       rewrite: "/bar",
       exclude: ["/images/*.{png}"],
     };
-    process.env.SWA_CLI_APP_ARTIFACT_LOCATION = "/";
+    process.env.SWA_CLI_OUTPUT_LOCATION = "/";
 
     mockFs({
       "/no-file": "",

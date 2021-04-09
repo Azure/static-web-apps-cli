@@ -4,7 +4,7 @@ declare global {
       SWA_CLI_DEBUG: DebugFilterLevel;
       SWA_CLI_API_URI: string;
       SWA_CLI_APP_URI: string;
-      SWA_CLI_APP_ARTIFACT_LOCATION: string;
+      SWA_CLI_OUTPUT_LOCATION: string;
       SWA_CLI_ROUTES_LOCATION: String;
       SWA_CLI_HOST: string;
       SWA_CLI_PORT: string;
@@ -73,6 +73,7 @@ declare type SWACLIConfig = GithubActionWorkflow & {
   verbose?: string;
   run?: string;
   routesLocation?: string;
+  customUrlScheme?: string;
 };
 
 declare type ResponseOptions = {

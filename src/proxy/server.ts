@@ -19,7 +19,7 @@ const SWA_CLI_PORT = parseInt((process.env.SWA_CLI_PORT || DEFAULT_CONFIG.port) 
 const SWA_CLI_API_URI = address(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
 const SWA_CLI_APP_LOCATION = (process.env.SWA_CLI_APP_LOCATION || DEFAULT_CONFIG.appLocation) as string;
 const SWA_CLI_ROUTES_LOCATION = (process.env.SWA_CLI_ROUTES_LOCATION || DEFAULT_CONFIG.routesLocation) as string;
-const SWA_CLI_APP_ARTIFACT_LOCATION = (process.env.SWA_CLI_APP_ARTIFACT_LOCATION || DEFAULT_CONFIG.outputLocation) as string;
+const SWA_CLI_OUTPUT_LOCATION = (process.env.SWA_CLI_OUTPUT_LOCATION || DEFAULT_CONFIG.outputLocation) as string;
 const SWA_CLI_API_LOCATION = (process.env.SWA_CLI_API_LOCATION || DEFAULT_CONFIG.apiLocation) as string;
 const SWA_CLI_APP_SSL = process.env.SWA_CLI_APP_SSL === "true" || DEFAULT_CONFIG.ssl === true;
 const SWA_CLI_APP_SSL_KEY = process.env.SWA_CLI_APP_SSL_KEY as string;
@@ -29,7 +29,7 @@ const PROTOCOL = SWA_CLI_APP_SSL ? `https` : `http`;
 
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
-const isStaticDevServer = isHttpUrl(SWA_CLI_APP_ARTIFACT_LOCATION);
+const isStaticDevServer = isHttpUrl(SWA_CLI_OUTPUT_LOCATION);
 const isApiDevServer = isHttpUrl(SWA_CLI_API_LOCATION);
 
 if (!isHttpUrl(SWA_CLI_API_URI)) {
@@ -142,21 +142,28 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
       await applyRules(req, res, userConfig);
 
       if ([401, 403, 404].includes(res.statusCode)) {
-        logRequest(req, null, res.statusCode);
+        const isCustomUrl = req.url.startsWith(DEFAULT_CONFIG.customUrlScheme!);
 
-        switch (res.statusCode) {
-          case 401:
-            req.url = "unauthorized.html";
-            break;
-          case 403:
-            // @TODO provide a Forbidden HTML template
-            req.url = "unauthorized.html";
-            break;
-          case 404:
-            req.url = "404.html";
-            break;
+        if (isCustomUrl) {
+          // extract user custom url
+          req.url = req.url.replace(`${DEFAULT_CONFIG.customUrlScheme}`, "");
+        } else {
+          switch (res.statusCode) {
+            case 401:
+              req.url = "unauthorized.html";
+              break;
+            case 403:
+              // @TODO provide a Forbidden HTML template
+              req.url = "unauthorized.html";
+              break;
+            case 404:
+              req.url = "404.html";
+              break;
+          }
+          return serve(SWA_PUBLIC_DIR, req, res);
         }
-        return serve(SWA_PUBLIC_DIR, req, res);
+
+        logRequest(req, null, res.statusCode);
       }
     }
 
@@ -204,7 +211,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
 
     // proxy APP requests
     else {
-      const target = SWA_CLI_APP_ARTIFACT_LOCATION;
+      const target = SWA_CLI_OUTPUT_LOCATION;
 
       // is this a dev server?
       if (isStaticDevServer) {
@@ -237,7 +244,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
 
   const onWsUpgrade = function (req: http.IncomingMessage, socket: net.Socket, head: Buffer) {
     socketConnection = socket;
-    const target = SWA_CLI_APP_ARTIFACT_LOCATION;
+    const target = SWA_CLI_OUTPUT_LOCATION;
     if (isStaticDevServer) {
       logger.log(chalk.green("** WebSocket connection established **"));
 
@@ -259,13 +266,13 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
       // prettier-ignore
       logger.log(
         `\nUsing dev server for static content:\n`+
-        `    ${chalk.green(SWA_CLI_APP_ARTIFACT_LOCATION)}`
+        `    ${chalk.green(SWA_CLI_OUTPUT_LOCATION)}`
       );
     } else {
       // prettier-ignore
       logger.log(
         `\nServing static content:\n` +
-        `    ${chalk.green(SWA_CLI_APP_ARTIFACT_LOCATION)}`
+        `    ${chalk.green(SWA_CLI_OUTPUT_LOCATION)}`
         );
     }
 

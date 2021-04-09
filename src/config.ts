@@ -16,4 +16,5 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   swaConfigFilenameLegacy: "routes.json",
   run: undefined,
   verbose: "log",
+  customUrlScheme: "swa://",
 };
