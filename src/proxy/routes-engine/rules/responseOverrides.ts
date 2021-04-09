@@ -1,4 +1,5 @@
 import http from "http";
+import { DEFAULT_CONFIG } from "../../../config";
 
 // See: https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#response-overrides
 export const responseOverrides = async (req: http.IncomingMessage, res: http.ServerResponse, responseOverrides: SWAConfigFileResponseOverrides) => {
@@ -15,7 +16,7 @@ export const responseOverrides = async (req: http.IncomingMessage, res: http.Ser
         res.setHeader("Location", overridenStatusCode.redirect);
       }
       if (overridenStatusCode.rewrite && req.url !== overridenStatusCode.rewrite) {
-        req.url = overridenStatusCode.rewrite;
+        req.url = `${DEFAULT_CONFIG.customUrlScheme}${overridenStatusCode.rewrite}`;
       }
     }
   }

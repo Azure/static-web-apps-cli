@@ -53,22 +53,33 @@
     {
       "route": "/logout",
       "rewrite": "/.auth/logout"
+    },
+    {
+      "route": "/status-code-401.txt",
+      "statusCode": "401"
+    },
+    {
+      "route": "/status-code-403.txt",
+      "statusCode": "403"
+    },
+    {
+      "route": "/status-code-404.txt",
+      "statusCode": "404"
     }
   ],
   "navigationFallback": {
     "rewrite": "/index.html",
     "exclude": ["*.{txt}"]
   },
-  "responseErrorOverrides": {
-    "400": {
-      "rewrite": "/custom_error.html",
-      "statusCode": 201
+  "responseOverrides": {
+    "401": {
+      "rewrite": "/custom-401.html"
     },
-    "500": {
-      "redirect": "/custom_error.html"
+    "403": {
+      "rewrite": "/custom-403.html"
     },
-    "501": {
-      "rewrite": "custom_error.html"
+    "404": {
+      "rewrite": "/custom-404.html"
     }
   },
   "mimeTypes": {

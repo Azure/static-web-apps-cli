@@ -1,14 +1,15 @@
-import http from "http";
 import fs from "fs";
-import path from "path";
 import globalyzer from "globalyzer";
 import globrex from "globrex";
+import http from "http";
+import path from "path";
+import { logger } from "../../../core";
 
 // See: https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#fallback-routes
 
 export const navigationFallback = async (
   req: http.IncomingMessage,
-  _res: http.ServerResponse,
+  res: http.ServerResponse,
   navigationFallback: SWAConfigFileNavigationFallback
 ) => {
   let originlUrl = req.url;
@@ -31,7 +32,7 @@ export const navigationFallback = async (
   // is the requested file available on disk?
   const filename = originlUrl?.endsWith("/") ? `${originlUrl}/index.html` : originlUrl;
 
-  const filepath = path.join(process.env.SWA_CLI_APP_ARTIFACT_LOCATION!, filename!);
+  const filepath = path.join(process.env.SWA_CLI_OUTPUT_LOCATION!, filename!);
 
   const isFileFoundOnDisk = fs.existsSync(filepath);
 
@@ -39,50 +40,50 @@ export const navigationFallback = async (
   const isMatchedFilter = navigationFallback.exclude.some((filter) => {
     // we don't support full globs in the config file.
     // add this little workaround to convert a wildcard into a valid glob pattern
-    filter = filter.replace("/*", "/**/*");
+    filter = filter.replace("*", "**/*");
 
     // extract glob metadata
     const globSegments = globalyzer(filter);
 
-    if (originlUrl?.startsWith(globSegments.base)) {
-      const { regex } = globrex(globSegments.glob, { globstar: true, extended: true });
+    const { regex } = globrex(globSegments.glob, { globstar: true, extended: true, filepath: true });
 
-      // extract the last segment (what comes after the base) from the URL:
-      // /                    => <empty string>
-      // /bar.gif             => bar.gif
-      // /images/foo/bar.gif  => bar.gif
-      let lastSegmentFromUrl = originlUrl.replace(`${globSegments.base}`, "");
+    // globrex generates regex that doesn't match leading forwardslash, so we remove it
+    // before processing the regex
+    let originlUrlWithoutLeadingSlash = originlUrl?.replace(/^\//, "");
 
-      // globrex generates regex that doesn't match leading forwardslash, so we remove it
-      // before processing the regex
-      lastSegmentFromUrl = lastSegmentFromUrl.replace(/^\//, "");
-
-      return regex.test(lastSegmentFromUrl!);
-    } else {
-      return false;
-    }
+    return regex.test(originlUrlWithoutLeadingSlash!);
   });
 
   // rules logic:
-  // if no exclude rules are provided, rewrite by default
-  // if a file exists on disk, and match exclusion => return it
-  // if a file doesn't exist on disk, and match exclusion => 404
-  // if a file exists on disk, and doesn't match exclusion => /index.html
-  // if a file doesn't exist on disk, and doesn't match exclusion => /index.html
+  // 1. if no exclude rules are provided, rewrite by default
+  // 2. if a file exists on disk, and match exclusion => return it
+  // 3. if a file doesn't exist on disk, and match exclusion => 404
+  // 4. if a file exists on disk, and doesn't match exclusion => /index.html
+  // 5. if a file doesn't exist on disk, and doesn't match exclusion => /index.html
 
   // note: given the complexity of all possible combinations, don't refactor the code below
   let newUrl = req.url;
+  // 1.
   if (!navigationFallback.exclude || navigationFallback.exclude.length === 0) {
     newUrl = navigationFallback.rewrite;
-  } else if (isFileFoundOnDisk === true && isMatchedFilter === true) {
+  }
+  // 2.
+  else if (isFileFoundOnDisk === true && isMatchedFilter === true) {
     newUrl = req.url;
-  } else if (isFileFoundOnDisk === false && isMatchedFilter === true) {
-    newUrl = req.url;
-  } else if (isFileFoundOnDisk === true && isMatchedFilter === false) {
+  }
+  // 3.
+  else if (isFileFoundOnDisk === false && isMatchedFilter === true) {
+    res.statusCode = 404;
+  }
+  // 4.
+  else if (isFileFoundOnDisk === true && isMatchedFilter === false) {
     newUrl = navigationFallback.rewrite;
-  } else if (isFileFoundOnDisk === false && isMatchedFilter === false) {
+  }
+  // 5.
+  else if (isFileFoundOnDisk === false && isMatchedFilter === false) {
     newUrl = navigationFallback.rewrite;
   }
 
+  logger.silly({ filepath, isMatchedFilter });
   req.url = newUrl;
 };
