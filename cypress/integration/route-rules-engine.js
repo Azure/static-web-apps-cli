@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-context("route rules engine", { defaultCommandTimeout: 20000 /* set this for Windows */ }, () => {
+context("route rules engine", { failOnStatusCode: false, defaultCommandTimeout: 20000 /* set this for Windows */ }, () => {
   beforeEach(() => {
     cy.visit("http://0.0.0.0:1234");
   });
@@ -108,7 +108,7 @@ context("route rules engine", { defaultCommandTimeout: 20000 /* set this for Win
   });
 
   it("/*.foo matches extension", async () => {
-    cy.request({ url: "/thing.foo", failOnStatusCode: false }).as("response");
+    cy.request("/thing.foo").as("response");
 
     cy.get("@response")
       .its("headers")
