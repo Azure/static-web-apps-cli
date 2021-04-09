@@ -23,8 +23,6 @@ export async function applyRules(req: IncomingMessage, res: ServerResponse, user
   const filepath = path.join(process.env.SWA_CLI_OUTPUT_LOCATION!, req.url!);
   const isFileFound = fs.existsSync(filepath);
 
-  logger.silly("checking rules...");
-
   // note: these rules are mutating the req and res objects
 
   await navigationFallback(req, res, userConfig.navigationFallback);
@@ -40,6 +38,7 @@ export async function applyRules(req: IncomingMessage, res: ServerResponse, user
     matchedRoute: userDefinedRoute,
     filepath,
     isFileFound,
-    navigationFallback: { statusCode: res.statusCode, url: req.url },
+    statusCode: res.statusCode,
+    url: req.url,
   });
 }

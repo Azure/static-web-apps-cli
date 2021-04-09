@@ -6,7 +6,7 @@ describe("validateCookie()", () => {
   });
 
   it("cookies = 'abc'", () => {
-    expect(validateCookie("")).toBe(false);
+    expect(validateCookie("abc")).toBe(false);
   });
 
   it("cookies = 'foo=bar'", () => {

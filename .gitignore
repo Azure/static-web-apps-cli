@@ -46,3 +46,4 @@ dist
 *.tgz
 *.orig
 cypress/videos/
+cypress/screenshots/
