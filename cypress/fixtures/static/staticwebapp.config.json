@@ -65,6 +65,14 @@
     {
       "route": "/status-code-404.txt",
       "statusCode": "404"
+    },
+    {
+      "route": "/only-authenticated",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/api/info",
+      "allowedRoles": ["authenticated"]
     }
   ],
   "navigationFallback": {

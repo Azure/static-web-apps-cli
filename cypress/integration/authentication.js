@@ -1,19 +1,16 @@
 /// <reference types="cypress" />
 
 const PROVIDERS = ["github", "twitter", "facebook", "aad"];
+const clientPrincipal = {
+  identityProvider: "facebook",
+  userId: "d75b260a64504067bfc5b2905e3b8182",
+  userDetails: "user@example.com",
+  userRoles: ["authenticated"],
+};
 
 context("/.auth/me", () => {
-  let clientPrincipal;
-
   beforeEach(() => {
     cy.visit("http://0.0.0.0:1234");
-
-    clientPrincipal = {
-      identityProvider: "facebook",
-      userId: "d75b260a64504067bfc5b2905e3b8182",
-      userDetails: "user@example.com",
-      userRoles: ["authenticated"],
-    };
   });
 
   describe("when user is not logged in", () => {
@@ -33,7 +30,6 @@ context("/.auth/me", () => {
       cy.setCookie("StaticWebAppsAuthCookie", window.btoa(JSON.stringify(clientPrincipal)));
 
       cy.request("/.auth/me").should((response) => {
-        console.log({ response });
         expect(response.status).to.eq(200);
         expect(response.body.clientPrincipal).to.deep.eq(clientPrincipal);
       });
@@ -42,7 +38,6 @@ context("/.auth/me", () => {
       clientPrincipal.userRoles = ["foo"];
       cy.setCookie("StaticWebAppsAuthCookie", window.btoa(JSON.stringify(clientPrincipal)));
       cy.request("/.auth/me").should((response) => {
-        console.log({ response });
         expect(response.status).to.eq(200);
         expect(response.body.clientPrincipal.userRoles).to.deep.eq(["foo", "anonymous", "authenticated"]);
       });
@@ -229,6 +224,60 @@ context("UI buttons", () => {
 
           expect(localStorage.getItem("auth@github")).not.to.be.null;
         });
+    });
+  });
+});
+
+context("Route authorization", () => {
+  describe("accessing /only-authenticated", () => {
+    it("should return 403 if no roles provided in client principal", () => {
+      clientPrincipal.userRoles = [];
+      cy.setCookie("StaticWebAppsAuthCookie", window.btoa(JSON.stringify(clientPrincipal)));
+      cy.request({ url: "http://0.0.0.0:1234/only-authenticated", failOnStatusCode: false }).should((response) => {
+        expect(response.status).to.eq(403);
+      });
+    });
+
+    it("should return 403 for non-authenticated roles", () => {
+      clientPrincipal.userRoles = ["admin"];
+      cy.setCookie("StaticWebAppsAuthCookie", window.btoa(JSON.stringify(clientPrincipal)));
+      cy.request({ url: "http://0.0.0.0:1234/only-authenticated", failOnStatusCode: false }).then((response) => {
+        expect(response.status).to.eq(403);
+      });
+    });
+
+    it("should return 200 for authenticated roles", () => {
+      clientPrincipal.userRoles = ["authenticated"];
+      cy.setCookie("StaticWebAppsAuthCookie", window.btoa(JSON.stringify(clientPrincipal)));
+      cy.request({ url: "http://0.0.0.0:1234/only-authenticated", failOnStatusCode: false }).then((response) => {
+        expect(response.status).to.eq(200);
+      });
+    });
+  });
+
+  describe("accessing /api/info ", () => {
+    it("should return 403 if no roles provided", () => {
+      clientPrincipal.userRoles = [];
+      cy.setCookie("StaticWebAppsAuthCookie", window.btoa(JSON.stringify(clientPrincipal)));
+      cy.request({ url: "http://0.0.0.0:1234/api/info", failOnStatusCode: false }).should((response) => {
+        expect(response.status).to.eq(403);
+      });
+    });
+
+    it("should return 403 for non-authenticated roles", () => {
+      clientPrincipal.userRoles = ["admin"];
+      cy.setCookie("StaticWebAppsAuthCookie", window.btoa(JSON.stringify(clientPrincipal)));
+      cy.request({ url: "http://0.0.0.0:1234/api/info", failOnStatusCode: false }).then((response) => {
+        expect(response.status).to.eq(403);
+      });
+    });
+
+    it("should return 404 for authenticated roles but invalid api endpoint", () => {
+      clientPrincipal.userRoles = ["authenticated"];
+      cy.setCookie("StaticWebAppsAuthCookie", window.btoa(JSON.stringify(clientPrincipal)));
+      cy.request({ url: "http://0.0.0.0:1234/api/info", failOnStatusCode: false }).then((response) => {
+        expect(response.status).to.eq(404);
+      });
     });
   });
 });
