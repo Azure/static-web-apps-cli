@@ -180,7 +180,8 @@ describe("customRoutes()", () => {
     };
     await customRoutes(req, res, userRouteConfig);
 
-    expect(res.writeHead).toHaveBeenCalledWith(302, { Location: "/bar.html" });
+    expect(res.setHeader).toHaveBeenCalledWith("Location", "/bar.html");
+    expect(res.statusCode).toBe(302);
   });
 
   it("should serve with redirect (statusCode=302)", async () => {
@@ -191,7 +192,8 @@ describe("customRoutes()", () => {
     };
     await customRoutes(req, res, userRouteConfig);
 
-    expect(res.writeHead).toHaveBeenCalledWith(302, { Location: "/bar" });
+    expect(res.setHeader).toHaveBeenCalledWith("Location", "/bar");
+    expect(res.statusCode).toBe(302);
   });
 
   it("should serve with redirect (statusCode=301)", async () => {
@@ -202,7 +204,8 @@ describe("customRoutes()", () => {
     };
     await customRoutes(req, res, userRouteConfig);
 
-    expect(res.writeHead).toHaveBeenCalledWith(301, { Location: "/bar" });
+    expect(res.setHeader).toHaveBeenCalledWith("Location", "/bar");
+    expect(res.statusCode).toBe(301);
   });
 
   it("should not serve with redirect (statusCode=200)", async () => {

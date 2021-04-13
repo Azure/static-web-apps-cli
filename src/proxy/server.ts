@@ -10,7 +10,7 @@ import path from "path";
 import serveStatic from "serve-static";
 import { processAuth } from "../auth/";
 import { DEFAULT_CONFIG } from "../config";
-import { address, decodeCookie, findSWAConfigFile, isHttpUrl, logger, registerProcessExit, validateCookie } from "../core";
+import { address, decodeCookie, findSWAConfigFile, isHttpUrl, logger, registerProcessExit, validateCookie, validateDevServerConfig } from "../core";
 import { applyRules } from "./routes-engine/index";
 
 const SWA_WORKFLOW_CONFIG_FILE = process.env.SWA_WORKFLOW_CONFIG_FILE as string;
@@ -141,6 +141,12 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     if (userConfig) {
       await applyRules(req, res, userConfig);
 
+      // in case a redirect rule has been applied, flush response
+      if (res.getHeader("Location")) {
+        logRequest(req, null, res.statusCode);
+        return res.end();
+      }
+
       if ([401, 403, 404].includes(res.statusCode)) {
         const isCustomUrl = req.url.startsWith(DEFAULT_CONFIG.customUrlScheme!);
 
@@ -167,7 +173,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
       }
     }
 
-    // don't serve user custom routes file
+    // don't serve staticwebapp.config.json / routes.json
     if (req.url.endsWith(DEFAULT_CONFIG.swaConfigFilename!) || req.url.endsWith(DEFAULT_CONFIG.swaConfigFilenameLegacy!)) {
       req.url = "404.html";
       res.statusCode = 404;
@@ -323,6 +329,15 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     }
     return http.createServer(requestHandler(userConfig));
   };
+
+  if (isStaticDevServer) {
+    await validateDevServerConfig(SWA_CLI_OUTPUT_LOCATION);
+  }
+  const isApi = Boolean(SWA_CLI_API_LOCATION && SWA_CLI_API_URI);
+  if (isApi) {
+    await validateDevServerConfig(SWA_CLI_API_URI);
+  }
+
   const server = createServer();
   server.listen(SWA_CLI_PORT, SWA_CLI_HOST, onServerStart);
   server.listen(SWA_CLI_PORT, localIpAdress);

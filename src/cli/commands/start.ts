@@ -3,15 +3,7 @@ import fs from "fs";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
 import builder from "../../core/builder";
-import {
-  createStartupScriptCommand,
-  isAcceptingTcpConnections,
-  isHttpUrl,
-  logger,
-  parseUrl,
-  readWorkflowFile,
-  validateDevServerConfig,
-} from "../../core";
+import { createStartupScriptCommand, isAcceptingTcpConnections, isHttpUrl, logger, parseUrl, readWorkflowFile } from "../../core";
 
 export async function start(startContext: string, options: SWACLIConfig) {
   // WARNING: code below doesn't have access to SWA CLI env vars which are defined later below
@@ -22,7 +14,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
   let startupCommand: string | undefined | null = undefined;
 
   if (isHttpUrl(startContext)) {
-    useAppDevServer = await validateDevServerConfig(startContext);
+    useAppDevServer = startContext;
     options.outputLocation = useAppDevServer;
   } else {
     // make sure the CLI default port is available before proceeding.
@@ -45,7 +37,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
 
   if (options.apiLocation) {
     if (isHttpUrl(options.apiLocation)) {
-      useApiDevServer = await validateDevServerConfig(options.apiLocation);
+      useApiDevServer = options.apiLocation;
       options.apiLocation = useApiDevServer;
     }
     // make sure api folder exists

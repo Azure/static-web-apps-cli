@@ -7,6 +7,7 @@ const clientPrincipal = {
   userDetails: "user@example.com",
   userRoles: ["authenticated"],
 };
+
 context("/.auth/me", () => {
   beforeEach(() => {
     cy.visit("http://0.0.0.0:1234");
@@ -45,6 +46,17 @@ context("/.auth/me", () => {
 });
 
 context(`/.auth/login/<provider>`, () => {
+  // google has a special config (check staticwebapp.config.json)
+  // { "route": "/*.google", "redirect": "https://www.google.com/" }
+  describe(`when using provider: google`, () => {
+    it(`should redirect to https://www.google.com/`, async () => {
+      cy.visit("http://0.0.0.0:1234/.auth/login/google").then((response) => {
+        expect(response.status).to.be(302);
+        expect(response.headers.get("location")).to.be("https://www.google.com/");
+      });
+    });
+  });
+
   for (let index = 0; index < PROVIDERS.length; index++) {
     const provider = PROVIDERS[index];
     describe(`when using provider: ${provider}`, () => {
