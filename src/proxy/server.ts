@@ -141,6 +141,12 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     if (userConfig) {
       await applyRules(req, res, userConfig);
 
+      // in case a redirect rule has been applied, flush response
+      if (res.getHeader("Location")) {
+        logRequest(req, null, res.statusCode);
+        return res.end();
+      }
+
       if ([401, 403, 404].includes(res.statusCode)) {
         const isCustomUrl = req.url.startsWith(DEFAULT_CONFIG.customUrlScheme!);
 
@@ -167,7 +173,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
       }
     }
 
-    // don't serve user custom routes file
+    // don't serve staticwebapp.config.json / routes.json
     if (req.url.endsWith(DEFAULT_CONFIG.swaConfigFilename!) || req.url.endsWith(DEFAULT_CONFIG.swaConfigFilenameLegacy!)) {
       req.url = "404.html";
       res.statusCode = 404;
