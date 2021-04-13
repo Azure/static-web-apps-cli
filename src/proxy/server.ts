@@ -263,7 +263,6 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
 
   const onServerStart = async () => {
     if (isStaticDevServer) {
-      await validateDevServerConfig(SWA_CLI_OUTPUT_LOCATION);
       // prettier-ignore
       logger.log(
         `\nUsing dev server for static content:\n`+
