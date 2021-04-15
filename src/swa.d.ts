@@ -103,7 +103,7 @@ declare type SWAConfigFileGlobalHeaders = {
 
 declare type SWAConfigFileNavigationFallback = {
   rewrite: string;
-  exclude: string[];
+  exclude?: string[];
 };
 
 declare type SWAConfigFileResponseOverrides = {

@@ -50,19 +50,6 @@ describe("navigationFallback()", () => {
     expect(req.url).toBe("/api/foo/bar");
   });
 
-  it("should not process fallbacks if no exclude rules", async () => {
-    req.url = "/foo";
-    userConfig = {
-      rewrite: "/bar",
-      exclude: [],
-    };
-    process.env.SWA_CLI_OUTPUT_LOCATION = "/";
-
-    await navigationFallback(req, res, userConfig);
-
-    expect(req.url).toBe("/bar");
-  });
-
   it("should not process fallbacks if file found and matched exclude filter", async () => {
     req.url = "/images/foo.png";
     userConfig = {
@@ -160,6 +147,27 @@ describe("navigationFallback()", () => {
       "/no-file": "",
     });
 
+    await navigationFallback(req, res, userConfig);
+
+    expect(req.url).toBe("/images/foo/bar.png");
+  });
+
+  it("should ignore fallback if no exclude property is provided", async () => {
+    req.url = "/images/foo/bar.png";
+    userConfig = {
+      rewrite: "/bar",
+    };
+    await navigationFallback(req, res, userConfig);
+
+    expect(req.url).toBe("/images/foo/bar.png");
+  });
+
+  it("should ignore fallback if exclude list is empty", async () => {
+    req.url = "/images/foo/bar.png";
+    userConfig = {
+      rewrite: "/bar",
+      exclude: [],
+    };
     await navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/images/foo/bar.png");

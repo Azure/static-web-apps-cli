@@ -309,7 +309,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     server.on("upgrade", onWsUpgrade);
 
     registerProcessExit(() => {
-      console.log("Shutting down...");
+      logger.info("Azure Static Web Apps emulator shutting down...");
       socketConnection?.end(() => logger.info("WebSocket connection closed."));
       server.close(() => logger.log("Server stopped."));
       proxyApi.close(() => logger.log("Api proxy stopped."));

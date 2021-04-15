@@ -24,6 +24,10 @@ export const navigationFallback = async (
   if (!navigationFallback?.rewrite) {
     return;
   }
+  // exit if no exclude property provided, or exclude list is empty
+  if (!navigationFallback?.exclude || navigationFallback?.exclude?.length === 0) {
+    return;
+  }
 
   logger.silly("checking navigationFallback rule...");
 
@@ -40,7 +44,7 @@ export const navigationFallback = async (
   logger.silly(` - url ${originlUrl}`);
 
   // parse the exclusion rules and match at least one rule
-  const isMatchedFilter = navigationFallback?.exclude.some((filter) => {
+  const isMatchedFilter = navigationFallback?.exclude?.some((filter) => {
     // we don't support full globs in the config file.
     // add this little utility to convert a wildcard into a valid glob pattern
     const regexp = new RegExp(`^${globToRegExp(filter)}$`);
