@@ -272,11 +272,11 @@ context("Route authorization", () => {
       });
     });
 
-    it("should return 200 for authenticated roles", () => {
+    it("should return 404 for authenticated roles but invalid api endpoint", () => {
       clientPrincipal.userRoles = ["authenticated"];
       cy.setCookie("StaticWebAppsAuthCookie", window.btoa(JSON.stringify(clientPrincipal)));
       cy.request({ url: "http://0.0.0.0:1234/api/info", failOnStatusCode: false }).then((response) => {
-        expect(response.status).to.eq(200);
+        expect(response.status).to.eq(404);
       });
     });
   });

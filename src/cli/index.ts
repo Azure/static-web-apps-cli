@@ -28,10 +28,10 @@ exports.main = async function () {
     .option("--api, --api-location <apiLocation>", "set the API folder or Azure Functions emulator address", DEFAULT_CONFIG.apiLocation)
     .addOption(
       new Option(
-        "--routes, --routes-location <routesLocation>",
+        "--swa-config-location <swaConfigLocation>",
         "set the directory location where the staticwebapp.config.json file is found. This location is relative to the root of the project"
       )
-        .default(DEFAULT_CONFIG.routesLocation)
+        .default(DEFAULT_CONFIG.swaConfigLocation)
         .hideHelp()
     )
 
