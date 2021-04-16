@@ -72,7 +72,7 @@ declare type SWACLIConfig = GithubActionWorkflow & {
   build?: boolean;
   verbose?: string;
   run?: string;
-  routesLocation?: string;
+  swaConfigLocation?: string;
   customUrlScheme?: string;
 };
 
