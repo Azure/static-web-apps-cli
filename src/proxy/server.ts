@@ -174,12 +174,12 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     }
 
     // don't serve staticwebapp.config.json / routes.json
-    if (req.url.endsWith(DEFAULT_CONFIG.swaConfigFilename!) || req.url.endsWith(DEFAULT_CONFIG.swaConfigFilenameLegacy!)) {
+    if (req.url.endsWith(`/${DEFAULT_CONFIG.swaConfigFilename!}`) || req.url.endsWith(`/${DEFAULT_CONFIG.swaConfigFilenameLegacy!}`)) {
       req.url = "404.html";
       res.statusCode = 404;
       serve(SWA_PUBLIC_DIR, req, res);
 
-      logRequest(req, PROTOCOL + "://" + req.headers.host + req.url, 404);
+      logRequest(req, PROTOCOL + "://" + req.headers.host, 404);
     }
 
     // proxy AUTH request to AUTH emulator
