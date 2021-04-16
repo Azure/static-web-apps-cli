@@ -18,27 +18,39 @@ import { responseOverrides } from "./rules/responseOverrides";
  * 3. If content to serve does exist, apply headers to page, and apply mime type (either default or custom)
  * 4. At any point in 1-3 if there is a reason to throw an error response (401, 403, 404) and response overrides are specified than those values are served
  */
-export async function applyRules(req: IncomingMessage, res: ServerResponse, userConfig: SWAConfigFile) {
+
+/** */
+export async function applyInboudRules(req: IncomingMessage, res: ServerResponse, userConfig: SWAConfigFile) {
   const userDefinedRoute = userConfig.routes?.find(matchRoute(req, userConfig.isLegacyConfigFile));
   const filepath = path.join(process.env.SWA_CLI_OUTPUT_LOCATION!, req.url!);
-  const isFileFound = fs.existsSync(filepath);
-
-  // note: these rules are mutating the req and res objects
-
-  await navigationFallback(req, res, userConfig.navigationFallback);
 
   await globalHeaders(req, res, userConfig.globalHeaders);
   await mimeTypes(req, res, userConfig.mimeTypes);
-
   await customRoutes(req, res, userDefinedRoute);
+
+  logger.silly({
+    url: req.url,
+    filepath,
+    statusCode: res.statusCode,
+  });
+}
+
+/** */
+export async function applyOutboudRules(req: IncomingMessage, res: ServerResponse, userConfig: SWAConfigFile) {
+  const filepath = path.join(process.env.SWA_CLI_OUTPUT_LOCATION!, req.url!);
+  const isFileFound = fs.existsSync(filepath);
+
+  if (!isFileFound) {
+    res.statusCode = 404;
+  }
+
+  await navigationFallback(req, res, userConfig.navigationFallback);
   await responseOverrides(req, res, userConfig.responseOverrides);
 
   logger.silly({
-    outputLocation: process.env.SWA_CLI_OUTPUT_LOCATION,
-    matchedRoute: userDefinedRoute,
+    url: req.url,
     filepath,
     isFileFound,
     statusCode: res.statusCode,
-    url: req.url,
   });
 }

@@ -11,7 +11,7 @@ import serveStatic from "serve-static";
 import { processAuth } from "../auth/";
 import { DEFAULT_CONFIG } from "../config";
 import { address, decodeCookie, findSWAConfigFile, isHttpUrl, logger, registerProcessExit, validateCookie, validateDevServerConfig } from "../core";
-import { applyRules } from "./routes-engine/index";
+import { applyInboudRules, applyOutboudRules } from "./routes-engine/index";
 
 const SWA_WORKFLOW_CONFIG_FILE = process.env.SWA_WORKFLOW_CONFIG_FILE as string;
 const SWA_CLI_HOST = process.env.SWA_CLI_HOST as string;
@@ -139,21 +139,17 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
     }
 
     if (userConfig) {
-      await applyRules(req, res, userConfig);
+      await applyInboudRules(req, res, userConfig);
 
       // in case a redirect rule has been applied, flush response
       if (res.getHeader("Location")) {
-        logRequest(req, null, res.statusCode);
         return res.end();
       }
 
       if ([401, 403, 404].includes(res.statusCode)) {
-        const isCustomUrl = req.url.startsWith(DEFAULT_CONFIG.customUrlScheme!);
+        const isCustomUrl = req?.url?.startsWith(DEFAULT_CONFIG.customUrlScheme!);
 
-        if (isCustomUrl) {
-          // extract user custom url
-          req.url = req.url.replace(`${DEFAULT_CONFIG.customUrlScheme}`, "");
-        } else {
+        if (!isCustomUrl) {
           switch (res.statusCode) {
             case 401:
               req.url = "unauthorized.html";
@@ -166,10 +162,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
               req.url = "404.html";
               break;
           }
-          return serve(SWA_PUBLIC_DIR, req, res);
         }
-
-        logRequest(req, null, res.statusCode);
       }
     }
 
@@ -217,7 +210,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
 
     // proxy APP requests
     else {
-      const target = SWA_CLI_OUTPUT_LOCATION;
+      let target = SWA_CLI_OUTPUT_LOCATION;
 
       // is this a dev server?
       if (isStaticDevServer) {
@@ -237,6 +230,21 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
 
         logRequest(req);
       } else {
+        if (userConfig) {
+          await applyOutboudRules(req, res, userConfig);
+        }
+
+        const isCustomUrl = req?.url?.startsWith(DEFAULT_CONFIG.customUrlScheme!);
+        if (isCustomUrl) {
+          // extract user custom page filename
+          req.url = req?.url.replace(DEFAULT_CONFIG.customUrlScheme!, "");
+          target = SWA_CLI_OUTPUT_LOCATION;
+        } else {
+          if (DEFAULT_CONFIG.overridableErrorCode?.includes(res.statusCode)) {
+            target = SWA_PUBLIC_DIR;
+          }
+        }
+
         serve(target, req, res);
         logRequest(req, null, res.statusCode);
       }

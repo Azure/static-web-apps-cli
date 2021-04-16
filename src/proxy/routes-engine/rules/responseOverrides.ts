@@ -5,12 +5,13 @@ import { logger } from "../../../core";
 // See: https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#response-overrides
 export const responseOverrides = async (req: http.IncomingMessage, res: http.ServerResponse, responseOverrides: SWAConfigFileResponseOverrides) => {
   const statusCode = res.statusCode;
+  logger.silly(`checking responseOverrides rule for code = ${statusCode}...`);
 
-  if ([400, 401, 403, 404].includes(statusCode)) {
+  if (DEFAULT_CONFIG.overridableErrorCode?.includes(statusCode)) {
     const overridenStatusCode = responseOverrides?.[`${statusCode}`];
 
     if (overridenStatusCode) {
-      logger.silly("checking responseOverrides rule...");
+      logger.silly("found overriden rules...");
 
       if (overridenStatusCode.statusCode) {
         res.statusCode = overridenStatusCode.statusCode;
@@ -23,10 +24,13 @@ export const responseOverrides = async (req: http.IncomingMessage, res: http.Ser
         logger.silly(` - Location: ${overridenStatusCode.redirect}`);
       }
       if (overridenStatusCode.rewrite && req.url !== overridenStatusCode.rewrite) {
+        overridenStatusCode.rewrite = overridenStatusCode.rewrite.replace("/", "");
         req.url = `${DEFAULT_CONFIG.customUrlScheme}${overridenStatusCode.rewrite}`;
 
         logger.silly(` - url: ${req.url}`);
       }
     }
+  } else {
+    logger.silly(`status code out of range. skipping...`);
   }
 };

@@ -53,7 +53,7 @@ describe("responseOverrides()", () => {
     };
     await responseOverrides(req, res, userConfig);
 
-    expect(req.url).toBe(`${DEFAULT_CONFIG.customUrlScheme}/foo`);
+    expect(req.url).toBe(`${DEFAULT_CONFIG.customUrlScheme}foo`);
   });
 
   it("should override redirect rule", async () => {
