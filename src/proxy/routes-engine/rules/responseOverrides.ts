@@ -5,9 +5,9 @@ import { logger } from "../../../core";
 // See: https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#response-overrides
 export const responseOverrides = async (req: http.IncomingMessage, res: http.ServerResponse, responseOverrides: SWAConfigFileResponseOverrides) => {
   const statusCode = res.statusCode;
-  logger.silly(`checking responseOverrides rule for code = ${statusCode}...`);
 
   if (DEFAULT_CONFIG.overridableErrorCode?.includes(statusCode)) {
+    logger.silly(`checking responseOverrides rule for code = ${statusCode}...`);
     const overridenStatusCode = responseOverrides?.[`${statusCode}`];
 
     if (overridenStatusCode) {
@@ -30,7 +30,5 @@ export const responseOverrides = async (req: http.IncomingMessage, res: http.Ser
         logger.silly(` - url: ${req.url}`);
       }
     }
-  } else {
-    logger.silly(`status code out of range. skipping...`);
   }
 };

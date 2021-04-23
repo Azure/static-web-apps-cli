@@ -11,6 +11,12 @@ import { mimeTypes } from "./rules/mimeTypes";
 import { navigationFallback } from "./rules/navigationFallback";
 import { responseOverrides } from "./rules/responseOverrides";
 
+export * from "./rules/customRoutes";
+export * from "./rules/globalHeaders";
+export * from "./rules/mimeTypes";
+export * from "./rules/navigationFallback";
+export * from "./rules/responseOverrides";
+
 /**
  * The order in which the following are applied are:
  * 1. Request comes in, a route rule that applies to the request is searched for

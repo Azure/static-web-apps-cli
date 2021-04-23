@@ -11,7 +11,7 @@ import serveStatic from "serve-static";
 import { processAuth } from "../auth/";
 import { DEFAULT_CONFIG } from "../config";
 import { address, decodeCookie, findSWAConfigFile, isHttpUrl, logger, registerProcessExit, validateCookie, validateDevServerConfig } from "../core";
-import { applyInboudRules, applyOutboudRules } from "./routes-engine/index";
+import { customRoutes, navigationFallback, getMatchingRouteRule, responseOverrides, globalHeaders, mimeTypes } from "./routes-engine/index";
 
 const SWA_WORKFLOW_CONFIG_FILE = process.env.SWA_WORKFLOW_CONFIG_FILE as string;
 const SWA_CLI_HOST = process.env.SWA_CLI_HOST as string;
@@ -131,6 +131,104 @@ const handleUserConfig = async (appLocation: string): Promise<SWAConfigFile | nu
   return configJson;
 };
 
+const isApiUrl = (req: http.IncomingMessage) => req.url?.startsWith(`/${DEFAULT_CONFIG.apiPrefix}`);
+const isAuthUrl = (req: http.IncomingMessage) => req.url?.startsWith("/.auth");
+const isSWAConfigFileUrl = (req: http.IncomingMessage) =>
+  req.url?.endsWith(`/${DEFAULT_CONFIG.swaConfigFilename!}`) || req.url?.endsWith(`/${DEFAULT_CONFIG.swaConfigFilenameLegacy!}`);
+
+const create404Response = (req: http.IncomingMessage, res: http.ServerResponse) => {
+  req.url = "404.html";
+  res.statusCode = 404;
+  serve(SWA_PUBLIC_DIR, req, res);
+  logRequest(req, PROTOCOL + "://" + req.headers.host, 404);
+};
+
+const createAuthResponse = async (req: http.IncomingMessage, res: http.ServerResponse) => {
+  const statusCode = await processAuth(req, res);
+  if (statusCode === 404) {
+    req.url = "404.html";
+    res.statusCode = 404;
+    serve(SWA_PUBLIC_DIR, req, res);
+  }
+
+  logRequest(req, null, statusCode);
+};
+
+const createApiResponse = (req: http.IncomingMessage, res: http.ServerResponse) => {
+  const target = SWA_CLI_API_URI;
+
+  injectClientPrincipalCookies(req);
+
+  proxyApi.web(
+    req,
+    res,
+    {
+      target,
+    },
+    onConnectionLost(req, res, target)
+  );
+  proxyApi.once("proxyRes", (proxyRes: http.IncomingMessage, req: http.IncomingMessage) => {
+    logRequest(req, null, proxyRes.statusCode);
+  });
+
+  logRequest(req);
+};
+
+const createStaticFileResponse = (req: http.IncomingMessage, res: http.ServerResponse) => {
+  let target = SWA_CLI_OUTPUT_LOCATION;
+
+  // is this a dev server?
+  if (isStaticDevServer) {
+    proxyApp.web(
+      req,
+      res,
+      {
+        target,
+        secure: false,
+        toProxy: true,
+      },
+      onConnectionLost(req, res, target)
+    );
+    proxyApp.once("proxyRes", (proxyRes: http.IncomingMessage, req: http.IncomingMessage) => {
+      logRequest(req, null, proxyRes.statusCode);
+    });
+
+    logRequest(req);
+  } else {
+    const isCustomUrl = req.url?.startsWith(DEFAULT_CONFIG.customUrlScheme!);
+    if (isCustomUrl) {
+      // extract user custom page filename
+      req.url = req.url?.replace(DEFAULT_CONFIG.customUrlScheme!, "");
+      target = SWA_CLI_OUTPUT_LOCATION;
+    } else {
+      if (DEFAULT_CONFIG.overridableErrorCode?.includes(res.statusCode)) {
+        target = SWA_PUBLIC_DIR;
+      }
+    }
+
+    if ([401, 403, 404].includes(res.statusCode)) {
+      if (!isCustomUrl) {
+        switch (res.statusCode) {
+          case 401:
+            req.url = "unauthorized.html";
+            break;
+          case 403:
+            // @TODO provide a Forbidden HTML template
+            req.url = "unauthorized.html";
+            break;
+          case 404:
+            req.url = "404.html";
+            break;
+        }
+      }
+    }
+
+    logger.silly({ target });
+    serve(target, req, res);
+    logRequest(req, null, res.statusCode);
+  }
+};
+
 const requestHandler = (userConfig: SWAConfigFile | null) =>
   async function (req: http.IncomingMessage, res: http.ServerResponse) {
     // not quite sure how you'd hit an undefined url, but the types say you can
@@ -138,117 +236,159 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
       return;
     }
 
+    logger.silly(`processing ${chalk.yellow(req.url)}`);
+
+    /**
+     * proxy v2 logic (START)
+     */
     if (userConfig) {
-      await applyInboudRules(req, res, userConfig);
-
-      // in case a redirect rule has been applied, flush response
-      if (res.getHeader("Location")) {
-        return res.end();
-      }
-
-      if ([401, 403, 404].includes(res.statusCode)) {
-        const isCustomUrl = req?.url?.startsWith(DEFAULT_CONFIG.customUrlScheme!);
-
-        if (!isCustomUrl) {
-          switch (res.statusCode) {
-            case 401:
-              req.url = "unauthorized.html";
-              break;
-            case 403:
-              // @TODO provide a Forbidden HTML template
-              req.url = "unauthorized.html";
-              break;
-            case 404:
-              req.url = "404.html";
-              break;
-          }
+      const matchingRouteRule = getMatchingRouteRule(req, userConfig);
+      if (matchingRouteRule) {
+        await customRoutes(req, res, matchingRouteRule);
+        if (res.getHeader("Location")) {
+          return res.end();
         }
       }
+    }
+
+    if (isAuthUrl(req)) {
+      return createAuthResponse(req, res);
+    }
+
+    if (isApiUrl(req)) {
+      return createApiResponse(req, res);
     }
 
     // don't serve staticwebapp.config.json / routes.json
-    if (req.url.endsWith(`/${DEFAULT_CONFIG.swaConfigFilename!}`) || req.url.endsWith(`/${DEFAULT_CONFIG.swaConfigFilenameLegacy!}`)) {
-      req.url = "404.html";
-      res.statusCode = 404;
-      serve(SWA_PUBLIC_DIR, req, res);
-
-      logRequest(req, PROTOCOL + "://" + req.headers.host, 404);
+    if (isSWAConfigFileUrl(req)) {
+      return create404Response(req, res);
     }
 
-    // proxy AUTH request to AUTH emulator
-    else if (req.url.startsWith("/.auth")) {
-      const statusCode = await processAuth(req, res);
-      if (statusCode === 404) {
-        req.url = "404.html";
-        res.statusCode = 404;
-        serve(SWA_PUBLIC_DIR, req, res);
-      }
-
-      logRequest(req, null, statusCode);
-    }
-
-    // proxy API request to Azure Functions emulator
-    else if (req.url.startsWith(`/${DEFAULT_CONFIG.apiPrefix}`)) {
-      const target = SWA_CLI_API_URI;
-
-      injectClientPrincipalCookies(req);
-
-      proxyApi.web(
-        req,
-        res,
-        {
-          target,
-        },
-        onConnectionLost(req, res, target)
-      );
-      proxyApi.once("proxyRes", (proxyRes: http.IncomingMessage, req: http.IncomingMessage) => {
-        logRequest(req, null, proxyRes.statusCode);
-      });
-
-      logRequest(req);
-    }
-
-    // proxy APP requests
-    else {
-      let target = SWA_CLI_OUTPUT_LOCATION;
-
-      // is this a dev server?
-      if (isStaticDevServer) {
-        proxyApp.web(
-          req,
-          res,
-          {
-            target,
-            secure: false,
-            toProxy: true,
-          },
-          onConnectionLost(req, res, target)
-        );
-        proxyApp.once("proxyRes", (proxyRes: http.IncomingMessage, req: http.IncomingMessage) => {
-          logRequest(req, null, proxyRes.statusCode);
-        });
-
-        logRequest(req);
-      } else {
-        if (userConfig) {
-          await applyOutboudRules(req, res, userConfig);
-        }
-
-        const isCustomUrl = req?.url?.startsWith(DEFAULT_CONFIG.customUrlScheme!);
-        if (isCustomUrl) {
-          // extract user custom page filename
-          req.url = req?.url.replace(DEFAULT_CONFIG.customUrlScheme!, "");
-          target = SWA_CLI_OUTPUT_LOCATION;
-        } else {
-          if (DEFAULT_CONFIG.overridableErrorCode?.includes(res.statusCode)) {
-            target = SWA_PUBLIC_DIR;
-          }
-        }
-
-        serve(target, req, res);
-        logRequest(req, null, res.statusCode);
+    if (res.statusCode === 404) {
+      if (userConfig) {
+        await navigationFallback(req, res, userConfig.navigationFallback);
       }
     }
+
+    if (userConfig) {
+      await responseOverrides(req, res, userConfig.responseOverrides);
+      await globalHeaders(req, res, userConfig.globalHeaders);
+      await mimeTypes(req, res, userConfig.mimeTypes);
+    }
+
+    return createStaticFileResponse(req, res);
+
+    /**
+     * proxy v2 logic (END)
+     */
+
+    // if (userConfig) {
+    //   await applyInboudRules(req, res, userConfig);
+
+    //   // in case a redirect rule has been applied, flush response
+    //   if (res.getHeader("Location")) {
+    //     return res.end();
+    //   }
+
+    //   if ([401, 403, 404].includes(res.statusCode)) {
+    //     const isCustomUrl = req?.url?.startsWith(DEFAULT_CONFIG.customUrlScheme!);
+
+    //     if (!isCustomUrl) {
+    //       switch (res.statusCode) {
+    //         case 401:
+    //           req.url = "unauthorized.html";
+    //           break;
+    //         case 403:
+    //           // @TODO provide a Forbidden HTML template
+    //           req.url = "unauthorized.html";
+    //           break;
+    //         case 404:
+    //           req.url = "404.html";
+    //           break;
+    //       }
+    //     }
+    //   }
+    // }
+
+    // // don't serve staticwebapp.config.json / routes.json
+    // if (req.url.endsWith(`/${DEFAULT_CONFIG.swaConfigFilename!}`) || req.url.endsWith(`/${DEFAULT_CONFIG.swaConfigFilenameLegacy!}`)) {
+    //   req.url = "404.html";
+    //   res.statusCode = 404;
+    //   serve(SWA_PUBLIC_DIR, req, res);
+
+    //   logRequest(req, PROTOCOL + "://" + req.headers.host, 404);
+    // }
+
+    // // proxy AUTH request to AUTH emulator
+    // else if (req.url.startsWith("/.auth")) {
+    //   const statusCode = await processAuth(req, res);
+    //   if (statusCode === 404) {
+    //     req.url = "404.html";
+    //     res.statusCode = 404;
+    //     serve(SWA_PUBLIC_DIR, req, res);
+    //   }
+
+    //   logRequest(req, null, statusCode);
+    // }
+
+    // // proxy API request to Azure Functions emulator
+    // else if (req.url.startsWith(`/${DEFAULT_CONFIG.apiPrefix}`)) {
+    //   const target = SWA_CLI_API_URI;
+
+    //   injectClientPrincipalCookies(req);
+
+    //   proxyApi.web(
+    //     req,
+    //     res,
+    //     {
+    //       target,
+    //     },
+    //     onConnectionLost(req, res, target)
+    //   );
+    //   proxyApi.once("proxyRes", (proxyRes: http.IncomingMessage, req: http.IncomingMessage) => {
+    //     logRequest(req, null, proxyRes.statusCode);
+    //   });
+
+    //   logRequest(req);
+    // }
+
+    // // proxy APP requests
+    // else {
+    //   let target = SWA_CLI_OUTPUT_LOCATION;
+
+    //   // is this a dev server?
+    //   if (isStaticDevServer) {
+    //     proxyApp.web(
+    //       req,
+    //       res,
+    //       {
+    //         target,
+    //         secure: false,
+    //         toProxy: true,
+    //       },
+    //       onConnectionLost(req, res, target)
+    //     );
+    //     proxyApp.once("proxyRes", (proxyRes: http.IncomingMessage, req: http.IncomingMessage) => {
+    //       logRequest(req, null, proxyRes.statusCode);
+    //     });
+
+    //     logRequest(req);
+    //   } else {
+    //     const isCustomUrl = req?.url?.startsWith(DEFAULT_CONFIG.customUrlScheme!);
+    //     if (isCustomUrl) {
+    //       // extract user custom page filename
+    //       req.url = req?.url.replace(DEFAULT_CONFIG.customUrlScheme!, "");
+    //       target = SWA_CLI_OUTPUT_LOCATION;
+    //     } else {
+    //       if (DEFAULT_CONFIG.overridableErrorCode?.includes(res.statusCode)) {
+    //         target = SWA_PUBLIC_DIR;
+    //       }
+    //     }
+
+    //     serve(target, req, res);
+    //     logRequest(req, null, res.statusCode);
+    //   }
+    // }
   };
 
 // start SWA proxy server

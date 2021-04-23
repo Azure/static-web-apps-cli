@@ -4,6 +4,10 @@ import http from "http";
 import { decodeCookie, logger } from "../../../core";
 import { globToRegExp } from "../../../core/utils/glob";
 
+export const getMatchingRouteRule = (req: http.IncomingMessage, userConfig: SWAConfigFile) => {
+  return userConfig.routes?.find(matchRoute(req, userConfig.isLegacyConfigFile));
+};
+
 export const matchRoute = (req: http.IncomingMessage, isLegacyConfigFile: boolean) => {
   const sanitizedUrl = new URL(req.url!, `http://${req?.headers?.host}`);
 
