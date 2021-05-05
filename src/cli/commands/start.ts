@@ -79,7 +79,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
       const funcBinary = "func";
       // serve the api if and only if the user provides a folder via the --api-location flag
       if (isApiLocationExistsOnDisk) {
-        serveApiCommand = `cd ${userConfig.apiLocation} && ${funcBinary} start --cors "*" --port ${options.apiPort}`;
+        serveApiCommand = `cd "${userConfig.apiLocation}" && ${funcBinary} start --cors "*" --port ${options.apiPort}`;
       }
     }
   }
@@ -121,7 +121,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
   const { env } = process;
   const concurrentlyCommands: concurrently.CommandObj[] = [
     // start the reverse proxy
-    { command: `node ${path.join(__dirname, "..", "..", "proxy", "server.js")}`, name: "swa", env, prefixColor: "gray.dim" },
+    { command: `node "${path.join(__dirname, "..", "..", "proxy", "server.js")}"`, name: "swa", env, prefixColor: "gray.dim" },
   ];
 
   if (isApiLocationExistsOnDisk) {
@@ -134,7 +134,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
   if (startupCommand) {
     concurrentlyCommands.push(
       // run an external script, if it's available
-      { command: `cd ${userConfig?.appLocation} && ${startupCommand}`, name: "run", env, prefixColor: "gray.dim" }
+      { command: `cd "${userConfig?.appLocation}" && ${startupCommand}`, name: "run", env, prefixColor: "gray.dim" }
     );
   }
 
