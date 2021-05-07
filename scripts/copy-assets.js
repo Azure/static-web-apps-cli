@@ -11,7 +11,7 @@ const build = `<a rel="noopener noreferrer" target="_blank" href="https://github
   const files = [
     path.join("src", "public", "auth.html"),
     path.join("src", "public", "unauthorized.html"),
-    path.join("src", "public", "404.html"),
+    path.join("src", "public", "page-not-found.html"),
     path.join("src", "cli", "bin.js"),
   ];
 

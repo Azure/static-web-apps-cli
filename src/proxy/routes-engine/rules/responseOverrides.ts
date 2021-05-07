@@ -6,29 +6,36 @@ import { logger } from "../../../core";
 export const responseOverrides = async (req: http.IncomingMessage, res: http.ServerResponse, responseOverrides: SWAConfigFileResponseOverrides) => {
   const statusCode = res.statusCode;
 
+  logger.silly(`checking responseOverrides rule for code = ${statusCode}...`);
   if (DEFAULT_CONFIG.overridableErrorCode?.includes(statusCode)) {
-    logger.silly(`checking responseOverrides rule for code = ${statusCode}...`);
-    const overridenStatusCode = responseOverrides?.[`${statusCode}`];
+    const rule = responseOverrides?.[`${statusCode}`];
 
-    if (overridenStatusCode) {
+    if (rule) {
       logger.silly("found overriden rules...");
 
-      if (overridenStatusCode.statusCode) {
-        res.statusCode = overridenStatusCode.statusCode;
+      if (rule.statusCode) {
+        res.statusCode = rule.statusCode;
 
         logger.silly(` - statusCode: ${statusCode}`);
       }
-      if (overridenStatusCode.redirect) {
-        res.setHeader("Location", overridenStatusCode.redirect);
+      if (rule.redirect) {
+        res.setHeader("Location", rule.redirect);
 
-        logger.silly(` - Location: ${overridenStatusCode.redirect}`);
+        logger.silly(` - redirect: ${rule.redirect}`);
       }
-      if (overridenStatusCode.rewrite && req.url !== overridenStatusCode.rewrite) {
-        overridenStatusCode.rewrite = overridenStatusCode.rewrite.replace("/", "");
-        req.url = `${DEFAULT_CONFIG.customUrlScheme}${overridenStatusCode.rewrite}`;
+      if (rule.rewrite && req.url !== rule.rewrite) {
+        // don't process .auth or api rewrites
+        if (rule.rewrite.startsWith("/.auth") || rule.rewrite.startsWith("/api")) {
+          return;
+        }
 
-        logger.silly(` - url: ${req.url}`);
+        rule.rewrite = rule.rewrite.replace("/", "");
+        req.url = `${DEFAULT_CONFIG.customUrlScheme}${rule.rewrite}`;
+
+        logger.silly(` - rewrite: ${req.url}`);
       }
+    } else {
+      logger.silly("no responseOverrides rules found.");
     }
   }
 };

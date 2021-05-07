@@ -8,10 +8,18 @@ import internalIp from "internal-ip";
 import net from "net";
 import path from "path";
 import serveStatic from "serve-static";
-import { processAuth } from "../auth/";
+import { processAuth } from "../auth";
 import { DEFAULT_CONFIG } from "../config";
 import { address, decodeCookie, findSWAConfigFile, isHttpUrl, logger, registerProcessExit, validateCookie, validateDevServerConfig } from "../core";
-import { customRoutes, navigationFallback, getMatchingRouteRule, responseOverrides, globalHeaders, mimeTypes } from "./routes-engine/index";
+import {
+  getMatchingRouteRule,
+  navigationFallback,
+  isAuthorizedRoute,
+  responseOverrides,
+  globalHeaders,
+  mimeTypes,
+  customRoutes,
+} from "./routes-engine";
 
 const SWA_WORKFLOW_CONFIG_FILE = process.env.SWA_WORKFLOW_CONFIG_FILE as string;
 const SWA_CLI_HOST = process.env.SWA_CLI_HOST as string;
@@ -67,14 +75,16 @@ const logRequest = (req: http.IncomingMessage, target: string | null = null, sta
 
 const serve = (root: string, req: http.IncomingMessage, res: http.ServerResponse) => {
   // if the requested file is not foud on disk
-  // or if routes rule config is 404
-  // send our 404 custom page instead of serve-static's one.
+  // send our SWA 404 default page instead of serve-static's one.
   const file = path.join(root, req.url!);
   if (fs.existsSync(file) === false) {
     req.url = "404.html";
     res.statusCode = 404;
     root = SWA_PUBLIC_DIR;
   }
+
+  logger.silly(`serving static content from:`);
+  logger.silly({ root, file, url: req.url, statusCode: res.statusCode });
 
   const done = finalhandler(req, res) as any;
   return serveStatic(root, { extensions: ["html"] })(req, res, done);
@@ -102,17 +112,17 @@ const injectClientPrincipalCookies = (req: http.IncomingMessage) => {
   }
 };
 
-const handleUserConfig = async (appLocation: string): Promise<SWAConfigFile | null> => {
+const handleUserConfig = async (appLocation: string): Promise<SWAConfigFile | undefined> => {
   if (!fs.existsSync(appLocation)) {
-    return null;
+    return;
   }
 
   const configFile = await findSWAConfigFile(appLocation);
   if (!configFile) {
-    return null;
+    return;
   }
 
-  let configJson: SWAConfigFile | null = null;
+  let configJson: SWAConfigFile | undefined;
   try {
     configJson = require(configFile.file) as SWAConfigFile;
     configJson.isLegacyConfigFile = configFile.isLegacyConfigFile;
@@ -128,6 +138,7 @@ const handleUserConfig = async (appLocation: string): Promise<SWAConfigFile | nu
 
     return configJson;
   } catch (error) {}
+
   return configJson;
 };
 
@@ -136,25 +147,30 @@ const isAuthUrl = (req: http.IncomingMessage) => req.url?.startsWith("/.auth");
 const isSWAConfigFileUrl = (req: http.IncomingMessage) =>
   req.url?.endsWith(`/${DEFAULT_CONFIG.swaConfigFilename!}`) || req.url?.endsWith(`/${DEFAULT_CONFIG.swaConfigFilenameLegacy!}`);
 
-const create404Response = (req: http.IncomingMessage, res: http.ServerResponse) => {
-  req.url = "404.html";
+const pageNotFoundResponse = async (req: http.IncomingMessage, res: http.ServerResponse, userConfig: SWAConfigFile | undefined) => {
+  req.url = "/page-not-found.html";
+  res.setHeader("Content-Type", "text/html");
   res.statusCode = 404;
-  serve(SWA_PUBLIC_DIR, req, res);
+
+  if (userConfig?.responseOverrides) {
+    await responseOverrides(req, res, userConfig?.responseOverrides);
+  }
+
   logRequest(req, PROTOCOL + "://" + req.headers.host, 404);
 };
 
-const createAuthResponse = async (req: http.IncomingMessage, res: http.ServerResponse) => {
+const authResponse = async (req: http.IncomingMessage, res: http.ServerResponse, userConfig: SWAConfigFile | undefined) => {
   const statusCode = await processAuth(req, res);
   if (statusCode === 404) {
-    req.url = "404.html";
-    res.statusCode = 404;
-    serve(SWA_PUBLIC_DIR, req, res);
+    await pageNotFoundResponse(req, res, userConfig);
   }
 
   logRequest(req, null, statusCode);
 };
 
-const createApiResponse = (req: http.IncomingMessage, res: http.ServerResponse) => {
+const apiResponse = (req: http.IncomingMessage, res: http.ServerResponse) => {
+  logger.silly(`+ api response:`);
+
   const target = SWA_CLI_API_URI;
 
   injectClientPrincipalCookies(req);
@@ -174,7 +190,7 @@ const createApiResponse = (req: http.IncomingMessage, res: http.ServerResponse) 
   logRequest(req);
 };
 
-const createStaticFileResponse = (req: http.IncomingMessage, res: http.ServerResponse) => {
+const handleStaticFileResponse = (req: http.IncomingMessage, res: http.ServerResponse) => {
   let target = SWA_CLI_OUTPUT_LOCATION;
 
   // is this a dev server?
@@ -192,8 +208,6 @@ const createStaticFileResponse = (req: http.IncomingMessage, res: http.ServerRes
     proxyApp.once("proxyRes", (proxyRes: http.IncomingMessage, req: http.IncomingMessage) => {
       logRequest(req, null, proxyRes.statusCode);
     });
-
-    logRequest(req);
   } else {
     const isCustomUrl = req.url?.startsWith(DEFAULT_CONFIG.customUrlScheme!);
     if (isCustomUrl) {
@@ -205,190 +219,129 @@ const createStaticFileResponse = (req: http.IncomingMessage, res: http.ServerRes
         target = SWA_PUBLIC_DIR;
       }
     }
+  }
 
-    if ([401, 403, 404].includes(res.statusCode)) {
-      if (!isCustomUrl) {
-        switch (res.statusCode) {
-          case 401:
-            req.url = "unauthorized.html";
-            break;
-          case 403:
-            // @TODO provide a Forbidden HTML template
-            req.url = "unauthorized.html";
-            break;
-          case 404:
-            req.url = "404.html";
-            break;
-        }
-      }
+  return {
+    target,
+  };
+};
+
+const unauthorizedResponse = async (req: http.IncomingMessage, res: http.ServerResponse, userConfig: SWAConfigFile | undefined) => {
+  req.url = "/unauthorized.html";
+  res.setHeader("ContentType", "text/html");
+  res.statusCode = 403;
+
+  if (userConfig?.responseOverrides) {
+    await responseOverrides(req, res, userConfig?.responseOverrides);
+    const isCustomUrl = req.url.startsWith(DEFAULT_CONFIG.customUrlScheme!);
+    if (isCustomUrl) {
+      // extract user custom url
+      req.url = req.url.replace(`${DEFAULT_CONFIG.customUrlScheme}`, "");
     }
+  }
 
-    logger.silly({ target });
-    serve(target, req, res);
-    logRequest(req, null, res.statusCode);
+  logRequest(req, null, res.statusCode);
+};
+
+const redirectResponse = (_req: http.IncomingMessage, res: http.ServerResponse) => {
+  if (res.getHeader("Location")) {
+    return res.end();
   }
 };
 
-const requestHandler = (userConfig: SWAConfigFile | null) =>
+const requestHandler = (userConfig: SWAConfigFile | undefined) =>
   async function (req: http.IncomingMessage, res: http.ServerResponse) {
-    // not quite sure how you'd hit an undefined url, but the types say you can
     if (!req.url) {
       return;
     }
 
-    logger.silly(`processing ${chalk.yellow(req.url)}`);
+    logger.silly(`-------------- processing route (start) ----------------`);
+    logger.silly(`processing URL ${chalk.yellow(req.url)}`);
 
-    /**
-     * proxy v2 logic (START)
-     */
-    if (userConfig) {
-      const matchingRouteRule = getMatchingRouteRule(req, userConfig);
-      if (matchingRouteRule) {
-        await customRoutes(req, res, matchingRouteRule);
-        if (res.getHeader("Location")) {
-          return res.end();
-        }
-      }
+    logger.silly(`-------------- request middleware (start) --------------`);
+
+    const matchingRouteRule = getMatchingRouteRule(req, userConfig);
+
+    if (matchingRouteRule) {
+      customRoutes(req, res, matchingRouteRule);
+    }
+
+    if (!isAuthorizedRoute(req, matchingRouteRule)) {
+      await unauthorizedResponse(req, res, userConfig!);
+    }
+
+    if (matchingRouteRule?.redirect) {
+      return redirectResponse(req, res);
+    }
+
+    if (matchingRouteRule?.rewrite) {
+      req.url = matchingRouteRule.rewrite;
     }
 
     if (isAuthUrl(req)) {
-      return createAuthResponse(req, res);
+      logger.silly(`+ Auth response:`);
+      return authResponse(req, res, userConfig);
     }
 
     if (isApiUrl(req)) {
-      return createApiResponse(req, res);
+      return apiResponse(req, res);
     }
 
     // don't serve staticwebapp.config.json / routes.json
     if (isSWAConfigFileUrl(req)) {
-      return create404Response(req, res);
+      await pageNotFoundResponse(req, res, userConfig);
+    }
+    logger.silly(`-------------- request middleware (end) -----------------`);
+
+    let { target } = handleStaticFileResponse(req, res);
+
+    logger.silly(`-------------- response middleware (start) --------------`);
+
+    const file = path.join(SWA_CLI_OUTPUT_LOCATION, req.url!);
+    if (fs.existsSync(file) === false) {
+      await pageNotFoundResponse(req, res, userConfig);
     }
 
-    if (res.statusCode === 404) {
-      if (userConfig) {
-        await navigationFallback(req, res, userConfig.navigationFallback);
+    if (res.statusCode === 404 && userConfig?.navigationFallback) {
+      await navigationFallback(req, res, userConfig?.navigationFallback);
+    }
+
+    if (userConfig?.responseOverrides) {
+      await responseOverrides(req, res, userConfig.responseOverrides);
+    }
+
+    if (userConfig?.globalHeaders) {
+      await globalHeaders(req, res, userConfig.globalHeaders);
+    }
+
+    if (matchingRouteRule?.headers) {
+      for (const header in matchingRouteRule.headers) {
+        if (matchingRouteRule.headers[header] === "") {
+          res.removeHeader(header);
+
+          logger.silly(` - removing route header: ${header}`);
+        } else {
+          res.setHeader(header, matchingRouteRule.headers[header]);
+
+          logger.silly(` - adding route header: ${header}=${matchingRouteRule.headers[header]}`);
+        }
       }
     }
 
-    if (userConfig) {
-      await responseOverrides(req, res, userConfig.responseOverrides);
-      await globalHeaders(req, res, userConfig.globalHeaders);
+    if (userConfig?.mimeTypes) {
       await mimeTypes(req, res, userConfig.mimeTypes);
     }
 
-    return createStaticFileResponse(req, res);
+    logger.silly(`-------------- response middleware (end) --------------`);
 
-    /**
-     * proxy v2 logic (END)
-     */
+    const isCustomUrl = req.url.startsWith(DEFAULT_CONFIG.customUrlScheme!);
+    if (isCustomUrl) {
+      // extract user custom url
+      req.url = req.url.replace(`${DEFAULT_CONFIG.customUrlScheme}`, "");
+    }
+    serve(target, req, res);
 
-    // if (userConfig) {
-    //   await applyInboudRules(req, res, userConfig);
-
-    //   // in case a redirect rule has been applied, flush response
-    //   if (res.getHeader("Location")) {
-    //     return res.end();
-    //   }
-
-    //   if ([401, 403, 404].includes(res.statusCode)) {
-    //     const isCustomUrl = req?.url?.startsWith(DEFAULT_CONFIG.customUrlScheme!);
-
-    //     if (!isCustomUrl) {
-    //       switch (res.statusCode) {
-    //         case 401:
-    //           req.url = "unauthorized.html";
-    //           break;
-    //         case 403:
-    //           // @TODO provide a Forbidden HTML template
-    //           req.url = "unauthorized.html";
-    //           break;
-    //         case 404:
-    //           req.url = "404.html";
-    //           break;
-    //       }
-    //     }
-    //   }
-    // }
-
-    // // don't serve staticwebapp.config.json / routes.json
-    // if (req.url.endsWith(`/${DEFAULT_CONFIG.swaConfigFilename!}`) || req.url.endsWith(`/${DEFAULT_CONFIG.swaConfigFilenameLegacy!}`)) {
-    //   req.url = "404.html";
-    //   res.statusCode = 404;
-    //   serve(SWA_PUBLIC_DIR, req, res);
-
-    //   logRequest(req, PROTOCOL + "://" + req.headers.host, 404);
-    // }
-
-    // // proxy AUTH request to AUTH emulator
-    // else if (req.url.startsWith("/.auth")) {
-    //   const statusCode = await processAuth(req, res);
-    //   if (statusCode === 404) {
-    //     req.url = "404.html";
-    //     res.statusCode = 404;
-    //     serve(SWA_PUBLIC_DIR, req, res);
-    //   }
-
-    //   logRequest(req, null, statusCode);
-    // }
-
-    // // proxy API request to Azure Functions emulator
-    // else if (req.url.startsWith(`/${DEFAULT_CONFIG.apiPrefix}`)) {
-    //   const target = SWA_CLI_API_URI;
-
-    //   injectClientPrincipalCookies(req);
-
-    //   proxyApi.web(
-    //     req,
-    //     res,
-    //     {
-    //       target,
-    //     },
-    //     onConnectionLost(req, res, target)
-    //   );
-    //   proxyApi.once("proxyRes", (proxyRes: http.IncomingMessage, req: http.IncomingMessage) => {
-    //     logRequest(req, null, proxyRes.statusCode);
-    //   });
-
-    //   logRequest(req);
-    // }
-
-    // // proxy APP requests
-    // else {
-    //   let target = SWA_CLI_OUTPUT_LOCATION;
-
-    //   // is this a dev server?
-    //   if (isStaticDevServer) {
-    //     proxyApp.web(
-    //       req,
-    //       res,
-    //       {
-    //         target,
-    //         secure: false,
-    //         toProxy: true,
-    //       },
-    //       onConnectionLost(req, res, target)
-    //     );
-    //     proxyApp.once("proxyRes", (proxyRes: http.IncomingMessage, req: http.IncomingMessage) => {
-    //       logRequest(req, null, proxyRes.statusCode);
-    //     });
-
-    //     logRequest(req);
-    //   } else {
-    //     const isCustomUrl = req?.url?.startsWith(DEFAULT_CONFIG.customUrlScheme!);
-    //     if (isCustomUrl) {
-    //       // extract user custom page filename
-    //       req.url = req?.url.replace(DEFAULT_CONFIG.customUrlScheme!, "");
-    //       target = SWA_CLI_OUTPUT_LOCATION;
-    //     } else {
-    //       if (DEFAULT_CONFIG.overridableErrorCode?.includes(res.statusCode)) {
-    //         target = SWA_PUBLIC_DIR;
-    //       }
-    //     }
-
-    //     serve(target, req, res);
-    //     logRequest(req, null, res.statusCode);
-    //   }
-    // }
+    logger.silly(`-------------- processing route (end) -----------------`);
   };
 
 // start SWA proxy server
@@ -467,7 +420,7 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
   };
 
   // load user custom rules if running in local mode (non-dev server)
-  let userConfig: SWAConfigFile | null = null;
+  let userConfig: SWAConfigFile | undefined;
   if (!isStaticDevServer) {
     userConfig = await handleUserConfig(SWA_CLI_ROUTES_LOCATION || SWA_CLI_APP_LOCATION);
   }

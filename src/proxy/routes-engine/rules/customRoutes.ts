@@ -1,11 +1,57 @@
 // import globalyzer from "globalyzer";
 // import globrex from "globrex";
+import chalk from "chalk";
 import http from "http";
 import { decodeCookie, logger } from "../../../core";
 import { globToRegExp } from "../../../core/utils/glob";
 
-export const getMatchingRouteRule = (req: http.IncomingMessage, userConfig: SWAConfigFile) => {
-  return userConfig.routes?.find(matchRoute(req, userConfig.isLegacyConfigFile));
+export const getMatchingRouteRule = (req: http.IncomingMessage, userConfig: SWAConfigFile | undefined) => {
+  return userConfig?.routes?.find(matchRoute(req, userConfig?.isLegacyConfigFile));
+};
+
+export const isAuthorizedRoute = (req: http.IncomingMessage, userDefinedRoute: SWAConfigFileRoute | undefined) => {
+  logger.silly(`+ checking authorization for ${chalk.yellow(req.url)}...`);
+
+  if (!userDefinedRoute) {
+    logger.silly(` - authorized.`);
+    return true;
+  }
+
+  if (userDefinedRoute.allowedRoles) {
+    const user = req.headers.cookie ? decodeCookie(req.headers.cookie) : null;
+    logger.silly({ user });
+
+    const status = userDefinedRoute.allowedRoles.some((role) => user?.userRoles?.some((userRole: string) => userRole === role)) === true;
+
+    if (status) {
+      logger.silly(` - authorized.`);
+    } else {
+      logger.silly(` - not authorized.`);
+    }
+
+    return status;
+  }
+
+  logger.silly(` - not authorized.`);
+  return false;
+};
+
+export const applyRedirectResponse = (req: http.IncomingMessage, res: http.ServerResponse, userDefinedRoute: SWAConfigFileRoute | undefined) => {
+  if (!userDefinedRoute) {
+    return;
+  }
+
+  const isServeRedirect = userDefinedRoute.serve && [301, 302].includes(Number(userDefinedRoute.statusCode));
+  if (isServeRedirect || userDefinedRoute.redirect) {
+    let route = (userDefinedRoute.serve || userDefinedRoute.redirect) as string;
+
+    // note: adding checks to avoid ERR_TOO_MANY_REDIRECTS
+    if (route !== req.url) {
+      res.setHeader("Location", route);
+      res.statusCode = Number(userDefinedRoute.statusCode) || 302;
+      res.end();
+    }
+  }
 };
 
 export const matchRoute = (req: http.IncomingMessage, isLegacyConfigFile: boolean) => {
@@ -39,9 +85,9 @@ export const matchRoute = (req: http.IncomingMessage, isLegacyConfigFile: boolea
   };
 };
 
-export const customRoutes = async (req: http.IncomingMessage, res: http.ServerResponse, userDefinedRoute: SWAConfigFileRoute | undefined) => {
+export const customRoutes = (req: http.IncomingMessage, res: http.ServerResponse, userDefinedRoute: SWAConfigFileRoute | undefined) => {
   if (!req) {
-    return Promise.resolve(undefined);
+    return;
   }
 
   if (userDefinedRoute) {
@@ -58,6 +104,7 @@ export const customRoutes = async (req: http.IncomingMessage, res: http.ServerRe
     // check allowed method
     if (userDefinedRoute.methods?.includes(req.method as string) === false) {
       res.statusCode = 405;
+      return;
     }
 
     // ACL
@@ -98,6 +145,4 @@ export const customRoutes = async (req: http.IncomingMessage, res: http.ServerRe
       }
     }
   }
-
-  return Promise.resolve(undefined);
 };
