@@ -11,7 +11,7 @@ const httpTrigger = async function (context: Context, req: http.IncomingMessage)
     return;
   }
 
-  const uri = `http://${host}`;
+  const uri = `http${process.env.SWA_CLI_APP_SSL === "true" ? "s" : ""}://${host}`;
   const query = new URL(req?.url || "", uri).searchParams;
   const location = `${uri}${query.get("post_logout_redirect_uri") || "/"}`;
 
