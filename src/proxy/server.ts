@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import fetch from "node-fetch";
 import finalhandler from "finalhandler";
 import fs from "fs";
 import http from "http";
@@ -336,6 +337,23 @@ const requestHandler = (userConfig: SWAConfigFile | null) =>
   const isApi = Boolean(SWA_CLI_API_LOCATION && SWA_CLI_API_URI);
   if (isApi) {
     await validateDevServerConfig(SWA_CLI_API_URI);
+    await validateFunctionTriggers();
+
+    async function validateFunctionTriggers() {
+      try {
+        const functionsResponse = await fetch(`${SWA_CLI_API_URI}/admin/functions`);
+        const functions = await functionsResponse.json();
+        const triggers = functions.map((f: any) => f.config.bindings.find((b: any) => /trigger$/i.test(b.type))).map((b: any) => b.type);
+
+        if (triggers.some((t: string) => !/^httptrigger$/i.test(t))) {
+          logger.error(
+            "\nFunction app contains non-HTTP triggered functions. Azure Static Web Apps managed functions only support HTTP functions. To use this function app with Static Web Apps, see 'Bring your own function app'.\n"
+          );
+        }
+      } catch {
+        logger.log("Unable to query functions trigger types.");
+      }
+    }
   }
 
   const server = createServer();
