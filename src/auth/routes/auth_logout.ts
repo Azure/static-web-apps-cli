@@ -12,7 +12,7 @@ const httpTrigger = async function (context: Context, req: http.IncomingMessage)
     return;
   }
 
-  const uri = `${process.env.SWA_CLI_APP_SSL === "true" ? "https" : "http"}://${host}`;
+  const uri = `${headers["x-forwarded-proto"] || (process.env.SWA_CLI_APP_SSL === "true" ? "https" : "http")}://${host}`;
   const query = new URL(req?.url || "", uri).searchParams;
   const location = `${uri}${query.get("post_logout_redirect_uri") || "/"}`;
 
