@@ -2,7 +2,8 @@ import http from "http";
 import { response } from "../../core";
 
 const httpTrigger = async function (context: Context, req: http.IncomingMessage) {
-  const host = req?.headers?.host;
+  const headers = req?.headers;
+  const host = headers ? (headers["x-forwarded-host"] || headers.host) : undefined;
   if (!host) {
     context.res = response({
       context,
