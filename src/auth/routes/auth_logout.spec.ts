@@ -66,4 +66,35 @@ describe("auth_logout", () => {
     expect(context.res.headers?.Location).toBe("http://127.0.0.1:4280/foobar");
     expect(context.res.cookies?.[0]).toEqual(deletedCookieDefinition);
   });
+
+  it("should handle x-forwarded-host header", async () => {
+    await httpTrigger(context, {
+      url: "/.auth/logout",
+      headers: {
+        host: "127.0.0.1:4280",
+        "x-forwarded-host": "0.0.0.0:8080"
+      } as NodeJS.Dict<string | string[]>
+    } as IncomingMessage);
+
+    expect(context.res.body).toBe(null);
+    expect(context.res.status).toBe(302);
+    expect(context.res.headers?.Location).toBe("http://0.0.0.0:8080/");
+    expect(context.res.cookies?.[0]).toEqual(deletedCookieDefinition);
+  });
+
+  it("should handle x-forwarded-proto header", async () => {
+    await httpTrigger(context, {
+      url: "/.auth/logout",
+      headers: {
+        host: "127.0.0.1:4280",
+        "x-forwarded-host": "0.0.0.0:8080",
+        "x-forwarded-proto": "https"
+      } as NodeJS.Dict<string | string[]>
+    } as IncomingMessage);
+
+    expect(context.res.body).toBe(null);
+    expect(context.res.status).toBe(302);
+    expect(context.res.headers?.Location).toBe("https://0.0.0.0:8080/");
+    expect(context.res.cookies?.[0]).toEqual(deletedCookieDefinition);
+  });
 });
