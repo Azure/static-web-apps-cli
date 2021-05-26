@@ -1,5 +1,5 @@
 <p align="center">
-    <h2 align="center">Azure Static Web Apps CLI</h2>
+    <h2 align="center">Azure Static Web Apps CLI (preview)</h2>
 </p>
 <p align="center">
     <img align="center" src="docs/swa-emu-icon.png" width="300">
