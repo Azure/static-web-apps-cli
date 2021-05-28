@@ -1,4 +1,6 @@
 import chalk from "chalk";
+import fetch from "node-fetch";
+import finalhandler from "finalhandler";
 import fs from "fs";
 import http from "http";
 import httpProxy from "http-proxy";

@@ -17,6 +17,11 @@ const authPaths: Path[] = [
     route: /^\/\.auth\/logout/,
     function: "auth_logout",
   },
+  {
+    method: "GET",
+    route: /^\/\.auth\/purge\/(?<provider>aad|github|twitter|google|facebook|[a-z]+)/,
+    function: "auth_logout",
+  },
 ];
 
 async function routeMatcher(url = "/"): Promise<{ func: Function | undefined; bindingData: undefined | { provider: string } }> {

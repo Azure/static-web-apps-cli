@@ -23,6 +23,7 @@ describe("auth_logout_https", () => {
     req = {
       headers: {},
     } as http.IncomingMessage;
+
   });
 
   it("should handle empty config (https)", async () => {
