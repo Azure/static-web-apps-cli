@@ -1,7 +1,8 @@
 import chalk from "chalk";
 import { logger } from "../../core";
-import { globToRegExp } from "../../core/utils/glob";
 import { AUTH_STATUS } from "../../core/utils/constants";
+import { globToRegExp } from "../../core/utils/glob";
+import { getIndexHtml } from "./rules/route";
 
 export function doesRequestPathMatchRoute(
   requestPath: string,
@@ -12,8 +13,9 @@ export function doesRequestPathMatchRoute(
 ) {
   logger.silly(`check if request match route...`);
 
-  const hasRouteRuleHasWildcard = routeRule?.route.includes("*");
-  logger.silly(` - route: ${chalk.yellow(routeRule?.route)}`);
+  const route = routeRule?.route;
+  const hasRouteRuleHasWildcard = route?.includes("*");
+  logger.silly(` - route: ${chalk.yellow(route)}`);
   logger.silly(` - wildcard: ${chalk.yellow(hasRouteRuleHasWildcard)}`);
 
   // Do not match auth requests besides /.auth/login/<idp>
@@ -37,14 +39,14 @@ export function doesRequestPathMatchRoute(
     return false;
   }
 
-  if (routeRule?.route === requestPath || (hasRouteRuleHasWildcard && doesRequestPathMatchWildcardRoute(requestPath, routeRule?.route))) {
+  if (route === requestPath || (hasRouteRuleHasWildcard && doesRequestPathMatchWildcardRoute(requestPath, route))) {
     logger.silly(` - doesRequestPathMatchWildcardRoute: ${chalk.yellow(true)}`);
     return true;
   }
 
   // Since this is a file request, return now, since tring to get a match by appending /index.html doesn't apply here
-  if (!routeRule?.route) {
-    logger.silly(` - route: ${chalk.yellow(routeRule?.route || "<EMPTY>")}`);
+  if (!route) {
+    logger.silly(` - route: ${chalk.yellow(route || "<EMPTY>")}`);
     logger.silly(` - match: ${chalk.yellow(false)}`);
 
     return false;
@@ -53,7 +55,7 @@ export function doesRequestPathMatchRoute(
   // If the request hasn't already matched the route, and the request is a non-file path,
   // try adding /index.html to the path to see if it then matches. This is especially handy
   // to match a request to the /{customPath}/* route
-  const alternateRequestPath = `${requestPath}/index.html`;
+  const alternateRequestPath = getIndexHtml(requestPath);
   logger.silly(` - alternateRequestPath: ${chalk.yellow(alternateRequestPath)}`);
 
   return (
@@ -82,15 +84,28 @@ export function doesRequestPathMatchLegacyRoute(
   // if the request hasn't already matched the route, and the request is a non-file path,
   // try adding /index.html to the path to see if it then matches. This is especially handy
   // to match a request to the /{customPath}/* route
-  const alternateRequestPath = `${requestPath}/index.html`;
+  const alternateRequestPath = getIndexHtml(requestPath);
   return routeRule?.route === alternateRequestPath || (!isAuthRequest && hasWildcard);
 }
 
-function doesRequestPathMatchWildcardRoute(requestPath: string, requestPathFileExtension: string | undefined) {
-  logger.silly(`checking wildcard route (regexp)...`);
+function doesRequestPathMatchWildcardRoute(requestPath: string, requestPathFileWithWildcard: string | undefined) {
+  logger.silly(`checking wildcard route...`);
+  logger.silly(` - glob: ${chalk.yellow(requestPathFileWithWildcard)}`);
+
+  const pathBeforeWildcard = requestPathFileWithWildcard?.substr(0, requestPathFileWithWildcard?.indexOf("*"));
+  logger.silly(` - pathBeforeWildcard: ${chalk.yellow(pathBeforeWildcard || "<EMPTY>")}`);
+
+  // before processing regexp which might be expensive
+  // let's check first if both path and rule start with the same substring
+  if (pathBeforeWildcard && requestPath.startsWith(pathBeforeWildcard) === false) {
+    logger.silly(` - substring don't match. Exit.`);
+
+    return false;
+  }
+
   // we don't support full globs in the config file.
   // add this little utility to convert a wildcard into a valid glob pattern
-  const regexp = new RegExp(`^${globToRegExp(requestPathFileExtension)}$`);
+  const regexp = new RegExp(`^${globToRegExp(requestPathFileWithWildcard)}$`);
   logger.silly(` - regexp: ${chalk.yellow(regexp)}`);
 
   const isMatch = regexp.test(requestPath);

@@ -13,7 +13,7 @@ context("route rules engine", { failOnStatusCode: false, defaultCommandTimeout: 
     });
   });
 
-  it.only("folder returns folder/index.html", () => {
+  it("folder returns folder/index.html", () => {
     cy.visit("http://0.0.0.0:1234/folder/").should(() => {
       cy.title().should("eq", "/folder/index.html");
     });

@@ -6,6 +6,7 @@ import { logger } from "../../../core";
 import { globToRegExp } from "../../../core/utils/glob";
 import { AUTH_STATUS } from "../../../core/utils/constants";
 import { doesRequestPathMatchRoute } from "../route-processor";
+import { getIndexHtml } from "./route";
 
 // See: https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#fallback-routes
 
@@ -40,7 +41,7 @@ export function navigationFallback(req: http.IncomingMessage, res: http.ServerRe
   }
 
   // is the requested file available on disk?
-  const filename = originlUrl?.endsWith("/") ? `${originlUrl}/index.html` : originlUrl;
+  const filename = getIndexHtml(originlUrl);
   const filepath = path.join(process.env.SWA_CLI_OUTPUT_LOCATION!, filename!);
   const isFileFoundOnDisk = fs.existsSync(filepath);
 

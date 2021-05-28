@@ -41,6 +41,7 @@ export function getResponse(
   const storageResult = getStorageContent(
     req,
     res,
+    rewrite,
     matchedRoute,
     userConfig?.responseOverrides,
     userConfig?.navigationFallback,
@@ -61,6 +62,7 @@ export function getResponse(
 export function getStorageContent(
   req: http.IncomingMessage,
   res: http.ServerResponse,
+  pathToServe: string | undefined,
   matchedRoute: SWAConfigFileRoute | undefined,
   responseOverridesRule: SWAConfigFileResponseOverrides | undefined,
   navigationFallbackRule: SWAConfigFileNavigationFallback | undefined,
@@ -73,24 +75,15 @@ export function getStorageContent(
 } {
   logger.silly(`checking storage content...`);
 
-  const pathToServe = matchedRoute?.rewrite;
   let requestPath = req.url;
   let decodedRequestPath = req.url;
+
   if (pathToServe) {
     requestPath = pathToServe;
     decodedRequestPath = decodeURI(pathToServe);
   }
 
   let filePathFromRequest = tryFindFileForRequest(requestPath!);
-
-  // if (!filePathFromRequest) {
-  //   logger.silly(` - invalid path (${chalk.yellow(requestPath)}).`);
-  //   pageNotFoundResponse(req, res, responseOverridesRule);
-  //   return {
-  //     isFunctionFallbackRequest: false,
-  //     isSuccessfulSiteHit: false,
-  //   };
-  // }
 
   // don't serve staticwebapp.config.json / routes.json
   if (isSWAConfigFileUrl(req)) {
@@ -193,6 +186,8 @@ export function getStorageContent(
 
   // Handle GET request
   updateReponseHeaders(res, matchingRouteHeaders);
+
+  req.url = filePathFromRequest;
 
   return {
     isSuccessfulSiteHit: true,

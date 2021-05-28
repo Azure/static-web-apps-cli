@@ -10,7 +10,8 @@ import { doesRequestPathMatchLegacyRoute, doesRequestPathMatchRoute } from "../r
 export function tryFindFileForRequest(requestPath: string) {
   logger.silly(`finding file for request...`);
 
-  requestPath = requestPath?.endsWith("/") ? `${requestPath}/index.html` : requestPath;
+  requestPath = getIndexHtml(requestPath);
+
   logger.silly(` - requestPath: ${chalk.yellow(requestPath)}`);
 
   const filePath = path.join(SWA_CLI_OUTPUT_LOCATION, requestPath!);
@@ -19,7 +20,7 @@ export function tryFindFileForRequest(requestPath: string) {
   const isFileExists = fs.existsSync(filePath);
   logger.silly(` - exists: ${chalk.yellow(isFileExists)}`);
 
-  return isFileExists ? filePath : null;
+  return isFileExists ? requestPath : null;
 }
 
 export function isRouteRequiringUserRolesCheck(
@@ -173,4 +174,13 @@ export function isRequestMethodValid(req: http.IncomingMessage, isFunctionReques
   // Deny everything else
   logger.silly(` - method is invalid. Deny request.`);
   return false;
+}
+
+export function getIndexHtml(requestPath: string | undefined) {
+  // skip requests that contains file extensions
+  if (requestPath?.toLocaleLowerCase().endsWith("index.html") || requestPath?.includes(".")) {
+    return requestPath;
+  }
+
+  return requestPath?.endsWith("/") ? `${requestPath}index.html` : `${requestPath}/index.html`;
 }

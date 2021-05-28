@@ -44,7 +44,7 @@ describe("route", () => {
       });
 
       const filePath = tryFindFileForRequest("foo.png");
-      expect(filePath).toBe("/foo.png");
+      expect(filePath).toBe("foo.png");
     });
 
     it("should return file path when file (w/ space) exists", () => {
@@ -53,7 +53,38 @@ describe("route", () => {
       });
 
       const filePath = tryFindFileForRequest("foo bar.png");
-      expect(filePath).toBe("/foo bar.png");
+      expect(filePath).toBe("foo bar.png");
+    });
+
+    it("should return file path when file exists in subfolder", () => {
+      mockFs({
+        "/foo/bar.png": "",
+      });
+
+      const filePath = tryFindFileForRequest("foo/bar.png");
+      expect(filePath).toBe("foo/bar.png");
+    });
+
+    it("should return null when index.html does not exist", () => {
+      mockFs({
+        "/foo": {
+          "foo.html": "",
+        },
+      });
+
+      const filePath = tryFindFileForRequest("/foo/");
+      expect(filePath).toBe(null);
+    });
+
+    it("should return index.html when folder is provided", () => {
+      mockFs({
+        "/foo": {
+          "index.html": "",
+        },
+      });
+
+      const filePath = tryFindFileForRequest("/foo/");
+      expect(filePath).toBe("/foo/index.html");
     });
   });
 
