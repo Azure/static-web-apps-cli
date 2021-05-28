@@ -1,8 +1,10 @@
 import type http from "http";
 import { response } from "../../core";
+import { SWA_CLI_APP_PROTOCOL } from "../../core/utils/constants";
 
 export default async function (context: Context, req: http.IncomingMessage) {
-  const host = req?.headers?.host;
+  const headers = req?.headers;
+  const host = headers ? headers["x-forwarded-host"] || headers.host : undefined;
   if (!host) {
     context.res = response({
       context,
@@ -11,7 +13,7 @@ export default async function (context: Context, req: http.IncomingMessage) {
     return;
   }
 
-  const uri = `http://${host}`;
+  const uri = `${headers["x-forwarded-proto"] || SWA_CLI_APP_PROTOCOL}://${host}`;
   const query = new URL(req?.url || "", uri).searchParams;
   const location = `${uri}${query.get("post_logout_redirect_uri") || "/"}`;
 

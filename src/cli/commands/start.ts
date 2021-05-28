@@ -88,7 +88,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
 
   if (options.ssl) {
     if (options.sslCert === undefined || options.sslKey === undefined) {
-      logger.error(`SSL Key or SSL Cert are required when using HTTPS`, true);
+      logger.error(`SSL Key and SSL Cert are required when using HTTPS`, true);
     }
   }
 

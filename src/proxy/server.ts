@@ -23,6 +23,7 @@ import {
   SWA_CLI_ROUTES_LOCATION,
   SWA_WORKFLOW_CONFIG_FILE,
 } from "../core/utils/constants";
+import { validateFunctionTriggers } from "./function-handler";
 import { handleUserConfig, mshaMiddleware, onConnectionLost } from "./request-middleware";
 
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
@@ -151,6 +152,7 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
 
   if (HAS_API) {
     await validateDevServerConfig(SWA_CLI_API_URI());
+    await validateFunctionTriggers();
   }
 
   const server = createServer();

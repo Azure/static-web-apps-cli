@@ -1,6 +1,7 @@
 import type http from "http";
 import httpProxy from "http-proxy";
 import type net from "net";
+import fetch from "node-fetch";
 import { DEFAULT_CONFIG } from "../config";
 import { decodeCookie, logger, logRequest, registerProcessExit, validateCookie } from "../core";
 import { SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../core/utils/constants";
@@ -78,4 +79,20 @@ export function handleFunctionRequest(req: http.IncomingMessage, res: http.Serve
 export function isFunctionRequest(req: http.IncomingMessage, rewritePath?: string) {
   let path = rewritePath || req.url;
   return Boolean(path?.startsWith(`/${DEFAULT_CONFIG.apiPrefix}`));
+}
+
+export async function validateFunctionTriggers() {
+  try {
+    const functionsResponse = await fetch(`${SWA_CLI_API_URI}/admin/functions`);
+    const functions = await functionsResponse.json();
+    const triggers = functions.map((f: any) => f.config.bindings.find((b: any) => /trigger$/i.test(b.type))).map((b: any) => b.type);
+
+    if (triggers.some((t: string) => !/^httptrigger$/i.test(t))) {
+      logger.error(
+        "\nFunction app contains non-HTTP triggered functions. Azure Static Web Apps managed functions only support HTTP functions. To use this function app with Static Web Apps, see 'Bring your own function app'.\n"
+      );
+    }
+  } catch {
+    logger.log("Unable to query functions trigger types.");
+  }
 }
