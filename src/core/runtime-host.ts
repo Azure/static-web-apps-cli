@@ -2,7 +2,7 @@ import { DEFAULT_CONFIG } from "../config";
 import { detectRuntime, RuntimeType } from "./runtimes";
 
 const httpServerBin = "npx http-server";
-export const createRuntimeHost = ({ appPort, proxyHost, appLocation, outputLocation }: RuntimeHostConfig) => {
+export function createRuntimeHost({ appPort, proxyHost, appLocation, outputLocation }: RuntimeHostConfig) {
   const runtimeType = detectRuntime(appLocation);
 
   switch (runtimeType) {
@@ -28,4 +28,4 @@ export const createRuntimeHost = ({ appPort, proxyHost, appLocation, outputLocat
         args,
       };
   }
-};
+}

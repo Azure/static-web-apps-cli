@@ -7,7 +7,7 @@ import { logger } from "./logger";
 import { isHttpUrl } from "./net";
 import { validateUserConfig } from "./user-config";
 
-export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubActionWorkflow> } = {}): Partial<GithubActionWorkflow> | undefined => {
+export function readWorkflowFile({ userConfig }: { userConfig?: Partial<GithubActionWorkflow> } = {}): Partial<GithubActionWorkflow> | undefined {
   let isAppDevServer = false;
   let isApiDevServer = false;
   if (userConfig) {
@@ -139,4 +139,4 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
 
   logger.silly({ config }, "swa");
   return config;
-};
+}

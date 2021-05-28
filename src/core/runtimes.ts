@@ -8,7 +8,7 @@ export enum RuntimeType {
   unknown = "unknown",
 }
 
-export const detectRuntime = (appLocation: string | undefined) => {
+export function detectRuntime(appLocation: string | undefined) {
   if (!appLocation || fs.existsSync(appLocation) === false) {
     logger.info(`The provided app location "${appLocation}" was not found. Can't detect runtime!`);
     return RuntimeType.unknown;
@@ -26,4 +26,4 @@ export const detectRuntime = (appLocation: string | undefined) => {
 
   logger.silly(`Detected runtime: ${RuntimeType}`);
   return RuntimeType.unknown;
-};
+}

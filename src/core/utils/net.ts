@@ -78,7 +78,7 @@ export function parseUrl(url: string) {
   };
 }
 
-export const address = (host: string, port: number | string | undefined, protocol = `http`) => {
+export function address(host: string, port: number | string | undefined, protocol = `http`) {
   if (!host) {
     throw new Error(`Host value is not set`);
   }
@@ -92,8 +92,8 @@ export const address = (host: string, port: number | string | undefined, protoco
   }
 
   return uri;
-};
-export const response = ({ status, headers, cookies, body = "" }: ResponseOptions) => {
+}
+export function response({ status, headers, cookies, body = "" }: ResponseOptions) {
   if (typeof status !== "number") {
     throw Error("TypeError: status code must be a number.");
   }
@@ -111,7 +111,7 @@ export const response = ({ status, headers, cookies, body = "" }: ResponseOption
     body,
   };
   return res;
-};
+}
 
 export function parsePort(port: string) {
   const portNumber = parseInt(port, 10);

@@ -1,4 +1,6 @@
+jest.mock("../../../core/utils/constants", () => {});
 import mockFs from "mock-fs";
+
 import { navigationFallback } from "./navigationFallback";
 
 describe("navigationFallback()", () => {
@@ -15,42 +17,42 @@ describe("navigationFallback()", () => {
     mockFs.restore();
   });
 
-  it("should not process fallbacks if empty config", async () => {
+  it("should not process fallbacks if empty config", () => {
     req.url = "/foo";
-    await navigationFallback(req, res, userConfig);
+    navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/foo");
   });
 
-  it("should check for undefined config", async () => {
+  it("should check for undefined config", () => {
     req.url = "/foo";
-    await navigationFallback(req, res, undefined as any);
+    navigationFallback(req, res, undefined as any);
 
     expect(req.url).toBe("/foo");
   });
 
-  it("should check for null config", async () => {
+  it("should check for null config", () => {
     req.url = "/foo";
-    await navigationFallback(req, res, null as any);
+    navigationFallback(req, res, null as any);
 
     expect(req.url).toBe("/foo");
   });
 
-  it("should not process fallbacks if /.auth/**", async () => {
+  it("should not process fallbacks if /.auth/**", () => {
     req.url = "/.auth/login/github?post_login_redirect_uri=/profile";
-    await navigationFallback(req, res, userConfig);
+    navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/.auth/login/github?post_login_redirect_uri=/profile");
   });
 
-  it("should not process fallbacks if /api/**", async () => {
+  it("should not process fallbacks if /api/**", () => {
     req.url = "/api/foo/bar";
-    await navigationFallback(req, res, userConfig);
+    navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/api/foo/bar");
   });
 
-  it("should not process fallbacks if file found and matched exclude filter", async () => {
+  it("should not process fallbacks if file found and matched exclude filter", () => {
     req.url = "/images/foo.png";
     userConfig = {
       rewrite: "/bar",
@@ -62,12 +64,12 @@ describe("navigationFallback()", () => {
       "/images/foo.png": "",
     });
 
-    await navigationFallback(req, res, userConfig);
+    navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/images/foo.png");
   });
 
-  it("should not process fallbacks if file not found but matched exclude filter", async () => {
+  it("should not process fallbacks if file not found but matched exclude filter", () => {
     req.url = "/images/foo.png";
     userConfig = {
       rewrite: "/bar",
@@ -79,12 +81,12 @@ describe("navigationFallback()", () => {
       "/no-file": "",
     });
 
-    await navigationFallback(req, res, userConfig);
+    navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/images/foo.png");
   });
 
-  it("should process fallbacks if file found but not matched exclude filter", async () => {
+  it("should process fallbacks if file found but not matched exclude filter", () => {
     req.url = "/images/foo.png";
     userConfig = {
       rewrite: "/bar",
@@ -96,12 +98,12 @@ describe("navigationFallback()", () => {
       "/images/foo.png": "",
     });
 
-    await navigationFallback(req, res, userConfig);
+    navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/bar");
   });
 
-  it("should process fallbacks if file not found and not matched exclude filter", async () => {
+  it("should process fallbacks if file not found and not matched exclude filter", () => {
     req.url = "/images/foo.png";
     userConfig = {
       rewrite: "/bar",
@@ -113,12 +115,12 @@ describe("navigationFallback()", () => {
       "/no-file": "",
     });
 
-    await navigationFallback(req, res, userConfig);
+    navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/bar");
   });
 
-  it("should expand wildcards (/*.{png}) into valid glob wildcards (/**/*.{png})", async () => {
+  it("should expand wildcards (/*.{png}) into valid glob wildcards (/**/*.{png})", () => {
     req.url = "/images/foo/bar.png";
     userConfig = {
       rewrite: "/bar",
@@ -130,12 +132,12 @@ describe("navigationFallback()", () => {
       "/no-file": "",
     });
 
-    await navigationFallback(req, res, userConfig);
+    navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/images/foo/bar.png");
   });
 
-  it("should expand wildcards (/images/*.{png}) into valid glob wildcards (/images/**/*.{png})", async () => {
+  it("should expand wildcards (/images/*.{png}) into valid glob wildcards (/images/**/*.{png})", () => {
     req.url = "/images/foo/bar.png";
     userConfig = {
       rewrite: "/bar",
@@ -147,28 +149,28 @@ describe("navigationFallback()", () => {
       "/no-file": "",
     });
 
-    await navigationFallback(req, res, userConfig);
+    navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/images/foo/bar.png");
   });
 
-  it("should ignore fallback if no exclude property is provided", async () => {
+  it("should ignore fallback if no exclude property is provided", () => {
     req.url = "/images/foo/bar.png";
     userConfig = {
       rewrite: "/bar",
     };
-    await navigationFallback(req, res, userConfig);
+    navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/images/foo/bar.png");
   });
 
-  it("should ignore fallback if exclude list is empty", async () => {
+  it("should ignore fallback if exclude list is empty", () => {
     req.url = "/images/foo/bar.png";
     userConfig = {
       rewrite: "/bar",
       exclude: [],
     };
-    await navigationFallback(req, res, userConfig);
+    navigationFallback(req, res, userConfig);
 
     expect(req.url).toBe("/images/foo/bar.png");
   });

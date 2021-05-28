@@ -1,4 +1,5 @@
 import fs, { promises as fsPromises } from "fs";
+import type http from "http";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
 import { isHttpUrl } from "./net";
@@ -94,4 +95,8 @@ export function validateUserConfig(userConfig: Partial<GithubActionWorkflow> | u
     apiLocation,
     outputLocation,
   };
+}
+
+export function isSWAConfigFileUrl(req: http.IncomingMessage) {
+  return req.url?.endsWith(`/${DEFAULT_CONFIG.swaConfigFilename!}`) || req.url?.endsWith(`/${DEFAULT_CONFIG.swaConfigFilenameLegacy!}`);
 }

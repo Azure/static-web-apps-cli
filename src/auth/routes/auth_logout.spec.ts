@@ -1,3 +1,4 @@
+jest.mock("../../core/utils/constants", () => {});
 import { IncomingMessage } from "http";
 import httpTrigger from "./auth_logout";
 

@@ -1,3 +1,9 @@
+jest.mock("./logger", () => {
+  logger: {
+    silly: jest.fn();
+  }
+});
+
 import mockFs from "mock-fs";
 import path from "path";
 import { findSWAConfigFile, traverseFolder } from "./user-config";

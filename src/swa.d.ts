@@ -92,13 +92,17 @@ declare type SWAConfigFileRoute = {
   allowedRoles?: string[];
   statusCode?: number | string;
   serve?: string;
-  headers?: { [key: string]: string };
+  headers?: SWAConfigFileRouteHeaders;
   methods?: string[];
   rewrite?: string;
   redirect?: string;
 };
 
 declare type SWAConfigFileGlobalHeaders = {
+  [key: string]: string;
+};
+
+declare type SWAConfigFileRouteHeaders = {
   [key: string]: string;
 };
 

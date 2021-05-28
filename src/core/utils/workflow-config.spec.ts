@@ -1,3 +1,4 @@
+jest.mock("./constants", () => {});
 import mockFs from "mock-fs";
 import path from "path";
 import { readWorkflowFile } from "./workflow-config";

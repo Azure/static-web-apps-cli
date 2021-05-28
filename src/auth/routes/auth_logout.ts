@@ -1,7 +1,7 @@
-import http from "http";
+import type http from "http";
 import { response } from "../../core";
 
-const httpTrigger = async function (context: Context, req: http.IncomingMessage) {
+export default async function (context: Context, req: http.IncomingMessage) {
   const host = req?.headers?.host;
   if (!host) {
     context.res = response({
@@ -31,6 +31,4 @@ const httpTrigger = async function (context: Context, req: http.IncomingMessage)
       Location: location,
     },
   });
-};
-
-export default httpTrigger;
+}

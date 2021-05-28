@@ -1,4 +1,7 @@
 import chalk from "chalk";
+import type http from "http";
+import { DEFAULT_CONFIG } from "../../config";
+import { SWA_CLI_APP_PROTOCOL } from "./constants";
 
 export const logger = {
   _print(prefix: string | null, data: string) {
@@ -54,7 +57,7 @@ export const logger = {
         this._traverseObjectProperties(data, (key: string, value: string | null, indent: string) => {
           if (value !== null) {
             value = typeof value === "undefined" ? chalk.gray("<undefined>") : value;
-            this._print(prefix, `${indent}- ${key}: ${chalk.green(value)}`);
+            this._print(prefix, `${indent}- ${key}: ${chalk.yellow(value)}`);
           } else {
             this._print(prefix, `${indent}- ${key}:`);
           }
@@ -66,3 +69,21 @@ export const logger = {
     }
   },
 };
+
+export function logRequest(req: http.IncomingMessage, target: string | null = null, statusCode: number | null = null) {
+  const { SWA_CLI_DEBUG } = process.env;
+  if (SWA_CLI_DEBUG?.includes("req") === false) {
+    return;
+  }
+
+  let url = req.url?.replace(DEFAULT_CONFIG.customUrlScheme!, "");
+  url = url?.startsWith("/") ? url : `/${url}`;
+
+  const host = target || `${SWA_CLI_APP_PROTOCOL}://${req.headers.host}`;
+
+  if (statusCode) {
+    logger.log(`${chalk.cyan(req.method)} ${host}${url} - ${chalk.green(statusCode)}`);
+  } else {
+    logger.log(chalk.yellow(`${req.method} ${host + url} (proxy)`));
+  }
+}

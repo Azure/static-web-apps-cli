@@ -1,35 +1,38 @@
+import chalk from "chalk";
 import fs from "fs";
-// import globalyzer from "globalyzer";
-// import globrex from "globrex";
-import http from "http";
+import type http from "http";
 import path from "path";
 import { logger } from "../../../core";
 import { globToRegExp } from "../../../core/utils/glob";
+import { AUTH_STATUS } from "../../../core/utils/constants";
+import { doesRequestPathMatchRoute } from "../route-processor";
 
 // See: https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#fallback-routes
 
-export const navigationFallback = async (
-  req: http.IncomingMessage,
-  res: http.ServerResponse,
-  navigationFallback: SWAConfigFileNavigationFallback
-) => {
+export function navigationFallback(req: http.IncomingMessage, res: http.ServerResponse, navigationFallback: SWAConfigFileNavigationFallback) {
   let originlUrl = req.url;
 
-  // don't process .auth or api requests
-  if (originlUrl?.startsWith("/.auth") || originlUrl?.startsWith("/api")) {
-    return;
+  logger.silly("checking navigation fallback...");
+
+  // don't process .auth requests
+  if (originlUrl?.startsWith("/.auth")) {
+    logger.silly(` - request ${chalk.yellow(originlUrl)} is auth.`);
+    logger.silly(` - ignoring navigation fallback.`);
+    return false;
   }
 
   // exit if no rewrite rule provided
   if (!navigationFallback?.rewrite) {
-    return;
+    logger.silly(` - rewrite rule is invalid (got: ${chalk.yellow(navigationFallback?.rewrite)}).`);
+    logger.silly(` - ignoring navigation fallback.`);
+    return false;
   }
   // exit if no exclude property provided, or exclude list is empty
   if (!navigationFallback?.exclude || navigationFallback?.exclude?.length === 0) {
-    return;
+    logger.silly(` - exclude rule is invalid (got: ${chalk.yellow(navigationFallback?.exclude)}).`);
+    logger.silly(` - ignoring navigation fallback.`);
+    return false;
   }
-
-  logger.silly("checking navigationFallback rule...");
 
   // make sure we have a leading / in the URL
   if (navigationFallback.rewrite.startsWith("/") === false) {
@@ -41,23 +44,24 @@ export const navigationFallback = async (
   const filepath = path.join(process.env.SWA_CLI_OUTPUT_LOCATION!, filename!);
   const isFileFoundOnDisk = fs.existsSync(filepath);
 
-  logger.silly(` - url ${originlUrl}`);
+  logger.silly(` - url: ${chalk.yellow(originlUrl)}`);
+  logger.silly(` - file: ${chalk.yellow(filepath)} (exists: ${chalk.yellow(isFileFoundOnDisk)})`);
 
   // parse the exclusion rules and match at least one rule
-  const isMatchedFilter = navigationFallback?.exclude?.some((filter) => {
+  const isMatchedExcludeRule = navigationFallback?.exclude?.some((filter) => {
     // we don't support full globs in the config file.
     // add this little utility to convert a wildcard into a valid glob pattern
     const regexp = new RegExp(`^${globToRegExp(filter)}$`);
     const isMatch = regexp.test(originlUrl!);
 
-    logger.silly(`   - filter= ${filter}`);
-    logger.silly(`   -  regexp= ${regexp}`);
-    logger.silly(`   -  match= ${isMatch}`);
+    logger.silly(`   - exclude: ${chalk.yellow(filter)}`);
+    logger.silly(`   - regexp: ${chalk.yellow(regexp)}`);
+    logger.silly(`   - isRegexpMatch: ${chalk.yellow(isMatch)}`);
 
     return isMatch;
   });
 
-  logger.silly(` - isMatchedFilter=${isMatchedFilter}`);
+  logger.silly(` - isMatchedExcludeRule: ${chalk.yellow(isMatchedExcludeRule)}`);
 
   // rules logic:
   // 1. if no exclude rules are provided, rewrite by default
@@ -67,42 +71,79 @@ export const navigationFallback = async (
   // 5. if a file doesn't exist on disk, and doesn't match exclusion => /index.html
 
   // note: given the complexity of all possible combinations, don't refactor the code below
-  let newUrl = req.url;
+  let rewriteUrl = req.url;
   // 1.
   if (!navigationFallback.exclude || navigationFallback.exclude.length === 0) {
-    newUrl = navigationFallback.rewrite;
+    rewriteUrl = navigationFallback.rewrite;
 
     logger.silly(` - no exclude rules are provided (rewrite by default)`);
-    logger.silly(` - url=${newUrl}`);
+    logger.silly(` - url: ${chalk.yellow(rewriteUrl)}`);
   }
   // 2.
-  else if (isFileFoundOnDisk === true && isMatchedFilter === true) {
-    newUrl = req.url;
+  else if (isFileFoundOnDisk === true && isMatchedExcludeRule === true) {
+    rewriteUrl = req.url;
 
     logger.silly(` - file exists on disk, and match exclusion`);
-    logger.silly(` - url=${newUrl}`);
+    logger.silly(` - url: ${chalk.yellow(rewriteUrl)}`);
   }
   // 3.
-  else if (isFileFoundOnDisk === false && isMatchedFilter === true) {
+  else if (isFileFoundOnDisk === false && isMatchedExcludeRule === true) {
     res.statusCode = 404;
 
     logger.silly(` - file doesn't exist on disk, and match exclusion`);
-    logger.silly(` - statusCode=404`);
+    logger.silly(` - statusCode: ${chalk.yellow(404)}`);
   }
   // 4.
-  else if (isFileFoundOnDisk === true && isMatchedFilter === false) {
-    newUrl = navigationFallback.rewrite;
+  else if (isFileFoundOnDisk === true && isMatchedExcludeRule === false) {
+    rewriteUrl = navigationFallback.rewrite;
 
     logger.silly(` - file exists on disk, and doesn't match exclusion`);
-    logger.silly(` - url=${newUrl}`);
+    logger.silly(` - url: ${chalk.yellow(rewriteUrl)}`);
   }
   // 5.
-  else if (isFileFoundOnDisk === false && isMatchedFilter === false) {
-    newUrl = navigationFallback.rewrite;
+  else if (isFileFoundOnDisk === false && isMatchedExcludeRule === false) {
+    rewriteUrl = navigationFallback.rewrite;
 
     logger.silly(` - file doesn't exist on disk, and doesn't match exclusion`);
-    logger.silly(` - url=${newUrl}`);
+    logger.silly(` - url: ${chalk.yellow(rewriteUrl)}`);
   }
 
-  req.url = newUrl;
-};
+  req.url = rewriteUrl;
+  return true;
+}
+
+export function isRequestPathExcludedFromNavigationFallback(
+  normalizedDecodedRequestPath: string | undefined,
+  navigationFallback: SWAConfigFileNavigationFallback | undefined,
+  matchedRoute: SWAConfigFileRoute | undefined
+) {
+  logger.silly(`checking if request is excluded from navigation fallback...`);
+  logger.silly(` - request: ${chalk.yellow(normalizedDecodedRequestPath)}`);
+
+  const excludedPathRules = navigationFallback?.exclude;
+
+  if (!normalizedDecodedRequestPath || excludedPathRules?.length === 0) {
+    logger.silly(` - exclude: ${chalk.yellow(false)}`);
+    return false;
+  }
+
+  const isMatchedExcludeRule = excludedPathRules?.some((filter) => {
+    // override the route with the current filter rule
+    const excludedPath = {
+      ...matchedRoute,
+      route: filter,
+    };
+
+    logger.silly(` - excludedPath: ${chalk.yellow(filter)}`);
+
+    return doesRequestPathMatchRoute(normalizedDecodedRequestPath, excludedPath, null, null, AUTH_STATUS.NoAuth);
+  });
+
+  if (isMatchedExcludeRule) {
+    logger.silly(` - don't rewrite ${chalk.yellow(normalizedDecodedRequestPath)}`);
+  } else {
+    logger.silly(` - rewrite ${chalk.yellow(normalizedDecodedRequestPath)} to ${chalk.yellow(navigationFallback?.rewrite)}`);
+  }
+
+  return isMatchedExcludeRule;
+}

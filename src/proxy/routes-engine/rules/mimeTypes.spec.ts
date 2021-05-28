@@ -1,3 +1,4 @@
+jest.mock("../../../core/utils/constants", () => {});
 import { mimeTypes } from "./mimeTypes";
 
 describe("mimeTypes()", () => {

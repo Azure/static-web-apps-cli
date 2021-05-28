@@ -1,4 +1,4 @@
-import { ServerResponse, IncomingMessage } from "http";
+import type http from "http";
 import { logger, serializeCookie } from "../core";
 
 const authPaths: Path[] = [
@@ -39,7 +39,7 @@ async function routeMatcher(url = "/"): Promise<{ func: Function | undefined; bi
   return { func: undefined, bindingData: undefined };
 }
 
-export async function processAuth(request: IncomingMessage, response: ServerResponse) {
+export async function processAuth(request: http.IncomingMessage, response: http.ServerResponse, rewriteUrl?: string) {
   let defaultStatus = 200;
   const context: Context = {
     invocationId: new Date().getTime().toString(36) + Math.random().toString(36).slice(2),
@@ -47,7 +47,7 @@ export async function processAuth(request: IncomingMessage, response: ServerResp
     res: {},
   };
 
-  const { func, bindingData } = await routeMatcher(request.url);
+  const { func, bindingData } = await routeMatcher(rewriteUrl || request.url);
   if (func) {
     context.bindingData = bindingData;
     try {

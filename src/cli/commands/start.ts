@@ -6,8 +6,10 @@ import builder from "../../core/builder";
 import { createStartupScriptCommand, isAcceptingTcpConnections, isHttpUrl, logger, parseUrl, readWorkflowFile } from "../../core";
 
 export async function start(startContext: string, options: SWACLIConfig) {
-  // WARNING: code below doesn't have access to SWA CLI env vars which are defined later below
-  // make sure this code (or code from utils) does't depend on SWA CLI env vars!
+  // WARNING:
+  // environment variables are populated using values provided by the user to the CLI.
+  // Code below doesn't have access to these environment variables which are defined later below.
+  // Make sure this code (or code from utils) does't depend on environment variables!
 
   let useAppDevServer: string | undefined | null = undefined;
   let useApiDevServer: string | undefined | null = undefined;
@@ -66,7 +68,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
   const isApiLocationExistsOnDisk = fs.existsSync(userConfig?.apiLocation!);
 
   // handle the API location config
-  let serveApiCommand = "echo No API found. Skipping";
+  let serveApiCommand = "echo 'No API found. Skipping'";
 
   if (useApiDevServer) {
     serveApiCommand = `echo 'using API dev server at ${useApiDevServer}'`;

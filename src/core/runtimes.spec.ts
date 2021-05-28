@@ -1,4 +1,6 @@
+jest.mock("../core/utils/constants", () => {});
 import mockFs from "mock-fs";
+
 import { detectRuntime, RuntimeType } from "./runtimes";
 
 const appLocation = "./tmp-swa-emulator";

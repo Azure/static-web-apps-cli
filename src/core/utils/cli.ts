@@ -55,7 +55,7 @@ export function argv<T extends string | number | boolean | null>(flag: string): 
   return null as T;
 }
 
-export const registerProcessExit = (fn: Function) => {
+export function registerProcessExit(fn: Function) {
   let terminated = false;
 
   const wrapper = () => {
@@ -68,9 +68,9 @@ export const registerProcessExit = (fn: Function) => {
   process.on("SIGINT", wrapper);
   process.on("SIGTERM", wrapper);
   process.on("exit", wrapper);
-};
+}
 
-export const createStartupScriptCommand = (startupScript: string, options: SWACLIConfig) => {
+export function createStartupScriptCommand(startupScript: string, options: SWACLIConfig) {
   if (startupScript.includes(":")) {
     const [npmOrYarnBin, ...npmOrYarnScript] = startupScript.split(":");
     if (["npm", "yarn"].includes(npmOrYarnBin)) {
@@ -92,4 +92,4 @@ export const createStartupScriptCommand = (startupScript: string, options: SWACL
     }
   }
   return null;
-};
+}
