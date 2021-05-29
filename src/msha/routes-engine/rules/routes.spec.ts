@@ -5,7 +5,7 @@ jest.mock("../../../core/utils/logger", () => {
     },
   };
 });
-jest.mock("../../../core/utils/constants", () => {
+jest.mock("../../../core/constants", () => {
   return {
     SWA_CLI_OUTPUT_LOCATION: "/",
     SWA_CLI_APP_PROTOCOL: "http",
@@ -17,7 +17,7 @@ jest.mock("../../../core/utils/constants", () => {
 });
 import type http from "http";
 import mockFs from "mock-fs";
-import { applyRedirectResponse, isRequestMethodValid, isRouteRequiringUserRolesCheck, tryFindFileForRequest, tryGetMatchingRoute } from "./route";
+import { applyRedirectResponse, isRequestMethodValid, isRouteRequiringUserRolesCheck, tryFindFileForRequest, tryGetMatchingRoute } from "./routes";
 
 import * as routeModule from "../route-processor";
 import * as cookieModule from "../../../core/utils/cookie";

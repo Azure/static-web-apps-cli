@@ -1,8 +1,8 @@
 import chalk from "chalk";
 import type http from "http";
-import { isSWAConfigFileUrl, logger } from "../core";
-import { pageNotFoundResponse } from "./error-page-handler";
-import { handleFunctionRequest, isFunctionRequest } from "./function-handler";
+import { isSWAConfigFileUrl, logger } from "../../core";
+import { pageNotFoundResponse } from "../handlers/error-page.handler";
+import { handleFunctionRequest, isFunctionRequest } from "../handlers/function.handler";
 import {
   applyRedirectResponse,
   getHeadersForRoute,
@@ -10,7 +10,7 @@ import {
   isRequestPathExcludedFromNavigationFallback,
   tryFindFileForRequest,
   updateReponseHeaders,
-} from "./routes-engine";
+} from "../routes-engine";
 
 export function getResponse(
   req: http.IncomingMessage,

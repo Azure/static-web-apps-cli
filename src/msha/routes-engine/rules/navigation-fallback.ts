@@ -4,9 +4,9 @@ import type http from "http";
 import path from "path";
 import { logger } from "../../../core";
 import { globToRegExp } from "../../../core/utils/glob";
-import { AUTH_STATUS } from "../../../core/utils/constants";
+import { AUTH_STATUS } from "../../../core/constants";
 import { doesRequestPathMatchRoute } from "../route-processor";
-import { getIndexHtml } from "./route";
+import { getIndexHtml } from "./routes";
 
 // See: https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#fallback-routes
 

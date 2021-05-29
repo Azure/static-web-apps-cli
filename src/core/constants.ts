@@ -1,6 +1,6 @@
 import path from "path";
-import { DEFAULT_CONFIG } from "../../config";
-import { address, isHttpUrl } from "./net";
+import { DEFAULT_CONFIG } from "../config";
+import { address, isHttpUrl } from "./utils/net";
 
 export const ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT = ["GET", "HEAD", "OPTIONS"];
 

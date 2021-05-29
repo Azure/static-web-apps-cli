@@ -3,8 +3,8 @@ import fs from "fs";
 import type http from "http";
 import path from "path";
 import { decodeCookie, logger } from "../../../core";
-import { ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT, AUTH_STATUS, SWA_CLI_APP_PROTOCOL, SWA_CLI_OUTPUT_LOCATION } from "../../../core/utils/constants";
-import { isAuthRequest } from "../../auth-handler";
+import { ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT, AUTH_STATUS, SWA_CLI_APP_PROTOCOL, SWA_CLI_OUTPUT_LOCATION } from "../../../core/constants";
+import { isAuthRequest } from "../../handlers/auth.handler";
 import { doesRequestPathMatchLegacyRoute, doesRequestPathMatchRoute } from "../route-processor";
 
 export function tryFindFileForRequest(requestPath: string) {

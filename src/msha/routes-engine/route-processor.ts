@@ -1,8 +1,8 @@
 import chalk from "chalk";
 import { logger } from "../../core";
-import { AUTH_STATUS } from "../../core/utils/constants";
+import { AUTH_STATUS } from "../../core/constants";
 import { globToRegExp } from "../../core/utils/glob";
-import { getIndexHtml } from "./rules/route";
+import { getIndexHtml } from "./rules/routes";
 
 export function doesRequestPathMatchRoute(
   requestPath: string,

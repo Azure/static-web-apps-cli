@@ -1,4 +1,4 @@
-jest.mock("../core/utils/constants", () => {});
+jest.mock("../core/constants", () => {});
 import mockFs from "mock-fs";
 
 import { detectRuntime, RuntimeType } from "./runtimes";

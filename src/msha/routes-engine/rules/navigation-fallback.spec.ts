@@ -1,7 +1,7 @@
-jest.mock("../../../core/utils/constants", () => {});
+jest.mock("../../../core/constants", () => {});
 import mockFs from "mock-fs";
 
-import { navigationFallback } from "./navigationFallback";
+import { navigationFallback } from "./navigation-fallback";
 
 describe("navigationFallback()", () => {
   let req: any;

@@ -1,12 +1,12 @@
-jest.mock("../../core/utils/constants", () => {
+jest.mock("../../../core/constants", () => {
   return {
     SWA_CLI_APP_PROTOCOL: "https",
   };
 });
 import type http from "http";
-import httpTrigger from "./auth_logout";
+import httpTrigger from "./auth-logout";
 
-describe("auth_logout_https", () => {
+describe("auth-logout-https", () => {
   let context: Context;
   let req: http.IncomingMessage;
 
@@ -23,7 +23,6 @@ describe("auth_logout_https", () => {
     req = {
       headers: {},
     } as http.IncomingMessage;
-
   });
 
   it("should handle empty config (https)", async () => {

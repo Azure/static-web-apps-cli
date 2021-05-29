@@ -1,4 +1,4 @@
-jest.mock("./constants", () => {});
+jest.mock("../constants", () => {});
 import { logger } from "./logger";
 import { address, parsePort, response } from "./net";
 

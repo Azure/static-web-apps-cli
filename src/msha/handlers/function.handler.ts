@@ -1,10 +1,11 @@
+import chalk from "chalk";
 import type http from "http";
 import httpProxy from "http-proxy";
 import type net from "net";
 import fetch from "node-fetch";
-import { DEFAULT_CONFIG } from "../config";
-import { decodeCookie, logger, logRequest, registerProcessExit, validateCookie } from "../core";
-import { SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../core/utils/constants";
+import { DEFAULT_CONFIG } from "../../config";
+import { decodeCookie, logger, logRequest, registerProcessExit, validateCookie } from "../../core";
+import { SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../../core/constants";
 
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 
@@ -51,7 +52,7 @@ export function handleFunctionRequest(req: http.IncomingMessage, res: http.Serve
   const target = SWA_CLI_API_URI();
 
   logger.silly(`functions request detected. Proxifying to Azure Functions Core Tools emulator...`);
-  logger.silly(` - target: ${target}`);
+  logger.silly(` - target: ${chalk.yellow(target)}`);
 
   injectHeaders(req);
   injectClientPrincipalCookies(req);

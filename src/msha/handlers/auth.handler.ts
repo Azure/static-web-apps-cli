@@ -1,7 +1,7 @@
 import type http from "http";
-import { logger, logRequest } from "../core";
+import { logger, logRequest } from "../../core";
 import { processAuth } from "../auth";
-import { pageNotFoundResponse, unauthorizedResponse } from "./error-page-handler";
+import { pageNotFoundResponse, unauthorizedResponse } from "./error-page.handler";
 export async function handleAuthRequest(
   req: http.IncomingMessage,
   res: http.ServerResponse,

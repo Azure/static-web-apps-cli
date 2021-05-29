@@ -22,9 +22,9 @@ import {
   SWA_CLI_PORT,
   SWA_CLI_ROUTES_LOCATION,
   SWA_WORKFLOW_CONFIG_FILE,
-} from "../core/utils/constants";
-import { validateFunctionTriggers } from "./function-handler";
-import { handleUserConfig, mshaMiddleware, onConnectionLost } from "./request-middleware";
+} from "../core/constants";
+import { validateFunctionTriggers } from "./handlers/function.handler";
+import { handleUserConfig, requestMiddleware, onConnectionLost } from "./middlewares/request.middleware";
 
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 
@@ -46,7 +46,7 @@ const httpsServerOptions: Pick<https.ServerOptions, "cert" | "key"> | null = SWA
 
 function requestHandler(userConfig: SWAConfigFile | undefined) {
   return async function (req: http.IncomingMessage, res: http.ServerResponse) {
-    await mshaMiddleware(req, res, proxyApp, userConfig);
+    await requestMiddleware(req, res, proxyApp, userConfig);
   };
 }
 

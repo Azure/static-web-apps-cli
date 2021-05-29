@@ -2,7 +2,7 @@ import chalk from "chalk";
 import type http from "http";
 import path from "path";
 import { logger } from "../../../core";
-import { DEFAULT_MIME_TYPE, MIME_TYPE_LIST } from "../../../core/utils/constants";
+import { DEFAULT_MIME_TYPE, MIME_TYPE_LIST } from "../../../core/constants";
 
 // See: https://docs.microsoft.com/en-us/azure/static-web-apps/configuration
 export async function mimeTypes(req: http.IncomingMessage, res: http.ServerResponse, mimeTypes: SWAConfigFileMimeTypes) {

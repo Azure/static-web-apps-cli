@@ -1,6 +1,6 @@
 import type http from "http";
-import { response } from "../../core";
-import { SWA_CLI_APP_PROTOCOL } from "../../core/utils/constants";
+import { response } from "../../../core";
+import { SWA_CLI_APP_PROTOCOL } from "../../../core/constants";
 
 export default async function (context: Context, req: http.IncomingMessage) {
   const headers = req?.headers;
@@ -12,7 +12,6 @@ export default async function (context: Context, req: http.IncomingMessage) {
     });
     return;
   }
-
 
   const uri = `${headers["x-forwarded-proto"] || SWA_CLI_APP_PROTOCOL}://${host}`;
   const query = new URL(req?.url || "", uri).searchParams;

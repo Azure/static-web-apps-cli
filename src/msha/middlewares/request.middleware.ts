@@ -6,14 +6,14 @@ import httpProxy from "http-proxy";
 import type net from "net";
 import path from "path";
 import serveStatic from "serve-static";
-import { DEFAULT_CONFIG } from "../config";
-import { findSWAConfigFile, logger, logRequest } from "../core";
-import { getAuthBlockResponse, handleAuthRequest, isAuthRequest, isLoginRequest, isLogoutRequest } from "./auth-handler";
-import { AUTH_STATUS, IS_APP_DEV_SERVER, SWA_CLI_APP_PROTOCOL, SWA_CLI_OUTPUT_LOCATION, SWA_PUBLIC_DIR } from "../core/utils/constants";
-import { unauthorizedResponse } from "./error-page-handler";
-import { isFunctionRequest } from "./function-handler";
-import { getResponse } from "./response-handler";
-import { isRequestMethodValid, isRouteRequiringUserRolesCheck, tryGetMatchingRoute } from "./routes-engine";
+import { DEFAULT_CONFIG } from "../../config";
+import { findSWAConfigFile, logger, logRequest } from "../../core";
+import { getAuthBlockResponse, handleAuthRequest, isAuthRequest, isLoginRequest, isLogoutRequest } from "../handlers/auth.handler";
+import { AUTH_STATUS, IS_APP_DEV_SERVER, SWA_CLI_APP_PROTOCOL, SWA_CLI_OUTPUT_LOCATION, SWA_PUBLIC_DIR } from "../../core/constants";
+import { unauthorizedResponse } from "../handlers/error-page.handler";
+import { isFunctionRequest } from "../handlers/function.handler";
+import { getResponse } from "./response.middleware";
+import { isRequestMethodValid, isRouteRequiringUserRolesCheck, tryGetMatchingRoute } from "../routes-engine";
 
 export function onConnectionLost(req: http.IncomingMessage, res: http.ServerResponse | net.Socket, target: string) {
   return (error: Error) => {
@@ -125,7 +125,7 @@ function serveStaticFileReponse(req: http.IncomingMessage, res: http.ServerRespo
   }
 }
 
-export async function mshaMiddleware(
+export async function requestMiddleware(
   req: http.IncomingMessage,
   res: http.ServerResponse,
   proxyApp: httpProxy,

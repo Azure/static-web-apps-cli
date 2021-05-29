@@ -1,10 +1,10 @@
-jest.mock("../../core/utils/constants", () => {
+jest.mock("../../../core/constants", () => {
   return {
     SWA_CLI_APP_PROTOCOL: "http",
   };
 });
 import { IncomingMessage } from "http";
-import httpTrigger from "./auth_logout";
+import httpTrigger from "./auth-logout";
 
 describe("auth_logout", () => {
   let context: Context;
@@ -77,8 +77,8 @@ describe("auth_logout", () => {
       url: "/.auth/logout",
       headers: {
         host: "127.0.0.1:4280",
-        "x-forwarded-host": "0.0.0.0:8080"
-      } as NodeJS.Dict<string | string[]>
+        "x-forwarded-host": "0.0.0.0:8080",
+      } as NodeJS.Dict<string | string[]>,
     } as IncomingMessage);
 
     expect(context.res.body).toBe(null);
@@ -93,8 +93,8 @@ describe("auth_logout", () => {
       headers: {
         host: "127.0.0.1:4280",
         "x-forwarded-host": "0.0.0.0:8080",
-        "x-forwarded-proto": "https"
-      } as NodeJS.Dict<string | string[]>
+        "x-forwarded-proto": "https",
+      } as NodeJS.Dict<string | string[]>,
     } as IncomingMessage);
 
     expect(context.res.body).toBe(null);

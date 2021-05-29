@@ -2,8 +2,8 @@ import concurrently from "concurrently";
 import fs from "fs";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
-import builder from "../../core/builder";
 import { createStartupScriptCommand, isAcceptingTcpConnections, isHttpUrl, logger, parseUrl, readWorkflowFile } from "../../core";
+import builder from "../../core/builder";
 
 export async function start(startContext: string, options: SWACLIConfig) {
   // WARNING:
@@ -123,7 +123,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
   const { env } = process;
   const concurrentlyCommands: concurrently.CommandObj[] = [
     // start the reverse proxy
-    { command: `node "${path.join(__dirname, "..", "..", "proxy", "server.js")}"`, name: "swa", env, prefixColor: "gray.dim" },
+    { command: `node "${path.join(__dirname, "..", "..", "msha", "server.js")}"`, name: "swa", env, prefixColor: "gray.dim" },
   ];
 
   if (isApiLocationExistsOnDisk) {

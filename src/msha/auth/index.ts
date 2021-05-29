@@ -1,26 +1,27 @@
 import type http from "http";
-import { logger, serializeCookie } from "../core";
+import { logger, serializeCookie } from "../../core";
 
 const authPaths: Path[] = [
   {
     method: "GET",
     route: /^\/\.auth\/login\/(?<provider>aad|github|twitter|google|facebook|[a-z]+)/,
-    function: "auth_login_provider",
+    function: "auth-login-provider",
   },
   {
     method: "GET",
     route: /^\/\.auth\/me/,
-    function: "auth_me",
+    function: "auth-me",
   },
   {
     method: "GET",
     route: /^\/\.auth\/logout/,
-    function: "auth_logout",
+    function: "auth-logout",
   },
   {
     method: "GET",
     route: /^\/\.auth\/purge\/(?<provider>aad|github|twitter|google|facebook|[a-z]+)/,
-    function: "auth_logout",
+    // locally, all purge requests are processed as logout requests
+    function: "auth-logout",
   },
 ];
 
