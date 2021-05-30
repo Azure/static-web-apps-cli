@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import type http from "http";
-import { isSWAConfigFileUrl, logger } from "../../core";
-import { pageNotFoundResponse } from "../handlers/error-page.handler";
+import { isHttpUrl, isSWAConfigFileUrl, logger } from "../../core";
+import { handleErrorPage } from "../handlers/error-page.handler";
 import { handleFunctionRequest, isFunctionRequest } from "../handlers/function.handler";
 import {
   applyRedirectResponse,
@@ -23,7 +23,12 @@ export function getResponse(
   const redirect = matchedRoute?.redirect;
   const rewrite = matchedRoute?.rewrite;
 
+  logger.silly(`using userConfig...`);
+  logger.silly({ userConfig });
+
   if (redirect) {
+    logger.silly(` - redirect rule detected. Exit.`);
+
     return applyRedirectResponse(req, res, matchedRoute);
   }
 
@@ -31,12 +36,15 @@ export function getResponse(
     req.url = rewrite;
   }
 
+  if ([403, 401].includes(statusCodeToServe)) {
+    logger.silly(` - ${statusCodeToServe} code detected. Exit.`);
+
+    return handleErrorPage(req, res, statusCodeToServe, userConfig?.responseOverrides);
+  }
+
   if (isFunctionRequest) {
     return handleFunctionRequest(req, res);
   }
-
-  logger.silly(`using userConfig...`);
-  logger.silly({ userConfig });
 
   const storageResult = getStorageContent(
     req,
@@ -75,6 +83,17 @@ export function getStorageContent(
 } {
   logger.silly(`checking storage content...`);
 
+  // don't serve staticwebapp.config.json / routes.json
+  if (isSWAConfigFileUrl(req)) {
+    logger.silly(` - request to config file detected. Exit.`);
+
+    handleErrorPage(req, res, 404, responseOverridesRule);
+    return {
+      isFunctionFallbackRequest: false,
+      isSuccessfulSiteHit: false,
+    };
+  }
+
   let requestPath = req.url;
   let decodedRequestPath = req.url;
 
@@ -84,17 +103,7 @@ export function getStorageContent(
   }
 
   let filePathFromRequest = tryFindFileForRequest(requestPath!);
-
-  // don't serve staticwebapp.config.json / routes.json
-  if (isSWAConfigFileUrl(req)) {
-    logger.silly(` - request to config file detected.`);
-
-    pageNotFoundResponse(req, res, responseOverridesRule);
-    return {
-      isFunctionFallbackRequest: false,
-      isSuccessfulSiteHit: false,
-    };
-  }
+  logger.silly(` - filePathFromRequest: ${chalk.yellow(filePathFromRequest)}`);
 
   if (!filePathFromRequest) {
     let shouldDisplayNotFoundPage = true;
@@ -134,7 +143,7 @@ export function getStorageContent(
     logger.silly(` - shouldDisplayNotFoundPage: ${chalk.yellow(shouldDisplayNotFoundPage)}`);
 
     if (shouldDisplayNotFoundPage) {
-      pageNotFoundResponse(req, res, responseOverridesRule);
+      handleErrorPage(req, res, 404, responseOverridesRule);
       return {
         isFunctionFallbackRequest: false,
         isSuccessfulSiteHit: false,
@@ -146,6 +155,15 @@ export function getStorageContent(
     return {
       isFunctionFallbackRequest: false,
       isSuccessfulSiteHit: false,
+    };
+  }
+
+  // if the file path is a remote HTTP request, this means we are connecting to a dev server.
+  // exist here and let the remote server handle the request.
+  if (isHttpUrl(filePathFromRequest)) {
+    return {
+      isFunctionFallbackRequest: false,
+      isSuccessfulSiteHit: true,
     };
   }
 

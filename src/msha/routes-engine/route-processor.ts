@@ -1,4 +1,6 @@
+import type http from "http";
 import chalk from "chalk";
+import { DEFAULT_CONFIG } from "../../config";
 import { logger } from "../../core";
 import { AUTH_STATUS } from "../../core/constants";
 import { globToRegExp } from "../../core/utils/glob";
@@ -46,7 +48,7 @@ export function doesRequestPathMatchRoute(
 
   // Since this is a file request, return now, since tring to get a match by appending /index.html doesn't apply here
   if (!route) {
-    logger.silly(` - route: ${chalk.yellow(route || "<EMPTY>")}`);
+    logger.silly(` - route: ${chalk.yellow(route || "<empty>")}`);
     logger.silly(` - match: ${chalk.yellow(false)}`);
 
     return false;
@@ -93,7 +95,7 @@ function doesRequestPathMatchWildcardRoute(requestPath: string, requestPathFileW
   logger.silly(` - glob: ${chalk.yellow(requestPathFileWithWildcard)}`);
 
   const pathBeforeWildcard = requestPathFileWithWildcard?.substr(0, requestPathFileWithWildcard?.indexOf("*"));
-  logger.silly(` - pathBeforeWildcard: ${chalk.yellow(pathBeforeWildcard || "<EMPTY>")}`);
+  logger.silly(` - pathBeforeWildcard: ${chalk.yellow(pathBeforeWildcard || "<empty>")}`);
 
   // before processing regexp which might be expensive
   // let's check first if both path and rule start with the same substring
@@ -112,4 +114,8 @@ function doesRequestPathMatchWildcardRoute(requestPath: string, requestPathFileW
   logger.silly(` - isMatch: ${chalk.yellow(isMatch)}`);
 
   return isMatch;
+}
+
+export function isCustomUrl(req: http.IncomingMessage) {
+  return !!req.url?.startsWith(DEFAULT_CONFIG.customUrlScheme!);
 }

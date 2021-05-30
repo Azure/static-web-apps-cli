@@ -5,7 +5,7 @@ import httpProxy from "http-proxy";
 import https from "https";
 import internalIp from "internal-ip";
 import net from "net";
-import { address, isHttpUrl, logger, registerProcessExit, validateDevServerConfig } from "../core";
+import { address, isHttpUrl, logger, logRequest, registerProcessExit, validateDevServerConfig } from "../core";
 import {
   HAS_API,
   IS_API_DEV_SERVER,
@@ -24,7 +24,7 @@ import {
   SWA_WORKFLOW_CONFIG_FILE,
 } from "../core/constants";
 import { validateFunctionTriggers } from "./handlers/function.handler";
-import { handleUserConfig, requestMiddleware, onConnectionLost } from "./middlewares/request.middleware";
+import { handleUserConfig, onConnectionLost, requestMiddleware } from "./middlewares/request.middleware";
 
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 
@@ -52,9 +52,10 @@ function requestHandler(userConfig: SWAConfigFile | undefined) {
 
 function onWsUpgrade() {
   return (req: http.IncomingMessage, socket: net.Socket, head: Buffer) => {
-    const target = SWA_CLI_OUTPUT_LOCATION;
     if (IS_APP_DEV_SERVER()) {
-      logger.log(chalk.green("** WebSocket connection established **"));
+      const target = SWA_CLI_OUTPUT_LOCATION;
+      const remote = `ws://${req.headers.host}`;
+      logRequest(req, remote);
 
       proxyApp.ws(
         req,
@@ -66,6 +67,11 @@ function onWsUpgrade() {
         },
         onConnectionLost(req, socket, target)
       );
+      proxyApp.once("proxyRes", (proxyRes: http.IncomingMessage) => {
+        logger.silly(`getting response from dev server...`);
+
+        logRequest(req, remote, proxyRes.statusCode);
+      });
     }
   };
 }
@@ -103,27 +109,29 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
     }
 
     // prettier-ignore
-    logger.log(
-      `\nAvailable on:\n` +
-      `    ${chalk.green(address(SWA_CLI_HOST, SWA_CLI_PORT, SWA_CLI_APP_PROTOCOL))}\n\n`
-    );
+    let logMessage = `\nAvailable on:\n` +
+    `    ${chalk.green(address(SWA_CLI_HOST, SWA_CLI_PORT, SWA_CLI_APP_PROTOCOL))}\n`;
+
     if (localIpAdress) {
-      logger.log(`    ${chalk.green(address(`${localIpAdress}`, SWA_CLI_PORT, SWA_CLI_APP_PROTOCOL))}\n`);
+      // prettier-ignore
+      logMessage += `    ${chalk.green(address(`${localIpAdress}`, SWA_CLI_PORT, SWA_CLI_APP_PROTOCOL))}\n\n`;
     }
 
     // note: this string must not change. It is used by the VS Code extension.
     // see: https://github.com/Azure/static-web-apps-cli/issues/124
     //--------------------------------------------------------------------------------
-    logger.log(`Azure Static Web Apps emulator started. Press CTRL+C to exit.\n\n`);
+    logMessage += `Azure Static Web Apps emulator started. Press CTRL+C to exit.\n\n`;
     //--------------------------------------------------------------------------------
+
+    logger.log(logMessage);
 
     server.on("upgrade", onWsUpgrade());
 
     registerProcessExit(() => {
-      logger.info("Azure Static Web Apps emulator shutting down...");
       socketConnection?.end(() => logger.info("WebSocket connection closed."));
       server.close(() => logger.log("Server stopped."));
       proxyApp.close(() => logger.log("App proxy stopped."));
+      logger.info("Azure Static Web Apps emulator shutting down...");
       process.exit(0);
     });
   };
@@ -136,9 +144,8 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
 
   // load user custom rules if running in local mode (non-dev server)
   let userConfig: SWAConfigFile | undefined;
-  if (!IS_APP_DEV_SERVER()) {
-    userConfig = await handleUserConfig(SWA_CLI_ROUTES_LOCATION || SWA_CLI_APP_LOCATION);
-  }
+  // load user configuration even when using a dev server
+  userConfig = await handleUserConfig(SWA_CLI_ROUTES_LOCATION || SWA_CLI_APP_LOCATION);
   const createServer = () => {
     if (SWA_CLI_APP_SSL && httpsServerOptions !== null) {
       return https.createServer(httpsServerOptions, requestHandler(userConfig));

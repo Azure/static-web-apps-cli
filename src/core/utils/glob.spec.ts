@@ -1,7 +1,7 @@
 import { globToRegExp } from "./glob";
 
 describe("globToRegExp()", () => {
-  it("glob = <EMPTY>", () => {
+  it("glob = <empty>", () => {
     expect(globToRegExp("")).toBe("");
   });
 

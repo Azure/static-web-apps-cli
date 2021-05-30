@@ -9,6 +9,7 @@ jest.mock("../../../core/constants", () => {
   return {
     SWA_CLI_OUTPUT_LOCATION: "/",
     SWA_CLI_APP_PROTOCOL: "http",
+    IS_APP_DEV_SERVER: () => false,
     ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT: ["GET", "OPTIONS", "HEAD"],
     AUTH_STATUS: {
       NoAuth: 0,

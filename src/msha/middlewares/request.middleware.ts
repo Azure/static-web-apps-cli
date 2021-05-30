@@ -8,20 +8,29 @@ import path from "path";
 import serveStatic from "serve-static";
 import { DEFAULT_CONFIG } from "../../config";
 import { findSWAConfigFile, logger, logRequest } from "../../core";
-import { getAuthBlockResponse, handleAuthRequest, isAuthRequest, isLoginRequest, isLogoutRequest } from "../handlers/auth.handler";
 import { AUTH_STATUS, IS_APP_DEV_SERVER, SWA_CLI_APP_PROTOCOL, SWA_CLI_OUTPUT_LOCATION, SWA_PUBLIC_DIR } from "../../core/constants";
-import { unauthorizedResponse } from "../handlers/error-page.handler";
+import { getAuthBlockResponse, handleAuthRequest, isAuthRequest, isLoginRequest, isLogoutRequest } from "../handlers/auth.handler";
+import { handleErrorPage } from "../handlers/error-page.handler";
 import { isFunctionRequest } from "../handlers/function.handler";
-import { getResponse } from "./response.middleware";
 import { isRequestMethodValid, isRouteRequiringUserRolesCheck, tryGetMatchingRoute } from "../routes-engine";
+import { isCustomUrl } from "../routes-engine/route-processor";
+import { getResponse } from "./response.middleware";
 
-export function onConnectionLost(req: http.IncomingMessage, res: http.ServerResponse | net.Socket, target: string) {
+/**
+ * On connection lost handler. Called when a connection to a target host cannot be made or if the remote target is down.
+ * @param req Node.js HTTP request object.
+ * @param res Node.js HTTP response object.
+ * @param target The HTTP host target.
+ * @returns A callback function including an Error object.
+ */
+export function onConnectionLost(req: http.IncomingMessage, res: http.ServerResponse | net.Socket, target: string, prefix = "") {
+  prefix = prefix === "" ? prefix : ` ${prefix} `;
   return (error: Error) => {
     if (error.message.includes("ECONNREFUSED")) {
       const statusCode = 502;
       (res as http.ServerResponse).statusCode = statusCode;
       const uri = `${target}${req.url}`;
-      logger.error(`${req.method} ${uri} - ${statusCode} (Bad Gateway)`);
+      logger.error(`${prefix}${req.method} ${uri} - ${statusCode} (Bad Gateway)`);
     } else {
       logger.error(`${error.message}`);
     }
@@ -30,6 +39,13 @@ export function onConnectionLost(req: http.IncomingMessage, res: http.ServerResp
   };
 }
 
+/**
+ *
+ * @param appLocation The location of the application code, where the application configuration file is located.
+ * @returns The JSON content of the application configuration file defined in the `staticwebapp.config.json` file (or legacy file `routes.json`).
+ * If no configuration file is found, returns `undefined`.
+ * @see https://docs.microsoft.com/en-us/azure/static-web-apps/configuration
+ */
 export async function handleUserConfig(appLocation: string): Promise<SWAConfigFile | undefined> {
   if (!fs.existsSync(appLocation)) {
     return;
@@ -63,35 +79,33 @@ export async function handleUserConfig(appLocation: string): Promise<SWAConfigFi
   return configJson;
 }
 
-function handleStaticFileResponse(req: http.IncomingMessage, res: http.ServerResponse) {
-  logger.silly(`checking static content...`);
-
-  let target = SWA_CLI_OUTPUT_LOCATION;
-
-  const isCustomUrl = req.url?.startsWith(DEFAULT_CONFIG.customUrlScheme!);
-  logger.silly(` - isCustomUrl: ${chalk.yellow(isCustomUrl)}`);
-
-  if (isCustomUrl) {
+/**
+ * Serves static content or proxy requests to a static dev server (when used).
+ * @param req Node.js HTTP request object.
+ * @param res Node.js HTTP response object.
+ * @param proxyApp An `http-proxy` instance.
+ * @param target The root folder of the static app (ie. `output_location`). Or, the HTTP host target, if connecting to a dev server, or
+ */
+function serveStaticOrProxyReponse(req: http.IncomingMessage, res: http.ServerResponse, proxyApp: httpProxy, target: string) {
+  const customUrl = isCustomUrl(req);
+  if (customUrl!) {
+    logger.silly(`checking if custom page...`);
+    logger.silly(` - isCustomUrl: ${chalk.yellow(customUrl)}`);
+    logger.silly(` - url: ${chalk.yellow(req.url)}`);
+    logger.silly(` - statusCode: ${chalk.yellow(res.statusCode)}`);
     // extract user custom page filename
     req.url = req.url?.replace(DEFAULT_CONFIG.customUrlScheme!, "");
-    target = SWA_CLI_OUTPUT_LOCATION;
-  } else {
-    if (DEFAULT_CONFIG.overridableErrorCode?.includes(res.statusCode)) {
-      target = SWA_PUBLIC_DIR;
-    }
   }
 
-  logger.silly(` - url: ${chalk.yellow(req.url)}`);
-  logger.silly(` - target: ${chalk.yellow(target)}`);
+  // if the static app is served by a dev server, forward all requests to it.
+  if (!customUrl && IS_APP_DEV_SERVER()) {
+    logger.silly(`remote dev server detected. Proxying request...`);
+    logger.silly(` - url: ${chalk.yellow(req.url)}`);
+    logger.silly(` - code: ${chalk.yellow(res.statusCode)}`);
 
-  return {
-    target,
-  };
-}
+    target = SWA_CLI_OUTPUT_LOCATION;
+    logRequest(req, target);
 
-function serveStaticFileReponse(req: http.IncomingMessage, res: http.ServerResponse, proxyApp: httpProxy, target: string) {
-  // is this a dev server?
-  if (IS_APP_DEV_SERVER()) {
     proxyApp.web(
       req,
       res,
@@ -102,16 +116,25 @@ function serveStaticFileReponse(req: http.IncomingMessage, res: http.ServerRespo
       },
       onConnectionLost(req, res, target)
     );
-    proxyApp.once("proxyRes", (proxyRes: http.IncomingMessage, req: http.IncomingMessage) => {
-      logRequest(req, null, proxyRes.statusCode);
+    proxyApp.once("proxyRes", (proxyRes: http.IncomingMessage) => {
+      logger.silly(`getting response from dev server...`);
+
+      logRequest(req, target, proxyRes.statusCode);
     });
   } else {
+    target = SWA_CLI_OUTPUT_LOCATION;
+    const file = path.join(target, req.url!);
+    const exists = fs.existsSync(file);
+
+    logger.silly(`checking if file exists...`);
+    logger.silly(` - file: ${chalk.yellow(file)}`);
+    logger.silly(` - exists: ${chalk.yellow(exists)}`);
+
     // run one last check beforing serving 404 page:
     // if the requested file is not foud on disk
     // send our SWA 404 default page instead of serve-static's one.
-    const file = path.join(target, req.url!);
-    if (fs.existsSync(file) === false) {
-      req.url = "404.html";
+    if (exists === false) {
+      req.url = "/404.html";
       res.statusCode = 404;
       target = SWA_PUBLIC_DIR;
     }
@@ -125,6 +148,26 @@ function serveStaticFileReponse(req: http.IncomingMessage, res: http.ServerRespo
   }
 }
 
+/**
+ * This functions runs a series of heuristics to determines if a request is a Websocket request.
+ * @param req Node.js HTTP request object.
+ * @returns True if the request is a Websocket request. False otherwise.
+ */
+function isWebsocketRequest(req: http.IncomingMessage) {
+  // TODO: find a better way of guessing if this is a Websocket request
+  const isSockJs = req.url?.includes("sockjs-node");
+  const hasWebsocketHeader = req.headers.upgrade?.toLowerCase() === "websocket";
+  return isSockJs || hasWebsocketHeader;
+}
+
+/**
+ *
+ * @param req Node.js HTTP request object.
+ * @param res Node.js HTTP response object.
+ * @param proxyApp An `http-proxy` instance.
+ * @param userConfig The application configuration file defined in the `staticwebapp.config.json` file (or legacy file `routes.json`).
+ * @returns This middleware mutates the `req` and `res` HTTP objects.
+ */
 export async function requestMiddleware(
   req: http.IncomingMessage,
   res: http.ServerResponse,
@@ -135,9 +178,16 @@ export async function requestMiddleware(
     return;
   }
 
+  logger.silly(``);
   logger.silly(`--------------------------------------------------------`);
   logger.silly(`------------------- processing route -------------------`);
-  logger.silly(`processing URL ${chalk.yellow(req.url)}`);
+  logger.silly(`--------------------------------------------------------`);
+  logger.silly(`processing ${chalk.yellow(req.url)}`);
+
+  if (isWebsocketRequest(req)) {
+    logger.silly(`websocket request detected.`);
+    return serveStaticOrProxyReponse(req, res, proxyApp, SWA_CLI_OUTPUT_LOCATION);
+  }
 
   let authStatus = AUTH_STATUS.NoAuth;
   const isAuthReq = isAuthRequest(req);
@@ -176,7 +226,7 @@ export async function requestMiddleware(
     logger.silly(` - query: ${chalk.yellow(matchingRewriteRouteQueryString)}`);
   }
 
-  logger.silly(`checking is rewrite auth login request (${chalk.yellow(matchingRewriteRoutePath)})...`);
+  logger.silly(`checking is rewrite auth login request...`);
   if (isMatchingRewriteRoute && isLoginRequest(matchingRewriteRoutePath)) {
     logger.silly(` - auth login dectected.`);
 
@@ -185,7 +235,7 @@ export async function requestMiddleware(
     return await handleAuthRequest(req, res, matchingRouteRule, userConfig);
   }
 
-  logger.silly(`checking is rewrite auth logout request (${chalk.yellow(matchingRewriteRoutePath)})...`);
+  logger.silly(`checking is rewrite auth logout request...`);
   if (isMatchingRewriteRoute && isLogoutRequest(matchingRewriteRoutePath)) {
     logger.silly(` - auth logout dectected.`);
 
@@ -194,8 +244,11 @@ export async function requestMiddleware(
     return await handleAuthRequest(req, res, matchingRouteRule, userConfig);
   }
 
+  let target = SWA_CLI_OUTPUT_LOCATION;
+
   if (!isRouteRequiringUserRolesCheck(req, matchingRouteRule, isFunctionReq, authStatus)) {
-    unauthorizedResponse(req, res, userConfig?.responseOverrides);
+    handleErrorPage(req, res, 401, userConfig?.responseOverrides);
+    return serveStaticOrProxyReponse(req, res, proxyApp, target);
   }
 
   if (authStatus != AUTH_STATUS.NoAuth && (authStatus != AUTH_STATUS.HostNameAuthLogin || !isMatchingRewriteRoute)) {
@@ -209,7 +262,9 @@ export async function requestMiddleware(
   getResponse(req, res, matchingRouteRule, userConfig, isFunctionReq);
 
   if (!isFunctionReq) {
-    const { target } = handleStaticFileResponse(req, res);
-    serveStaticFileReponse(req, res, proxyApp, target);
+    logger.silly(` - url: ${chalk.yellow(req.url)}`);
+    logger.silly(` - target: ${chalk.yellow(target)}`);
+
+    serveStaticOrProxyReponse(req, res, proxyApp, target);
   }
 }

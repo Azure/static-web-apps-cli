@@ -1,61 +1,61 @@
 import chalk from "chalk";
 import type http from "http";
 import httpProxy from "http-proxy";
-import type net from "net";
 import fetch from "node-fetch";
 import { DEFAULT_CONFIG } from "../../config";
 import { decodeCookie, logger, logRequest, registerProcessExit, validateCookie } from "../../core";
-import { SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../../core/constants";
+import { HAS_API, SWA_CLI_API_URI } from "../../core/constants";
+import { onConnectionLost } from "../middlewares/request.middleware";
 
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
+registerProcessExit(() => {
+  logger.silly(`killing SWA CLI...`);
+  proxyApi.close(() => logger.log("Api proxy stopped."));
+  process.exit(0);
+});
 
-function injectHeaders(req: http.IncomingMessage) {
-  const host = `${SWA_CLI_APP_PROTOCOL}://${req.headers.host}`;
-  req.headers["X-MS-ORIGINAL-URL"] = encodeURI(new URL(req.url!, host).toString());
+function injectHeaders(req: http.ClientRequest, host: string) {
+  logger.silly(`injecting headers to Functions request:`);
+
+  req.setHeader("x-ms-original-url", encodeURI(new URL(req.path!, host).toString()));
+  logger.silly(` - x-ms-original-url: ${chalk.yellow(req.getHeader("x-ms-original-url"))}`);
 
   // generate a fake correlation ID
-  req.headers["X-MS-REQUEST-ID"] = Math.random().toString(36).substring(7);
+  req.setHeader("x-ms-request-id", `SWA-CLI-${Math.random().toString(36).substring(2).toUpperCase()}`);
+  logger.silly(` - x-ms-request-id: ${chalk.yellow(req.getHeader("x-ms-request-id"))}`);
 }
 
-function injectClientPrincipalCookies(req: http.IncomingMessage) {
-  const cookie = req.headers.cookie;
+function injectClientPrincipalCookies(req: http.ClientRequest) {
+  logger.silly(`injecting client principal to Functions request:`);
+
+  const cookie = req.getHeader("cookie");
   if (cookie && validateCookie(cookie)) {
     const user = decodeCookie(cookie);
     const buff = Buffer.from(JSON.stringify(user), "utf-8");
     const token = buff.toString("base64");
-    req.headers["X-MS-CLIENT-PRINCIPAL"] = token;
+    req.setHeader("X-MS-CLIENT-PRINCIPAL", token);
+    logger.silly(` - X-MS-CLIENT-PRINCIPAL: ${chalk.yellow(req.getHeader("X-MS-CLIENT-PRINCIPAL"))}`);
 
     // locally, we set the JWT bearer token to be the same as the cookie value because we are not using the real auth flow.
     // Note: on production, SWA uses a valid encrypted JWT token!
-    if (!req.headers.authorization) {
-      req.headers.authorization = `Bearer ${token}`;
+    if (!req.getHeader("authorization")) {
+      req.setHeader("authorization", `Bearer ${token}`);
+      logger.silly(` - Authorization: ${chalk.yellow(req.getHeader("authorization"))}`);
     }
+  } else {
+    logger.silly(` - no valid cookie found.`);
   }
-}
-
-function onConnectionLost(req: http.IncomingMessage, res: http.ServerResponse | net.Socket, target: string) {
-  return (error: Error) => {
-    if (error.message.includes("ECONNREFUSED")) {
-      const statusCode = 502;
-      (res as http.ServerResponse).statusCode = statusCode;
-      const uri = `${target}${req.url}`;
-      logger.error(`${req.method} ${uri} - ${statusCode} (Bad Gateway)`);
-    } else {
-      logger.error(`${error.message}`);
-    }
-    logger.silly({ error });
-    res.end();
-  };
 }
 
 export function handleFunctionRequest(req: http.IncomingMessage, res: http.ServerResponse) {
   const target = SWA_CLI_API_URI();
-
-  logger.silly(`functions request detected. Proxifying to Azure Functions Core Tools emulator...`);
-  logger.silly(` - target: ${chalk.yellow(target)}`);
-
-  injectHeaders(req);
-  injectClientPrincipalCookies(req);
+  if (HAS_API) {
+    logger.silly(`API request detected. Proxying to Azure Functions emulator...`);
+    logger.silly(` - target: ${chalk.yellow(target)}`);
+  } else {
+    logger.log(`** API request detected but the no API configuration was found. **`);
+    logger.log(`** Please use the --api option to configure an API endpoint.   **`);
+  }
 
   proxyApi.web(
     req,
@@ -63,18 +63,20 @@ export function handleFunctionRequest(req: http.IncomingMessage, res: http.Serve
     {
       target,
     },
-    onConnectionLost(req, res, target)
+    onConnectionLost(req, res, target, "↳")
   );
-  proxyApi.once("proxyRes", (proxyRes: http.IncomingMessage, req: http.IncomingMessage) => {
-    logRequest(req, null, proxyRes.statusCode);
+
+  proxyApi.once("proxyReq", (proxyReq: http.ClientRequest) => {
+    injectHeaders(proxyReq, target);
+    injectClientPrincipalCookies(proxyReq);
   });
 
-  logRequest(req);
-
-  registerProcessExit(() => {
-    proxyApi.close(() => logger.log("Api proxy stopped."));
-    process.exit(0);
+  proxyApi.once("proxyRes", (proxyRes: http.IncomingMessage) => {
+    logger.silly(`getting response from remote host...`);
+    logRequest(req, "", proxyRes.statusCode);
   });
+
+  logRequest(req, target);
 }
 
 export function isFunctionRequest(req: http.IncomingMessage, rewritePath?: string) {
@@ -84,7 +86,7 @@ export function isFunctionRequest(req: http.IncomingMessage, rewritePath?: strin
 
 export async function validateFunctionTriggers() {
   try {
-    const functionsResponse = await fetch(`${SWA_CLI_API_URI}/admin/functions`);
+    const functionsResponse = await fetch(`${SWA_CLI_API_URI()}/admin/functions`);
     const functions = await functionsResponse.json();
     const triggers = functions.map((f: any) => f.config.bindings.find((b: any) => /trigger$/i.test(b.type))).map((b: any) => b.type);
 
@@ -93,7 +95,9 @@ export async function validateFunctionTriggers() {
         "\nFunction app contains non-HTTP triggered functions. Azure Static Web Apps managed functions only support HTTP functions. To use this function app with Static Web Apps, see 'Bring your own function app'.\n"
       );
     }
-  } catch {
+  } catch (e) {
+    console.error(e);
+
     logger.log("Unable to query functions trigger types.");
   }
 }

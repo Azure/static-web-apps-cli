@@ -27,11 +27,11 @@ export const logger = {
 
   // public methods
   info(data: string | object, prefix: string | null = null) {
-    this.silly(data, prefix, "info");
+    this.silly(data, prefix, "info", chalk.green);
   },
 
   log(data: string | object, prefix: string | null = null) {
-    this.silly(data, prefix, "log");
+    this.silly(data, prefix, "log", chalk.reset);
   },
 
   error(data: string | object, exit = false) {
@@ -46,44 +46,44 @@ export const logger = {
     }
   },
 
-  silly(data: string | object, prefix: string | null = null, debugFilter: DebugFilterLevel = "silly") {
+  silly(data: string | object, prefix: string | null = null, debugFilter: DebugFilterLevel = "silly", color: chalk.Chalk = chalk.magenta) {
     const { SWA_CLI_DEBUG } = process.env;
     if (!SWA_CLI_DEBUG || SWA_CLI_DEBUG?.includes("silent")) {
       return;
     }
 
     if (SWA_CLI_DEBUG?.includes("silly") || SWA_CLI_DEBUG?.includes(debugFilter)) {
+      let log = "";
       if (typeof data === "object") {
         this._traverseObjectProperties(data, (key: string, value: string | null, indent: string) => {
           if (value !== null) {
-            value = typeof value === "undefined" ? chalk.gray("<undefined>") : value;
-            this._print(prefix, `${indent}- ${key}: ${chalk.yellow(value)}`);
+            value = typeof value === "undefined" ? chalk.yellow("<undefined>") : value;
+            log = `${indent}- ${key}: ${chalk.yellow(value)}`;
           } else {
-            this._print(prefix, `${indent}- ${key}:`);
+            log = `${indent}- ${key}:`;
           }
         });
       } else {
         // data is not an object so just print its value even if it's null or undefined
-        this._print(prefix, data);
+        log = data;
       }
+      this._print(prefix, color(log));
     }
   },
 };
 
-export function logRequest(req: http.IncomingMessage, target: string | null = null, statusCode: number | null = null) {
-  const { SWA_CLI_DEBUG } = process.env;
-  if (SWA_CLI_DEBUG?.includes("req") === false) {
-    return;
-  }
-
+export function logRequest(req: http.IncomingMessage, target: string = "", statusCode: number | null = null, prefix = "") {
   let url = req.url?.replace(DEFAULT_CONFIG.customUrlScheme!, "");
   url = url?.startsWith("/") ? url : `/${url}`;
 
-  const host = target || `${SWA_CLI_APP_PROTOCOL}://${req.headers.host}`;
+  const proto = target?.startsWith("ws") ? "ws" : SWA_CLI_APP_PROTOCOL;
+  const host = `${proto}://${req.headers.host}`;
+
+  prefix = prefix === "" ? "" : ` ${prefix} `;
 
   if (statusCode) {
-    logger.log(`${chalk.cyan(req.method)} ${host}${url} - ${chalk.green(statusCode)}`);
+    logger.log(`${prefix}${chalk.cyan(req.method)} ${host}${url} - ${chalk.green(statusCode)}`);
   } else {
-    logger.log(chalk.yellow(`${req.method} ${host + url} (proxy)`));
+    logger.log(chalk.yellow(`${prefix}${req.method} ${target + url} (proxy)`));
   }
 }

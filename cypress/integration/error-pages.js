@@ -8,9 +8,9 @@ context("Error pages", () => {
       });
     });
 
-    it(`should display custom 404 page becasue status-code-401.txt is not a real file`, () => {
+    it(`should display custom 401 page`, () => {
       cy.visit({ url: `http://0.0.0.0:1234/status-code-401.txt`, failOnStatusCode: false });
-      cy.get("h1").should("contain.text", `custom 404`);
+      cy.get("h1").should("contain.text", `custom 401`);
     });
   });
 
@@ -21,9 +21,9 @@ context("Error pages", () => {
       });
     });
 
-    it(`should display custom 404 page becasue status-code-403.txt is not a real file`, () => {
+    it(`should display custom 403 page`, () => {
       cy.visit({ url: `http://0.0.0.0:1234/status-code-403.txt`, failOnStatusCode: false });
-      cy.get("h1").should("contain.text", `custom 404`);
+      cy.get("h1").should("contain.text", `custom 403`);
     });
   });
 
@@ -34,7 +34,7 @@ context("Error pages", () => {
       });
     });
 
-    it(`should display custom 404 page becasue status-code-404.txt is not a real file`, () => {
+    it(`should display custom 404 page`, () => {
       cy.visit({ url: `http://0.0.0.0:1234/status-code-404.txt`, failOnStatusCode: false });
       cy.get("h1").should("contain.text", `custom 404`);
     });

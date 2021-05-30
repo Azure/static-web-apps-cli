@@ -70,7 +70,7 @@ export function getHeadersForRoute(
   const cacheControlHeader = `must-revalidate, max-age=${CACHE_CONTROL_MAX_AGE}`;
   // Etag header - must be surrounded by ""
   // TODO should we support ETag locally?
-  const etagStr = '"etag-is-disabled-locally"';
+  const etagStr = '"SWA-CLI-ETAG"';
 
   const headers = getDefaultHeaders(etagStr, cacheControlHeader);
   if (globalHeaders) {

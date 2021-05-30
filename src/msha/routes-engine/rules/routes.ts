@@ -3,12 +3,23 @@ import fs from "fs";
 import type http from "http";
 import path from "path";
 import { decodeCookie, logger } from "../../../core";
-import { ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT, AUTH_STATUS, SWA_CLI_APP_PROTOCOL, SWA_CLI_OUTPUT_LOCATION } from "../../../core/constants";
+import {
+  ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT,
+  AUTH_STATUS,
+  IS_APP_DEV_SERVER,
+  SWA_CLI_APP_PROTOCOL,
+  SWA_CLI_OUTPUT_LOCATION,
+} from "../../../core/constants";
 import { isAuthRequest } from "../../handlers/auth.handler";
 import { doesRequestPathMatchLegacyRoute, doesRequestPathMatchRoute } from "../route-processor";
 
 export function tryFindFileForRequest(requestPath: string) {
   logger.silly(`finding file for request...`);
+  // if the user is connecting to a remote dev server, filePath will be an HTTP request pointing to the remote ressource.
+  // We exist here and let the remote server handle the request.
+  if (IS_APP_DEV_SERVER()) {
+    return requestPath;
+  }
 
   requestPath = getIndexHtml(requestPath);
 
@@ -68,12 +79,12 @@ export function isRouteRequiringUserRolesCheck(
     }
 
     const userRoles = clientPrincipalInternal?.userRoles;
-    logger.silly(` - userRoles: ${chalk.yellow(userRoles?.length ? userRoles : "<EMPTY>")}`);
+    logger.silly(` - userRoles: ${chalk.yellow(userRoles?.length ? userRoles : "<empty>")}`);
     logger.silly(` - allowedRoles: ${chalk.yellow(matchingRoute.allowedRoles)}`);
     logger.silly(matchingRoute);
 
     const matchedRoles = userRoles?.filter((value) => matchingRoute.allowedRoles?.includes(value));
-    logger.silly(` - matchedRoles: ${chalk.yellow(matchedRoles?.length ? matchedRoles : "<EMPTY>")}`);
+    logger.silly(` - matchedRoles: ${chalk.yellow(matchedRoles?.length ? matchedRoles : "<empty>")}`);
 
     const isUserAuthenticatedOrAnonymous = matchedRoles?.length! > 0;
     logger.silly(` - isUserAuthenticatedOrAnonymous: ${chalk.yellow(isUserAuthenticatedOrAnonymous)}`);

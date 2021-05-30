@@ -3,13 +3,17 @@ import type http from "http";
 import { DEFAULT_CONFIG } from "../../../config";
 import { logger } from "../../../core";
 
+function tryGetResponseOverrideForStatusCode(responseOverrides: SWAConfigFileResponseOverrides | undefined, statusCode: number) {
+  return responseOverrides?.[statusCode];
+}
+
 // See: https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#response-overrides
 export function responseOverrides(req: http.IncomingMessage, res: http.ServerResponse, responseOverrides: SWAConfigFileResponseOverrides) {
   const statusCode = res.statusCode;
 
   logger.silly(`checking response overrides for status code ${chalk.yellow(statusCode)}...`);
   if (DEFAULT_CONFIG.overridableErrorCode?.includes(statusCode)) {
-    const rule = responseOverrides?.[`${statusCode}`];
+    const rule = tryGetResponseOverrideForStatusCode(responseOverrides, statusCode);
 
     if (rule) {
       logger.silly(" - found overriden rules...");
@@ -19,6 +23,7 @@ export function responseOverrides(req: http.IncomingMessage, res: http.ServerRes
 
         logger.silly(` - statusCode: ${chalk.yellow(statusCode)}`);
       }
+
       if (rule.redirect) {
         res.setHeader("Location", rule.redirect);
 

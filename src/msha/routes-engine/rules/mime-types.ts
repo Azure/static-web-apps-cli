@@ -25,14 +25,11 @@ export function getMimeTypeForExtension(filePathFromRequest: string | URL | null
   const extension = path.extname(filePathFromRequest!);
 
   logger.silly(`checking mime types...`);
-  logger.silly(` - extension: ${chalk.yellow(extension || "<EMPTY>")}`);
+  logger.silly(` - extension: ${chalk.yellow(extension || "<empty>")}`);
 
   let mimeType = DEFAULT_MIME_TYPE;
 
   if (customMimeType) {
-    logger.silly(` - customMimeType:`);
-    logger.silly(customMimeType);
-
     mimeType = customMimeType[extension];
   }
 

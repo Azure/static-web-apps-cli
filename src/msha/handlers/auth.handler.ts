@@ -1,7 +1,8 @@
 import type http from "http";
 import { logger, logRequest } from "../../core";
 import { processAuth } from "../auth";
-import { pageNotFoundResponse, unauthorizedResponse } from "./error-page.handler";
+import { handleErrorPage } from "./error-page.handler";
+
 export async function handleAuthRequest(
   req: http.IncomingMessage,
   res: http.ServerResponse,
@@ -13,10 +14,10 @@ export async function handleAuthRequest(
   if (statusCode === 404) {
     logger.silly(` - auth returned 404`);
 
-    pageNotFoundResponse(req, res, userConfig?.responseOverrides);
+    handleErrorPage(req, res, 404, userConfig?.responseOverrides);
   }
 
-  logRequest(req, null, statusCode);
+  logRequest(req, "", statusCode);
 }
 
 export function getAuthBlockResponse(
@@ -27,9 +28,11 @@ export function getAuthBlockResponse(
 ) {
   switch (matchingRoute.statusCode) {
     case 404:
-      return pageNotFoundResponse(req, res, userConfig?.responseOverrides);
+      return handleErrorPage(req, res, 404, userConfig?.responseOverrides);
     case 401:
-      return unauthorizedResponse(req, res, userConfig?.responseOverrides);
+      return handleErrorPage(req, res, 401, userConfig?.responseOverrides);
+    case 403:
+      return handleErrorPage(req, res, 403, userConfig?.responseOverrides);
     default:
       break;
   }

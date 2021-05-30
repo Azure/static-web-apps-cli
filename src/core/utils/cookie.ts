@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import cookie from "cookie";
 import { logger } from "./logger";
-export function validateCookie(cookieValue: string) {
+export function validateCookie(cookieValue: string | number | string[]) {
   if (typeof cookieValue !== "string") {
     throw Error(`TypeError: cookie value must be a string.`);
   }
