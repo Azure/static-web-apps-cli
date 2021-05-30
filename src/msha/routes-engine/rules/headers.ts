@@ -16,7 +16,7 @@ export function updateReponseHeaders(res: http.ServerResponse, matchingRouteHead
   }
 }
 
-export function getResponseHeaders(matchingRouteHeaders: SWAConfigFileRouteHeaders) {
+export function getResponseHeaders(matchingRouteHeaders: SWAConfigFileRouteHeaders | undefined) {
   const contentResponseHeaders: SWAConfigFileGlobalHeaders = {};
 
   if (matchingRouteHeaders == null) {
@@ -24,15 +24,11 @@ export function getResponseHeaders(matchingRouteHeaders: SWAConfigFileRouteHeade
   }
 
   for (const header in matchingRouteHeaders) {
-    if (Object.keys(contentResponseHeaders).includes(header)) {
-      if (matchingRouteHeaders[header] === "") {
-        // in order to avoid mutating the response object here, we add a placeholder
-        // the caller function will take care of updating the res object
-        contentResponseHeaders[header] = `${contentResponseHeaders[header]} ${HEADER_DELETE_KEYWORD}`;
-      } else {
-        contentResponseHeaders[header] = matchingRouteHeaders[header];
-      }
-    } else if (matchingRouteHeaders[header]) {
+    if (matchingRouteHeaders[header] === "") {
+      // in order to avoid mutating the response object here, we add a placeholder
+      // the caller function will take care of updating the res object
+      contentResponseHeaders[header] = `${HEADER_DELETE_KEYWORD} ${contentResponseHeaders[header]}`;
+    } else {
       contentResponseHeaders[header] = matchingRouteHeaders[header];
     }
   }
@@ -40,7 +36,7 @@ export function getResponseHeaders(matchingRouteHeaders: SWAConfigFileRouteHeade
   return contentResponseHeaders;
 }
 
-function getDefaultHeaders(etagStr?: string, cacheControl?: string) {
+export function getDefaultHeaders(etagStr?: string, cacheControl?: string) {
   const headers: SWAConfigFileGlobalHeaders = {
     //"X-Frame-Options": "SAMEORIGIN" ,
     //"Feature-Policy": "accelerometer 'none'; camera 'self'; geolocation 'none'; gyroscope 'none'; magnetometer 'none'; microphone 'self'; payment 'none'; usb 'none'" ,
