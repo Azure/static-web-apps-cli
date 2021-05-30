@@ -13,7 +13,7 @@ export function doesRequestPathMatchRoute(
   methods: string[] | undefined | null,
   authStatus: number
 ) {
-  logger.silly(`check if request match route...`);
+  logger.silly(`check if request match route`);
 
   const route = routeRule?.route;
   const hasRouteRuleHasWildcard = route?.includes("*");
@@ -91,7 +91,7 @@ export function doesRequestPathMatchLegacyRoute(
 }
 
 function doesRequestPathMatchWildcardRoute(requestPath: string, requestPathFileWithWildcard: string | undefined) {
-  logger.silly(`checking wildcard route...`);
+  logger.silly(`checking wildcard route`);
   logger.silly(` - glob: ${chalk.yellow(requestPathFileWithWildcard)}`);
 
   const pathBeforeWildcard = requestPathFileWithWildcard?.substr(0, requestPathFileWithWildcard?.indexOf("*"));
@@ -100,7 +100,7 @@ function doesRequestPathMatchWildcardRoute(requestPath: string, requestPathFileW
   // before processing regexp which might be expensive
   // let's check first if both path and rule start with the same substring
   if (pathBeforeWildcard && requestPath.startsWith(pathBeforeWildcard) === false) {
-    logger.silly(` - substring don't match. Exit.`);
+    logger.silly(` - substring don't match. Exit`);
 
     return false;
   }

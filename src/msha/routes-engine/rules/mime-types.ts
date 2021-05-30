@@ -7,7 +7,7 @@ import { DEFAULT_MIME_TYPE, MIME_TYPE_LIST } from "../../../core/constants";
 // See: https://docs.microsoft.com/en-us/azure/static-web-apps/configuration
 export async function mimeTypes(req: http.IncomingMessage, res: http.ServerResponse, mimeTypes: SWAConfigFileMimeTypes) {
   if (req.url?.includes(".")) {
-    logger.silly(`checking mimeTypes rule...`);
+    logger.silly(`checking mimeTypes rule`);
 
     const fileExtentionFromURL = req.url?.split(".").pop();
     const overrideMimeType = mimeTypes?.[`.${fileExtentionFromURL}`];
@@ -24,7 +24,7 @@ export function getMimeTypeForExtension(filePathFromRequest: string | URL | null
   }
   const extension = path.extname(filePathFromRequest!);
 
-  logger.silly(`checking mime types...`);
+  logger.silly(`checking mime types`);
   logger.silly(` - extension: ${chalk.yellow(extension || "<empty>")}`);
 
   let mimeType = DEFAULT_MIME_TYPE;

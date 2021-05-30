@@ -44,7 +44,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
     }
     // make sure api folder exists
     else if (fs.existsSync(options.apiLocation) === false) {
-      logger.info(`Skipping API because folder "${options.apiLocation}" is missing.`);
+      logger.info(`Skipping API because folder "${options.apiLocation}" is missing`);
     }
   }
 

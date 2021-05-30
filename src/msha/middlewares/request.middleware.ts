@@ -65,7 +65,7 @@ export async function handleUserConfig(appLocation: string): Promise<SWAConfigFi
 
     if (configFile.isLegacyConfigFile) {
       logger.info(
-        `    ${chalk.yellow(`WARNING: Functionality defined in the routes.json file is now deprecated.`)}\n` +
+        `    ${chalk.yellow(`WARNING: Functionality defined in the routes.json file is now deprecated`)}\n` +
           `    ${chalk.yellow(`Read more: https://docs.microsoft.com/azure/static-web-apps/configuration#routes`)}`
       );
     }
@@ -89,7 +89,7 @@ export async function handleUserConfig(appLocation: string): Promise<SWAConfigFi
 function serveStaticOrProxyReponse(req: http.IncomingMessage, res: http.ServerResponse, proxyApp: httpProxy, target: string) {
   const customUrl = isCustomUrl(req);
   if (customUrl!) {
-    logger.silly(`checking if custom page...`);
+    logger.silly(`checking if custom page`);
     logger.silly(` - isCustomUrl: ${chalk.yellow(customUrl)}`);
     logger.silly(` - url: ${chalk.yellow(req.url)}`);
     logger.silly(` - statusCode: ${chalk.yellow(res.statusCode)}`);
@@ -99,7 +99,7 @@ function serveStaticOrProxyReponse(req: http.IncomingMessage, res: http.ServerRe
 
   // if the static app is served by a dev server, forward all requests to it.
   if (!customUrl && IS_APP_DEV_SERVER()) {
-    logger.silly(`remote dev server detected. Proxying request...`);
+    logger.silly(`remote dev server detected. Proxying request`);
     logger.silly(` - url: ${chalk.yellow(req.url)}`);
     logger.silly(` - code: ${chalk.yellow(res.statusCode)}`);
 
@@ -117,7 +117,7 @@ function serveStaticOrProxyReponse(req: http.IncomingMessage, res: http.ServerRe
       onConnectionLost(req, res, target)
     );
     proxyApp.once("proxyRes", (proxyRes: http.IncomingMessage) => {
-      logger.silly(`getting response from dev server...`);
+      logger.silly(`getting response from dev server`);
 
       logRequest(req, target, proxyRes.statusCode);
     });
@@ -126,7 +126,7 @@ function serveStaticOrProxyReponse(req: http.IncomingMessage, res: http.ServerRe
     const file = path.join(target, req.url!);
     const exists = fs.existsSync(file);
 
-    logger.silly(`checking if file exists...`);
+    logger.silly(`checking if file exists`);
     logger.silly(` - file: ${chalk.yellow(file)}`);
     logger.silly(` - exists: ${chalk.yellow(exists)}`);
 
@@ -139,7 +139,7 @@ function serveStaticOrProxyReponse(req: http.IncomingMessage, res: http.ServerRe
       target = SWA_PUBLIC_DIR;
     }
 
-    logger.silly(`serving static content...`);
+    logger.silly(`serving static content`);
     logger.silly({ file, url: req.url, code: res.statusCode });
 
     const onerror = (err: any) => console.error(err);
@@ -185,36 +185,39 @@ export async function requestMiddleware(
   logger.silly(`processing ${chalk.yellow(req.url)}`);
 
   if (isWebsocketRequest(req)) {
-    logger.silly(`websocket request detected.`);
+    logger.silly(`websocket request detected`);
     return serveStaticOrProxyReponse(req, res, proxyApp, SWA_CLI_OUTPUT_LOCATION);
   }
 
   let authStatus = AUTH_STATUS.NoAuth;
   const isAuthReq = isAuthRequest(req);
 
-  logger.silly(`checking for matching route...`);
+  logger.silly(`checking for matching route`);
   const matchingRouteRule = tryGetMatchingRoute(req, userConfig);
   if (matchingRouteRule) {
     logger.silly({ matchingRouteRule });
   }
 
-  logger.silly(`checking is auth request...`);
+  logger.silly(`checking auth request`);
   if (isAuthReq) {
-    logger.silly(` - auth request detected.`);
+    logger.silly(` - auth request detected`);
     return await handleAuthRequest(req, res, matchingRouteRule, userConfig);
   } else {
-    logger.silly(` - not an auth request.`);
+    logger.silly(` - not an auth request`);
   }
 
-  logger.silly(`checking is functions request...`);
+  logger.silly(`checking function request`);
   const isFunctionReq = isFunctionRequest(req, matchingRouteRule?.rewrite);
+  if (!isFunctionReq) {
+    logger.silly(` - not a function request`);
+  }
 
   if (!isRequestMethodValid(req, isFunctionReq, isAuthReq)) {
     res.statusCode = 405;
     return res.end();
   }
 
-  logger.silly(`checking for query params...`);
+  logger.silly(`checking for query params`);
 
   const isMatchingRewriteRoute = matchingRouteRule?.rewrite;
   const sanitizedUrl = new URL(isMatchingRewriteRoute!, `${SWA_CLI_APP_PROTOCOL}://${req?.headers?.host}`);
@@ -226,18 +229,18 @@ export async function requestMiddleware(
     logger.silly(` - query: ${chalk.yellow(matchingRewriteRouteQueryString)}`);
   }
 
-  logger.silly(`checking is rewrite auth login request...`);
+  logger.silly(`checking rewrite auth login request`);
   if (isMatchingRewriteRoute && isLoginRequest(matchingRewriteRoutePath)) {
-    logger.silly(` - auth login dectected.`);
+    logger.silly(` - auth login dectected`);
 
     authStatus = AUTH_STATUS.HostNameAuthLogin;
     req.url = sanitizedUrl.toString();
     return await handleAuthRequest(req, res, matchingRouteRule, userConfig);
   }
 
-  logger.silly(`checking is rewrite auth logout request...`);
+  logger.silly(`checking rewrite auth logout request`);
   if (isMatchingRewriteRoute && isLogoutRequest(matchingRewriteRoutePath)) {
-    logger.silly(` - auth logout dectected.`);
+    logger.silly(` - auth logout dectected`);
 
     authStatus = AUTH_STATUS.HostNameAuthLogout;
     req.url = sanitizedUrl.toString();

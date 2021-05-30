@@ -23,11 +23,11 @@ export function getResponse(
   const redirect = matchedRoute?.redirect;
   const rewrite = matchedRoute?.rewrite;
 
-  logger.silly(`using userConfig...`);
+  logger.silly(`using userConfig`);
   logger.silly({ userConfig });
 
   if (redirect) {
-    logger.silly(` - redirect rule detected. Exit.`);
+    logger.silly(` - redirect rule detected. Exit`);
 
     return applyRedirectResponse(req, res, matchedRoute);
   }
@@ -37,7 +37,7 @@ export function getResponse(
   }
 
   if ([403, 401].includes(statusCodeToServe)) {
-    logger.silly(` - ${statusCodeToServe} code detected. Exit.`);
+    logger.silly(` - ${statusCodeToServe} code detected. Exit`);
 
     return handleErrorPage(req, res, statusCodeToServe, userConfig?.responseOverrides);
   }
@@ -81,11 +81,11 @@ export function getStorageContent(
   isFunctionFallbackRequest: boolean;
   isSuccessfulSiteHit: boolean;
 } {
-  logger.silly(`checking storage content...`);
+  logger.silly(`checking storage content`);
 
   // don't serve staticwebapp.config.json / routes.json
   if (isSWAConfigFileUrl(req)) {
-    logger.silly(` - request to config file detected. Exit.`);
+    logger.silly(` - request to config file detected. Exit`);
 
     handleErrorPage(req, res, 404, responseOverridesRule);
     return {
@@ -118,7 +118,7 @@ export function getStorageContent(
         };
       } else {
         const navigationFallbackRewrite = navigationFallbackRule.rewrite;
-        logger.silly(`validating navigation fallback rewrite rule...`);
+        logger.silly(`validating navigation fallback rewrite rule`);
         logger.silly(` - rewrite: ${chalk.yellow(navigationFallbackRewrite)}`);
 
         const isNavigationFallbackWritePathExists = tryFindFileForRequest(navigationFallbackRewrite);

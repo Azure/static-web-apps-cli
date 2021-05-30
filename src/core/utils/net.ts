@@ -37,7 +37,7 @@ export async function validateDevServerConfig(context: string) {
     if (appListening === false) {
       const spinner = ora();
       try {
-        spinner.start(`Waiting for ${chalk.green(context)} to be ready...`);
+        spinner.start(`Waiting for ${chalk.green(context)} to be ready`);
         await waitOn({
           resources: [address(hostname, port)],
           delay: 1000, // initial delay in ms, default 0
@@ -48,7 +48,7 @@ export async function validateDevServerConfig(context: string) {
           window: 1000, // stabilization time in ms, default 750ms
           strictSSL: false,
         });
-        spinner.succeed(`Connected to ${chalk.green(context)} successfully.`);
+        spinner.succeed(`Connected to ${chalk.green(context)} successfully`);
         spinner.clear();
       } catch (err) {
         spinner.fail();
@@ -58,7 +58,7 @@ export async function validateDevServerConfig(context: string) {
     }
   } catch (err) {
     if (err.message.includes("EACCES")) {
-      logger.error(`Port "${port}" cannot be used. You might need elevated or admin privileges. Or, use a valid port: 1024 to 49151.`);
+      logger.error(`Port "${port}" cannot be used. You might need elevated or admin privileges. Or, use a valid port: 1024 to 49151`);
     } else {
       logger.error(err.message);
     }

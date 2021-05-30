@@ -27,6 +27,30 @@ context.only("/api", () => {
     });
   });
 
+  describe(`Accessing /api/info`, () => {
+    it(`should respond with 401 when user not logged in`, () => {
+      cy.request({ url: `http://0.0.0.0:1234/api/info`, failOnStatusCode: false }).then((response) => {
+        expect(response.status).to.eq(401);
+      });
+    });
+    it(`should respond with with content when user is logged in`, () => {
+      const clientPrincipal = {
+        identityProvider: "facebook",
+        userId: "d75b260a64504067bfc5b2905e3b8182",
+        userDetails: "user@example.com",
+        userRoles: ["authenticated"],
+      };
+      const SWA_AUTH_COOKIE_NAME = "StaticWebAppsAuthCookie";
+
+      cy.setCookie(SWA_AUTH_COOKIE_NAME, window.btoa(JSON.stringify(clientPrincipal)));
+
+      cy.request({ url: `http://0.0.0.0:1234/api/info`, failOnStatusCode: false }).then((response) => {
+        expect(response.status).to.eq(200);
+        expect(response.body).to.eq('authorized');
+      });
+    });
+  });
+
   describe(`Accessing non existing endoint`, () => {
     it(`should respond with valid body content`, () => {
       cy.request({ url: `http://0.0.0.0:1234/api/path-does-not-exists`, failOnStatusCode: false }).then((response) => {

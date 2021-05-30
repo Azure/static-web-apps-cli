@@ -66,15 +66,19 @@ export function getHeadersForRoute(
   matchingRouteHeaders: SWAConfigFileRouteHeaders | undefined,
   globalHeaders: SWAConfigFileGlobalHeaders | undefined
 ) {
-  // cache control header
+  logger.silly(`constructing headers`);
+  logger.silly({ matchingRouteHeaders });
+  logger.silly({ globalHeaders });
+
   const cacheControlHeader = `must-revalidate, max-age=${CACHE_CONTROL_MAX_AGE}`;
+
   // Etag header - must be surrounded by ""
   // TODO should we support ETag locally?
   const etagStr = '"SWA-CLI-ETAG"';
 
   const headers = getDefaultHeaders(etagStr, cacheControlHeader);
   if (globalHeaders) {
-    logger.silly(`checking global headers...`);
+    logger.silly(`checking global headers`);
     logger.silly(headers);
 
     for (const defaultHeaderPair in globalHeaders) {
@@ -83,7 +87,7 @@ export function getHeadersForRoute(
   }
 
   if (matchingRouteHeaders) {
-    logger.silly(`checking headers for route...`);
+    logger.silly(`checking headers for route`);
     logger.silly(matchingRouteHeaders);
 
     for (const headerPair in matchingRouteHeaders) {

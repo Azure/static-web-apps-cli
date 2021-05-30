@@ -11,7 +11,7 @@ function tryGetResponseOverrideForStatusCode(responseOverrides: SWAConfigFileRes
 export function responseOverrides(req: http.IncomingMessage, res: http.ServerResponse, responseOverrides: SWAConfigFileResponseOverrides) {
   const statusCode = res.statusCode;
 
-  logger.silly(`checking response overrides for status code ${chalk.yellow(statusCode)}...`);
+  logger.silly(`checking response overrides for status code ${chalk.yellow(statusCode)}`);
   if (DEFAULT_CONFIG.overridableErrorCode?.includes(statusCode)) {
     const rule = tryGetResponseOverrideForStatusCode(responseOverrides, statusCode);
 

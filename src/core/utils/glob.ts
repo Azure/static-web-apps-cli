@@ -5,11 +5,11 @@ import { logger } from "./logger";
  *  Turn expression into a valid regex
  */
 export function globToRegExp(glob: string | undefined) {
-  logger.silly(`turning glob expression into valid RegExp...`);
+  logger.silly(`turning glob expression into valid RegExp`);
   logger.silly(` - glob: ${chalk.yellow(glob)}`);
 
   if (!glob) {
-    logger.silly(` - glob is empty, return empty string.`);
+    logger.silly(` - glob is empty, return empty string`);
     return "";
   }
 

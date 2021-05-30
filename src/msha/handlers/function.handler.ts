@@ -9,7 +9,7 @@ import { onConnectionLost } from "../middlewares/request.middleware";
 
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 registerProcessExit(() => {
-  logger.silly(`killing SWA CLI...`);
+  logger.silly(`killing SWA CLI`);
   proxyApi.close(() => logger.log("Api proxy stopped."));
   process.exit(0);
 });
@@ -43,18 +43,20 @@ function injectClientPrincipalCookies(req: http.ClientRequest) {
       logger.silly(` - Authorization: ${chalk.yellow(req.getHeader("authorization"))}`);
     }
   } else {
-    logger.silly(` - no valid cookie found.`);
+    logger.silly(` - no valid cookie found`);
   }
 }
 
 export function handleFunctionRequest(req: http.IncomingMessage, res: http.ServerResponse) {
   const target = SWA_CLI_API_URI();
   if (HAS_API) {
-    logger.silly(`API request detected. Proxying to Azure Functions emulator...`);
+    logger.silly(`function request detected. Proxying to Azure Functions emulator`);
     logger.silly(` - target: ${chalk.yellow(target)}`);
   } else {
-    logger.log(`** API request detected but the no API configuration was found. **`);
-    logger.log(`** Please use the --api option to configure an API endpoint.   **`);
+    logger.log(`*******************************************************************************`);
+    logger.log(`** Functions request detected but the no endpoint configuration was found.   **`);
+    logger.log(`** Please use the --api option to configure an function endpoint.            **`);
+    logger.log(`*******************************************************************************`);
   }
 
   proxyApi.web(
@@ -72,7 +74,7 @@ export function handleFunctionRequest(req: http.IncomingMessage, res: http.Serve
   });
 
   proxyApi.once("proxyRes", (proxyRes: http.IncomingMessage) => {
-    logger.silly(`getting response from remote host...`);
+    logger.silly(`getting response from remote host`);
     logRequest(req, "", proxyRes.statusCode);
   });
 

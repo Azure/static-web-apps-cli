@@ -14,7 +14,7 @@ import { isAuthRequest } from "../../handlers/auth.handler";
 import { doesRequestPathMatchLegacyRoute, doesRequestPathMatchRoute } from "../route-processor";
 
 export function tryFindFileForRequest(requestPath: string) {
-  logger.silly(`finding file for request...`);
+  logger.silly(`finding file for request`);
   // if the user is connecting to a remote dev server, filePath will be an HTTP request pointing to the remote ressource.
   // We exist here and let the remote server handle the request.
   if (IS_APP_DEV_SERVER()) {
@@ -40,17 +40,17 @@ export function isRouteRequiringUserRolesCheck(
   isFunctionRequest: boolean,
   authStatus: number
 ) {
-  logger.silly(`checking ACL for route...`);
+  logger.silly(`checking authorizations for route`);
 
   if (!matchingRoute) {
-    logger.silly(` - no matching rule.`);
-    logger.silly(` - access authorized.`);
+    logger.silly(` - no matching rule`);
+    logger.silly(` - access authorized`);
     return true;
   }
 
   if (matchingRoute.allowedRoles?.length === 0) {
-    logger.silly(` - no allowedRoles provided.`);
-    logger.silly(` - access authorized.`);
+    logger.silly(` - no allowedRoles provided`);
+    logger.silly(` - access authorized`);
     return true;
   }
 
@@ -73,8 +73,8 @@ export function isRouteRequiringUserRolesCheck(
     const doesAuthCookieExist = !!clientPrincipalInternal;
 
     if (shouldCheckRoles && !doesAuthCookieExist) {
-      logger.silly(` - secure route found but cookies not found.`);
-      logger.silly(` - access not authorized.`);
+      logger.silly(` - secure route found but cookies not found`);
+      logger.silly(` - access not authorized`);
       return false;
     }
 
@@ -90,14 +90,14 @@ export function isRouteRequiringUserRolesCheck(
     logger.silly(` - isUserAuthenticatedOrAnonymous: ${chalk.yellow(isUserAuthenticatedOrAnonymous)}`);
 
     if (shouldCheckRoles && !isUserAuthenticatedOrAnonymous) {
-      logger.silly(` - secure route found but roles don't match.`);
+      logger.silly(` - secure route found but roles don't match`);
       logger.silly({ allowedRoles: matchingRoute.allowedRoles });
-      logger.silly(` - access not authorized.`);
+      logger.silly(` - access not authorized`);
       return false;
     }
   }
 
-  logger.silly(` - access authorized.`);
+  logger.silly(` - access authorized`);
   return true;
 }
 
@@ -170,10 +170,10 @@ export function tryGetMatchingRoute(req: http.IncomingMessage, userConfig: SWACo
 }
 
 export function isRequestMethodValid(req: http.IncomingMessage, isFunctionRequest: boolean, isAuth: boolean) {
-  logger.silly(`checking HTTP method: ${chalk.yellow(req.method)}...`);
+  logger.silly(`checking HTTP method: ${chalk.yellow(req.method)}`);
 
   if (isFunctionRequest || isAuth) {
-    logger.silly(` - function or auth request detected, method is valid.`);
+    logger.silly(` - function or auth request detected, method is valid`);
     return true;
   }
 
@@ -183,7 +183,7 @@ export function isRequestMethodValid(req: http.IncomingMessage, isFunctionReques
   }
 
   // Deny everything else
-  logger.silly(` - method is invalid. Deny request.`);
+  logger.silly(` - method is invalid. Deny request`);
   return false;
 }
 

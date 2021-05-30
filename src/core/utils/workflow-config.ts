@@ -54,11 +54,11 @@ export function readWorkflowFile({ userConfig }: { userConfig?: Partial<GithubAc
   const swaYaml = YAML.parse(githubActionContent);
 
   if (!swaYaml) {
-    throw Error(`could not parse the SWA workflow file "${githubActionFile}". Make sure it's a valid YAML file.`);
+    throw Error(`could not parse the SWA workflow file "${githubActionFile}". Make sure it's a valid YAML file`);
   }
 
   if (!swaYaml.jobs) {
-    throw Error(`missing property 'jobs' in the SWA workflow file "${githubActionFile}". Make sure it's a valid SWA workflow file.`);
+    throw Error(`missing property 'jobs' in the SWA workflow file "${githubActionFile}". Make sure it's a valid SWA workflow file`);
   }
 
   if (!swaYaml.jobs.build_and_deploy_job) {

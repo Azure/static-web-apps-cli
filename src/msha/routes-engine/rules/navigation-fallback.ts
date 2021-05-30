@@ -17,21 +17,21 @@ export function navigationFallback(req: http.IncomingMessage, res: http.ServerRe
 
   // don't process .auth requests
   if (originlUrl?.startsWith("/.auth")) {
-    logger.silly(` - request ${chalk.yellow(originlUrl)} is auth.`);
-    logger.silly(` - ignoring navigation fallback.`);
+    logger.silly(` - request ${chalk.yellow(originlUrl)} is auth`);
+    logger.silly(` - ignoring navigation fallback`);
     return false;
   }
 
   // exit if no rewrite rule provided
   if (!navigationFallback?.rewrite) {
-    logger.silly(` - rewrite rule is invalid (got: ${chalk.yellow(navigationFallback?.rewrite)}).`);
-    logger.silly(` - ignoring navigation fallback.`);
+    logger.silly(` - rewrite rule is invalid (got: ${chalk.yellow(navigationFallback?.rewrite)})`);
+    logger.silly(` - ignoring navigation fallback`);
     return false;
   }
   // exit if no exclude property provided, or exclude list is empty
   if (!navigationFallback?.exclude || navigationFallback?.exclude?.length === 0) {
-    logger.silly(` - exclude rule is invalid (got: ${chalk.yellow(navigationFallback?.exclude)}).`);
-    logger.silly(` - ignoring navigation fallback.`);
+    logger.silly(` - exclude rule is invalid (got: ${chalk.yellow(navigationFallback?.exclude)})`);
+    logger.silly(` - ignoring navigation fallback`);
     return false;
   }
 
@@ -118,7 +118,7 @@ export function isRequestPathExcludedFromNavigationFallback(
   navigationFallback: SWAConfigFileNavigationFallback | undefined,
   matchedRoute: SWAConfigFileRoute | undefined
 ) {
-  logger.silly(`checking if request is excluded from navigation fallback...`);
+  logger.silly(`checking if request is excluded from navigation fallback`);
   logger.silly(` - request: ${chalk.yellow(normalizedDecodedRequestPath)}`);
 
   const excludedPathRules = navigationFallback?.exclude;

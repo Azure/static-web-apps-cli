@@ -9,7 +9,7 @@ export async function handleAuthRequest(
   matchedRoute: SWAConfigFileRoute | undefined,
   userConfig: SWAConfigFile | undefined
 ) {
-  logger.silly(`processing auth request...`);
+  logger.silly(`processing auth request`);
   const statusCode = await processAuth(req, res, matchedRoute?.rewrite);
   if (statusCode === 404) {
     logger.silly(` - auth returned 404`);

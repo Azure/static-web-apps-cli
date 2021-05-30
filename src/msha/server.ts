@@ -68,7 +68,7 @@ function onWsUpgrade() {
         onConnectionLost(req, socket, target)
       );
       proxyApp.once("proxyRes", (proxyRes: http.IncomingMessage) => {
-        logger.silly(`getting response from dev server...`);
+        logger.silly(`getting response from dev server`);
 
         logRequest(req, remote, proxyRes.statusCode);
       });
