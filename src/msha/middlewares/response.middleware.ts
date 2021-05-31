@@ -169,6 +169,7 @@ export function getStorageContent(
 
   // mime type
   const mimeType = getMimeTypeForExtension(filePathFromRequest, mimeTypeRule);
+  res.setHeader("Content-Type", mimeType);
 
   // compute both global and route headers
   const matchingRouteHeaders = getHeadersForRoute(routeHeaders, globalHeaders);
@@ -179,7 +180,6 @@ export function getStorageContent(
       updateReponseHeaders(res, matchingRouteHeaders);
 
       res.statusCode = 200;
-      res.setHeader("Content-Type", mimeType);
 
       return {
         isFunctionFallbackRequest: false,

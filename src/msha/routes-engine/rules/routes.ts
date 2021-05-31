@@ -105,11 +105,10 @@ export function applyRedirectResponse(req: http.IncomingMessage, res: http.Serve
   const redirect = matchedRoute?.redirect;
 
   if (redirect && redirect !== req.url) {
-    const statusCodeToServe = parseInt(`${matchedRoute?.statusCode}`, 10);
-    res.statusCode = statusCodeToServe === 301 ? 301 : 302;
+    const statusCodeToServe = parseInt(`${matchedRoute?.statusCode}`, 10) === 301 ? 301 : 302;
+    res.statusCode = statusCodeToServe;
     res.setHeader("Location", redirect);
-    logger.silly(` - redirect to ${chalk.yellow(redirect)} (statusCode: ${chalk.yellow(statusCodeToServe)})`);
-    res.end();
+    logger.silly(` - will redirect to ${chalk.yellow(redirect)} (statusCode: ${chalk.yellow(statusCodeToServe)})`);
   }
 }
 

@@ -87,6 +87,11 @@ export async function handleUserConfig(appLocation: string): Promise<SWAConfigFi
  * @param target The root folder of the static app (ie. `output_location`). Or, the HTTP host target, if connecting to a dev server, or
  */
 function serveStaticOrProxyReponse(req: http.IncomingMessage, res: http.ServerResponse, proxyApp: httpProxy, target: string) {
+  if ([301, 302].includes(res.statusCode)) {
+    res.end();
+    return;
+  }
+
   const customUrl = isCustomUrl(req);
   if (customUrl!) {
     logger.silly(`checking if custom page`);

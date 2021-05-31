@@ -63,13 +63,6 @@ context("route rules engine", { failOnStatusCode: false, defaultCommandTimeout: 
     });
   });
 
-  it("setting mimetype of unknown file type returns correct mime type", () => {
-    cy.request("http://0.0.0.0:1234/test.swaconfig").should((response) => {
-      expect(response.status).to.eq(200);
-      expect(response.headers["content-type"]).to.eq("application/octet-stream");
-    });
-  });
-
   it("navigation fallback returns /index.html", () => {
     cy.request("http://0.0.0.0:1234/does_not_exist.html").should((response) => {
       expect(response.status).to.eq(200);
@@ -124,6 +117,12 @@ context("route rules engine", { failOnStatusCode: false, defaultCommandTimeout: 
     cy.request("http://0.0.0.0:1234/folder/somefile.html").should((response) => {
       expect(response.status).to.eq(200);
       expect(response.body).to.include("/folder/index.html");
+    });
+  });
+
+  it("avoid accessing application configuration file", () => {
+    cy.request({ url: "http://0.0.0.0:1234/staticwebapp.config.json", failOnStatusCode: false }).should((response) => {
+      expect(response.status).to.eq(404);
     });
   });
 });

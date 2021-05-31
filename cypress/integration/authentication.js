@@ -273,7 +273,7 @@ context("Route authorization", () => {
     it("should return 404 for 'authenticated' roles but invalid api endpoint", () => {
       clientPrincipal.userRoles = ["authenticated"];
       cy.setCookie(SWA_AUTH_COOKIE_NAME, window.btoa(JSON.stringify(clientPrincipal)));
-      cy.request({ url: "http://0.0.0.0:1234/api/info", failOnStatusCode: false }).then((response) => {
+      cy.request({ url: "http://0.0.0.0:1234/api/foo/bar", failOnStatusCode: false }).then((response) => {
         expect(response.status).to.eq(404);
       });
     });

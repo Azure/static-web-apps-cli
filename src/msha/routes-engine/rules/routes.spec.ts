@@ -424,10 +424,4 @@ describe("applyRedirectResponse()", () => {
     applyRedirectResponse(req as http.IncomingMessage, res as http.ServerResponse, routeDef as SWAConfigFileRoute);
     expect(res.statusCode).toBe(302);
   });
-
-  it("should terminate connection when redirect rule applied", () => {
-    routeDef.redirect = "/foo";
-    applyRedirectResponse(req as http.IncomingMessage, res as http.ServerResponse, routeDef as SWAConfigFileRoute);
-    expect(res.end).toHaveBeenCalledTimes(1);
-  });
 });
