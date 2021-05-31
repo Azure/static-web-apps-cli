@@ -27,16 +27,12 @@ export function getMimeTypeForExtension(filePathFromRequest: string | URL | null
   logger.silly(`checking mime types`);
   logger.silly(` - extension: ${chalk.yellow(extension || "<empty>")}`);
 
-  let mimeType = DEFAULT_MIME_TYPE;
+  let mimeType = MIME_TYPE_LIST[extension] || DEFAULT_MIME_TYPE;
 
-  if (customMimeType) {
+  if (customMimeType?.[extension]) {
     mimeType = customMimeType[extension];
   }
 
-  if (!mimeType || (extension && MIME_TYPE_LIST[extension])) {
-    mimeType = MIME_TYPE_LIST[extension];
-  }
-
-  logger.silly(` - found: ${chalk.yellow(mimeType)}`);
+  logger.silly(` - found: ${chalk.yellow(mimeType || "<undefined>")}`);
   return mimeType;
 }

@@ -2,6 +2,7 @@ import path from "path";
 import { DEFAULT_CONFIG } from "../config";
 import { address, isHttpUrl } from "./utils/net";
 
+export const SWA_AUTH_COOKIE = `StaticWebAppsAuthCookie`;
 export const ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT = ["GET", "HEAD", "OPTIONS"];
 
 export const AUTH_STATUS = {

@@ -28,7 +28,7 @@ function injectHeaders(req: http.ClientRequest, host: string) {
 function injectClientPrincipalCookies(req: http.ClientRequest) {
   logger.silly(`injecting client principal to Functions request:`);
 
-  const cookie = req.getHeader("cookie");
+  const cookie = req.getHeader("cookie") as string;
   if (cookie && validateCookie(cookie)) {
     const user = decodeCookie(cookie);
     const buff = Buffer.from(JSON.stringify(user), "utf-8");

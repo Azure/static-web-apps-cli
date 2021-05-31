@@ -257,25 +257,25 @@ describe("parsePort()", () => {
 
 describe("address()", () => {
   it("should throw for malformed URI", () => {
-    expect(() => address("", undefined)).toThrowError(/is not set/);
-    expect(() => address("", 80)).toThrowError(/is not set/);
-    expect(() => address("¬˚˜∆˙¨√√†®ç†®∂œƒçƒ∂ß®´ß`®´£¢´®¨¥†øˆ¨ø(*&*ˆ%&ˆ%$#%@!", 80)).toThrowError(/malformed/);
+    expect(() => address("", undefined)).toThrowError(/Host value is not set/);
+    expect(() => address("", 80)).toThrowError(/Host value is not set/);
+    expect(() => address("¬˚˜∆˙¨√√†®ç†®∂œƒçƒ∂ß®´ß`®´£¢´®¨¥†øˆ¨ø(*&*ˆ%&ˆ%$#%@!")).toThrowError(/malformed/);
     expect(() => address("123.45.43.56234", undefined)).toThrowError(/malformed/);
   });
 
   it("should handle valid URIs", () => {
     expect(address("foo", undefined)).toBe("http://foo");
     expect(address("foo.com", undefined)).toBe("http://foo.com");
-    expect(address("foo.com", 80)).toBe("http://foo.com:80");
-    expect(address("foo.bar.com", 80)).toBe("http://foo.bar.com:80");
+    expect(address("foo.com", 80)).toBe("http://foo.com");
     expect(address("foo.com", "4200")).toBe("http://foo.com:4200");
     expect(address("127.0.0.1", "4200")).toBe("http://127.0.0.1:4200");
     expect(address("127.0.0.1", "4200")).toBe("http://127.0.0.1:4200");
     expect(address("[::1]", "4200")).toBe("http://[::1]:4200");
   });
 
-  it("should accept protocol both HTTP and HTTPS protocols", () => {
+  it("should accept protocols: HTTP, HTTPS and WS protocols", () => {
     expect(address("127.0.0.1", "4200", "http")).toBe("http://127.0.0.1:4200");
     expect(address("127.0.0.1", "4200", "https")).toBe("https://127.0.0.1:4200");
+    expect(address("127.0.0.1", "4200", "ws")).toBe("ws://127.0.0.1:4200");
   });
 });

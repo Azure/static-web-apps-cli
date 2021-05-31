@@ -25,15 +25,29 @@ export const logger = {
     }
   },
 
-  // public methods
+  /**
+   * Print information data.
+   * @param data Either a string or an object to be printed.
+   * @param prefix (optional) A prefix to prepend to the printed message.
+   */
   info(data: string | object, prefix: string | null = null) {
     this.silly(data, prefix, "info", chalk.green);
   },
 
+  /**
+   * Print log data.
+   * @param data Either a string or an object to be printed.
+   * @param prefix (optional) A prefix to prepend to the printed message.
+   */
   log(data: string | object, prefix: string | null = null) {
     this.silly(data, prefix, "log", chalk.reset);
   },
 
+  /**
+   * Print error data and optionally exist the CLI instance.
+   * @param data Either a string or an object to be printed.
+   * @param exit If set to True, the CLI instance will be terminated after printing the error message (code -1).
+   */
   error(data: string | object, exit = false) {
     const { SWA_CLI_DEBUG } = process.env;
     if (!SWA_CLI_DEBUG || SWA_CLI_DEBUG?.includes("silent")) {
@@ -46,6 +60,13 @@ export const logger = {
     }
   },
 
+  /**
+   * Print logs with verbose filter enabled.
+   * @param data Either a string or an object to be printed.
+   * @param prefix (optional) A prefix to prepend to the printed message.
+   * @param debugFilter (optional) A valid debug filter of type DebugFilterLevel.
+   * @param color (optional) A valid Chalk color to be used when printing logs.
+   */
   silly(data: string | object, prefix: string | null = null, debugFilter: DebugFilterLevel = "silly", color: chalk.Chalk = chalk.magenta) {
     const { SWA_CLI_DEBUG } = process.env;
     if (!SWA_CLI_DEBUG || SWA_CLI_DEBUG?.includes("silent")) {
@@ -53,25 +74,31 @@ export const logger = {
     }
 
     if (SWA_CLI_DEBUG?.includes("silly") || SWA_CLI_DEBUG?.includes(debugFilter)) {
-      let log = "";
       if (typeof data === "object") {
         this._traverseObjectProperties(data, (key: string, value: string | null, indent: string) => {
           if (value !== null) {
             value = typeof value === "undefined" ? chalk.yellow("<undefined>") : value;
-            log = `${indent}- ${key}: ${chalk.yellow(value)}`;
+            this._print(prefix, color(`${indent}- ${key}: ${chalk.yellow(value)}`));
           } else {
-            log = `${indent}- ${key}:`;
+            this._print(prefix, color(`${indent}- ${key}:`));
           }
         });
       } else {
         // data is not an object so just print its value even if it's null or undefined
-        log = data;
+        this._print(prefix, color(data));
       }
-      this._print(prefix, color(log));
     }
   },
 };
 
+/**
+ * Print logs related to an HTTP request.
+ * @example `GET https://localhost:1234/path 200`
+ * @param req Node.js HTTP request object.
+ * @param target (optional) A remote target.
+ * @param statusCode (optional) An HTTP status code.
+ * @param prefix (optional) A prefix to prepend to the printed message.
+ */
 export function logRequest(req: http.IncomingMessage, target: string = "", statusCode: number | null = null, prefix = "") {
   let url = req.url?.replace(DEFAULT_CONFIG.customUrlScheme!, "");
   url = url?.startsWith("/") ? url : `/${url}`;
