@@ -1,3 +1,8 @@
+jest.mock("./logger", () => {
+  logger: {
+    silly: jest.fn();
+  }
+});
 import { validateCookie } from "./cookie";
 
 describe("validateCookie()", () => {

@@ -17,4 +17,5 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   run: undefined,
   verbose: "log",
   customUrlScheme: "swa://",
+  overridableErrorCode: [400, 401, 403, 404],
 };

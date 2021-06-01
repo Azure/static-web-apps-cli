@@ -182,7 +182,7 @@
       }
       function parseIdentityProviderFromUrl() {
         const pathname = document.querySelector(`meta[name="swa:originalPath"]`)?.content || window.location.pathname;
-        if (pathname.startsWith("/.auth/login")) {
+        if (pathname.includes("/.auth/login")) {
           return pathname.split("/").pop();
         } else {
           return null;

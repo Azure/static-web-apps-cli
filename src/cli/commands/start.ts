@@ -2,12 +2,14 @@ import concurrently from "concurrently";
 import fs from "fs";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
-import builder from "../../core/builder";
 import { createStartupScriptCommand, isAcceptingTcpConnections, isHttpUrl, logger, parseUrl, readWorkflowFile } from "../../core";
+import builder from "../../core/builder";
 
 export async function start(startContext: string, options: SWACLIConfig) {
-  // WARNING: code below doesn't have access to SWA CLI env vars which are defined later below
-  // make sure this code (or code from utils) does't depend on SWA CLI env vars!
+  // WARNING:
+  // environment variables are populated using values provided by the user to the CLI.
+  // Code below doesn't have access to these environment variables which are defined later below.
+  // Make sure this code (or code from utils) does't depend on environment variables!
 
   let useAppDevServer: string | undefined | null = undefined;
   let useApiDevServer: string | undefined | null = undefined;
@@ -42,7 +44,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
     }
     // make sure api folder exists
     else if (fs.existsSync(options.apiLocation) === false) {
-      logger.info(`Skipping API because folder "${options.apiLocation}" is missing.`);
+      logger.info(`Skipping API because folder "${options.apiLocation}" is missing`);
     }
   }
 
@@ -50,7 +52,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
   let [appLocation, outputLocation, apiLocation] = [options.appLocation as string, options.outputLocation as string, options.apiLocation as string];
 
   let apiPort = (options.apiPort || DEFAULT_CONFIG.apiPort) as number;
-  let userConfig: Partial<GithubActionWorkflow> | undefined = {
+  let userWorkflowConfig: Partial<GithubActionWorkflow> | undefined = {
     appLocation,
     outputLocation,
     apiLocation,
@@ -59,14 +61,14 @@ export async function start(startContext: string, options: SWACLIConfig) {
   // mix CLI args with the project's build workflow configuration (if any)
   // use any specific workflow config that the user might provide undef ".github/workflows/"
   // Note: CLI args will take precedence over workflow config
-  userConfig = readWorkflowFile({
-    userConfig,
+  userWorkflowConfig = readWorkflowFile({
+    userWorkflowConfig,
   });
 
-  const isApiLocationExistsOnDisk = fs.existsSync(userConfig?.apiLocation!);
+  const isApiLocationExistsOnDisk = fs.existsSync(userWorkflowConfig?.apiLocation!);
 
   // handle the API location config
-  let serveApiCommand = "echo No API found. Skipping";
+  let serveApiCommand = "echo 'No API found. Skipping'";
 
   if (useApiDevServer) {
     serveApiCommand = `echo 'using API dev server at ${useApiDevServer}'`;
@@ -74,12 +76,12 @@ export async function start(startContext: string, options: SWACLIConfig) {
     // get the API port from the dev server
     apiPort = parseUrl(useApiDevServer)?.port;
   } else {
-    if (options.apiLocation && userConfig?.apiLocation) {
+    if (options.apiLocation && userWorkflowConfig?.apiLocation) {
       // @todo check if the func binary is globally available
       const funcBinary = "func";
       // serve the api if and only if the user provides a folder via the --api-location flag
       if (isApiLocationExistsOnDisk) {
-        serveApiCommand = `cd "${userConfig.apiLocation}" && ${funcBinary} start --cors "*" --port ${options.apiPort}`;
+        serveApiCommand = `cd "${userWorkflowConfig.apiLocation}" && ${funcBinary} start --cors "*" --port ${options.apiPort}`;
       }
     }
   }
@@ -100,13 +102,13 @@ export async function start(startContext: string, options: SWACLIConfig) {
   const envVarsObj = {
     SWA_CLI_DEBUG: options.verbose,
     SWA_CLI_API_PORT: `${apiPort}`,
-    SWA_CLI_APP_LOCATION: userConfig?.appLocation as string,
-    SWA_CLI_OUTPUT_LOCATION: userConfig?.outputLocation as string,
-    SWA_CLI_API_LOCATION: userConfig?.apiLocation as string,
+    SWA_CLI_APP_LOCATION: userWorkflowConfig?.appLocation as string,
+    SWA_CLI_OUTPUT_LOCATION: userWorkflowConfig?.outputLocation as string,
+    SWA_CLI_API_LOCATION: userWorkflowConfig?.apiLocation as string,
     SWA_CLI_ROUTES_LOCATION: options.swaConfigLocation,
     SWA_CLI_HOST: options.host,
     SWA_CLI_PORT: `${options.port}`,
-    SWA_WORKFLOW_FILES: userConfig?.files?.join(","),
+    SWA_WORKFLOW_FILES: userWorkflowConfig?.files?.join(","),
     SWA_CLI_APP_SSL: `${options.ssl}`,
     SWA_CLI_APP_SSL_CERT: options.sslCert,
     SWA_CLI_APP_SSL_KEY: options.sslKey,
@@ -121,7 +123,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
   const { env } = process;
   const concurrentlyCommands: concurrently.CommandObj[] = [
     // start the reverse proxy
-    { command: `node "${path.join(__dirname, "..", "..", "proxy", "server.js")}"`, name: "swa", env, prefixColor: "gray.dim" },
+    { command: `node "${path.join(__dirname, "..", "..", "msha", "server.js")}"`, name: "swa", env, prefixColor: "gray.dim" },
   ];
 
   if (isApiLocationExistsOnDisk) {
@@ -134,14 +136,14 @@ export async function start(startContext: string, options: SWACLIConfig) {
   if (startupCommand) {
     concurrentlyCommands.push(
       // run an external script, if it's available
-      { command: `cd "${userConfig?.appLocation}" && ${startupCommand}`, name: "run", env, prefixColor: "gray.dim" }
+      { command: `cd "${userWorkflowConfig?.appLocation}" && ${startupCommand}`, name: "run", env, prefixColor: "gray.dim" }
     );
   }
 
   if (options.build) {
     // run the app/api builds
     await builder({
-      config: userConfig as GithubActionWorkflow,
+      config: userWorkflowConfig as GithubActionWorkflow,
     });
   }
 

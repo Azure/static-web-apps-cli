@@ -1,6 +1,12 @@
 /// <reference types="cypress" />
 
-const PROVIDERS = ["github", "twitter", "facebook", "aad"];
+Cypress.Cookies.defaults({
+  domain: "0.0.0.0",
+});
+Cypress.Cookies.debug(true);
+
+const PROVIDERS = ["google", "github", "twitter", "facebook", "aad"];
+const SWA_AUTH_COOKIE_NAME = "StaticWebAppsAuthCookie";
 const clientPrincipal = {
   identityProvider: "facebook",
   userId: "d75b260a64504067bfc5b2905e3b8182",
@@ -15,7 +21,7 @@ context("/.auth/me", () => {
 
   describe("when user is not logged in", () => {
     it("should have clientPrincipal to null", () => {
-      cy.clearCookie("StaticWebAppsAuthCookie");
+      cy.clearCookie(SWA_AUTH_COOKIE_NAME);
 
       cy.request("/.auth/me").should((response) => {
         expect(response.status).to.eq(200);
@@ -27,7 +33,7 @@ context("/.auth/me", () => {
 
   describe("when user is logged in", () => {
     it("should have clientPrincipal to be populated", () => {
-      cy.setCookie("StaticWebAppsAuthCookie", window.btoa(JSON.stringify(clientPrincipal)));
+      cy.setCookie(SWA_AUTH_COOKIE_NAME, window.btoa(JSON.stringify(clientPrincipal)));
 
       cy.request("/.auth/me").should((response) => {
         expect(response.status).to.eq(200);
@@ -36,7 +42,7 @@ context("/.auth/me", () => {
     });
     it("should have authenticated role", () => {
       clientPrincipal.userRoles = ["foo"];
-      cy.setCookie("StaticWebAppsAuthCookie", window.btoa(JSON.stringify(clientPrincipal)));
+      cy.setCookie(SWA_AUTH_COOKIE_NAME, window.btoa(JSON.stringify(clientPrincipal)));
       cy.request("/.auth/me").should((response) => {
         expect(response.status).to.eq(200);
         expect(response.body.clientPrincipal.userRoles).to.deep.eq(["foo", "anonymous", "authenticated"]);
@@ -46,17 +52,6 @@ context("/.auth/me", () => {
 });
 
 context(`/.auth/login/<provider>`, () => {
-  // google has a special config (check staticwebapp.config.json)
-  // { "route": "/*.google", "redirect": "https://www.google.com/" }
-  describe(`when using provider: google`, () => {
-    it(`should redirect to https://www.google.com/`, async () => {
-      cy.visit("http://0.0.0.0:1234/.auth/login/google").then((response) => {
-        expect(response.status).to.be(302);
-        expect(response.headers.get("location")).to.be("https://www.google.com/");
-      });
-    });
-  });
-
   for (let index = 0; index < PROVIDERS.length; index++) {
     const provider = PROVIDERS[index];
     describe(`when using provider: ${provider}`, () => {
@@ -117,11 +112,14 @@ context("custom routes for login/logout", () => {
     });
 
     it("should have meta tag", () => {
-      cy.get("meta[name='swa:originalPath']").should("have.attr", "content", "/.auth/login/github");
+      cy.get("meta[name='swa:originalPath']").should("have.attr", "content", "http://0.0.0.0:1234/.auth/login/github");
     });
   });
 
   describe("when using custom /logout route", () => {
+    beforeEach(() => {
+      cy.visit("http://0.0.0.0:1234/");
+    });
     it("should redirect to / with code=302", () => {
       cy.request({
         url: "/logout",
@@ -230,25 +228,25 @@ context("UI buttons", () => {
 
 context("Route authorization", () => {
   describe("accessing /only-authenticated", () => {
-    it("should return 403 if no roles provided in client principal", () => {
+    it("should return 401 if no roles provided in client principal", () => {
       clientPrincipal.userRoles = [];
-      cy.setCookie("StaticWebAppsAuthCookie", window.btoa(JSON.stringify(clientPrincipal)));
+      cy.setCookie(SWA_AUTH_COOKIE_NAME, window.btoa(JSON.stringify(clientPrincipal)));
       cy.request({ url: "http://0.0.0.0:1234/only-authenticated", failOnStatusCode: false }).should((response) => {
-        expect(response.status).to.eq(403);
+        expect(response.status).to.eq(401);
       });
     });
 
-    it("should return 403 for non-authenticated roles", () => {
+    it("should return 401 for non 'authenticated' roles", () => {
       clientPrincipal.userRoles = ["admin"];
-      cy.setCookie("StaticWebAppsAuthCookie", window.btoa(JSON.stringify(clientPrincipal)));
+      cy.setCookie(SWA_AUTH_COOKIE_NAME, window.btoa(JSON.stringify(clientPrincipal)));
       cy.request({ url: "http://0.0.0.0:1234/only-authenticated", failOnStatusCode: false }).then((response) => {
-        expect(response.status).to.eq(403);
+        expect(response.status).to.eq(401);
       });
     });
 
-    it("should return 200 for authenticated roles", () => {
+    it("should return 200 for 'authenticated' roles", () => {
       clientPrincipal.userRoles = ["authenticated"];
-      cy.setCookie("StaticWebAppsAuthCookie", window.btoa(JSON.stringify(clientPrincipal)));
+      cy.setCookie(SWA_AUTH_COOKIE_NAME, window.btoa(JSON.stringify(clientPrincipal)));
       cy.request({ url: "http://0.0.0.0:1234/only-authenticated", failOnStatusCode: false }).then((response) => {
         expect(response.status).to.eq(200);
       });
@@ -256,26 +254,26 @@ context("Route authorization", () => {
   });
 
   describe("accessing /api/info ", () => {
-    it("should return 403 if no roles provided", () => {
+    it("should return 401 if no roles provided", () => {
       clientPrincipal.userRoles = [];
-      cy.setCookie("StaticWebAppsAuthCookie", window.btoa(JSON.stringify(clientPrincipal)));
-      cy.request({ url: "http://0.0.0.0:1234/api/info", failOnStatusCode: false }).should((response) => {
-        expect(response.status).to.eq(403);
+      cy.setCookie(SWA_AUTH_COOKIE_NAME, window.btoa(JSON.stringify(clientPrincipal)));
+      cy.request({ url: "http://0.0.0.0:1234/api/info", failOnStatusCode: false }).then((response) => {
+        expect(response.status).to.eq(401);
       });
     });
 
-    it("should return 403 for non-authenticated roles", () => {
+    it("should return 401 for non 'authenticated' roles", () => {
       clientPrincipal.userRoles = ["admin"];
-      cy.setCookie("StaticWebAppsAuthCookie", window.btoa(JSON.stringify(clientPrincipal)));
+      cy.setCookie(SWA_AUTH_COOKIE_NAME, window.btoa(JSON.stringify(clientPrincipal)));
       cy.request({ url: "http://0.0.0.0:1234/api/info", failOnStatusCode: false }).then((response) => {
-        expect(response.status).to.eq(403);
+        expect(response.status).to.eq(401);
       });
     });
 
-    it("should return 404 for authenticated roles but invalid api endpoint", () => {
+    it("should return 404 for 'authenticated' roles but invalid api endpoint", () => {
       clientPrincipal.userRoles = ["authenticated"];
-      cy.setCookie("StaticWebAppsAuthCookie", window.btoa(JSON.stringify(clientPrincipal)));
-      cy.request({ url: "http://0.0.0.0:1234/api/info", failOnStatusCode: false }).then((response) => {
+      cy.setCookie(SWA_AUTH_COOKIE_NAME, window.btoa(JSON.stringify(clientPrincipal)));
+      cy.request({ url: "http://0.0.0.0:1234/api/foo/bar", failOnStatusCode: false }).then((response) => {
         expect(response.status).to.eq(404);
       });
     });

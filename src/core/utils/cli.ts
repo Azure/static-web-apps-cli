@@ -55,22 +55,32 @@ export function argv<T extends string | number | boolean | null>(flag: string): 
   return null as T;
 }
 
-export const registerProcessExit = (fn: Function) => {
+/**
+ * Registers a handler when process exits and executre a callback function.
+ * @param callback The callback function to execute.
+ */
+export function registerProcessExit(callback: Function) {
   let terminated = false;
 
   const wrapper = () => {
     if (!terminated) {
       terminated = true;
-      fn();
+      callback();
     }
   };
 
   process.on("SIGINT", wrapper);
   process.on("SIGTERM", wrapper);
   process.on("exit", wrapper);
-};
+}
 
-export const createStartupScriptCommand = (startupScript: string, options: SWACLIConfig) => {
+/**
+ * Parses and returns a valid script command line to be run before SWA starts. Also accepts shortcut npx, npm and yarn scripts in the form of npx:module, npm:script or yarn:script.
+ * @param startupScript A file or npx/npm/yarn scripts to be exectued.
+ * @param options The SWA CLI configuration flags.
+ * @returns
+ */
+export function createStartupScriptCommand(startupScript: string, options: SWACLIConfig) {
   if (startupScript.includes(":")) {
     const [npmOrYarnBin, ...npmOrYarnScript] = startupScript.split(":");
     if (["npm", "yarn"].includes(npmOrYarnBin)) {
@@ -92,4 +102,4 @@ export const createStartupScriptCommand = (startupScript: string, options: SWACL
     }
   }
   return null;
-};
+}

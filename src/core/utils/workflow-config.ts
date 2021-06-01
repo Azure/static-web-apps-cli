@@ -5,27 +5,33 @@ import { DEFAULT_CONFIG } from "../../config";
 import { detectRuntime, RuntimeType } from "../runtimes";
 import { logger } from "./logger";
 import { isHttpUrl } from "./net";
-import { validateUserConfig } from "./user-config";
+import { validateUserWorkflowConfig } from "./user-config";
 
-export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubActionWorkflow> } = {}): Partial<GithubActionWorkflow> | undefined => {
+/**
+ * Read and parse the project workflow configuration (if available).
+ * @param userWorkflowConfig An object containing GithubActionWorkflow configuration used to override the project workflow config (if available).
+ * @returns The project workflow configuraiton.
+ */
+export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: Partial<GithubActionWorkflow> } = {}):
+  | Partial<GithubActionWorkflow>
+  | undefined {
   let isAppDevServer = false;
   let isApiDevServer = false;
-  if (userConfig) {
+  if (userWorkflowConfig) {
     // is dev servers? Skip reading workflow file
-    isAppDevServer = isHttpUrl(userConfig?.outputLocation!);
-    isApiDevServer = isHttpUrl(userConfig?.apiLocation!);
+    isAppDevServer = isHttpUrl(userWorkflowConfig?.outputLocation!);
+    isApiDevServer = isHttpUrl(userWorkflowConfig?.apiLocation!);
     if (isAppDevServer && isApiDevServer) {
-      return userConfig && validateUserConfig(userConfig);
+      return userWorkflowConfig && validateUserWorkflowConfig(userWorkflowConfig);
     }
   }
 
-  const infoMessage = `GitHub Actions configuration was not found under ".github/workflows/"`;
   const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
 
   // does the config folder exist?
   if (fs.existsSync(githubActionFolder) === false) {
-    logger.info(infoMessage);
-    return userConfig && validateUserConfig(userConfig);
+    // no github actions folder found
+    return userWorkflowConfig && validateUserWorkflowConfig(userWorkflowConfig);
   }
 
   // find the SWA GitHub action file
@@ -37,8 +43,8 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
 
   // does the config file exist?
   if (!githubActionFile || fs.existsSync(githubActionFile)) {
-    logger.info(infoMessage);
-    return userConfig && validateUserConfig(userConfig);
+    // no SWA workflow file found
+    return userWorkflowConfig && validateUserWorkflowConfig(userWorkflowConfig);
   }
 
   githubActionFile = path.resolve(githubActionFolder, githubActionFile);
@@ -54,11 +60,11 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
   const swaYaml = YAML.parse(githubActionContent);
 
   if (!swaYaml) {
-    throw Error(`could not parse the SWA workflow file "${githubActionFile}". Make sure it's a valid YAML file.`);
+    throw Error(`could not parse the SWA workflow file "${githubActionFile}". Make sure it's a valid YAML file`);
   }
 
   if (!swaYaml.jobs) {
-    throw Error(`missing property 'jobs' in the SWA workflow file "${githubActionFile}". Make sure it's a valid SWA workflow file.`);
+    throw Error(`missing property 'jobs' in the SWA workflow file "${githubActionFile}". Make sure it's a valid SWA workflow file`);
   }
 
   if (!swaYaml.jobs.build_and_deploy_job) {
@@ -118,11 +124,11 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
 
   // override SWA config with user's config (if provided):
   // if the user provides different app location, app artifact location or api location, use that information
-  if (userConfig) {
-    userConfig = validateUserConfig(userConfig);
-    app_location = userConfig?.appLocation;
-    output_location = userConfig?.outputLocation;
-    api_location = userConfig?.apiLocation;
+  if (userWorkflowConfig) {
+    userWorkflowConfig = validateUserWorkflowConfig(userWorkflowConfig);
+    app_location = userWorkflowConfig?.appLocation;
+    output_location = userWorkflowConfig?.outputLocation;
+    api_location = userWorkflowConfig?.apiLocation;
   }
 
   const files = isAppDevServer && isApiDevServer ? undefined : [githubActionFile];
@@ -139,4 +145,4 @@ export const readWorkflowFile = ({ userConfig }: { userConfig?: Partial<GithubAc
 
   logger.silly({ config }, "swa");
   return config;
-};
+}

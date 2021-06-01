@@ -4,7 +4,7 @@ import { DEFAULT_CONFIG } from "../config";
 import { parsePort } from "../core";
 import { start } from "./commands/start";
 
-exports.main = async function () {
+exports.run = async function () {
   const cli: SWACLIConfig & program.Command = program
     .name("swa")
     .usage("<command> [options]")

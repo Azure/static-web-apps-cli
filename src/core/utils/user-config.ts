@@ -1,14 +1,26 @@
 import fs, { promises as fsPromises } from "fs";
+import type http from "http";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
 import { isHttpUrl } from "./net";
 const { readdir, readFile } = fsPromises;
 
+/**
+ * A utility function to recursively traverse a folder and returns its entries.
+ * @param folder The folder to traverse.
+ * @returns A Generator object that yields entry paths.
+ * @example
+ * ```
+ * for await (const file of traverseFolder(folder)) {
+ *    console.log(path):
+ * }
+ * ```
+ */
 export async function* traverseFolder(folder: string): AsyncGenerator<string> {
   const folders = (await readdir(folder, { withFileTypes: true })) as fs.Dirent[];
   for (const folderEntry of folders) {
     if (folderEntry.name.includes("node_modules")) {
-      // ignore folder
+      // WARNING: ignore node_modules to avoid perf hits!
       continue;
     }
     const entryPath = path.resolve(folder, folderEntry.name);
@@ -20,6 +32,11 @@ export async function* traverseFolder(folder: string): AsyncGenerator<string> {
   }
 }
 
+/**
+ * Find the `staticwebapp.config.json` (or `routes.json`) configuration file in a specific folder.
+ * @param folder The folder where to lookup for the configuration file.
+ * @returns `staticwebapp.config.json` if it was found, or fallback to `routes.json`. Return `null` if none were found.
+ */
 export async function findSWAConfigFile(folder: string) {
   const configFiles = new Map<string, { file: string; isLegacyConfigFile: boolean }>();
 
@@ -43,8 +60,9 @@ export async function findSWAConfigFile(folder: string) {
   if (configFiles.has(DEFAULT_CONFIG.swaConfigFilename!)) {
     return configFiles.get(DEFAULT_CONFIG.swaConfigFilename!);
   }
-  // legacy config file
-  else if (configFiles.has(DEFAULT_CONFIG.swaConfigFilenameLegacy!)) {
+
+  // fallback to legacy config file
+  if (configFiles.has(DEFAULT_CONFIG.swaConfigFilenameLegacy!)) {
     return configFiles.get(DEFAULT_CONFIG.swaConfigFilenameLegacy!);
   }
 
@@ -52,39 +70,44 @@ export async function findSWAConfigFile(folder: string) {
   return null;
 }
 
-export function validateUserConfig(userConfig: Partial<GithubActionWorkflow> | undefined): Partial<GithubActionWorkflow> | undefined {
+/**
+ * Valide and normalize all paths of a workflow confifuration.
+ * @param userWorkflowConfig The project workflow configuration.
+ * @returns A configuration object.
+ */
+export function validateUserWorkflowConfig(userWorkflowConfig: Partial<GithubActionWorkflow> | undefined): Partial<GithubActionWorkflow> | undefined {
   let appLocation = undefined;
   let apiLocation = undefined;
   let outputLocation = undefined;
 
-  if (userConfig?.appLocation) {
-    appLocation = path.normalize(path.join(process.cwd(), userConfig.appLocation || `.${path.sep}`));
-    if (path.isAbsolute(userConfig.appLocation)) {
-      appLocation = userConfig.appLocation;
+  if (userWorkflowConfig?.appLocation) {
+    appLocation = path.normalize(path.join(process.cwd(), userWorkflowConfig.appLocation || `.${path.sep}`));
+    if (path.isAbsolute(userWorkflowConfig.appLocation)) {
+      appLocation = userWorkflowConfig.appLocation;
     }
   }
 
-  if (userConfig?.apiLocation) {
-    if (isHttpUrl(userConfig.apiLocation)) {
-      apiLocation = userConfig.apiLocation;
+  if (userWorkflowConfig?.apiLocation) {
+    if (isHttpUrl(userWorkflowConfig.apiLocation)) {
+      apiLocation = userWorkflowConfig.apiLocation;
     } else {
       // use the user's config and construct an absolute path
-      apiLocation = path.normalize(path.join(process.cwd(), userConfig.apiLocation));
+      apiLocation = path.normalize(path.join(process.cwd(), userWorkflowConfig.apiLocation));
     }
 
-    if (path.isAbsolute(userConfig.apiLocation)) {
-      apiLocation = userConfig.apiLocation;
+    if (path.isAbsolute(userWorkflowConfig.apiLocation)) {
+      apiLocation = userWorkflowConfig.apiLocation;
     }
   }
 
-  if (userConfig?.outputLocation) {
-    // is dev server url
-    if (isHttpUrl(userConfig.outputLocation)) {
-      outputLocation = userConfig.outputLocation;
+  if (userWorkflowConfig?.outputLocation) {
+    // is dev server url?
+    if (isHttpUrl(userWorkflowConfig.outputLocation)) {
+      outputLocation = userWorkflowConfig.outputLocation;
     } else {
-      outputLocation = path.normalize(path.join(process.cwd(), userConfig.outputLocation || `.${path.sep}`));
-      if (path.isAbsolute(userConfig.outputLocation)) {
-        outputLocation = userConfig.outputLocation;
+      outputLocation = path.normalize(path.join(process.cwd(), userWorkflowConfig.outputLocation || `.${path.sep}`));
+      if (path.isAbsolute(userWorkflowConfig.outputLocation)) {
+        outputLocation = userWorkflowConfig.outputLocation;
       }
     }
   }
@@ -94,4 +117,13 @@ export function validateUserConfig(userConfig: Partial<GithubActionWorkflow> | u
     apiLocation,
     outputLocation,
   };
+}
+
+/**
+ * Check if an HTTP request path contains `staticwebapp.config.json`
+ * @param req Node.js HTTP request object.
+ * @returns True if the request is accessing the configuration file. False otherwise.
+ */
+export function isSWAConfigFileUrl(req: http.IncomingMessage) {
+  return req.url?.endsWith(`/${DEFAULT_CONFIG.swaConfigFilename!}`) || req.url?.endsWith(`/${DEFAULT_CONFIG.swaConfigFilenameLegacy!}`);
 }
