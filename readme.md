@@ -136,7 +136,7 @@ If you need to override the default values, provide the following options:
 
 ## Local authentication & authorization emulation
 
-The CLI allows you to mock and read authentication & authorization credentials.
+The CLI allows you to mock and read authentication and authorization credentials.
 
 ### Mocking credentials
 
