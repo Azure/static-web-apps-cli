@@ -140,7 +140,7 @@ The CLI allows you to mock and read authentication & authorization credentials.
 
 ### Mocking credentials
 
-When requesting the Static Web Apps login endpoints (`http://localhost:4280/.auth/login/<PROVIDER_NAME>`), you have access a local authentication UI allowing you to set fake user information.
+When requesting the Static Web Apps login endpoints (`http://localhost:4280/.auth/login/<PROVIDER_NAME>`), you have access to a local authentication UI. This interface is served locally from the emulator and allows you to set fake user information for the current user from the provider supplied.
 
 ### Reading credentials
 
