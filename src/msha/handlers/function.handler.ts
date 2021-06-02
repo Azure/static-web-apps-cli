@@ -53,10 +53,10 @@ export function handleFunctionRequest(req: http.IncomingMessage, res: http.Serve
     logger.silly(`function request detected. Proxying to Azure Functions emulator`);
     logger.silly(` - target: ${chalk.yellow(target)}`);
   } else {
-    logger.log(`*******************************************************************************`);
-    logger.log(`** Functions request detected but the no endpoint configuration was found.   **`);
-    logger.log(`** Please use the --api option to configure an function endpoint.            **`);
-    logger.log(`*******************************************************************************`);
+    logger.log(`***************************************************************************`);
+    logger.log(`** Functions request detected but no endpoint configuration was found.   **`);
+    logger.log(`** Please use the --api option to configure a function endpoint.         **`);
+    logger.log(`***************************************************************************`);
   }
 
   proxyApi.web(
