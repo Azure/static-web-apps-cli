@@ -43,7 +43,7 @@ exports.run = async function () {
     .option("--ssl-cert <sslCertLocation>", "SSL certificate (.crt) to use for serving HTTPS", DEFAULT_CONFIG.sslCert)
     .option("--ssl-key <sslKeyLocation>", "SSL key (.key) to use for serving HTTPS", DEFAULT_CONFIG.sslKey)
 
-    .addOption(new Option("--run <startupScript>", "run a external program or npm/yarn script on startup").default(DEFAULT_CONFIG.run).hideHelp())
+    .option("--run <startupScript>", "run a command at startup", DEFAULT_CONFIG.run)
 
     .action(async (context: string = `.${path.sep}`, options: SWACLIConfig) => {
       options = {
@@ -67,9 +67,6 @@ exports.run = async function () {
       `
 Examples:
 
-  Serve static content from the current folder
-  swa start
-
   Serve static content from a specific folder
   swa start ./output-folder
 
@@ -81,6 +78,9 @@ Examples:
 
   Serve static content and run an API from another folder
   swa start ./output-folder --api ./api
+
+  Use a custom command to run framework development server at startup
+  swa start http://localhost:3000 --run "npm start"
     `
     );
 

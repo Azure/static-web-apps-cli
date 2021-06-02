@@ -70,6 +70,22 @@ To use SWA CLI with your local dev server, follow these two steps:
    swa start http://<APP_DEV_SERVER_HOST>:<APP_DEV_SERVER_PORT>
    ```
 
+Instead of starting a dev server separately, you can provide the startup command to the CLI.
+
+```bash
+# npm start script (React)
+swa start http://localhost:3000 --run "npm start"
+
+# dotnet watch (Blazor)
+swa start http://localhost:5000 --run "dotnet watch run"
+
+# Jekyll
+swa start http://localhost:4000 --run "jekyll serve"
+
+# custom script
+swa start http://localhost:4200 --run "./startup.sh"
+```
+
 Here is a list of the default ports used by some popular dev servers:
 
 | Tool                                                                               | Port | Command                           |
