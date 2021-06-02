@@ -14,13 +14,24 @@ The Static Web Apps CLI, also known as SWA CLI, serves as a local development to
 
 **Static Web Apps CLI is in preview.** If you have suggestions or you encounter issues, please report them or help us fix them. Your contributions are very much appreciated. 🙏
 
+The CLI emulates commonly used capabilities of the Azure Static Web Apps cloud service. Some differences are expected. **Always deploy and test your apps in production.**
+
 ## Quickstart
 
 Using `npm` or `yarn`:
 
-- Install the cli: `npm install -g @azure/static-web-apps-cli`
-- Open a SWA app folder at the root (outside any /api or /app folders): `cd my-awesome-swa-app`
-- Start the emulator: `swa start`
+- Install the cli
+  ```bash
+  npm install -g @azure/static-web-apps-cli
+  ```
+- Open a SWA app folder at the root (outside any /api or /app folders):
+  ```bash
+  cd my-awesome-swa-app
+  ```
+- Start the emulator:
+  ```bash
+  swa start
+  ```
 - Access your SWA app from `http://localhost:4280`
 
 > Note: The cli can also be installed locally as a devDependency: `npm install -D @azure/static-web-apps-cli`
@@ -47,6 +58,32 @@ However, you can override this behavior. If the artifact folder of your static a
 swa start ./my-dist
 ```
 
+### Serve from a dev server
+
+When developing your frontend app locally, it's often useful to use the dev server that comes with your frontend framework's CLI to serve your app content. Using the framework CLI allows you to use built-in features like the livereload and HMR (hot module replacement).
+
+To use SWA CLI with your local dev server, follow these two steps:
+
+1. Start your local dev server (as usual). For example, if you are using Angular: `ng serve`
+1. In a separate terminal, run `swa start` with the URI provided by the dev server, in the following format:
+
+```bash
+swa start http://<APP_DEV_SERVER_HOST>:<APP_DEV_SERVER_PORT>
+```
+
+Here is a list of the default ports used by some popular dev servers:
+
+| Tool                                                                               | Port | Command                           |
+| ---------------------------------------------------------------------------------- | ---- | --------------------------------- |
+| [Angular](https://angular.io/cli)                                                  | 4200 | `swa start http://localhost:4200` |
+| [Vue](https://cli.vuejs.org/)                                                      | 8080 | `swa start http://localhost:8080` |
+| [React (Create React App)](https://reactjs.org/docs/create-a-new-react-app.html)   | 3000 | `swa start http://localhost:3000` |
+| [Blazor WebAssembly](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)     | 5000 | `swa start http://localhost:5000` |
+| [Hugo](https://gohugo.io/commands/hugo_server/)                                    | 1313 | `swa start http://localhost:1313` |
+| [Svelte (sirv-cli)](https://github.com/lukeed/sirv/tree/master/packages/sirv-cli/) | 5000 | `swa start http://localhost:5000` |
+| [Gatsby](https://www.gatsbyjs.com/docs/gatsby-cli/)                                | 8000 | `swa start http://localhost:8000` |
+| [Next.js](https://nextjs.org/)                                                     | 3000 | `swa start http://localhost:3000` |
+
 ### Serve both the static app and API
 
 If your project includes API functions, install [Azure Functions Core Tools](https://github.com/Azure/azure-functions-core-tools):
@@ -55,66 +92,57 @@ If your project includes API functions, install [Azure Functions Core Tools](htt
 npm install -g azure-functions-core-tools@3 --unsafe-perm true
 ```
 
+#### Start API server automatically
+
 Run the CLI and provide the folder that contains the API backend (a valid Azure Functions App project):
 
 ```bash
+# static content plus API
 swa start ./my-dist --api ./api-folder
+
+# frontend dev server plus API
+swa start http://localhost:3000 --api ./api-folder
 ```
 
-### Serve from a dev server
+#### Start API server manually
 
-When developing your frontend app locally, it's often useful to use the dev server that comes with your frontend framework's CLI to serve your app content. Using the framework CLI allows you to use built-in features like the livereload and HMR (hot module replacement).
-
-To use SWA CLI with your local dev server, follow these two steps:
-
-1. Start your local dev server (as usual). For example, if you are using Angular: `ng serve`
-1. Run `swa start` with the URI provided by the dev server, in the following format:
-
-```bash
-swa start http://<APP_DEV_SERVER_HOST>:<APP_DEV_SERVER_PORT>
-```
-
-Here is a list of the default ports used by popular dev servers:
-
-| Tool                                                                               | Port | Command                           |
-| ---------------------------------------------------------------------------------- | ---- | --------------------------------- |
-| [Angular](https://angular.io/cli)                                                  | 4200 | `swa start http://localhost:4200` |
-| [Vue](https://cli.vuejs.org/)                                                      | 8080 | `swa start http://localhost:8080` |
-| [Vite](https://github.com/vitejs/vite/)                                            | 3000 | `swa start http://localhost:3000` |
-| [Create React App](https://reactjs.org/docs/create-a-new-react-app.html)           | 3000 | `swa start http://localhost:3000` |
-| [Blazor WebAssembly](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)     | 5000 | `swa start http://localhost:5000` |
-| [Webpack Dev Server](https://github.com/webpack/webpack-dev-server)                | 8080 | `swa start http://localhost:8080` |
-| [Parcel](https://parceljs.org/cli.html)                                            | 1234 | `swa start http://localhost:1234` |
-| [Stencil](https://stenciljs.com/docs/dev-server)                                   | 3333 | `swa start http://localhost:3333` |
-| [Hugo](https://gohugo.io/commands/hugo_server/)                                    | 1313 | `swa start http://localhost:1313` |
-| [Elm (live server)](https://github.com/wking-io/elm-live/)                         | 8000 | `swa start http://localhost:8000` |
-| [Ionic](https://ionicframework.com/docs/cli/commands/serve/)                       | 8100 | `swa start http://localhost:8100` |
-| [Svelte (sirv-cli)](https://github.com/lukeed/sirv/tree/master/packages/sirv-cli/) | 5000 | `swa start http://localhost:5000` |
-| [Sapper](https://sapper.svelte.dev/)                                               | 3000 | `swa start http://localhost:3000` |
-| [Scully.io](https://scully.io/)                                                    | 1668 | `swa start http://localhost:1668` |
-| [Gatsby](https://www.gatsbyjs.com/docs/gatsby-cli/)                                | 8000 | `swa start http://localhost:8000` |
-| [Nuxt.js](https://nuxtjs.org/)                                                     | 3000 | `swa start http://localhost:3000` |
-| [Next.js](https://nextjs.org/)                                                     | 3000 | `swa start http://localhost:3000` |
-
-### Serve with a local API backend dev server
-
-When developing your backend locally, it's often useful to use the local API backend dev server to serve your API backend content. Using the backend server allows you to use built-in features like debugging and rich editor support.
+When developing your backend locally, sometimes it's useful to run Azure Functions Core Tools separately to serve your API. This allows you to use built-in features like debugging and rich editor support.
 
 To use the CLI with your local API backend dev server, follow these two steps:
 
 1. Start your API using Azure Functions Core Tools: `func host start` or start debugging in VS Code.
-2. Run the SWA CLI with the `--api` flag and the URI of the local API server, in the following format:
+2. In a separate terminal, run the SWA CLI with the `--api` flag and the URI of the local API server, in the following format:
 
 ```bash
 swa start ./my-dist --api http://localhost:7071
 ```
 
-### Serve with both local API backend and fontend app dev servers
+## Locating a configuration file (staticwebapp.config.json)
 
-In a typical scenario, you're often developing both the front and backend of the app locally. To benefit from SWA features such as authentication and authorization, you can run the SWA CLI providing both dev server URIs:
+Azure Static Web Apps can be configured with an optional `staticwebapp.config.json` file. For more information, see [Configure Static Web Apps documentation](https://docs.microsoft.com/azure/static-web-apps/configuration).
+
+If you are serving static files from a folder, the CLI will search this folder for `staticwebapp.config.json`.
 
 ```bash
-swa start http://<APP_DEV_SERVER> --api=http://localhost:7071
+# ./my-dist is searched for staticwebapp.config.json
+swa start ./my-dist
+```
+
+If you are using a frontend dev server, the CLI will search the current directory for `staticwebapp.config.json`.
+
+```bash
+# current working directory is searched for staticwebapp.config.json
+swa start http://localhost:3000
+```
+
+To control where the CLI searches for `staticwebapp.config.json`, use `--swa-config-location`.
+
+```bash
+# static files
+swa start ./my-dist --swa-config-location ./my-app-source
+
+# frontend dev server
+swa start http://localhost:3000 --swa-config-location ./my-app-source
 ```
 
 ## Configuration
@@ -144,7 +172,7 @@ When requesting the Static Web Apps login endpoints (`http://localhost:4280/.aut
 
 ### Reading credentials
 
-When requesting the `http://localhost:4280/.auth/me` endpoint, a `clientPrincipal` containing the fake information will be returned by the authentication API.
+The frontend application can request the `http://localhost:4280/.auth/me` endpoint and a `clientPrincipal` containing the fake information will be returned by the authentication API.
 
 Here is an example:
 
@@ -158,6 +186,10 @@ Here is an example:
   }
 }
 ```
+
+The API functions can access user information using the `x-ms-client-principal` header.
+
+See [Accessing user information](https://docs.microsoft.com/azure/static-web-apps/user-information) documentation for more details.
 
 ## High-level architecture
 

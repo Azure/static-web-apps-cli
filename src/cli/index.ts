@@ -13,7 +13,7 @@ exports.run = async function () {
     // SWA config
     .option("--verbose [prefix]", "enable verbose output. Values are: silly,info,log,silent", DEFAULT_CONFIG.verbose)
 
-    .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development");
+    .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development\n");
 
   program
     .command("start [context]")
@@ -26,13 +26,10 @@ exports.run = async function () {
       DEFAULT_CONFIG.outputLocation
     )
     .option("--api, --api-location <apiLocation>", "set the API folder or Azure Functions emulator address", DEFAULT_CONFIG.apiLocation)
-    .addOption(
-      new Option(
-        "--swa-config-location <swaConfigLocation>",
-        "set the directory location where the staticwebapp.config.json file is found. This location is relative to the root of the project"
-      )
-        .default(DEFAULT_CONFIG.swaConfigLocation)
-        .hideHelp()
+    .option(
+      "--swa-config-location <swaConfigLocation>",
+      "set the directory where the staticwebapp.config.json file is found",
+      DEFAULT_CONFIG.swaConfigLocation
     )
 
     // CLI config
@@ -78,6 +75,9 @@ Examples:
 
   Use an already running framework development server
   swa start http://localhost:3000
+
+  Use staticwebapp.config.json file in a specific location
+  swa start http://localhost:3000 --swa-config-location ./app-source
 
   Serve static content and run an API from another folder
   swa start ./output-folder --api ./api
