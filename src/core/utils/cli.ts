@@ -1,5 +1,5 @@
-// import path from "path";
-// import fs from "fs";
+import path from "path";
+import fs from "fs";
 // import { logger } from "./logger";
 
 /**
@@ -80,7 +80,7 @@ export function registerProcessExit(callback: Function) {
  * @param options The SWA CLI configuration flags.
  * @returns
  */
-export const createStartupScriptCommand = (startupScript: string, _options: SWACLIConfig) => {
+export const createStartupScriptCommand = (startupScript: string, options: SWACLIConfig) => {
   if (startupScript.includes(":")) {
     const [npmOrYarnBin, ...npmOrYarnScript] = startupScript.split(":");
     if (["npm", "yarn"].includes(npmOrYarnBin)) {
@@ -89,7 +89,15 @@ export const createStartupScriptCommand = (startupScript: string, _options: SWAC
       return `${npmOrYarnBin} ${npmOrYarnScript.join(":")}`;
     }
   } else {
+    if (!path.isAbsolute(startupScript)) {
+      const { appLocation } = options;
+      const cwd = appLocation || process.cwd();
+      const absoluteStartupScript = path.resolve(cwd, startupScript);
+      if (fs.existsSync(absoluteStartupScript)) {
+        startupScript = absoluteStartupScript;
+      }
+    }
     return startupScript;
   }
   return null;
-}
+};

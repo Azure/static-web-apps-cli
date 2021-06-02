@@ -140,30 +140,10 @@ describe("createStartupScriptCommand()", () => {
       expect(cmd).toBe("/foo/script.sh");
     });
   });
-  xdescribe("non-valid use cases", () => {
-    it("should handle non-valid npm patterns", () => {
-      const cmd = createStartupScriptCommand("npm", {});
-      expect(cmd).toBe(null);
-    });
-    it("should handle non-valid yarn patterns", () => {
-      const cmd = createStartupScriptCommand("yarn", {});
-      expect(cmd).toBe(null);
-    });
-    it("should handle non-valid npx patterns", () => {
-      const cmd = createStartupScriptCommand("npx", {});
-      expect(cmd).toBe(null);
-    });
-    it("should handle non-existant scripts (relative)", () => {
-      const cmd = createStartupScriptCommand("script.sh", {});
-      expect(cmd).toBe(null);
-    });
-    it("should handle non-existant scripts (asbolute)", () => {
-      const cmd = createStartupScriptCommand("/foo/bar/script.sh", {});
-      expect(cmd).toBe(null);
-    });
-    it("should handle non-existant scripts (asbolute)", () => {
-      const cmd = createStartupScriptCommand(`"npm:µ˜¬…˚πº–ª¶§∞¢£¢™§_)(*!#˜%@)`, {});
-      expect(cmd).toBe(null);
+  describe("custom command", () => {
+    it("should return custom command", () => {
+      const cmd = createStartupScriptCommand("dotnet watch run", {});
+      expect(cmd).toBe("dotnet watch run");
     });
   });
 });
