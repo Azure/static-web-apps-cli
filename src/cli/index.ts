@@ -84,5 +84,14 @@ Examples:
     `
     );
 
+  // easter egg :)
+  program.command("pong").action(() => {
+    try {
+      require("child_process").execSync("npx command-line-pong", { stdio: "inherit" });
+    } catch (e) {
+      console.log("ping!");
+    }
+  });
+
   await program.parseAsync(process.argv);
 };
