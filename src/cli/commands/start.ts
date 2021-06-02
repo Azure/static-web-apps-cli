@@ -15,15 +15,15 @@ export async function start(startContext: string, options: SWACLIConfig) {
   let useApiDevServer: string | undefined | null = undefined;
   let startupCommand: string | undefined | null = undefined;
 
+  // make sure the CLI default port is available before proceeding.
+  if (await isAcceptingTcpConnections({ host: options.host, port: options.port! })) {
+    logger.error(`Port ${options.port} is already used. Choose a different port.`, true);
+  }
+
   if (isHttpUrl(startContext)) {
     useAppDevServer = startContext;
     options.outputLocation = useAppDevServer;
   } else {
-    // make sure the CLI default port is available before proceeding.
-    if (await isAcceptingTcpConnections({ host: options.host, port: options.port! })) {
-      logger.error(`Port ${options.port} is already used. Choose a different port.`, true);
-    }
-
     // start the emulator from a specific artifact folder, if folder exists
     if (fs.existsSync(startContext)) {
       options.outputLocation = startContext;
