@@ -115,7 +115,7 @@ To use the CLI with your local API backend dev server, follow these two steps:
    swa start ./my-dist --api http://localhost:7071
    ```
 
-## Locating a configuration file (staticwebapp.config.json)
+## Use a configuration file (staticwebapp.config.json)
 
 Azure Static Web Apps can be configured with an optional `staticwebapp.config.json` file. For more information, see [Configure Static Web Apps documentation](https://docs.microsoft.com/azure/static-web-apps/configuration).
 
