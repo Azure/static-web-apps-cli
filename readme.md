@@ -14,7 +14,7 @@ The Static Web Apps CLI, also known as SWA CLI, serves as a local development to
 
 **Static Web Apps CLI is in preview.** If you have suggestions or you encounter issues, please report them or help us fix them. Your contributions are very much appreciated. 🙏
 
-The CLI emulates commonly used capabilities of the Azure Static Web Apps cloud service. Some differences are expected. **Always deploy and test your apps in production.**
+The CLI emulates commonly used capabilities of the Azure Static Web Apps cloud service. **Some differences are expected. Always deploy and test your apps in Azure to confirm behavior.**
 
 ## Quickstart
 
@@ -66,10 +66,9 @@ To use SWA CLI with your local dev server, follow these two steps:
 
 1. Start your local dev server (as usual). For example, if you are using Angular: `ng serve`
 1. In a separate terminal, run `swa start` with the URI provided by the dev server, in the following format:
-
-```bash
-swa start http://<APP_DEV_SERVER_HOST>:<APP_DEV_SERVER_PORT>
-```
+   ```bash
+   swa start http://<APP_DEV_SERVER_HOST>:<APP_DEV_SERVER_PORT>
+   ```
 
 Here is a list of the default ports used by some popular dev servers:
 
@@ -112,10 +111,9 @@ To use the CLI with your local API backend dev server, follow these two steps:
 
 1. Start your API using Azure Functions Core Tools: `func host start` or start debugging in VS Code.
 2. In a separate terminal, run the SWA CLI with the `--api` flag and the URI of the local API server, in the following format:
-
-```bash
-swa start ./my-dist --api http://localhost:7071
-```
+   ```bash
+   swa start ./my-dist --api http://localhost:7071
+   ```
 
 ## Locating a configuration file (staticwebapp.config.json)
 
