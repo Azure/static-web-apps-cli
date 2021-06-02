@@ -1,6 +1,6 @@
-import path from "path";
-import fs from "fs";
-import { logger } from "./logger";
+// import path from "path";
+// import fs from "fs";
+// import { logger } from "./logger";
 
 /**
  * Parse process.argv and retrieve a specific flag value.
@@ -80,7 +80,7 @@ export function registerProcessExit(callback: Function) {
  * @param options The SWA CLI configuration flags.
  * @returns
  */
-export function createStartupScriptCommand(startupScript: string, options: SWACLIConfig) {
+export const createStartupScriptCommand = (startupScript: string, _options: SWACLIConfig) => {
   if (startupScript.includes(":")) {
     const [npmOrYarnBin, ...npmOrYarnScript] = startupScript.split(":");
     if (["npm", "yarn"].includes(npmOrYarnBin)) {
@@ -89,17 +89,7 @@ export function createStartupScriptCommand(startupScript: string, options: SWACL
       return `${npmOrYarnBin} ${npmOrYarnScript.join(":")}`;
     }
   } else {
-    if (!path.isAbsolute(startupScript)) {
-      const { appLocation } = options;
-      const cwd = appLocation || process.cwd();
-      startupScript = path.resolve(cwd, startupScript);
-    }
-
-    if (fs.existsSync(startupScript)) {
-      return startupScript;
-    } else {
-      logger.error(`Script file "${startupScript}" was not found.`, true);
-    }
+    return startupScript;
   }
   return null;
 }
