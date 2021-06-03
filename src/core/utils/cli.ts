@@ -1,6 +1,5 @@
 import path from "path";
 import fs from "fs";
-import { logger } from "./logger";
 
 /**
  * Parse process.argv and retrieve a specific flag value.
@@ -92,14 +91,12 @@ export function createStartupScriptCommand(startupScript: string, options: SWACL
     if (!path.isAbsolute(startupScript)) {
       const { appLocation } = options;
       const cwd = appLocation || process.cwd();
-      startupScript = path.resolve(cwd, startupScript);
+      const absoluteStartupScript = path.resolve(cwd, startupScript);
+      if (fs.existsSync(absoluteStartupScript)) {
+        startupScript = absoluteStartupScript;
+      }
     }
-
-    if (fs.existsSync(startupScript)) {
-      return startupScript;
-    } else {
-      logger.error(`Script file "${startupScript}" was not found.`, true);
-    }
+    return startupScript;
   }
   return null;
 }
