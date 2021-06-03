@@ -107,8 +107,10 @@ function serveStaticOrProxyReponse(req: http.IncomingMessage, res: http.ServerRe
     logger.silly(` - target: ${chalk.yellow(target)}`);
   }
 
+  const is4xx = res.statusCode >= 400 && res.statusCode < 500;
+
   // if the static app is served by a dev server, forward all requests to it.
-  if (IS_APP_DEV_SERVER()) {
+  if (IS_APP_DEV_SERVER() && !is4xx) {
     logger.silly(`remote dev server detected. Proxying request`);
     logger.silly(` - url: ${chalk.yellow(req.url)}`);
     logger.silly(` - code: ${chalk.yellow(res.statusCode)}`);
