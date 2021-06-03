@@ -93,17 +93,22 @@ function serveStaticOrProxyReponse(req: http.IncomingMessage, res: http.ServerRe
   }
 
   const customUrl = isCustomUrl(req);
-  if (customUrl!) {
-    logger.silly(`checking if custom page`);
+  if (req.url?.includes("index.html") || customUrl) {
+    // serve index.htmn or custom pages from user's `outputLocation`
+
+    logger.silly(`custom page or index.html detected`);
+    // extract user custom page filename
+    req.url = req.url?.replace(DEFAULT_CONFIG.customUrlScheme!, "");
+    target = SWA_CLI_OUTPUT_LOCATION;
+
     logger.silly(` - isCustomUrl: ${chalk.yellow(customUrl)}`);
     logger.silly(` - url: ${chalk.yellow(req.url)}`);
     logger.silly(` - statusCode: ${chalk.yellow(res.statusCode)}`);
-    // extract user custom page filename
-    req.url = req.url?.replace(DEFAULT_CONFIG.customUrlScheme!, "");
+    logger.silly(` - target: ${chalk.yellow(target)}`);
   }
 
   // if the static app is served by a dev server, forward all requests to it.
-  if (!customUrl && IS_APP_DEV_SERVER()) {
+  if (IS_APP_DEV_SERVER()) {
     logger.silly(`remote dev server detected. Proxying request`);
     logger.silly(` - url: ${chalk.yellow(req.url)}`);
     logger.silly(` - code: ${chalk.yellow(res.statusCode)}`);
@@ -127,21 +132,44 @@ function serveStaticOrProxyReponse(req: http.IncomingMessage, res: http.ServerRe
       logRequest(req, target, proxyRes.statusCode);
     });
   } else {
-    target = SWA_CLI_OUTPUT_LOCATION;
-    const file = path.join(target, req.url!);
-    const exists = fs.existsSync(file);
+    // not a dev server
 
-    logger.silly(`checking if file exists`);
-    logger.silly(` - file: ${chalk.yellow(file)}`);
-    logger.silly(` - exists: ${chalk.yellow(exists)}`);
-
-    // run one last check beforing serving 404 page:
+    // run one last check beforing serving the page:
     // if the requested file is not foud on disk
     // send our SWA 404 default page instead of serve-static's one.
-    if (exists === false) {
-      req.url = "/404.html";
-      res.statusCode = 404;
+
+    let file = null;
+    target = SWA_CLI_OUTPUT_LOCATION;
+
+    const fileInOutputLocation = path.join(target, req.url!);
+    const existsInOutputLocation = fs.existsSync(fileInOutputLocation);
+
+    logger.silly(`checking if file exists in user's output location`);
+    logger.silly(` - file: ${chalk.yellow(fileInOutputLocation)}`);
+    logger.silly(` - exists: ${chalk.yellow(existsInOutputLocation)}`);
+
+    if (existsInOutputLocation === false) {
+      // file doesn't exist in the user's `outputLocation`
+      // check in the cli public dir
       target = SWA_PUBLIC_DIR;
+
+      logger.silly(`checking if file exists in CLI public dir`);
+
+      const fileInCliPublicDir = path.join(target, req.url!);
+      const existsInCliPublicDir = fs.existsSync(fileInCliPublicDir);
+
+      logger.silly(` - file: ${chalk.yellow(fileInCliPublicDir)}`);
+      logger.silly(` - exists: ${chalk.yellow(existsInCliPublicDir)}`);
+
+      if (existsInCliPublicDir === false) {
+        req.url = "/404.html";
+        res.statusCode = 404;
+        target = SWA_PUBLIC_DIR;
+      } else {
+        file = fileInCliPublicDir;
+      }
+    } else {
+      file = fileInOutputLocation;
     }
 
     logger.silly(`serving static content`);
@@ -149,6 +177,9 @@ function serveStaticOrProxyReponse(req: http.IncomingMessage, res: http.ServerRe
 
     const onerror = (err: any) => console.error(err);
     const done = finalhandler(req, res, { onerror }) as any;
+
+    // serving static content is only possible for GET requests
+    req.method = "GET";
     serveStatic(target, { extensions: ["html"] })(req, res, done);
   }
 }
