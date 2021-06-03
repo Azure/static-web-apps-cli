@@ -120,7 +120,7 @@ export function tryGetMatchingRoute(req: http.IncomingMessage, userConfig: SWACo
   const requestMethod = req.method;
   const isLegacyConfigFile = userConfig?.isLegacyConfigFile;
 
-  if (userConfig?.routes.length === 0) {
+  if (userConfig?.routes?.length === 0) {
     return;
   }
 

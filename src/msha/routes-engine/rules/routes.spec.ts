@@ -228,8 +228,17 @@ describe("route", () => {
       spyDoesRequestPathMatchLegacyRoute = jest.spyOn(routeModule, "doesRequestPathMatchLegacyRoute");
     });
 
-    it("should return undefined when no route prodvided", () => {
+    it("should return undefined when no route provided", () => {
       userConfig.routes = [];
+      spyDoesRequestPathMatchRoute.mockReturnValue(false);
+      spyDoesRequestPathMatchLegacyRoute.mockReturnValue(false);
+
+      const matchedRoute = tryGetMatchingRoute(req as http.IncomingMessage, userConfig as SWAConfigFile);
+      expect(matchedRoute).toBe(undefined);
+    });
+
+    it("should return undefined when routes is undefined", () => {
+      delete userConfig.routes;
       spyDoesRequestPathMatchRoute.mockReturnValue(false);
       spyDoesRequestPathMatchLegacyRoute.mockReturnValue(false);
 
