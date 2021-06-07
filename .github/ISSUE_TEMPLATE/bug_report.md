@@ -7,6 +7,8 @@ assignees: ''
 
 ---
 
+Before filing this issue, please ensure you're using the latest CLI by running `swa --version` and comparing to the latest version on [npm](https://www.npmjs.com/package/@azure/static-web-apps-cli).
+
 **Describe the bug**
 A clear and concise description of what the bug is.
 
