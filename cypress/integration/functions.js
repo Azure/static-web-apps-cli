@@ -58,4 +58,12 @@ context.only("/api", () => {
       });
     });
   });
+
+  describe(`Accessing /api/error`, () => {
+    it(`should respond with valid status code 403`, () => {
+      cy.request({ url: `http://0.0.0.0:1234/api/error`, failOnStatusCode: false }).then((response) => {
+        expect(response.status).to.eq(403);
+      });
+    });
+  });
 });

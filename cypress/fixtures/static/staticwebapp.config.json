@@ -55,6 +55,10 @@
       "rewrite": "/.auth/logout"
     },
     {
+      "route": "/.auth/login/aad",
+      "statusCode": 404
+    },
+    {
       "route": "/status-code-401.txt",
       "statusCode": "401"
     },
@@ -73,6 +77,10 @@
     {
       "route": "/api/info",
       "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/api/error",
+      "statusCode": 403
     }
   ],
   "navigationFallback": {

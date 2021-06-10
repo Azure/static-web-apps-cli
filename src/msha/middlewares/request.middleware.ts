@@ -228,14 +228,24 @@ export async function requestMiddleware(
     return serveStaticOrProxyReponse(req, res, proxyApp, SWA_CLI_OUTPUT_LOCATION);
   }
 
-  let authStatus = AUTH_STATUS.NoAuth;
-  const isAuthReq = isAuthRequest(req);
+  let target = SWA_CLI_OUTPUT_LOCATION;
 
   logger.silly(`checking for matching route`);
   const matchingRouteRule = tryGetMatchingRoute(req, userConfig);
   if (matchingRouteRule) {
     logger.silly({ matchingRouteRule });
+
+    const statusCodeToServe = parseInt(`${matchingRouteRule?.statusCode}`, 10);
+    if ([404, 403, 401].includes(statusCodeToServe)) {
+      logger.silly(` - ${statusCodeToServe} code detected. Exit`);
+
+      handleErrorPage(req, res, statusCodeToServe, userConfig?.responseOverrides);
+      return serveStaticOrProxyReponse(req, res, proxyApp, target);
+    }
   }
+
+  let authStatus = AUTH_STATUS.NoAuth;
+  const isAuthReq = isAuthRequest(req);
 
   logger.silly(`checking auth request`);
   if (isAuthReq) {
@@ -285,8 +295,6 @@ export async function requestMiddleware(
     req.url = sanitizedUrl.toString();
     return await handleAuthRequest(req, res, matchingRouteRule, userConfig);
   }
-
-  let target = SWA_CLI_OUTPUT_LOCATION;
 
   if (!isRouteRequiringUserRolesCheck(req, matchingRouteRule, isFunctionReq, authStatus)) {
     handleErrorPage(req, res, 401, userConfig?.responseOverrides);

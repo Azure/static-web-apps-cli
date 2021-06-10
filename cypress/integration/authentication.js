@@ -5,7 +5,8 @@ Cypress.Cookies.defaults({
 });
 Cypress.Cookies.debug(true);
 
-const PROVIDERS = ["google", "github", "twitter", "facebook", "aad"];
+// we are not including AAD in this list because it has a special rule (see staticwebapp.config.json)
+const PROVIDERS_AVAILABLE = ["google", "github", "twitter", "facebook"];
 const SWA_AUTH_COOKIE_NAME = "StaticWebAppsAuthCookie";
 const clientPrincipal = {
   identityProvider: "facebook",
@@ -52,8 +53,8 @@ context("Authentication", () => {
 });
 
 context(`/.auth/login/<provider>`, () => {
-  for (let index = 0; index < PROVIDERS.length; index++) {
-    const provider = PROVIDERS[index];
+  for (let index = 0; index < PROVIDERS_AVAILABLE.length; index++) {
+    const provider = PROVIDERS_AVAILABLE[index];
     describe(`when using provider: ${provider}`, () => {
       it(`provider should be ${provider}`, () => {
         cy.visit(`http://0.0.0.0:1234/.auth/login/${provider}`);
@@ -144,8 +145,8 @@ context("checking localStorage", () => {
     cy.clearLocalStorage();
   });
   describe("caching auth info in localStorage", () => {
-    for (let index = 0; index < PROVIDERS.length; index++) {
-      const provider = PROVIDERS[index];
+    for (let index = 0; index < PROVIDERS_AVAILABLE.length; index++) {
+      const provider = PROVIDERS_AVAILABLE[index];
       it(`should cache auth: ${provider}`, () => {
         cy.visit(`http://0.0.0.0:1234/.auth/login/${provider}`);
         cy.get("#userDetails")
