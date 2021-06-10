@@ -46,10 +46,10 @@ export function isAuthRequest(req: http.IncomingMessage) {
   return !!(req.headers.host?.includes("identity") || req.url?.startsWith("/.auth"));
 }
 
-export function isLoginRequest(requestPath: string | null) {
+export function isLoginRequest(requestPath: string | undefined) {
   return !!requestPath?.startsWith("/.auth/login");
 }
 
-export function isLogoutRequest(requestPath: string | null) {
+export function isLogoutRequest(requestPath: string | undefined) {
   return !!requestPath?.startsWith("/.auth/logout");
 }

@@ -8,12 +8,12 @@ import path from "path";
 import serveStatic from "serve-static";
 import { DEFAULT_CONFIG } from "../../config";
 import { findSWAConfigFile, logger, logRequest } from "../../core";
-import { AUTH_STATUS, IS_APP_DEV_SERVER, SWA_CLI_APP_PROTOCOL, SWA_CLI_OUTPUT_LOCATION, SWA_PUBLIC_DIR } from "../../core/constants";
+import { AUTH_STATUS, IS_APP_DEV_SERVER, SWA_CLI_OUTPUT_LOCATION, SWA_PUBLIC_DIR } from "../../core/constants";
 import { getAuthBlockResponse, handleAuthRequest, isAuthRequest, isLoginRequest, isLogoutRequest } from "../handlers/auth.handler";
 import { handleErrorPage } from "../handlers/error-page.handler";
 import { isFunctionRequest } from "../handlers/function.handler";
 import { isRequestMethodValid, isRouteRequiringUserRolesCheck, tryGetMatchingRoute } from "../routes-engine";
-import { isCustomUrl } from "../routes-engine/route-processor";
+import { isCustomUrl, parseQueryParams } from "../routes-engine/route-processor";
 import { getResponse } from "./response.middleware";
 
 /**
@@ -268,18 +268,10 @@ export async function requestMiddleware(
 
   logger.silly(`checking for query params`);
 
-  const isMatchingRewriteRoute = matchingRouteRule?.rewrite;
-  const sanitizedUrl = new URL(isMatchingRewriteRoute!, `${SWA_CLI_APP_PROTOCOL}://${req?.headers?.host}`);
-  const matchingRewriteRouteQueryString = sanitizedUrl.searchParams.toString();
-  const doesMatchingRewriteRouteHaveQueryStringParameters = matchingRewriteRouteQueryString !== "";
-  let matchingRewriteRoutePath = isMatchingRewriteRoute ? isMatchingRewriteRoute : null;
-  if (doesMatchingRewriteRouteHaveQueryStringParameters) {
-    matchingRewriteRoutePath = sanitizedUrl.pathname;
-    logger.silly(` - query: ${chalk.yellow(matchingRewriteRouteQueryString)}`);
-  }
+  const { matchingRewriteRoutePath, sanitizedUrl, matchingRewriteRoute } = parseQueryParams(req, matchingRouteRule);
 
   logger.silly(`checking rewrite auth login request`);
-  if (isMatchingRewriteRoute && isLoginRequest(matchingRewriteRoutePath)) {
+  if (matchingRewriteRoute && isLoginRequest(matchingRewriteRoutePath)) {
     logger.silly(` - auth login dectected`);
 
     authStatus = AUTH_STATUS.HostNameAuthLogin;
@@ -288,7 +280,7 @@ export async function requestMiddleware(
   }
 
   logger.silly(`checking rewrite auth logout request`);
-  if (isMatchingRewriteRoute && isLogoutRequest(matchingRewriteRoutePath)) {
+  if (matchingRewriteRoute && isLogoutRequest(matchingRewriteRoutePath)) {
     logger.silly(` - auth logout dectected`);
 
     authStatus = AUTH_STATUS.HostNameAuthLogout;
@@ -301,7 +293,7 @@ export async function requestMiddleware(
     return serveStaticOrProxyReponse(req, res, proxyApp, target);
   }
 
-  if (authStatus != AUTH_STATUS.NoAuth && (authStatus != AUTH_STATUS.HostNameAuthLogin || !isMatchingRewriteRoute)) {
+  if (authStatus != AUTH_STATUS.NoAuth && (authStatus != AUTH_STATUS.HostNameAuthLogin || !matchingRewriteRoute)) {
     if (authStatus == AUTH_STATUS.HostNameAuthLogin && matchingRouteRule) {
       return getAuthBlockResponse(req, res, userConfig, matchingRouteRule);
     }

@@ -2,7 +2,7 @@ import type http from "http";
 import chalk from "chalk";
 import { DEFAULT_CONFIG } from "../../config";
 import { logger } from "../../core";
-import { AUTH_STATUS } from "../../core/constants";
+import { AUTH_STATUS, SWA_CLI_APP_PROTOCOL } from "../../core/constants";
 import { globToRegExp } from "../../core/utils/glob";
 import { getIndexHtml } from "./rules/routes";
 
@@ -118,4 +118,17 @@ function doesRequestPathMatchWildcardRoute(requestPath: string, requestPathFileW
 
 export function isCustomUrl(req: http.IncomingMessage) {
   return !!req.url?.startsWith(DEFAULT_CONFIG.customUrlScheme!);
+}
+
+export function parseQueryParams(req: http.IncomingMessage, matchingRouteRule: SWAConfigFileRoute | undefined) {
+  const matchingRewriteRoute = matchingRouteRule?.rewrite || req.url;
+  const sanitizedUrl = new URL(matchingRewriteRoute!, `${SWA_CLI_APP_PROTOCOL}://${req?.headers?.host}`);
+  const matchingRewriteRouteQueryString = sanitizedUrl.searchParams.toString();
+  const doesMatchingRewriteRouteHaveQueryStringParameters = matchingRewriteRouteQueryString !== "";
+  let matchingRewriteRoutePath = matchingRewriteRoute ? matchingRewriteRoute : undefined;
+  if (doesMatchingRewriteRouteHaveQueryStringParameters) {
+    matchingRewriteRoutePath = sanitizedUrl.pathname;
+    logger.silly(` - query: ${chalk.yellow(matchingRewriteRouteQueryString)}`);
+  }
+  return { matchingRewriteRoutePath, sanitizedUrl, matchingRewriteRoute };
 }
