@@ -11,6 +11,7 @@ import {
   tryFindFileForRequest,
   updateReponseHeaders,
 } from "../routes-engine";
+import { parseQueryParams } from "../routes-engine/route-processor";
 
 export function getResponse(
   req: http.IncomingMessage,
@@ -94,8 +95,10 @@ export function getStorageContent(
     };
   }
 
-  let requestPath = req.url;
-  let decodedRequestPath = req.url;
+  const { matchingRewriteRoutePath } = parseQueryParams(req, matchedRoute);
+
+  let requestPath = matchingRewriteRoutePath;
+  let decodedRequestPath = matchingRewriteRoutePath;
 
   if (pathToServe) {
     requestPath = pathToServe;
