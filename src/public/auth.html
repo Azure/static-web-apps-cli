@@ -162,6 +162,7 @@
     <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
     <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/4.1.1/bootstrap.min.js" crossorigin="anonymous"></script>
     <script>
+      const defaultRoles = ["anonymous", "authenticated"];
       function saveCookie(formElement) {
         const data = localStorage[hashStorageKey(formElement)];
         document.cookie = `StaticWebAppsAuthCookie=${btoa(data)}; path=/`;
@@ -229,7 +230,8 @@
           const inputValue = element.val();
           let data = JSON.parse(localStorage[storageKey]);
           if (inputName === "userRoles") {
-            data[inputName] = inputValue.trim().split("\n");
+            // ensure default roles are included
+            data[inputName] = [...new Set([...inputValue.trim().split("\n"), ...defaultRoles])];
           } else {
             data[inputName] = inputValue;
           }
@@ -287,7 +289,6 @@
     <script>
       $(function () {
         // setup default values
-        const defaultRoles = ["anonymous", "authenticated"];
         const form = $("form[name='auth']");
 
         // trigger on first call
