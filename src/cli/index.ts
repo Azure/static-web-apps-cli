@@ -6,7 +6,7 @@ import { start } from "./commands/start";
 import updateNotifier from "update-notifier";
 const pkg = require("../../package.json");
 
-exports.run = async function () {
+export async function run(argv?: string[]) {
   // Once a day, check for updates
   updateNotifier({ pkg }).notify();
 
@@ -89,5 +89,5 @@ Examples:
     `
     );
 
-  await program.parseAsync(process.argv);
-};
+  await program.parseAsync(argv);
+}
