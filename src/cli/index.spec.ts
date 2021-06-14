@@ -24,20 +24,19 @@ describe("cli", () => {
   it("should notify of newer version", async () => {
     // Forces an update notification, bypassing regular checks
     process.stdout.isTTY = true;
-    const notifier = UpdateNotifier as any;
-    notifier.prototype.check = function () {
+    spyOn(UpdateNotifier.prototype, "check").and.callFake(function (this: any) {
       this.shouldNotifyInNpmScript = true;
       this.update = {
         current: "0.1.0",
         latest: "1.0.0",
         name: pkg.name,
       };
-    };
-    const orginalNotify = notifier.prototype.notify;
-    notifier.prototype.notify = function (options: any = {}) {
+    });
+    const orginalNotify = UpdateNotifier.prototype.notify;
+    spyOn(UpdateNotifier.prototype, "notify").and.callFake(function (this: any, options: any = {}) {
       options.defer = false;
-      orginalNotify.bind(this)(options);
-    };
+      orginalNotify.bind(this as any)(options);
+    });
 
     await expect(run(["node", "swa", "-v"])).rejects.toThrow(pkg.version);
     expect(removeColors((console.error as jest.Mock).mock.calls[0].join("\n"))).toMatchInlineSnapshot(`
