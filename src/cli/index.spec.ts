@@ -4,6 +4,7 @@ import { run } from "./index";
 const pkg = require("../../package.json");
 
 const originalConsoleError = console.error;
+const removeColors = (str: string) => str.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "");
 
 describe("cli", () => {
   beforeEach(() => {
@@ -39,17 +40,15 @@ describe("cli", () => {
     };
 
     await expect(run(["node", "swa", "-v"])).rejects.toThrow(pkg.version);
-    expect((console.error as jest.Mock).mock.calls[0]).toMatchInlineSnapshot(`
-      Array [
-        "[33m[39m
-      [33m   ╭────────────────────────────────────────────────────╮[39m
-         [33m│[39m                                                    [33m│[39m
-         [33m│[39m          Update available [2m0.1.0[22m[0m → [0m[32m1.0.0[39m            [33m│[39m
-         [33m│[39m   Run [36mnpm i @azure/static-web-apps-cli[39m to update   [33m│[39m
-         [33m│[39m                                                    [33m│[39m
-      [33m   ╰────────────────────────────────────────────────────╯[39m
-      [33m[39m",
-      ]
+    expect(removeColors((console.error as jest.Mock).mock.calls[0].join("\n"))).toMatchInlineSnapshot(`
+      "
+         ╭────────────────────────────────────────────────────╮
+         │                                                    │
+         │          Update available 0.1.0 → 1.0.0            │
+         │   Run npm i @azure/static-web-apps-cli to update   │
+         │                                                    │
+         ╰────────────────────────────────────────────────────╯
+      "
     `);
   });
 });
