@@ -1,6 +1,6 @@
 {
   "name": "@azure/static-web-apps-cli",
-  "version": "0.6.1",
+  "version": "0.6.2-alpha",
   "description": "Azure Static Web Apps CLI",
   "scripts": {
     "start": "node ./dist/cli/bin.js start ./cypress/fixtures/static --api=./cypress/fixtures/api --port 1234 --verbose silly",
