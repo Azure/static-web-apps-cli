@@ -3,12 +3,17 @@ import path from "path";
 import { DEFAULT_CONFIG } from "../config";
 import { parsePort } from "../core";
 import { start } from "./commands/start";
+import updateNotifier from "update-notifier";
+const pkg = require("../../package.json");
 
-exports.run = async function () {
+export async function run(argv?: string[]) {
+  // Once a day, check for updates
+  updateNotifier({ pkg }).notify();
+
   const cli: SWACLIConfig & program.Command = program
     .name("swa")
     .usage("<command> [options]")
-    .version(require("../../package.json").version, "-v, --version")
+    .version(pkg.version, "-v, --version")
 
     // SWA config
     .option("--verbose [prefix]", "enable verbose output. Values are: silly,info,log,silent", DEFAULT_CONFIG.verbose)
@@ -84,5 +89,5 @@ Examples:
     `
     );
 
-  await program.parseAsync(process.argv);
-};
+  await program.parseAsync(argv);
+}
