@@ -1,6 +1,6 @@
 jest.mock("../constants", () => {});
 import { logger } from "./logger";
-import { address, parsePort, response } from "./net";
+import { address, hostnameToIpAdress, parsePort, response } from "./net";
 
 describe("response()", () => {
   it("context = null", () => {
@@ -277,5 +277,23 @@ describe("address()", () => {
     expect(address("127.0.0.1", "4200", "http")).toBe("http://127.0.0.1:4200");
     expect(address("127.0.0.1", "4200", "https")).toBe("https://127.0.0.1:4200");
     expect(address("127.0.0.1", "4200", "ws")).toBe("ws://127.0.0.1:4200");
+  });
+});
+
+describe("hostnameToIpAdress()", () => {
+  it("should recognize locahost", () => {
+    expect(hostnameToIpAdress("localhost")).toBe("127.0.0.1");
+  });
+
+  it("should recognize locahost", () => {
+    expect(hostnameToIpAdress("localhost")).toBe("127.0.0.1");
+  });
+
+  it("should ignore IP addresses", () => {
+    expect(hostnameToIpAdress("192.168.0.0")).toBe("192.168.0.0");
+  });
+
+  it("should ignore host names", () => {
+    expect(hostnameToIpAdress("foo.bar")).toBe("foo.bar");
   });
 });
