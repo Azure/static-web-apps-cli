@@ -125,6 +125,13 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
 
     logger.log(logMessage);
 
+    let warningMessage = `******************************************************************************\n`;
+    warningMessage += `** This CLI is still in preview and runs an emulator that may not match the **\n`;
+    warningMessage += `** cloud environment exactly. Always deploy and test your app in Azure.     **\n`;
+    warningMessage += `******************************************************************************\n`;
+
+    logger.log(`${chalk.yellowBright(warningMessage)}`);
+
     server.on("upgrade", onWsUpgrade());
 
     registerProcessExit(() => {
