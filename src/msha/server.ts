@@ -122,9 +122,15 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
     //--------------------------------------------------------------------------------
     logMessage += `Azure Static Web Apps emulator started. Press CTRL+C to exit.\n\n`;
     //--------------------------------------------------------------------------------
-    logMessage += `${chalk.yellowBright(`This CLI is in preview and runs an emulator that may not match
-    the cloud environment exactly. Always deploy and test your app in Azure.`)}`;
+
     logger.log(logMessage);
+
+    let warningMessage = `******************************************************************************\n`;
+    warningMessage += `** This CLI is still in preview and runs an emulator that may not match the **\n`;
+    warningMessage += `** cloud environment exactly. Always deploy and test your app in Azure.     **\n`;
+    warningMessage += `******************************************************************************\n`;
+
+    logger.log(`${chalk.yellowBright(warningMessage)}`);
 
     server.on("upgrade", onWsUpgrade());
 
