@@ -4,6 +4,7 @@ import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
 import { createStartupScriptCommand, isAcceptingTcpConnections, isHttpUrl, logger, parseUrl, readWorkflowFile } from "../../core";
 import builder from "../../core/builder";
+let packageInfo = require("../../../package.json");
 
 export async function start(startContext: string, options: SWACLIConfig) {
   // WARNING:
@@ -113,6 +114,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
     SWA_CLI_APP_SSL_CERT: options.sslCert,
     SWA_CLI_APP_SSL_KEY: options.sslKey,
     SWA_CLI_STARTUP_COMMAND: startupCommand as string,
+    SWA_CLI_VERSION: packageInfo.version,
   };
 
   // merge SWA env variables with process.env
