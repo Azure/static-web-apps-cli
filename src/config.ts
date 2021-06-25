@@ -1,7 +1,7 @@
 import path from "path";
 export const DEFAULT_CONFIG: SWACLIConfig = {
   port: 4280,
-  host: "0.0.0.0",
+  host: "localhost",
   apiPort: 7071,
   apiPrefix: "api",
   ssl: false,

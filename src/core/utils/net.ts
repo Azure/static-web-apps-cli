@@ -150,3 +150,10 @@ export function parsePort(port: string) {
   }
   return portNumber;
 }
+
+export function hostnameToIpAdress(hostnameOrIpAddress: string | undefined) {
+  if (hostnameOrIpAddress === "localhost") {
+    return "127.0.0.1";
+  }
+  return hostnameOrIpAddress;
+}

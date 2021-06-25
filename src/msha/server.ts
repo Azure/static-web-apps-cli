@@ -5,7 +5,7 @@ import httpProxy from "http-proxy";
 import https from "https";
 import internalIp from "internal-ip";
 import net from "net";
-import { address, isHttpUrl, logger, logRequest, registerProcessExit, validateDevServerConfig } from "../core";
+import { address, hostnameToIpAdress, isHttpUrl, logger, logRequest, registerProcessExit, validateDevServerConfig } from "../core";
 import {
   HAS_API,
   IS_API_DEV_SERVER,
@@ -76,12 +76,12 @@ function onWsUpgrade() {
   };
 }
 
-function onServerStart(server: https.Server | http.Server, socketConnection: net.Socket | undefined, localIpAdress: string | undefined) {
+function onServerStart(server: https.Server | http.Server, socketConnection: net.Socket | undefined) {
   return () => {
     if (IS_APP_DEV_SERVER()) {
       // prettier-ignore
       logger.log(
-        `\nUsing dev server for static content:\n`+
+        `\nUsing dev server for static content:\n` +
         `    ${chalk.green(SWA_CLI_OUTPUT_LOCATION)}`
       );
     } else {
@@ -89,14 +89,14 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
       logger.log(
         `\nServing static content:\n` +
         `    ${chalk.green(SWA_CLI_OUTPUT_LOCATION)}`
-        );
+      );
     }
 
     if (SWA_CLI_API_LOCATION) {
       if (IS_API_DEV_SERVER()) {
         // prettier-ignore
         logger.log(
-          `\nUsing dev server for API:\n`+
+          `\nUsing dev server for API:\n` +
           `    ${chalk.green(SWA_CLI_API_LOCATION)}`
         );
       } else {
@@ -104,23 +104,16 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
         logger.log(
           `\nServing API:\n` +
           `    ${chalk.green(SWA_CLI_API_LOCATION)}`
-          );
+        );
       }
-    }
-
-    // prettier-ignore
-    let logMessage = `\nAvailable on:\n` +
-    `    ${chalk.green(address(SWA_CLI_HOST, SWA_CLI_PORT, SWA_CLI_APP_PROTOCOL))}\n`;
-
-    if (localIpAdress) {
-      // prettier-ignore
-      logMessage += `    ${chalk.green(address(`${localIpAdress}`, SWA_CLI_PORT, SWA_CLI_APP_PROTOCOL))}\n\n`;
     }
 
     // note: this string must not change. It is used by the VS Code extension.
     // see: https://github.com/Azure/static-web-apps-cli/issues/124
     //--------------------------------------------------------------------------------
-    logMessage += `Azure Static Web Apps emulator started. Press CTRL+C to exit.\n\n`;
+    let logMessage = `\nAzure Static Web Apps emulator started at ${chalk.green(
+      address(SWA_CLI_HOST, SWA_CLI_PORT, SWA_CLI_APP_PROTOCOL)
+    )}. Press CTRL+C to exit.\n\n`;
     //--------------------------------------------------------------------------------
 
     logger.log(logMessage);
@@ -170,6 +163,6 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
   }
 
   const server = createServer();
-  server.listen(SWA_CLI_PORT, SWA_CLI_HOST, onServerStart(server, socketConnection, localIpAdress));
+  server.listen(SWA_CLI_PORT, hostnameToIpAdress(SWA_CLI_HOST), onServerStart(server, socketConnection));
   server.listen(SWA_CLI_PORT, localIpAdress);
 })();
