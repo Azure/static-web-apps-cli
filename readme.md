@@ -7,7 +7,7 @@
 
 The Static Web Apps CLI, also known as SWA CLI, serves as a local development tool for [Azure Static Web Apps](https://docs.microsoft.com/azure/static-web-apps). It can:
 
-- Serve static static app assets, or proxy to your app dev server
+- Serve static app assets, or proxy to your app dev server
 - Serve API requests, or proxy to APIs running in Azure Functions Core Tools
 - Emulate authentication and authorization
 - Emulate Static Web Apps configuration, including routing
