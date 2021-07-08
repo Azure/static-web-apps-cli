@@ -1,7 +1,7 @@
 import program, { Option } from "commander";
 import path from "path";
 import { DEFAULT_CONFIG } from "../config";
-import { parsePort } from "../core";
+import { parsePort, parseTime } from "../core";
 import { start } from "./commands/start";
 import updateNotifier from "update-notifier";
 const pkg = require("../../package.json");
@@ -49,6 +49,12 @@ export async function run(argv?: string[]) {
     .option("--ssl-key <sslKeyLocation>", "SSL key (.key) to use for serving HTTPS", DEFAULT_CONFIG.sslKey)
 
     .option("--run <startupScript>", "run a command at startup", DEFAULT_CONFIG.run)
+    .option<number>(
+      "--devserver-timeout <devserverTimeout>",
+      "time to wait(in ms) for the dev server to start",
+      parseTime,
+      DEFAULT_CONFIG.devserverTimeout
+    )
 
     .action(async (context: string = `.${path.sep}`, options: SWACLIConfig) => {
       options = {

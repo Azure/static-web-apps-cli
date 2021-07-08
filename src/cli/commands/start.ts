@@ -53,6 +53,8 @@ export async function start(startContext: string, options: SWACLIConfig) {
   let [appLocation, outputLocation, apiLocation] = [options.appLocation as string, options.outputLocation as string, options.apiLocation as string];
 
   let apiPort = (options.apiPort || DEFAULT_CONFIG.apiPort) as number;
+  let devserverTimeout = (options.devserverTimeout || DEFAULT_CONFIG.devserverTimeout) as number;
+
   let userWorkflowConfig: Partial<GithubActionWorkflow> | undefined = {
     appLocation,
     outputLocation,
@@ -115,6 +117,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
     SWA_CLI_APP_SSL_KEY: options.sslKey,
     SWA_CLI_STARTUP_COMMAND: startupCommand as string,
     SWA_CLI_VERSION: packageInfo.version,
+    SWA_CLI_DEVSERVER_TIMEOUT: `${devserverTimeout}`,
   };
 
   // merge SWA env variables with process.env

@@ -75,6 +75,7 @@ declare type SWACLIConfig = GithubActionWorkflow & {
   swaConfigLocation?: string;
   customUrlScheme?: string;
   overridableErrorCode?: number[];
+  devserverTimeout?: number;
 };
 
 declare type ResponseOptions = {

@@ -45,7 +45,7 @@ export function isHttpUrl(url: string) {
  * @param timeout Maximum time in ms to wait before exiting with failure (1) code,
   default Infinity.
  */
-export async function validateDevServerConfig(context: string, timeout = 30000) {
+export async function validateDevServerConfig(context: string, timeout: number) {
   let { hostname, port } = parseUrl(context);
 
   try {
@@ -156,4 +156,13 @@ export function hostnameToIpAdress(hostnameOrIpAddress: string | undefined) {
     return "127.0.0.1";
   }
   return hostnameOrIpAddress;
+}
+
+export function parseTime(time: string) {
+  //The argument 10 implies to convert the given string to base-10(decimal)
+  const timeValue = parseInt(time, 10);
+  if (isNaN(timeValue)) {
+    logger.error(`Time "${time} is not a number.`, true);
+  }
+  return timeValue;
 }

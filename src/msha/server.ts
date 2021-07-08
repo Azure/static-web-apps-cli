@@ -22,6 +22,7 @@ import {
   SWA_CLI_PORT,
   SWA_CLI_ROUTES_LOCATION,
   SWA_WORKFLOW_CONFIG_FILE,
+  SWA_CLI_DEVSERVER_TIMEOUT,
 } from "../core/constants";
 import { validateFunctionTriggers } from "./handlers/function.handler";
 import { handleUserConfig, onConnectionLost, requestMiddleware } from "./middlewares/request.middleware";
@@ -154,11 +155,11 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
   };
 
   if (IS_APP_DEV_SERVER()) {
-    await validateDevServerConfig(SWA_CLI_OUTPUT_LOCATION);
+    await validateDevServerConfig(SWA_CLI_OUTPUT_LOCATION, SWA_CLI_DEVSERVER_TIMEOUT);
   }
 
   if (HAS_API) {
-    await validateDevServerConfig(SWA_CLI_API_URI());
+    await validateDevServerConfig(SWA_CLI_API_URI(), SWA_CLI_DEVSERVER_TIMEOUT);
     await validateFunctionTriggers();
   }
 
