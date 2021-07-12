@@ -1,7 +1,8 @@
 jest.mock("../constants", () => {});
 import mockFs from "mock-fs";
 import path from "path";
-import { argv, createStartupScriptCommand } from "./cli";
+import { argv, createStartupScriptCommand, parseDevserverTimeout } from "./cli";
+import { logger } from "./logger";
 
 describe("argv()", () => {
   it("process.argv = []", () => {
@@ -144,6 +145,27 @@ describe("createStartupScriptCommand()", () => {
     it("should return custom command", () => {
       const cmd = createStartupScriptCommand("dotnet watch run", {});
       expect(cmd).toBe("dotnet watch run");
+    });
+  });
+
+  describe("parseDevserverTimeout()", () => {
+    const mockLoggerError = jest.spyOn(logger, "error").mockImplementation(() => {
+      return undefined as never;
+    });
+
+    it("DevserverTimeout below 0 should be invalid", () => {
+      parseDevserverTimeout("-10");
+      expect(mockLoggerError).toBeCalled();
+    });
+
+    it("DevserverTimeout for any positive value should be valid", () => {
+      const timeValue = parseDevserverTimeout("30000");
+      expect(timeValue).toBe(30000);
+    });
+
+    it("Non-number DevserverTimeout should be invalid", () => {
+      parseDevserverTimeout("not a number");
+      expect(mockLoggerError).toBeCalled();
     });
   });
 });

@@ -157,12 +157,3 @@ export function hostnameToIpAdress(hostnameOrIpAddress: string | undefined) {
   }
   return hostnameOrIpAddress;
 }
-
-export function parseTime(time: string) {
-  //The argument 10 implies to convert the given string to base-10(decimal)
-  const timeValue = parseInt(time, 10);
-  if (isNaN(timeValue)) {
-    logger.error(`Time "${time} is not a number.`, true);
-  }
-  return timeValue;
-}

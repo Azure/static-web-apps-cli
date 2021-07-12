@@ -1,7 +1,8 @@
 import program, { Option } from "commander";
 import path from "path";
 import { DEFAULT_CONFIG } from "../config";
-import { parsePort, parseTime } from "../core";
+import { parsePort } from "../core";
+import { parseDevserverTimeout } from "../core";
 import { start } from "./commands/start";
 import updateNotifier from "update-notifier";
 const pkg = require("../../package.json");
@@ -52,7 +53,7 @@ export async function run(argv?: string[]) {
     .option<number>(
       "--devserver-timeout <devserverTimeout>",
       "time to wait(in ms) for the dev server to start",
-      parseTime,
+      parseDevserverTimeout,
       DEFAULT_CONFIG.devserverTimeout
     )
 
