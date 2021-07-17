@@ -45,7 +45,7 @@ export function isHttpUrl(url: string) {
  * @param timeout Maximum time in ms to wait before exiting with failure (1) code,
   default Infinity.
  */
-export async function validateDevServerConfig(context: string, timeout = 30000) {
+export async function validateDevServerConfig(context: string, timeout: number) {
   let { hostname, port } = parseUrl(context);
 
   try {

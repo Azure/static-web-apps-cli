@@ -1,5 +1,6 @@
 import path from "path";
 import fs from "fs";
+import { logger } from "./logger";
 
 /**
  * Parse process.argv and retrieve a specific flag value.
@@ -99,4 +100,20 @@ export function createStartupScriptCommand(startupScript: string, options: SWACL
     return startupScript;
   }
   return null;
+}
+
+/**
+ * Parses the string devserver-timeout and returns an integer
+ * @param time devserver-timeout flag as string
+ * @returns parses the string and returns an integer
+ */
+export function parseDevserverTimeout(time: string) {
+  //The argument 10 implies to convert the given string to base-10(decimal)
+  const timeValue = parseInt(time, 10);
+  if (isNaN(timeValue)) {
+    logger.error(`--devserser-timeout should be a number expressed in milliseconds. Got "${time}".`, true);
+  } else if (timeValue < 0) {
+    logger.error(`--devserser-timeout should be a positive number`);
+  }
+  return timeValue;
 }

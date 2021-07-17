@@ -173,6 +173,7 @@ export const SWA_CLI_APP_SSL_CERT = process.env.SWA_CLI_APP_SSL_CERT as string;
 export const SWA_CLI_APP_PROTOCOL = SWA_CLI_APP_SSL ? `https` : `http`;
 export const SWA_PUBLIC_DIR = path.resolve(__dirname, "..", "public");
 export const HAS_API = Boolean(SWA_CLI_API_LOCATION && SWA_CLI_API_URI());
+export const SWA_CLI_DEVSERVER_TIMEOUT = parseInt((process.env.SWA_CLI_DEVSERVER_TIMEOUT || DEFAULT_CONFIG.devserverTimeout) as string, 10);
 
 // --
 // Note: declare these as functions so that their body gets evaluated at runtime!
