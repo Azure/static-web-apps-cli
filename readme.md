@@ -99,6 +99,8 @@ Here is a list of the default ports used by some popular dev servers:
 | [Gatsby](https://www.gatsbyjs.com/docs/gatsby-cli/)                                | 8000 | `swa start http://localhost:8000` |
 | [Next.js](https://nextjs.org/)                                                     | 3000 | `swa start http://localhost:3000` |
 
+> Note: Also when starting the CLI through a dev server, use port 4280 (`http://localhost:4280`) to access the application with the emulated services.
+
 ### Serve both the static app and API
 
 If your project includes API functions, install [Azure Functions Core Tools](https://github.com/Azure/azure-functions-core-tools):
