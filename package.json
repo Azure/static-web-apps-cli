@@ -24,7 +24,7 @@
   "author": "Microsoft Corporation",
   "dependencies": {
     "@types/globalyzer": "^0.1.0",
-    "@types/globrex": "^0.1.0",
+    "@types/globrex": "^0.1.1",
     "chalk": "^4.1.1",
     "commander": "^7.2.0",
     "concurrently": "^6.2.0",
