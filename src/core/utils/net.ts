@@ -47,6 +47,10 @@ export function isHttpUrl(url: string) {
  */
 export async function validateDevServerConfig(context: string, timeout: number) {
   let { hostname, port } = parseUrl(context);
+  if (port === 0) {
+    //For custom Urls like http://e7fd8a1ae447.ngrok.io, port is taken as 0,instead of 80 for http
+    port = 80;
+  }
 
   try {
     const appListening = await isAcceptingTcpConnections({ port, host: hostname });

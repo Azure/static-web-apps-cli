@@ -69,6 +69,7 @@ declare type SWACLIConfig = GithubActionWorkflow & {
   swaConfigFilenameLegacy?: "routes.json";
   app?: string;
   api?: string;
+  apiHost?: string;
   build?: boolean;
   verbose?: string;
   run?: string;

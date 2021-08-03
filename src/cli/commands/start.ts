@@ -53,6 +53,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
   let [appLocation, outputLocation, apiLocation] = [options.appLocation as string, options.outputLocation as string, options.apiLocation as string];
 
   let apiPort = (options.apiPort || DEFAULT_CONFIG.apiPort) as number;
+  let apiHost = DEFAULT_CONFIG.apiHost;
   let devserverTimeout = (options.devserverTimeout || DEFAULT_CONFIG.devserverTimeout) as number;
 
   let userWorkflowConfig: Partial<GithubActionWorkflow> | undefined = {
@@ -78,6 +79,8 @@ export async function start(startContext: string, options: SWACLIConfig) {
 
     // get the API port from the dev server
     apiPort = parseUrl(useApiDevServer)?.port;
+    //get the host from the dev server
+    apiHost = parseUrl(useApiDevServer)?.hostname;
   } else {
     if (options.apiLocation && userWorkflowConfig?.apiLocation) {
       // @todo check if the func binary is globally available
@@ -110,6 +113,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
     SWA_CLI_API_LOCATION: userWorkflowConfig?.apiLocation as string,
     SWA_CLI_ROUTES_LOCATION: options.swaConfigLocation,
     SWA_CLI_HOST: options.host,
+    SWA_CLI_API_HOST: apiHost,
     SWA_CLI_PORT: `${options.port}`,
     SWA_WORKFLOW_FILES: userWorkflowConfig?.files?.join(","),
     SWA_CLI_APP_SSL: `${options.ssl}`,

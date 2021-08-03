@@ -167,6 +167,8 @@ export const SWA_CLI_APP_LOCATION = (process.env.SWA_CLI_APP_LOCATION || DEFAULT
 export const SWA_CLI_ROUTES_LOCATION = (process.env.SWA_CLI_ROUTES_LOCATION || DEFAULT_CONFIG.swaConfigLocation) as string;
 export const SWA_CLI_OUTPUT_LOCATION = (process.env.SWA_CLI_OUTPUT_LOCATION || DEFAULT_CONFIG.outputLocation) as string;
 export const SWA_CLI_API_LOCATION = (process.env.SWA_CLI_API_LOCATION || DEFAULT_CONFIG.apiLocation) as string;
+export const SWA_CLI_API_PORT = parseInt((process.env.SWA_CLI_API_PORT || DEFAULT_CONFIG.apiPort) as string, 10);
+export const SWA_CLI_API_HOST = (process.env.SWA_CLI_API_HOST || DEFAULT_CONFIG.apiHost) as string;
 export const SWA_CLI_APP_SSL = process.env.SWA_CLI_APP_SSL === "true" || DEFAULT_CONFIG.ssl === true;
 export const SWA_CLI_APP_SSL_KEY = process.env.SWA_CLI_APP_SSL_KEY as string;
 export const SWA_CLI_APP_SSL_CERT = process.env.SWA_CLI_APP_SSL_CERT as string;
@@ -179,12 +181,16 @@ export const SWA_CLI_DEVSERVER_TIMEOUT = parseInt((process.env.SWA_CLI_DEVSERVER
 // Note: declare these as functions so that their body gets evaluated at runtime!
 // The reason for this is that these function depend on values set by environment variables which are set
 // during the startup of the CLI (see src/cli/commands/start.ts)
+
+//Verifies if a dev-server is provided as an input to App
 export function IS_APP_DEV_SERVER() {
   return isHttpUrl(SWA_CLI_OUTPUT_LOCATION);
 }
+//Verifies if a dev-server is provided as an input to Api
 export function IS_API_DEV_SERVER() {
   return isHttpUrl(SWA_CLI_API_LOCATION);
 }
+//Returns an url with http://{SWA_CLI_API_HOST}:{SWA_CLI_PORT}
 export function SWA_CLI_API_URI() {
-  return address(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
+  return address(SWA_CLI_HOST, SWA_CLI_API_PORT);
 }
