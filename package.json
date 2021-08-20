@@ -1,6 +1,6 @@
 {
   "name": "@azure/static-web-apps-cli",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Azure Static Web Apps CLI",
   "scripts": {
     "start": "node ./dist/cli/bin.js start ./cypress/fixtures/static --api=./cypress/fixtures/api --port 1234 --devserver-timeout 10000 --verbose silly",
@@ -25,7 +25,6 @@
   "dependencies": {
     "@types/globalyzer": "^0.1.0",
     "@types/globrex": "^0.1.0",
-    "azure-functions-core-tools": "^3.0.3568",
     "chalk": "^4.1.1",
     "commander": "^7.2.0",
     "concurrently": "^6.2.0",
