@@ -55,7 +55,7 @@ export async function validateDevServerConfig(context: string, timeout: number) 
       try {
         spinner.start(`Waiting for ${chalk.green(context)} to be ready`);
         await waitOn({
-          resources: [address(hostname, port)],
+          resources: [`tcp:${hostname}:${port}`],
           delay: 1000, // initial delay in ms, default 0
           interval: 100, // poll interval in ms, default 250ms
           simultaneous: 1, // limit to 1 connection per resource at a time
