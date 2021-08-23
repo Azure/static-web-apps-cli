@@ -177,6 +177,8 @@ If you need to override the default values, provide the following options:
 | `--ssl`                          | serving the app and API over HTTPS (default: false)     | `false`   | `--ssl` or `--ssl=true`                              |
 | `--ssl-cert`                     | SSL certificate to use for serving HTTPS                |           | `--ssl-cert="/home/user/ssl/example.crt"`            |
 | `--ssl-key`                      | SSL key to use for serving HTTPS                        |           | `--ssl-key="/home/user/ssl/example.key"`             |
+| `--run`                          | Run a command at startup                                |           | `--run="cd app & npm start"`                         |
+| `--devserver-timeout`            | The time to wait(in ms) for the dev server to start     | 30000     | `--devserver-timeout=60000`                          |
 
 ## Local authentication & authorization emulation
 
