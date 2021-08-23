@@ -109,6 +109,12 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
       }
     }
 
+    let warningMessage = `\n\nThis CLI is currently in preview and runs an emulator that may not match the \n`;
+    warningMessage += `cloud environment exactly. Always deploy and test your app in Azure.\n`;
+
+    // logger.log(`${chalk.yellowBright(warningMessage)}`);
+    logger.log(warningMessage);
+
     // note: this string must not change. It is used by the VS Code extension.
     // see: https://github.com/Azure/static-web-apps-cli/issues/124
     //--------------------------------------------------------------------------------
@@ -118,13 +124,6 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
     //--------------------------------------------------------------------------------
 
     logger.log(logMessage);
-
-    let warningMessage = `******************************************************************************\n`;
-    warningMessage += `** This CLI is still in preview and runs an emulator that may not match the **\n`;
-    warningMessage += `** cloud environment exactly. Always deploy and test your app in Azure.     **\n`;
-    warningMessage += `******************************************************************************\n`;
-
-    logger.log(`${chalk.yellowBright(warningMessage)}`);
 
     server.on("upgrade", onWsUpgrade());
 
