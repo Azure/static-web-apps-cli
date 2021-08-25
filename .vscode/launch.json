@@ -1,53 +1,19 @@
 {
   "configurations": [
     {
-      "command": "swa start ./cypress/fixtures/static --api http://localhost:8081",
-      "name": "localhost and custom port for api",
-      "type": "node-terminal",
+      "command": "npm start",
+      "name": "Run npm start",
       "request": "launch",
-      "preLaunchTask": "build"
+      "type": "node-terminal"
     },
     {
-      "command": "swa start ./cypress/fixtures/static --api http://127.253.21.12:8081",
-      "name": "custom host server for api",
       "type": "node-terminal",
       "request": "launch",
-      "preLaunchTask": "build"
-    },
-    {
-      "command": "swa start ./cypress/fixtures/static --api  http://9f778e61aff9.ngrok.io",
-      "name": "custom server for api",
-      "type": "node-terminal",
-      "request": "launch",
-      "preLaunchTask": "build"
-    },
-    {
-      "command": "swa start ./cypress/fixtures/static",
-      "name": "normal case",
-      "type": "node-terminal",
-      "request": "launch",
-      "preLaunchTask": "build"
-    },
-    {
-      "command": "swa start http://8a3fd0f71141.ngrok.io",
-      "name": "custom dev server for app",
-      "type": "node-terminal",
-      "request": "launch",
-      "preLaunchTask": "build"
-    },
-    {
-      "command": "swa start http://8a3fd0f71141.ngrok.io --api http://3fe5f59fc2c5.ngrok.io",
-      "name": "custom dev servers for app and api",
-      "type": "node-terminal",
-      "request": "launch",
-      "preLaunchTask": "build"
-    },
-    {
-      "command": "swa start http://localhost:3000 --api http://localhost:8081",
-      "name": "dev server for static sites and api",
-      "type": "node-terminal",
-      "request": "launch",
-      "preLaunchTask": "build"
+      "name": "Jest Tests",
+      "command": "node ${workspaceRoot}/node_modules/jest/bin/jest.js -i",
+      // "args": ["-i"],
+      "preLaunchTask": "build",
+      "internalConsoleOptions": "openOnSessionStart"
     }
   ]
 }
