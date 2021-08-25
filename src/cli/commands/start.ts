@@ -79,6 +79,11 @@ export async function start(startContext: string, options: SWACLIConfig) {
 
     // get the API port from the dev server
     apiPort = parseUrl(useApiDevServer)?.port;
+    if (apiPort === 0) {
+      //For custom Urls like http://e7fd8a1ae447.ngrok.io, port is taken as 0,instead of 80 for http
+      apiPort = 80;
+    }
+
     //get the host from the dev server
     apiHost = parseUrl(useApiDevServer)?.hostname;
   } else {

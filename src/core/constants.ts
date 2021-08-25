@@ -190,7 +190,7 @@ export function IS_APP_DEV_SERVER() {
 export function IS_API_DEV_SERVER() {
   return isHttpUrl(SWA_CLI_API_LOCATION);
 }
-//Returns an url with http://{SWA_CLI_API_HOST}:{SWA_CLI_PORT}
+//Returns an url with http://{SWA_CLI_API_HOST}:{SWA_CLI_API_PORT}
 export function SWA_CLI_API_URI() {
-  return address(SWA_CLI_HOST, SWA_CLI_API_PORT);
+  return address(SWA_CLI_API_HOST, SWA_CLI_API_PORT);
 }
