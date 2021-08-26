@@ -25,6 +25,8 @@ export function responseOverrides(req: http.IncomingMessage, res: http.ServerRes
       }
 
       if (rule.redirect) {
+        const statusCodeToServe = parseInt(`${rule?.statusCode}`, 10) === 301 ? 301 : 302;
+        res.statusCode = statusCodeToServe;
         res.setHeader("Location", rule.redirect);
 
         logger.silly(` - redirect: ${chalk.yellow(rule.redirect)}`);
