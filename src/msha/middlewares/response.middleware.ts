@@ -13,6 +13,8 @@ import {
 } from "../routes-engine";
 import { parseQueryParams } from "../routes-engine/route-processor";
 
+export let isFunctionFallback = false;
+
 export function getResponse(
   req: http.IncomingMessage,
   res: http.ServerResponse,
@@ -60,6 +62,10 @@ export function getResponse(
   );
 
   if (storageResult.isFunctionFallbackRequest) {
+    isFunctionFallback = true;
+    if (userConfig?.navigationFallback.rewrite) {
+      req.url = userConfig.navigationFallback.rewrite;
+    }
     return handleFunctionRequest(req, res);
   }
 
