@@ -1,11 +1,19 @@
 {
   "configurations": [
     {
-      "command": "swa start ./cypress/fixtures/static --api http://722f8e991170.ngrok.io",
-      "name": "SWA with API",
+      "command": "npm start",
+      "name": "Run npm start",
+      "request": "launch",
+      "type": "node-terminal"
+    },
+    {
       "type": "node-terminal",
       "request": "launch",
-      "preLaunchTask": "build"
+      "name": "Jest Tests",
+      "command": "node ${workspaceRoot}/node_modules/jest/bin/jest.js -i",
+      // "args": ["-i"],
+      "preLaunchTask": "build",
+      "internalConsoleOptions": "openOnSessionStart"
     }
   ]
 }
