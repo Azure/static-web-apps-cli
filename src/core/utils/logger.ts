@@ -44,7 +44,7 @@ export const logger = {
   },
 
   /**
-   * Print error data and optionally exist the CLI instance.
+   * Print error data and optionally exit the CLI instance.
    * @param data Either a string or an object to be printed.
    * @param exit If set to True, the CLI instance will be terminated after printing the error message (code -1).
    */
