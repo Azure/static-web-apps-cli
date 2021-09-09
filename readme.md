@@ -179,6 +179,7 @@ If you need to override the default values, provide the following options:
 | `--ssl-key`                      | SSL key to use for serving HTTPS                        |           | `--ssl-key="/home/user/ssl/example.key"`             |
 | `--run`                          | Run a command at startup                                |           | `--run="cd app & npm start"`                         |
 | `--devserver-timeout`            | The time to wait(in ms) for the dev server to start     | 30000     | `--devserver-timeout=60000`                          |
+| `--func-args`                    | Additional arguments to pass to `func start`            |           | `--func-args="--javascript"`                         |
 
 ## Local authentication & authorization emulation
 
