@@ -1,11 +1,14 @@
 import program, { Option } from "commander";
 import path from "path";
 import { DEFAULT_CONFIG } from "../config";
-import { parsePort } from "../core";
+import { logger, parsePort } from "../core";
 import { parseDevserverTimeout } from "../core";
 import { start } from "./commands/start";
 import updateNotifier from "update-notifier";
+import { getFileOptions, swaCliConfigFilename } from "../core/utils/cli-config";
 const pkg = require("../../package.json");
+
+export const defaultStartContext = `.${path.sep}`;
 
 export async function run(argv?: string[]) {
   // Once a day, check for updates
@@ -18,8 +21,10 @@ export async function run(argv?: string[]) {
 
     // SWA config
     .option("--verbose [prefix]", "enable verbose output. Values are: silly,info,log,silent", DEFAULT_CONFIG.verbose)
+    .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development\n")
 
-    .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development\n");
+    .option("--config <path>", "Path to swa-cli.config.json file to use.", path.relative(process.cwd(), swaCliConfigFilename))
+    .option("--print-config", "Print all resolved options.", false);
 
   program
     .command("start [context]")
@@ -60,20 +65,31 @@ export async function run(argv?: string[]) {
     .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
 
     .action(async (context: string = `.${path.sep}`, options: SWACLIConfig) => {
-      options = {
-        ...options,
-        verbose: cli.opts().verbose,
-      };
+      const verbose = cli.opts().verbose;
 
       // make sure the start command gets the right verbosity level
-      process.env.SWA_CLI_DEBUG = options.verbose;
-      if (options.verbose?.includes("silly")) {
+      process.env.SWA_CLI_DEBUG = verbose;
+      if (verbose?.includes("silly")) {
         // when silly level is set,
         // propagate debugging level to other tools using the DEBUG environment variable
         process.env.DEBUG = "*";
       }
 
-      await start(context, options);
+      const fileOptions = await getFileOptions(context, cli.opts().config);
+
+      options = {
+        ...options,
+        ...fileOptions,
+        verbose,
+      };
+
+      if (cli.opts().printConfig) {
+        logger.log("", "swa");
+        logger.log("Options: ", "swa");
+        logger.log({ ...DEFAULT_CONFIG, ...options }, "swa");
+      }
+
+      await start(fileOptions.context ?? context, options);
     })
 
     .addHelpText(
