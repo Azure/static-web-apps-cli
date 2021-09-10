@@ -21,7 +21,9 @@ export function tryFindFileForRequest(requestPath: string) {
     return requestPath;
   }
 
-  requestPath = getIndexHtml(requestPath);
+  if (requestPath.endsWith("/")) {
+    requestPath = getIndexHtml(requestPath);
+  }
 
   logger.silly(` - requestPath: ${chalk.yellow(requestPath)}`);
 

@@ -48,6 +48,24 @@ describe("route", () => {
       expect(filePath).toBe("foo.png");
     });
 
+    it("should return file path when file (without extension) exists", () => {
+      mockFs({
+        "/foo": "",
+      });
+
+      const filePath = tryFindFileForRequest("foo");
+      expect(filePath).toBe("foo");
+    });
+
+    it("should return NULL when file (without extension) doesn't exist", () => {
+      mockFs({
+        "/foo.txt": "",
+      });
+
+      const filePath = tryFindFileForRequest("foo");
+      expect(filePath).toBe(null);
+    });
+
     it("should return file path when file (w/ space) exists", () => {
       mockFs({
         "/foo bar.png": "",
