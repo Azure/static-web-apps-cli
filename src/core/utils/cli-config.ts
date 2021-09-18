@@ -12,8 +12,8 @@ export async function getFileOptions(context: string, configFilePath: string): P
   }
 
   const cliConfig = await tryParseSwaCliConfig(configFilePath);
-  if (cliConfig.configurations === undefined) {
-    logger.error(`${swaCliConfigFilename} is missing the "configurations" property. No options will be loaded.`);
+  if (!cliConfig.configurations) {
+    logger.warn(`${swaCliConfigFilename} is missing the "configurations" property. No options will be loaded.`);
     return {};
   }
 
@@ -21,13 +21,13 @@ export async function getFileOptions(context: string, configFilePath: string): P
   if (hasOnlyOneConfig && context === defaultStartContext) {
     const [configName, config] = Object.entries(cliConfig.configurations)[0];
     printConfigMsg(configName, configFilePath);
-    return config;
+    return { context: `.${path.sep}`, ...config };
   }
 
   const config = cliConfig.configurations?.[context];
   if (config) {
     printConfigMsg(context, configFilePath);
-    return config;
+    return { context: `.${path.sep}`, ...config };
   }
 
   return {};

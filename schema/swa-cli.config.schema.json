@@ -18,8 +18,12 @@
                 "enum": ["api"],
                 "type": "string"
               },
-              "app": {
+              "appArtifactLocation": {
                 "description": "Location of the build output directory relative to the appLocation",
+                "type": "string"
+              },
+              "appLocation": {
+                "description": "Location for the static app source code",
                 "type": "string"
               },
               "build": {
