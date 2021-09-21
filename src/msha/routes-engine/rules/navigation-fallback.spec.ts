@@ -174,4 +174,21 @@ describe("navigationFallback()", () => {
 
     expect(req.url).toBe("/images/foo/bar.png");
   });
+
+  it("should work if function is used as a fallback", () => {
+    req.url = "/images/foo.png";
+    userConfig = {
+      rewrite: "/api/test",
+      exclude: ["/images/*.{gif}"],
+    };
+    process.env.SWA_CLI_OUTPUT_LOCATION = "/";
+
+    mockFs({
+      "/no-file": "",
+    });
+
+    navigationFallback(req, res, userConfig);
+
+    expect(req.url).toBe("/api/test");
+  });
 });
