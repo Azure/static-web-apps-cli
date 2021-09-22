@@ -14,7 +14,7 @@ import { handleErrorPage } from "../handlers/error-page.handler";
 import { isFunctionRequest } from "../handlers/function.handler";
 import { isRequestMethodValid, isRouteRequiringUserRolesCheck, tryGetMatchingRoute } from "../routes-engine";
 import { isCustomUrl, parseQueryParams } from "../routes-engine/route-processor";
-import { getResponse } from "./response.middleware";
+import { getResponse, isFunctionFallback } from "./response.middleware";
 
 /**
  * On connection lost handler. Called when a connection to a target host cannot be made or if the remote target is down.
@@ -303,7 +303,7 @@ export async function requestMiddleware(
 
   getResponse(req, res, matchingRouteRule, userConfig, isFunctionReq);
 
-  if (!isFunctionReq) {
+  if (!isFunctionReq && !isFunctionFallback) {
     logger.silly(` - url: ${chalk.yellow(req.url)}`);
     logger.silly(` - target: ${chalk.yellow(target)}`);
 
