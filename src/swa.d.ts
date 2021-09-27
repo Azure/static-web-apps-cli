@@ -57,7 +57,7 @@ declare type GithubActionWorkflow = {
   files?: string[];
 };
 
-declare type SWACLIConfig = GithubActionWorkflow & {
+declare type SWACLIOptions = {
   port?: number;
   host?: string;
   apiPort?: number;
@@ -68,7 +68,7 @@ declare type SWACLIConfig = GithubActionWorkflow & {
   swaConfigFilename?: "staticwebapp.config.json";
   swaConfigFilenameLegacy?: "routes.json";
   app?: string;
-  api?: string;
+  apiLocation?: string;
   build?: boolean;
   verbose?: string;
   run?: string;
@@ -78,6 +78,8 @@ declare type SWACLIConfig = GithubActionWorkflow & {
   devserverTimeout?: number;
   funcArgs?: string;
 };
+
+declare type SWACLIConfig = SWACLIOptions & GithubActionWorkflow;
 
 declare type ResponseOptions = {
   [key: string]: any;
@@ -135,3 +137,9 @@ declare type SWAConfigFile = {
 };
 
 declare type DebugFilterLevel = "silly" | "silent" | "log" | "info" | "error";
+
+declare type SWACLIConfigFile = {
+  configurations?: {
+    [name: string]: SWACLIOptions & { context?: string };
+  };
+};

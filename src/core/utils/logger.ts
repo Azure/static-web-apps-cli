@@ -42,7 +42,14 @@ export const logger = {
   log(data: string | object, prefix: string | null = null) {
     this.silly(data, prefix, "log", chalk.reset);
   },
-
+  /**
+   * Print information data.
+   * @param data Either a string or an object to be printed.
+   * @param prefix (optional) A prefix to prepend to the printed message.
+   */
+  warn(data: string | object, prefix: string | null = null) {
+    this.silly(data, prefix, "log", chalk.yellow);
+  },
   /**
    * Print error data and optionally exit the CLI instance.
    * @param data Either a string or an object to be printed.
