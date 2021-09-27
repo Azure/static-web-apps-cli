@@ -34,6 +34,7 @@ export function getResponse(
   }
 
   if (rewrite) {
+    req.headers["x-ms-original-url"] = encodeURI(req.url!);
     req.url = rewrite;
   }
 
