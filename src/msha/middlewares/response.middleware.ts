@@ -32,8 +32,8 @@ export function getResponse(
     applyRedirectResponse(req, res, matchedRoute);
     return false;
   }
-  // We should always set the x-ms-original-url.
-  req.headers["x-ms-original-url"] = req.url!;
+  // We should always set the x-ms-original-url to be the full request URL.
+  req.headers["x-ms-original-url"] = new URL(req.url!, `http://${req.headers.host}`).href;
   if (rewrite) {
     req.url = rewrite;
   }
