@@ -301,9 +301,7 @@ export async function requestMiddleware(
     return await handleAuthRequest(req, res, matchingRouteRule, userConfig);
   }
 
-  getResponse(req, res, matchingRouteRule, userConfig, isFunctionReq);
-
-  if (!isFunctionReq && res.statusCode >= 400 && res.statusCode < 500) {
+  if (!getResponse(req, res, matchingRouteRule, userConfig, isFunctionReq)) {
     logger.silly(` - url: ${chalk.yellow(req.url)}`);
     logger.silly(` - target: ${chalk.yellow(target)}`);
 

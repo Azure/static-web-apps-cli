@@ -19,7 +19,7 @@ export function getResponse(
   matchedRoute: SWAConfigFileRoute | undefined,
   userConfig: SWAConfigFile | undefined,
   isFunctionRequest: boolean
-) {
+): boolean {
   const statusCodeToServe = parseInt(`${matchedRoute?.statusCode}`, 10);
   const redirect = matchedRoute?.redirect;
   const rewrite = matchedRoute?.rewrite;
@@ -29,7 +29,8 @@ export function getResponse(
   if (redirect) {
     logger.silly(` - redirect rule detected. Exit`);
 
-    return applyRedirectResponse(req, res, matchedRoute);
+    applyRedirectResponse(req, res, matchedRoute);
+    return false;
   }
   // We should always set the x-ms-original-url.
   req.headers["x-ms-original-url"] = req.url!;
@@ -40,11 +41,13 @@ export function getResponse(
   if ([403, 401].includes(statusCodeToServe)) {
     logger.silly(` - ${statusCodeToServe} code detected. Exit`);
 
-    return handleErrorPage(req, res, statusCodeToServe, userConfig?.responseOverrides);
+    handleErrorPage(req, res, statusCodeToServe, userConfig?.responseOverrides);
+    return false;
   }
 
   if (isFunctionRequest) {
-    return handleFunctionRequest(req, res);
+    handleFunctionRequest(req, res);
+    return true;
   }
 
   const storageResult = getStorageContent(
@@ -61,14 +64,13 @@ export function getResponse(
 
   if (storageResult.isFunctionFallbackRequest) {
     req.url = userConfig?.navigationFallback.rewrite!;
-    return handleFunctionRequest(req, res);
-  } else if (storageResult.isSuccessfulSiteHit) {
-    // The file does exist, but its not a function, so serve it statically
-    res.statusCode = 404;
+    handleFunctionRequest(req, res);
+    return true;
   }
   if (statusCodeToServe) {
     res.statusCode = statusCodeToServe;
   }
+  return false;
 }
 
 export function getStorageContent(
