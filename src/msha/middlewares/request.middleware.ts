@@ -303,7 +303,7 @@ export async function requestMiddleware(
 
   getResponse(req, res, matchingRouteRule, userConfig, isFunctionReq);
 
-  if (!isFunctionReq) {
+  if (!isFunctionReq && res.statusCode >= 400 && res.statusCode < 500) {
     logger.silly(` - url: ${chalk.yellow(req.url)}`);
     logger.silly(` - target: ${chalk.yellow(target)}`);
 

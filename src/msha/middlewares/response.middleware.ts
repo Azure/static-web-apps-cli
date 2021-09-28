@@ -23,7 +23,6 @@ export function getResponse(
   const statusCodeToServe = parseInt(`${matchedRoute?.statusCode}`, 10);
   const redirect = matchedRoute?.redirect;
   const rewrite = matchedRoute?.rewrite;
-
   logger.silly(`using userConfig`);
   logger.silly({ userConfig });
 
@@ -32,9 +31,9 @@ export function getResponse(
 
     return applyRedirectResponse(req, res, matchedRoute);
   }
-
+  // We should always set the x-ms-original-url.
+  req.headers["x-ms-original-url"] = req.url!;
   if (rewrite) {
-    req.headers["x-ms-original-url"] = encodeURI(req.url!);
     req.url = rewrite;
   }
 
@@ -61,9 +60,12 @@ export function getResponse(
   );
 
   if (storageResult.isFunctionFallbackRequest) {
+    req.url = userConfig?.navigationFallback.rewrite!;
     return handleFunctionRequest(req, res);
+  } else if (storageResult.isSuccessfulSiteHit) {
+    // The file does exist, but its not a function, so serve it statically
+    res.statusCode = 404;
   }
-
   if (statusCodeToServe) {
     res.statusCode = statusCodeToServe;
   }
