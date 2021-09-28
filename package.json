@@ -3,7 +3,7 @@
   "version": "0.7.3-alpha",
   "description": "Azure Static Web Apps CLI",
   "scripts": {
-    "start": "node ./dist/cli/bin.js start ./cypress/fixtures/static --api=./cypress/fixtures/api --port 1234 --devserver-timeout 10000 --verbose silly",
+    "start": "node ./dist/cli/bin.js start ./cypress/fixtures/static --api-location=./cypress/fixtures/api --port 1234 --devserver-timeout 10000 --verbose silly",
     "start:config": "node ./dist/cli/bin.js --config ./cypress/fixtures/static/swa-cli.config.json start app",
     "prestart": "npm run build",
     "pretest": "npm run build",
