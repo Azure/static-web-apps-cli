@@ -27,7 +27,7 @@
   "dependencies": {
     "@types/globalyzer": "^0.1.1",
     "@types/globrex": "^0.1.0",
-    "chalk": "^4.1.1",
+    "chalk": "^4.1.2",
     "commander": "^7.2.0",
     "concurrently": "^6.2.0",
     "cookie": "^0.4.1",
