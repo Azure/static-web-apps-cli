@@ -70,6 +70,19 @@ To use SWA CLI with your local dev server, follow these two steps:
    swa start http://<APP_DEV_SERVER_HOST>:<APP_DEV_SERVER_PORT>
    ```
 
+Here is a list of the default ports used by some popular dev servers:
+
+| Tool                                                                               | Port | Command                           |
+| ---------------------------------------------------------------------------------- | ---- | --------------------------------- |
+| [Angular](https://angular.io/cli)                                                  | 4200 | `swa start http://localhost:4200` |
+| [Vue](https://cli.vuejs.org/)                                                      | 8080 | `swa start http://localhost:8080` |
+| [React (Create React App)](https://reactjs.org/docs/create-a-new-react-app.html)   | 3000 | `swa start http://localhost:3000` |
+| [Blazor WebAssembly](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)     | 5000 | `swa start http://localhost:5000` |
+| [Hugo](https://gohugo.io/commands/hugo_server/)                                    | 1313 | `swa start http://localhost:1313` |
+| [Svelte (sirv-cli)](https://github.com/lukeed/sirv/tree/master/packages/sirv-cli/) | 5000 | `swa start http://localhost:5000` |
+| [Gatsby](https://www.gatsbyjs.com/docs/gatsby-cli/)                                | 8000 | `swa start http://localhost:8000` |
+| [Next.js](https://nextjs.org/)                                                     | 3000 | `swa start http://localhost:3000` |
+
 Instead of starting a dev server separately, you can provide the startup command to the CLI.
 
 ```bash
@@ -86,20 +99,7 @@ swa start http://localhost:4000 --run "jekyll serve"
 swa start http://localhost:4200 --run "./startup.sh"
 ```
 
-Here is a list of the default ports used by some popular dev servers:
-
-| Tool                                                                               | Port | Command                           |
-| ---------------------------------------------------------------------------------- | ---- | --------------------------------- |
-| [Angular](https://angular.io/cli)                                                  | 4200 | `swa start http://localhost:4200` |
-| [Vue](https://cli.vuejs.org/)                                                      | 8080 | `swa start http://localhost:8080` |
-| [React (Create React App)](https://reactjs.org/docs/create-a-new-react-app.html)   | 3000 | `swa start http://localhost:3000` |
-| [Blazor WebAssembly](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)     | 5000 | `swa start http://localhost:5000` |
-| [Hugo](https://gohugo.io/commands/hugo_server/)                                    | 1313 | `swa start http://localhost:1313` |
-| [Svelte (sirv-cli)](https://github.com/lukeed/sirv/tree/master/packages/sirv-cli/) | 5000 | `swa start http://localhost:5000` |
-| [Gatsby](https://www.gatsbyjs.com/docs/gatsby-cli/)                                | 8000 | `swa start http://localhost:8000` |
-| [Next.js](https://nextjs.org/)                                                     | 3000 | `swa start http://localhost:3000` |
-
-> Note: Also when starting the CLI through a dev server, use port 4280 (`http://localhost:4280`) to access the application with the emulated services.
+Go to 4280 (`http://localhost:4280`) to access the application with the emulated services.
 
 ### Serve both the static app and API
 
