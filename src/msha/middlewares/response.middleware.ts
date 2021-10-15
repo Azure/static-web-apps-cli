@@ -19,20 +19,21 @@ export function getResponse(
   matchedRoute: SWAConfigFileRoute | undefined,
   userConfig: SWAConfigFile | undefined,
   isFunctionRequest: boolean
-) {
+): boolean {
   const statusCodeToServe = parseInt(`${matchedRoute?.statusCode}`, 10);
   const redirect = matchedRoute?.redirect;
   const rewrite = matchedRoute?.rewrite;
-
   logger.silly(`using userConfig`);
   logger.silly({ userConfig });
 
   if (redirect) {
     logger.silly(` - redirect rule detected. Exit`);
 
-    return applyRedirectResponse(req, res, matchedRoute);
+    applyRedirectResponse(req, res, matchedRoute);
+    return false;
   }
-
+  // We should always set the x-ms-original-url to be the full request URL.
+  req.headers["x-ms-original-url"] = new URL(req.url!, `http://${req.headers.host}`).href;
   if (rewrite) {
     req.url = rewrite;
   }
@@ -40,11 +41,13 @@ export function getResponse(
   if ([403, 401].includes(statusCodeToServe)) {
     logger.silly(` - ${statusCodeToServe} code detected. Exit`);
 
-    return handleErrorPage(req, res, statusCodeToServe, userConfig?.responseOverrides);
+    handleErrorPage(req, res, statusCodeToServe, userConfig?.responseOverrides);
+    return false;
   }
 
   if (isFunctionRequest) {
-    return handleFunctionRequest(req, res);
+    handleFunctionRequest(req, res);
+    return true;
   }
 
   const storageResult = getStorageContent(
@@ -60,12 +63,14 @@ export function getResponse(
   );
 
   if (storageResult.isFunctionFallbackRequest) {
-    return handleFunctionRequest(req, res);
+    req.url = userConfig?.navigationFallback.rewrite!;
+    handleFunctionRequest(req, res);
+    return true;
   }
-
   if (statusCodeToServe) {
     res.statusCode = statusCodeToServe;
   }
+  return false;
 }
 
 export function getStorageContent(
