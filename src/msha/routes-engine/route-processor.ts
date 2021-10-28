@@ -127,7 +127,7 @@ export function parseQueryParams(req: http.IncomingMessage, matchingRouteRule: S
   const doesMatchingRewriteRouteHaveQueryStringParameters = matchingRewriteRouteQueryString !== "";
   let matchingRewriteRoutePath = matchingRewriteRoute ? matchingRewriteRoute : undefined;
   if (doesMatchingRewriteRouteHaveQueryStringParameters) {
-    matchingRewriteRoutePath = sanitizedUrl.pathname;
+    matchingRewriteRoutePath = sanitizedUrl.pathname + matchingRewriteRouteQueryString;
     logger.silly(` - query: ${chalk.yellow(matchingRewriteRouteQueryString)}`);
   }
   return { matchingRewriteRoutePath, sanitizedUrl, matchingRewriteRoute };
