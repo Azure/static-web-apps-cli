@@ -75,13 +75,13 @@ Here is a list of the default ports used by some popular dev servers:
 | Tool                                                                               | Port | Command                           |
 | ---------------------------------------------------------------------------------- | ---- | --------------------------------- |
 | [Angular](https://angular.io/cli)                                                  | 4200 | `swa start http://localhost:4200` |
-| [Vue](https://cli.vuejs.org/)                                                      | 8080 | `swa start http://localhost:8080` |
-| [React (Create React App)](https://reactjs.org/docs/create-a-new-react-app.html)   | 3000 | `swa start http://localhost:3000` |
 | [Blazor WebAssembly](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)     | 5000 | `swa start http://localhost:5000` |
-| [Hugo](https://gohugo.io/commands/hugo_server/)                                    | 1313 | `swa start http://localhost:1313` |
-| [Svelte (sirv-cli)](https://github.com/lukeed/sirv/tree/master/packages/sirv-cli/) | 5000 | `swa start http://localhost:5000` |
 | [Gatsby](https://www.gatsbyjs.com/docs/gatsby-cli/)                                | 8000 | `swa start http://localhost:8000` |
+| [Hugo](https://gohugo.io/commands/hugo_server/)                                    | 1313 | `swa start http://localhost:1313` |
 | [Next.js](https://nextjs.org/)                                                     | 3000 | `swa start http://localhost:3000` |
+| [React (Create React App)](https://reactjs.org/docs/create-a-new-react-app.html)   | 3000 | `swa start http://localhost:3000` |
+| [Svelte (sirv-cli)](https://github.com/lukeed/sirv/tree/master/packages/sirv-cli/) | 5000 | `swa start http://localhost:5000` |
+| [Vue](https://cli.vuejs.org/)                                                      | 8080 | `swa start http://localhost:8080` |
 
 Instead of starting a dev server separately, you can provide the startup command to the CLI.
 
