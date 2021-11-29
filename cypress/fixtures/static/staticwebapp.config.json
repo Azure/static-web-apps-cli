@@ -60,15 +60,15 @@
     },
     {
       "route": "/status-code-401.txt",
-      "statusCode": "401"
+      "statusCode": 401
     },
     {
       "route": "/status-code-403.txt",
-      "statusCode": "403"
+      "statusCode": 403
     },
     {
       "route": "/status-code-404.txt",
-      "statusCode": "404"
+      "statusCode": 404
     },
     {
       "route": "/only-authenticated",
@@ -84,7 +84,7 @@
     }
   ],
   "navigationFallback": {
-    "rewrite": "/index.html",
+    "rewrite": "/api/headers",
     "exclude": ["*.{txt}"]
   },
   "responseOverrides": {
