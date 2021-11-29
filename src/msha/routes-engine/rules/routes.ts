@@ -16,7 +16,7 @@ import { doesRequestPathMatchLegacyRoute, doesRequestPathMatchRoute } from "../r
 export function tryFindFileForRequest(requestPath: string) {
   logger.silly(`finding file for request`);
   // if the user is connecting to a remote dev server, filePath will be an HTTP request pointing to the remote ressource.
-  // We exist here and let the remote server handle the request.
+  // We exit here and let the remote server handle the request.
   if (IS_APP_DEV_SERVER()) {
     return requestPath;
   }
