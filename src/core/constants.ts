@@ -171,7 +171,7 @@ export const SWA_CLI_APP_SSL = process.env.SWA_CLI_APP_SSL === "true" || DEFAULT
 export const SWA_CLI_APP_SSL_KEY = process.env.SWA_CLI_APP_SSL_KEY as string;
 export const SWA_CLI_APP_SSL_CERT = process.env.SWA_CLI_APP_SSL_CERT as string;
 export const SWA_CLI_APP_PROTOCOL = SWA_CLI_APP_SSL ? `https` : `http`;
-export const SWA_PUBLIC_DIR = path.resolve(__dirname, "..", "public");
+export const SWA_PUBLIC_DIR = path.resolve(__dirname, "..", "public"); //SWA_PUBLIC_DIR = "../public"
 export const HAS_API = Boolean(SWA_CLI_API_LOCATION && SWA_CLI_API_URI());
 export const SWA_CLI_DEVSERVER_TIMEOUT = parseInt((process.env.SWA_CLI_DEVSERVER_TIMEOUT || DEFAULT_CONFIG.devserverTimeout) as string, 10);
 

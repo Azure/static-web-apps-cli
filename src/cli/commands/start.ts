@@ -25,13 +25,14 @@ export async function start(startContext: string, options: SWACLIConfig) {
     useAppDevServer = startContext;
     options.outputLocation = useAppDevServer;
   } else {
-    // start the emulator from a specific artifact folder, if folder exists
-    if (fs.existsSync(startContext)) {
-      options.outputLocation = startContext;
+    let outputLocationRelative = path.resolve(options.appLocation as string, startContext);
+    // start the emulator from a specific artifact folder relative to appLocation, if folder exists
+    if (fs.existsSync(outputLocationRelative)) {
+      options.outputLocation = outputLocationRelative;
     } else {
       // prettier-ignore
       logger.error(
-        `The dist folder "${startContext}" is not found.\n` +
+        `The dist folder "${outputLocationRelative}" is not found.\n` +
         `Make sure that this folder exists or use the --build option to pre-build the static app.`,
         true
       );
