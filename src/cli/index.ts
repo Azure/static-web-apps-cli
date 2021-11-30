@@ -31,11 +31,6 @@ export async function run(argv?: string[]) {
     .usage("[context] [options]")
     .description("start the emulator from a directory or bind to a dev server")
     .option("--app-location <appLocation>", "set location for the static app source code", DEFAULT_CONFIG.appLocation)
-    .option(
-      "--output-location <outputLocation>",
-      "set the location of the build output directory relative to the --app-location.",
-      DEFAULT_CONFIG.outputLocation
-    )
     .option("--api-location <apiLocation>", "set the API folder or Azure Functions emulator address", DEFAULT_CONFIG.apiLocation)
     .option(
       "--swa-config-location <swaConfigLocation>",
