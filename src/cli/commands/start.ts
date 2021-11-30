@@ -29,6 +29,10 @@ export async function start(startContext: string, options: SWACLIConfig) {
     // start the emulator from a specific artifact folder relative to appLocation, if folder exists
     if (fs.existsSync(outputLocationRelative)) {
       options.outputLocation = outputLocationRelative;
+    }
+    //check for artifact folder using the absolute location
+    else if (fs.existsSync(startContext)) {
+      options.outputLocation = startContext;
     } else {
       // prettier-ignore
       logger.error(
