@@ -5,10 +5,13 @@
   - src/cli/*
 
 "scope: auth":
-  - src/auth/*
+  - src/msha/auth/*
 
 "scope: rules engine":
-  - src/proxy/routes-engine/*
+  - src/msha/routes-engine/*
 
-"scope: proxy":
-  - src/proxy/*
+"scope: msha":
+  - src/msha/*
+
+"status: need internal approval":
+  - src/msha/*

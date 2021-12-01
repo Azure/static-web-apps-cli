@@ -16,10 +16,10 @@ registerProcessExit(() => {
 
 function injectHeaders(req: http.ClientRequest, host: string) {
   logger.silly(`injecting headers to Functions request:`);
-
-  req.setHeader("x-ms-original-url", encodeURI(new URL(req.path!, host).toString()));
-  logger.silly(` - x-ms-original-url: ${chalk.yellow(req.getHeader("x-ms-original-url"))}`);
-
+  if (!req.getHeader("x-ms-original-url")) {
+    req.setHeader("x-ms-original-url", encodeURI(new URL(req.path!, host).toString()));
+    logger.silly(` - x-ms-original-url: ${chalk.yellow(req.getHeader("x-ms-original-url"))}`);
+  }
   // generate a fake correlation ID
   req.setHeader("x-ms-request-id", `SWA-CLI-${Math.random().toString(36).substring(2).toUpperCase()}`);
   logger.silly(` - x-ms-request-id: ${chalk.yellow(req.getHeader("x-ms-request-id"))}`);

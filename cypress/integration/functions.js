@@ -16,6 +16,13 @@ context.only("/api", () => {
         expect(body).to.include("x-swa-custom");
       });
     });
+    it("Should correctly set x-ms-original-url to the full request url", () => {
+      const HEADER_URL = "http://0.0.0.0:1234/api/headers";
+      cy.request({ url: HEADER_URL, failOnStatusCode: false }).then((response) => {
+        expect(response.status).to.eq(200);
+        expect(response.body["x-ms-original-url"]).to.equal(HEADER_URL);
+      });
+    });
   });
 
   describe(`Accessing /api/status`, () => {
@@ -46,7 +53,7 @@ context.only("/api", () => {
 
       cy.request({ url: `http://0.0.0.0:1234/api/info`, failOnStatusCode: false }).then((response) => {
         expect(response.status).to.eq(200);
-        expect(response.body).to.eq('authorized');
+        expect(response.body).to.eq("authorized");
       });
     });
   });

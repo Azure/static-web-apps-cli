@@ -1,11 +1,14 @@
 import program, { Option } from "commander";
 import path from "path";
 import { DEFAULT_CONFIG } from "../config";
-import { parsePort } from "../core";
+import { logger, parsePort } from "../core";
 import { parseDevserverTimeout } from "../core";
 import { start } from "./commands/start";
 import updateNotifier from "update-notifier";
+import { getFileOptions, swaCliConfigFilename } from "../core/utils/cli-config";
 const pkg = require("../../package.json");
+
+export const defaultStartContext = `.${path.sep}`;
 
 export async function run(argv?: string[]) {
   // Once a day, check for updates
@@ -18,8 +21,10 @@ export async function run(argv?: string[]) {
 
     // SWA config
     .option("--verbose [prefix]", "enable verbose output. Values are: silly,info,log,silent", DEFAULT_CONFIG.verbose)
+    .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development\n")
 
-    .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development\n");
+    .option("--config <path>", "Path to swa-cli.config.json file to use.", path.relative(process.cwd(), swaCliConfigFilename))
+    .option("--print-config", "Print all resolved options.", false);
 
   program
     .command("start [context]")
@@ -27,11 +32,11 @@ export async function run(argv?: string[]) {
     .description("start the emulator from a directory or bind to a dev server")
     .option("--app-location <appLocation>", "set location for the static app source code", DEFAULT_CONFIG.appLocation)
     .option(
-      "--app, --app-artifact-location <outputLocation>",
+      "--output-location <outputLocation>",
       "set the location of the build output directory relative to the --app-location.",
       DEFAULT_CONFIG.outputLocation
     )
-    .option("--api, --api-location <apiLocation>", "set the API folder or Azure Functions emulator address", DEFAULT_CONFIG.apiLocation)
+    .option("--api-location <apiLocation>", "set the API folder or Azure Functions emulator address", DEFAULT_CONFIG.apiLocation)
     .option(
       "--swa-config-location <swaConfigLocation>",
       "set the directory where the staticwebapp.config.json file is found",
@@ -57,21 +62,34 @@ export async function run(argv?: string[]) {
       DEFAULT_CONFIG.devserverTimeout
     )
 
+    .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
+
     .action(async (context: string = `.${path.sep}`, options: SWACLIConfig) => {
-      options = {
-        ...options,
-        verbose: cli.opts().verbose,
-      };
+      const verbose = cli.opts().verbose;
 
       // make sure the start command gets the right verbosity level
-      process.env.SWA_CLI_DEBUG = options.verbose;
-      if (options.verbose?.includes("silly")) {
+      process.env.SWA_CLI_DEBUG = verbose;
+      if (verbose?.includes("silly")) {
         // when silly level is set,
         // propagate debugging level to other tools using the DEBUG environment variable
         process.env.DEBUG = "*";
       }
 
-      await start(context, options);
+      const fileOptions = await getFileOptions(context, cli.opts().config);
+
+      options = {
+        ...options,
+        ...fileOptions,
+        verbose,
+      };
+
+      if (cli.opts().printConfig) {
+        logger.log("", "swa");
+        logger.log("Options: ", "swa");
+        logger.log({ ...DEFAULT_CONFIG, ...options }, "swa");
+      }
+
+      await start(fileOptions.context ?? context, options);
     })
 
     .addHelpText(
@@ -89,7 +107,7 @@ Examples:
   swa start http://localhost:3000 --swa-config-location ./app-source
 
   Serve static content and run an API from another folder
-  swa start ./output-folder --api ./api
+  swa start ./output-folder --api-location ./api
 
   Use a custom command to run framework development server at startup
   swa start http://localhost:3000 --run "npm start"

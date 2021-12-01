@@ -70,6 +70,19 @@ To use SWA CLI with your local dev server, follow these two steps:
    swa start http://<APP_DEV_SERVER_HOST>:<APP_DEV_SERVER_PORT>
    ```
 
+Here is a list of the default ports used by some popular dev servers:
+
+| Tool                                                                               | Port | Command                           |
+| ---------------------------------------------------------------------------------- | ---- | --------------------------------- |
+| [Angular](https://angular.io/cli)                                                  | 4200 | `swa start http://localhost:4200` |
+| [Blazor WebAssembly](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)     | 5000 | `swa start http://localhost:5000` |
+| [Gatsby](https://www.gatsbyjs.com/docs/gatsby-cli/)                                | 8000 | `swa start http://localhost:8000` |
+| [Hugo](https://gohugo.io/commands/hugo_server/)                                    | 1313 | `swa start http://localhost:1313` |
+| [Next.js](https://nextjs.org/)                                                     | 3000 | `swa start http://localhost:3000` |
+| [React (Create React App)](https://reactjs.org/docs/create-a-new-react-app.html)   | 3000 | `swa start http://localhost:3000` |
+| [Svelte (sirv-cli)](https://github.com/lukeed/sirv/tree/master/packages/sirv-cli/) | 5000 | `swa start http://localhost:5000` |
+| [Vue](https://cli.vuejs.org/)                                                      | 8080 | `swa start http://localhost:8080` |
+
 Instead of starting a dev server separately, you can provide the startup command to the CLI.
 
 ```bash
@@ -86,20 +99,7 @@ swa start http://localhost:4000 --run "jekyll serve"
 swa start http://localhost:4200 --run "./startup.sh"
 ```
 
-Here is a list of the default ports used by some popular dev servers:
-
-| Tool                                                                               | Port | Command                           |
-| ---------------------------------------------------------------------------------- | ---- | --------------------------------- |
-| [Angular](https://angular.io/cli)                                                  | 4200 | `swa start http://localhost:4200` |
-| [Vue](https://cli.vuejs.org/)                                                      | 8080 | `swa start http://localhost:8080` |
-| [React (Create React App)](https://reactjs.org/docs/create-a-new-react-app.html)   | 3000 | `swa start http://localhost:3000` |
-| [Blazor WebAssembly](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)     | 5000 | `swa start http://localhost:5000` |
-| [Hugo](https://gohugo.io/commands/hugo_server/)                                    | 1313 | `swa start http://localhost:1313` |
-| [Svelte (sirv-cli)](https://github.com/lukeed/sirv/tree/master/packages/sirv-cli/) | 5000 | `swa start http://localhost:5000` |
-| [Gatsby](https://www.gatsbyjs.com/docs/gatsby-cli/)                                | 8000 | `swa start http://localhost:8000` |
-| [Next.js](https://nextjs.org/)                                                     | 3000 | `swa start http://localhost:3000` |
-
-> Note: Also when starting the CLI through a dev server, use port 4280 (`http://localhost:4280`) to access the application with the emulated services.
+Go to 4280 (`http://localhost:4280`) to access the application with the emulated services.
 
 ### Serve both the static app and API
 
@@ -115,10 +115,10 @@ Run the CLI and provide the folder that contains the API backend (a valid Azure 
 
 ```bash
 # static content plus API
-swa start ./my-dist --api ./api-folder
+swa start ./my-dist --api-location ./api-folder
 
 # frontend dev server plus API
-swa start http://localhost:3000 --api ./api-folder
+swa start http://localhost:3000 --api-location ./api-folder
 ```
 
 #### Start API server manually
@@ -128,9 +128,9 @@ When developing your backend locally, sometimes it's useful to run Azure Functio
 To use the CLI with your local API backend dev server, follow these two steps:
 
 1. Start your API using Azure Functions Core Tools: `func host start` or start debugging in VS Code.
-2. In a separate terminal, run the SWA CLI with the `--api` flag and the URI of the local API server, in the following format:
+2. In a separate terminal, run the SWA CLI with the `--api-location` flag and the URI of the local API server, in the following format:
    ```bash
-   swa start ./my-dist --api http://localhost:7071
+   swa start ./my-dist --api-location http://localhost:7071
    ```
 
 ## Use a configuration file (staticwebapp.config.json)
@@ -165,20 +165,84 @@ swa start http://localhost:3000 --swa-config-location ./my-app-source
 
 If you need to override the default values, provide the following options:
 
-| Options                          | Description                                             | Default   | Example                                              |
-| -------------------------------- | ------------------------------------------------------- | --------- | ---------------------------------------------------- |
-| `--app-location`                 | set location for the static app source code             | `./`      | `--app-location="./my-project"`                      |
-| `--app, --app-artifact-location` | set app artifact (dist) folder or dev server            | `./`      | `--app="./my-dist"` or `--app=http://localhost:4200` |
-| `--api, --api-artifact-location` | set the API folder or dev server                        |           | `--api="./api"` or `--api=http://localhost:8083`     |
-| `--swa-config-location`          | set the directory of the staticwebapp.config.json file. |           | `--swa-config-location=./my-project-folder`          |
-| `--api-port`                     | set the API server port                                 | `7071`    | `--api-port=8082`                                    |
-| `--host`                         | set the emulator host address                           | `0.0.0.0` | `--host=192.168.68.80`                               |
-| `--port`                         | set the emulator port value                             | `4280`    | `--port=8080`                                        |
-| `--ssl`                          | serving the app and API over HTTPS (default: false)     | `false`   | `--ssl` or `--ssl=true`                              |
-| `--ssl-cert`                     | SSL certificate to use for serving HTTPS                |           | `--ssl-cert="/home/user/ssl/example.crt"`            |
-| `--ssl-key`                      | SSL key to use for serving HTTPS                        |           | `--ssl-key="/home/user/ssl/example.key"`             |
-| `--run`                          | Run a command at startup                                |           | `--run="cd app & npm start"`                         |
-| `--devserver-timeout`            | The time to wait(in ms) for the dev server to start     | 30000     | `--devserver-timeout=60000`                          |
+| Options                 | Description                                             | Default                 | Example                                                                      |
+| ----------------------- | ------------------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------- |
+| `--app-location`        | set location for the static app source code             | `./`                    | `--app-location="./my-project"`                                              |
+| `--output-location`     | set app artifact (dist) folder or dev server            | `./`                    | `--output-location="./my-dist"` or `--output-location=http://localhost:4200` |
+| `--api-location`        | set the API folder or dev server                        |                         | `--api-location="./api"` or `--api-location=http://localhost:8083`           |
+| `--swa-config-location` | set the directory of the staticwebapp.config.json file. |                         | `--swa-config-location=./my-project-folder`                                  |
+| `--api-port`            | set the API server port                                 | `7071`                  | `--api-port=8082`                                                            |
+| `--host`                | set the emulator host address                           | `0.0.0.0`               | `--host=192.168.68.80`                                                       |
+| `--port`                | set the emulator port value                             | `4280`                  | `--port=8080`                                                                |
+| `--ssl`                 | serving the app and API over HTTPS (default: false)     | `false`                 | `--ssl` or `--ssl=true`                                                      |
+| `--ssl-cert`            | SSL certificate to use for serving HTTPS                |                         | `--ssl-cert="/home/user/ssl/example.crt"`                                    |
+| `--ssl-key`             | SSL key to use for serving HTTPS                        |                         | `--ssl-key="/home/user/ssl/example.key"`                                     |
+| `--run`                 | Run a command at startup                                |                         | `--run="cd app & npm start"`                                                 |
+| `--devserver-timeout`   | The time to wait(in ms) for the dev server to start     | 30000                   | `--devserver-timeout=60000`                                                  |
+| `--func-args`           | Additional arguments to pass to `func start`            |                         | `--func-args="--javascript"`                                                 |
+| `--config`              | Path to swa-cli.config.json file to use.                | `./swa-cli.config.json` | `--config ./config/swa-cli.config.json`                                      |
+| `--print-config`        | Print all resolved options. Useful for debugging.       |                         | `--print-config` or `--print-config=true`                                    |
+
+## swa-cli.config.json file
+
+The CLI can also load options from a `swa-cli.config.json` file.
+
+```json
+{
+  "configurations": {
+    "app": {
+      "context": "http://localhost:3000",
+      "apiLocation": "api",
+      "run": "npm run start",
+      "swaConfigLocation": "./my-app-source"
+    }
+  }
+}
+```
+
+If only a single configuration is present in the `swa-cli.config.json` file, running `swa start` will use it by default. If options are loaded from a config file, no options passed in via command line will be respected. For example `swa start app --ssl=true`. The `--ssl=true` option will not be picked up by the CLI.
+
+### Example
+
+We can simplify these commands by putting the options into a config file.
+
+```bash
+# static configuration
+swa start ./my-dist --swa-config-location ./my-app-source
+
+# devserver configuration
+swa start http://localhost:3000 --swa-config-location ./my-app-source
+```
+
+```json
+{
+  "configurations": {
+    "static": {
+      "context": "./my-dist",
+      "swaConfigLocation": "./my-app-source"
+    },
+    "devserver": {
+      "context": "http://localhost:3000",
+      "swaConfigLocation": "./my-app-source"
+    }
+  }
+}
+```
+
+These configurations can be run with `swa start static` and `swa start devserver`.
+
+### Validation
+
+You can validate your `swa-cli.config.json` with a JSON Schema like so:
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/static-web-apps-cli/main/schema/swa-cli.config.schema.json",
+  "configurations": {
+    ...
+  }
+}
+```
 
 ## Local authentication & authorization emulation
 
