@@ -77,6 +77,7 @@ declare type SWACLIOptions = {
   overridableErrorCode?: number[];
   devserverTimeout?: number;
   funcArgs?: string;
+  open?: boolean;
 };
 
 declare type SWACLIConfig = SWACLIOptions & GithubActionWorkflow;

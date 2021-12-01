@@ -57,6 +57,7 @@ export async function run(argv?: string[]) {
       DEFAULT_CONFIG.devserverTimeout
     )
 
+    .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
     .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
 
     .action(async (context: string = `.${path.sep}`, options: SWACLIConfig) => {
