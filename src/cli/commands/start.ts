@@ -84,6 +84,8 @@ export async function start(startContext: string, options: SWACLIConfig) {
       const funcBinary = "func";
       // check if the func binary is globally available
       if (!which.sync(funcBinary, { nothrow: true })) {
+        // TODO: auto install core tools
+
         // prettier-ignore
         logger.error(
           `Could not find the "${funcBinary}" binary.\n` +
