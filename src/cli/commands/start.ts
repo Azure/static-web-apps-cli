@@ -1,3 +1,4 @@
+import which from "which";
 import concurrently from "concurrently";
 import fs from "fs";
 import path from "path";
@@ -80,8 +81,19 @@ export async function start(startContext: string, options: SWACLIConfig) {
     apiPort = parseUrl(useApiDevServer)?.port;
   } else {
     if (options.apiLocation && userWorkflowConfig?.apiLocation) {
-      // @todo check if the func binary is globally available
       const funcBinary = "func";
+      // check if the func binary is globally available
+      if (!which.sync(funcBinary, { nothrow: true })) {
+        // prettier-ignore
+        logger.error(
+          `Could not find the "${funcBinary}" binary.\n` +
+          `Install Azure Functions Core Tools with:\n\n` +
+          `  npm i -g azure-functions-core-tools@4 --unsafe-perm true\n\n` +
+          `See https://aka.ms/functions-core-tools for more information.`,
+          true
+        );
+      }
+
       // serve the api if and only if the user provides a folder via the --api-location flag
       if (isApiLocationExistsOnDisk) {
         serveApiCommand = `cd "${userWorkflowConfig.apiLocation}" && ${funcBinary} start --cors "*" --port ${options.apiPort} ${
