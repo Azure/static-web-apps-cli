@@ -31,6 +31,13 @@ function injectClientPrincipalCookies(req: http.ClientRequest) {
   const cookie = req.getHeader("cookie") as string;
   if (cookie && validateCookie(cookie)) {
     const user = decodeCookie(cookie);
+
+    // Remove claims from client principal to match SWA behaviour. See https://github.com/MicrosoftDocs/azure-docs/issues/86803.
+    // The following property deletion can be removed depending on outcome of the above issue.
+    if (user) {
+      delete user["claims"];
+    }
+
     const buff = Buffer.from(JSON.stringify(user), "utf-8");
     const token = buff.toString("base64");
     req.setHeader("X-MS-CLIENT-PRINCIPAL", token);
