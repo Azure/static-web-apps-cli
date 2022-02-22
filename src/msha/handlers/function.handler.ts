@@ -55,7 +55,7 @@ export function handleFunctionRequest(req: http.IncomingMessage, res: http.Serve
   } else {
     logger.log(`***************************************************************************`);
     logger.log(`** Functions request detected but no endpoint configuration was found.   **`);
-    logger.log(`** Please use the --api option to configure a function endpoint.         **`);
+    logger.log(`** Please use the --api-location option to configure a function endpoint.**`);
     logger.log(`***************************************************************************`);
   }
 
