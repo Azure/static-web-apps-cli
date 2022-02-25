@@ -11,7 +11,7 @@ import { logger } from "./utils/logger";
 
 const RELEASES_FEED_URL = 'https://functionscdn.azureedge.net/public/cli-feed-v4.json';
 const DEFAULT_FUNC_BINARY = 'func';
-const VERSION_FILE = '.core-tools-version';
+const VERSION_FILE = '.release-version';
 const LOCAL_CORE_TOOLS_FOLDER = '.swa/core-tools';
 const NODE_MAJOR_VERSION = getMajorVersion(process.versions.node);
 
@@ -42,7 +42,7 @@ function getCoreToolsFolder(version: number): string {
 
 function getCoreToolBinaryPath(version: number): string {
   const folder = getCoreToolsFolder(version);
-  return path.resolve(path.join(folder, 'bin', 'func'));
+  return path.resolve(path.join(folder, 'func'));
 }
 
 export function detectTargetCoreToolsVersion(): number {
@@ -126,7 +126,9 @@ export async function getLatestCoreToolsRelease(targetVersion: number): Promise<
 async function downloadAndUnzipPackage(url: string, dest: string) {
   const response = await fetch(url);
   const totalSize = Number(response.headers.get('content-length'));
-  const progressBar = new cliProgress.Bar({}, cliProgress.Presets.shades_classic);
+  const progressBar = new cliProgress.Bar({
+    format: '{bar} {percentage}% | ETA: {eta}s',
+  }, cliProgress.Presets.shades_classic);
   let downloadedSize = 0;
   let since = Date.now();
   progressBar.start(totalSize, downloadedSize);
@@ -147,8 +149,8 @@ async function downloadAndUnzipPackage(url: string, dest: string) {
   });
 }
 
-export async function downloadCoreTools(version: number, destFolder: string): Promise<string> {
-  const dest = path.join(destFolder, `v${version}`);
+export async function downloadCoreTools(version: number): Promise<string> {
+  const dest = getCoreToolsFolder(version);
   const release = await getLatestCoreToolsRelease(version);
 
   // Make sure we start from a clean folder
@@ -159,6 +161,13 @@ export async function downloadCoreTools(version: number, destFolder: string): Pr
   }
 
   await downloadAndUnzipPackage(release.url, dest);
+
+  // Fix permissions on MacOS/Linux
+  if (os.platform() === 'linux' || os.platform() === 'darwin') {
+    fs.chmodSync(path.join(dest, 'func'), 0o755);
+    fs.chmodSync(path.join(dest, 'gozip'), 0o755);
+  }
+
   fs.writeFileSync(path.join(dest, VERSION_FILE), release.version);
 
   return release.version;
@@ -189,9 +198,8 @@ export async function getCoreToolsBinary(): Promise<string | undefined> {
   }
 
   try {
-    const targetFolder = getCoreToolsFolder(targetVersion);
-    const downloadedVersion = await downloadCoreTools(targetVersion, targetFolder);
-    logger.info(`Downloaded Function Core Tools v${downloadedVersion} successfully`);
+    await downloadCoreTools(targetVersion);
+    logger.log(`\nDownloaded Function Core Tools successfully`);
     return getCoreToolBinaryPath(targetVersion);
   } catch (error: unknown) {
     logger.error(`Failed to download Functions Core Tools v${targetVersion}.`);
@@ -204,6 +212,6 @@ export function removeDownloadedCoreTools(version?: number) {
   // If not specified, remove all versions
   const folder = version ? getCoreToolsFolder(version) : getCoreToolsDownloadFolder();
   if (fs.existsSync(folder)) {
-    fs.rmdirSync(folder, { recursive: true });
+    fs.rmSync(folder, { recursive: true });
   }
 }
