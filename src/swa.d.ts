@@ -89,6 +89,7 @@ declare type ClientPrincipal = {
   userId: string;
   userDetails: string;
   userRoles: string[];
+  claims?: Array<{ typ: string; val: string }>;
 };
 
 declare type SWAConfigFileRoute = {
