@@ -148,6 +148,7 @@ declare type SWACLIConfigFile = {
 declare interface CoreToolsRelease {
   version: string;
   url: string;
+  sha2: string;
 }
 
 declare interface CoreToolsZipInfo {
@@ -155,4 +156,5 @@ declare interface CoreToolsZipInfo {
   Architecture: string,
   downloadLink: string;
   size: string;
+  sha2: string;
 }

@@ -86,7 +86,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
         const targetVersion = detectTargetCoreToolsVersion();
         // prettier-ignore
         logger.error(
-          `Could not find the "${funcBinary}" binary.\n` +
+          `\nCould not find or install Azure Functions Core Tools.\n` +
           `Install Azure Functions Core Tools with:\n\n` +
           `  npm i -g azure-functions-core-tools@${targetVersion} --unsafe-perm true\n\n` +
           `See https://aka.ms/functions-core-tools for more information.`,

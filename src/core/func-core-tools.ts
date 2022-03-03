@@ -4,6 +4,8 @@ import path from 'path';
 import process from 'process';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { PassThrough } from 'stream';
+import crypto from 'crypto';
 import fetch from 'node-fetch';
 import unzipper from 'unzipper';
 import cliProgress from 'cli-progress';
@@ -104,15 +106,16 @@ export async function getLatestCoreToolsRelease(targetVersion: number): Promise<
     
     return {
       version: tag.release,
-      url: info.downloadLink
+      url: info.downloadLink,
+      sha2: info.sha2
     };
   } catch (error: unknown) {
     throw new Error(`Error fetching Function Core Tools releases: ${(error as Error).message}`);
   }
 }
 
-async function downloadAndUnzipPackage(url: string, dest: string) {
-  const response = await fetch(url);
+async function downloadAndUnzipPackage(release: CoreToolsRelease, dest: string) {
+  const response = await fetch(release.url);
   const totalSize = Number(response.headers.get('content-length'));
   const progressBar = new cliProgress.Bar({
     format: '{bar} {percentage}% | ETA: {eta}s',
@@ -121,7 +124,10 @@ async function downloadAndUnzipPackage(url: string, dest: string) {
   let since = Date.now();
   progressBar.start(totalSize, downloadedSize);
 
-  response.body.on('data', (chunk) => {
+  const bodyStream1 = response.body.pipe(new PassThrough());
+  const bodyStream2 = response.body.pipe(new PassThrough());
+
+  bodyStream2.on('data', (chunk) => {
     downloadedSize += chunk.length
     const now = Date.now();
     if (now - since > 100) {
@@ -130,11 +136,27 @@ async function downloadAndUnzipPackage(url: string, dest: string) {
     }
   });
 
-  await new Promise((resolve, reject) => {
+  const unzipPromise = new Promise((resolve, reject) => {
     const unzipperInstance = unzipper.Extract({ path: dest });
     unzipperInstance.promise().then(resolve, reject);
-    response.body.pipe(unzipperInstance);
+    bodyStream2.pipe(unzipperInstance);
   });
+
+  const hash = await new Promise((resolve) => {
+    const hash = crypto.createHash('sha256');
+    hash.setEncoding('hex');
+    bodyStream1.on('end', () => {
+      hash.end();
+      resolve(hash.read());
+    });
+    bodyStream1.pipe(hash);
+  });
+
+  await unzipPromise;
+
+  if (hash !== release.sha2) {
+    throw new Error(`Downloaded Core Tools SHA2 mismatch: expected ${hash}, got ${release.sha2}`);
+  }
 }
 
 export async function downloadCoreTools(version: number): Promise<string> {
@@ -148,7 +170,13 @@ export async function downloadCoreTools(version: number): Promise<string> {
     fs.mkdirSync(dest, { recursive: true });
   }
 
-  await downloadAndUnzipPackage(release.url, dest);
+  try {
+    await downloadAndUnzipPackage(release,  dest);
+  } catch (error) {
+    // Clean up the folder if the download failed
+    removeDownloadedCoreTools(version);
+    throw error;
+  }
 
   // Fix permissions on MacOS/Linux
   if (os.platform() === 'linux' || os.platform() === 'darwin') {
