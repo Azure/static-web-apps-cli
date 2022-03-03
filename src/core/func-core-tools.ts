@@ -15,18 +15,6 @@ const VERSION_FILE = '.release-version';
 const LOCAL_CORE_TOOLS_FOLDER = '.swa/core-tools';
 const NODE_MAJOR_VERSION = getMajorVersion(process.versions.node);
 
-interface CoreToolsRelease {
-  version: string;
-  url: string;
-}
-
-interface CoreToolsZipInfo {
-  OS: string;
-  Architecture: string,
-  downloadLink: string;
-  size: string;
-}
-
 function getMajorVersion(version: string): number {
   return Number(version.split('.')[0]);
 };
