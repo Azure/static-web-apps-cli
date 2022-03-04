@@ -2,7 +2,7 @@ import concurrently from "concurrently";
 import fs from "fs";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
-import { createStartupScriptCommand, isAcceptingTcpConnections, isHttpUrl, logger, parseUrl, readWorkflowFile, getCoreToolsBinary, detectTargetCoreToolsVersion } from "../../core";
+import { createStartupScriptCommand, isAcceptingTcpConnections, isHttpUrl, logger, parseUrl, readWorkflowFile, getCoreToolsBinary, detectTargetCoreToolsVersion, NODE_MAJOR_VERSION } from "../../core";
 import builder from "../../core/builder";
 let packageInfo = require("../../../package.json");
 
@@ -83,7 +83,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
       // check if the func binary is globally available and if not, download it
       const funcBinary = await getCoreToolsBinary();
       if (!funcBinary) {
-        const targetVersion = detectTargetCoreToolsVersion();
+        const targetVersion = detectTargetCoreToolsVersion(NODE_MAJOR_VERSION);
         // prettier-ignore
         logger.error(
           `\nCould not find or install Azure Functions Core Tools.\n` +

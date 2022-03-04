@@ -15,7 +15,7 @@ const RELEASES_FEED_URL = 'https://functionscdn.azureedge.net/public/cli-feed-v4
 const DEFAULT_FUNC_BINARY = 'func';
 const VERSION_FILE = '.release-version';
 const CORE_TOOLS_FOLDER = '.swa/core-tools';
-const NODE_MAJOR_VERSION = getMajorVersion(process.versions.node);
+export const NODE_MAJOR_VERSION = getMajorVersion(process.versions.node);
 
 function getMajorVersion(version: string): number {
   return Number(version.split('.')[0]);
@@ -35,13 +35,27 @@ function getCoreToolBinaryPath(version: number): string {
   return path.resolve(path.join(folder, 'func'));
 }
 
-export function detectTargetCoreToolsVersion(): number {
+export function isCoreToolsVersionCompatible(coreToolsVersion: number, nodeVersion: number): boolean {
   // Runtime support reference: https://docs.microsoft.com/azure/azure-functions/functions-versions?pivots=programming-language-javascript#languages
-  if (NODE_MAJOR_VERSION >= 14 && NODE_MAJOR_VERSION <= 16) return 4;
-  if (NODE_MAJOR_VERSION >= 10 && NODE_MAJOR_VERSION < 14) return 3;
-  if (NODE_MAJOR_VERSION >= 8 && NODE_MAJOR_VERSION < 10) return 2;
+  switch (coreToolsVersion) {
+    case 4:
+      return nodeVersion >= 14 && nodeVersion <= 16;
+    case 3:
+      return nodeVersion >= 10 && nodeVersion <= 14;
+    case 2:
+      return nodeVersion >= 8 && nodeVersion <= 10;
+    default:
+      return false;
+  }
+}
 
-  logger.warn(`Unsupported Node version: ${NODE_MAJOR_VERSION} for Functions Core Tools`);
+export function detectTargetCoreToolsVersion(nodeVersion: number): number {
+  // Pick the highest version that is compatible with the specified Node version
+  if (nodeVersion >= 14 && nodeVersion <= 16) return 4;
+  if (nodeVersion >= 10 && nodeVersion < 14) return 3;
+  if (nodeVersion >= 8 && nodeVersion < 10) return 2;
+
+  logger.warn(`Unsupported Node version: ${nodeVersion} for Functions Core Tools`);
   return 4;
 }
 
@@ -103,7 +117,7 @@ export async function getLatestCoreToolsRelease(targetVersion: number): Promise<
     if (!info) {
       throw new Error(`Cannot find download package for ${platform}`);
     }
-    
+
     return {
       version: tag.release,
       url: info.downloadLink,
@@ -190,13 +204,13 @@ export async function downloadCoreTools(version: number): Promise<string> {
 }
 
 export async function getCoreToolsBinary(): Promise<string | undefined> {
-  const targetVersion = detectTargetCoreToolsVersion();
   const systemVersion = await getInstalledSystemCoreToolsVersion();
-
-  if (systemVersion && systemVersion === targetVersion) {
+  
+  if (systemVersion && isCoreToolsVersionCompatible(systemVersion, NODE_MAJOR_VERSION)) {
     return DEFAULT_FUNC_BINARY;
   }
-
+  
+  const targetVersion = detectTargetCoreToolsVersion(NODE_MAJOR_VERSION);
   const downloadedVersion = getDownloadedCoreToolsVersion(targetVersion);
   if (downloadedVersion) {
     // Should we check for newer versions here?
