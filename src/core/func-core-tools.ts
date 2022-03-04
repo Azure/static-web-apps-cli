@@ -15,11 +15,14 @@ const RELEASES_FEED_URL = 'https://functionscdn.azureedge.net/public/cli-feed-v4
 const DEFAULT_FUNC_BINARY = 'func';
 const VERSION_FILE = '.release-version';
 const CORE_TOOLS_FOLDER = '.swa/core-tools';
-export const NODE_MAJOR_VERSION = getMajorVersion(process.versions.node);
 
 function getMajorVersion(version: string): number {
   return Number(version.split('.')[0]);
 };
+
+export function getNodeMajorVersion(): number {
+  return getMajorVersion(process.versions.node);
+}
 
 function getCoreToolsDownloadFolder() {
   return path.join(os.homedir(), CORE_TOOLS_FOLDER);
@@ -204,13 +207,14 @@ export async function downloadCoreTools(version: number): Promise<string> {
 }
 
 export async function getCoreToolsBinary(): Promise<string | undefined> {
+  const nodeVersion = getNodeMajorVersion();
   const systemVersion = await getInstalledSystemCoreToolsVersion();
   
-  if (systemVersion && isCoreToolsVersionCompatible(systemVersion, NODE_MAJOR_VERSION)) {
+  if (systemVersion && isCoreToolsVersionCompatible(systemVersion, nodeVersion)) {
     return DEFAULT_FUNC_BINARY;
   }
   
-  const targetVersion = detectTargetCoreToolsVersion(NODE_MAJOR_VERSION);
+  const targetVersion = detectTargetCoreToolsVersion(nodeVersion);
   const downloadedVersion = getDownloadedCoreToolsVersion(targetVersion);
   if (downloadedVersion) {
     // Should we check for newer versions here?
