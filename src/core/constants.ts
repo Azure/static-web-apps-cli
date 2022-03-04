@@ -186,5 +186,5 @@ export function IS_API_DEV_SERVER() {
   return isHttpUrl(SWA_CLI_API_LOCATION);
 }
 export function SWA_CLI_API_URI() {
-  return address(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
+  return IS_API_DEV_SERVER() ? SWA_CLI_API_LOCATION : address(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
 }
