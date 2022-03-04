@@ -1,31 +1,41 @@
-import { Buffer } from 'buffer';
-import { Readable, PassThrough } from 'stream';
+import { sep } from "path";
+import { Buffer } from "buffer";
+import { Readable, PassThrough } from "stream";
 import mockFs from "mock-fs";
-import { detectTargetCoreToolsVersion, downloadCoreTools, getCoreToolsBinary, getLatestCoreToolsRelease, isCoreToolsVersionCompatible } from "./func-core-tools";
+import {
+  detectTargetCoreToolsVersion,
+  downloadCoreTools,
+  getCoreToolsBinary,
+  getLatestCoreToolsRelease,
+  isCoreToolsVersionCompatible,
+} from "./func-core-tools";
 
-jest.mock('process', () => ({ versions: { node: '16.0.0' } }));
-jest.mock('os', () => ({ platform: () => 'linux', homedir: () => '/home/user' }));
-jest.mock('child_process', () => ({ exec: jest.fn() }));
-jest.mock('node-fetch', () => jest.fn());
-jest.mock('unzipper', () => ({
+jest.mock("process", () => ({ versions: { node: "16.0.0" } }));
+jest.mock("os", () => ({ platform: () => "linux", homedir: () => "/home/user" }));
+jest.mock("child_process", () => ({ exec: jest.fn() }));
+jest.mock("node-fetch", () => jest.fn());
+jest.mock("unzipper", () => ({
   Extract: () => {
     const fakeStream = new PassThrough() as any;
     fakeStream.promise = () => Promise.resolve();
-    mockFs({
-      '/home/user/.swa/core-tools/v4/func': '',
-      '/home/user/.swa/core-tools/v4/gozip': ''
-    }, { createTmp: false, createCwd: false })
+    mockFs(
+      {
+        "/home/user/.swa/core-tools/v4/func": "",
+        "/home/user/.swa/core-tools/v4/gozip": "",
+      },
+      { createTmp: false, createCwd: false }
+    );
     return fakeStream;
-  }
+  },
 }));
 
-describe('funcCoreTools', () => {
+describe("funcCoreTools", () => {
   afterEach(() => {
     mockFs.restore();
   });
 
-  describe('isCoreToolsVersionCompatible()', () => {
-    it('should return true for compatible versions', () => {
+  describe("isCoreToolsVersionCompatible()", () => {
+    it("should return true for compatible versions", () => {
       expect(isCoreToolsVersionCompatible(4, 10)).toBe(false);
       expect(isCoreToolsVersionCompatible(3, 10)).toBe(true);
       expect(isCoreToolsVersionCompatible(2, 10)).toBe(true);
@@ -49,8 +59,8 @@ describe('funcCoreTools', () => {
     });
   });
 
-  describe('detectTargetCoreToolsVersion()', () => {
-    it('should return the latest valid version for each Node version', () => {
+  describe("detectTargetCoreToolsVersion()", () => {
+    it("should return the latest valid version for each Node version", () => {
       expect(detectTargetCoreToolsVersion(8)).toBe(2);
       expect(detectTargetCoreToolsVersion(9)).toBe(2);
       expect(detectTargetCoreToolsVersion(10)).toBe(3);
@@ -66,169 +76,208 @@ describe('funcCoreTools', () => {
     });
   });
 
-  describe('getLatestCoreToolsRelease()', () => {
-    it('should return the latest release for the specified version', async () => {
-      const fetchMock = jest.requireMock('node-fetch');
-      fetchMock.mockImplementationOnce(() => Promise.resolve({
-        json: () => Promise.resolve({
-          tags: {
-            'v4': {
-              release: '4.0.0'
-            },
-          },
-          releases: {
-            '4.0.0': {
-              coreTools: [
-                {
-                  OS: "Linux",
-                  downloadLink: "https://abc.com/d.zip",
-                  sha2: "123",
-                  size: "full"
+  describe("getLatestCoreToolsRelease()", () => {
+    it("should return the latest release for the specified version", async () => {
+      const fetchMock = jest.requireMock("node-fetch");
+      fetchMock.mockImplementationOnce(() =>
+        Promise.resolve({
+          json: () =>
+            Promise.resolve({
+              tags: {
+                v4: {
+                  release: "4.0.0",
                 },
-              ]
-            }
-          }
+              },
+              releases: {
+                "4.0.0": {
+                  coreTools: [
+                    {
+                      OS: "Linux",
+                      downloadLink: "https://abc.com/d.zip",
+                      sha2: "123",
+                      size: "full",
+                    },
+                  ],
+                },
+              },
+            }),
         })
-      }));
+      );
 
       const release = await getLatestCoreToolsRelease(4);
       expect(release.version).toBe("4.0.0");
       expect(release.sha2).toBe("123");
     });
 
-    it('should throw an error if tags match the specified version', async () => {
-      const fetchMock = jest.requireMock('node-fetch');
-      fetchMock.mockImplementationOnce(() => Promise.resolve({
-        json: () => Promise.resolve({
-          tags: {
-            'v3': {},
-            'v4': { hidden: true }
-          }
+    it("should throw an error if tags match the specified version", async () => {
+      const fetchMock = jest.requireMock("node-fetch");
+      fetchMock.mockImplementationOnce(() =>
+        Promise.resolve({
+          json: () =>
+            Promise.resolve({
+              tags: {
+                v3: {},
+                v4: { hidden: true },
+              },
+            }),
         })
-      }));
+      );
 
-      await expect(async () => await getLatestCoreToolsRelease(4)).rejects.toThrowError('Cannot find the latest version for v4');
+      await expect(async () => await getLatestCoreToolsRelease(4)).rejects.toThrowError("Cannot find the latest version for v4");
     });
 
-    it('should throw an error if no release match the specified version', async () => {
-      const fetchMock = jest.requireMock('node-fetch');
-      fetchMock.mockImplementationOnce(() => Promise.resolve({
-        json: () => Promise.resolve({
-          tags: {
-            'v4': { release: '4.0.0'},
-          },
-          releases: {}
+    it("should throw an error if no release match the specified version", async () => {
+      const fetchMock = jest.requireMock("node-fetch");
+      fetchMock.mockImplementationOnce(() =>
+        Promise.resolve({
+          json: () =>
+            Promise.resolve({
+              tags: {
+                v4: { release: "4.0.0" },
+              },
+              releases: {},
+            }),
         })
-      }));
+      );
 
-      await expect(async () => await getLatestCoreToolsRelease(4)).rejects.toThrowError('Cannot find release for 4.0.0');
+      await expect(async () => await getLatestCoreToolsRelease(4)).rejects.toThrowError("Cannot find release for 4.0.0");
     });
 
-    it('should throw an error if there\'s no compatible package', async () => {
-      const fetchMock = jest.requireMock('node-fetch');
-      fetchMock.mockImplementationOnce(() => Promise.resolve({
-        json: () => Promise.resolve({
-          tags: {
-            'v4': { release: '4.0.0'},
-          },
-          releases: {
-            '4.0.0': {
-              coreTools: [
-                {
-                  OS: "Windows",
-                  downloadLink: "https://abc.com/d.zip",
-                  sha2: "123",
-                  size: "full"
+    it("should throw an error if there's no compatible package", async () => {
+      const fetchMock = jest.requireMock("node-fetch");
+      fetchMock.mockImplementationOnce(() =>
+        Promise.resolve({
+          json: () =>
+            Promise.resolve({
+              tags: {
+                v4: { release: "4.0.0" },
+              },
+              releases: {
+                "4.0.0": {
+                  coreTools: [
+                    {
+                      OS: "Windows",
+                      downloadLink: "https://abc.com/d.zip",
+                      sha2: "123",
+                      size: "full",
+                    },
+                  ],
                 },
-              ]
-            }
-          }
+              },
+            }),
         })
-      }));
+      );
 
-      await expect(async () => await getLatestCoreToolsRelease(4)).rejects.toThrowError('Cannot find download package for Linux');
+      await expect(async () => await getLatestCoreToolsRelease(4)).rejects.toThrowError("Cannot find download package for Linux");
     });
 
-    it('should throw an error if no release match the specified version', async () => {
-      const fetchMock = jest.requireMock('node-fetch');
-      fetchMock.mockImplementationOnce(() => Promise.reject(new Error('bad network')));
+    it("should throw an error if no release match the specified version", async () => {
+      const fetchMock = jest.requireMock("node-fetch");
+      fetchMock.mockImplementationOnce(() => Promise.reject(new Error("bad network")));
 
       await expect(async () => await getLatestCoreToolsRelease(4)).rejects.toThrowError(/bad network/);
     });
   });
 
-  describe('getCoreToolsBinary', () => {
-    it ('should return the system binary if it\'s compatible', async () => {
-      const execMock = jest.requireMock('child_process').exec;
-      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb(null, { stdout: '4.0.0' }));
+  describe("getCoreToolsBinary", () => {
+    it("should return the system binary if it's compatible", async () => {
+      const execMock = jest.requireMock("child_process").exec;
+      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb(null, { stdout: "4.0.0" }));
 
       const binary = await getCoreToolsBinary();
-      expect(binary).toBe('func');
+      expect(binary).toBe("func");
     });
 
-    it ('should return the downloaded binary if there\'s no system binary', async () => {
-      const execMock = jest.requireMock('child_process').exec;
-      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: 'func does not exist' }));
-      mockFs({
-        ['/home/user/.swa/core-tools/v4']: { ".release-version": '4.3.2' },
-      }, { createTmp: false, createCwd: false });
+    it("should return the downloaded binary if there's no system binary", async () => {
+      const execMock = jest.requireMock("child_process").exec;
+      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: "func does not exist" }));
+      mockFs(
+        {
+          ["/home/user/.swa/core-tools/v4"]: { ".release-version": "4.3.2" },
+        },
+        { createTmp: false, createCwd: false }
+      );
 
       const binary = await getCoreToolsBinary();
-      expect(binary).toBe('/home/user/.swa/core-tools/v4/func');
+
+      // note: we have mocked os.platform(), so we can't check for os name!
+      if (sep === "/") {
+        expect(binary).toBe("/home/user/.swa/core-tools/v4/func");
+      } else {
+        expect(binary).toContain(":\\home\\user\\.swa\\core-tools\\v4\\func");
+      }
     });
 
-    it ('should return the downloaded binary if the system binary is incompatible', async () => {
-      const execMock = jest.requireMock('child_process').exec;
-      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb(null, { stdout: '3.0.0' }));
-      mockFs({
-        ['/home/user/.swa/core-tools/v4']: { ".release-version": '4.3.2' },
-      }, { createTmp: false, createCwd: false });
+    it("should return the downloaded binary if the system binary is incompatible", async () => {
+      const execMock = jest.requireMock("child_process").exec;
+      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb(null, { stdout: "3.0.0" }));
+      mockFs(
+        {
+          ["/home/user/.swa/core-tools/v4"]: { ".release-version": "4.3.2" },
+        },
+        { createTmp: false, createCwd: false }
+      );
 
       const binary = await getCoreToolsBinary();
-      expect(binary).toBe('/home/user/.swa/core-tools/v4/func');
+      // note: we have mocked os.platform(), so we can't check for os name!
+      if (sep === "/") {
+        expect(binary).toBe("/home/user/.swa/core-tools/v4/func");
+      } else {
+        expect(binary).toContain(":\\home\\user\\.swa\\core-tools\\v4\\func");
+      }
     });
 
-    it ('should download core tools and return downloaded binary', async () => {
-      const execMock = jest.requireMock('child_process').exec;
-      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: 'func does not exist' }));
+    it("should download core tools and return downloaded binary", async () => {
+      const execMock = jest.requireMock("child_process").exec;
+      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: "func does not exist" }));
 
-      const fetchMock = jest.requireMock('node-fetch');
-      fetchMock.mockImplementationOnce(() => Promise.resolve({
-        json: () => Promise.resolve({
-          tags: {
-            'v4': { release: '4.0.0'},
-          },
-          releases: {
-            '4.0.0': {
-              coreTools: [
-                {
-                  OS: "Linux",
-                  downloadLink: "https://abc.com/d.zip",
-                  // Real sha2 for "package" string
-                  sha2: "bc4a71180870f7945155fbb02f4b0a2e3faa2a62d6d31b7039013055ed19869a",
-                  size: "full"
+      const fetchMock = jest.requireMock("node-fetch");
+      fetchMock.mockImplementationOnce(() =>
+        Promise.resolve({
+          json: () =>
+            Promise.resolve({
+              tags: {
+                v4: { release: "4.0.0" },
+              },
+              releases: {
+                "4.0.0": {
+                  coreTools: [
+                    {
+                      OS: "Linux",
+                      downloadLink: "https://abc.com/d.zip",
+                      // Real sha2 for "package" string
+                      sha2: "bc4a71180870f7945155fbb02f4b0a2e3faa2a62d6d31b7039013055ed19869a",
+                      size: "full",
+                    },
+                  ],
                 },
-              ]
-            }
-          }
+              },
+            }),
         })
-      }));
-      const packageZip = Buffer.from('package');
-      fetchMock.mockImplementationOnce(() => Promise.resolve({
-        body: Readable.from(packageZip),
-        headers: new Headers({ 'content-length': packageZip.length.toString() })
-      }));
-      mockFs({ ['/home/user/.swa/core-tools/']: {} }, { createTmp: false, createCwd: false });
+      );
+      const packageZip = Buffer.from("package");
+      fetchMock.mockImplementationOnce(() =>
+        Promise.resolve({
+          body: Readable.from(packageZip),
+          headers: new Headers({ "content-length": packageZip.length.toString() }),
+        })
+      );
+      mockFs({ ["/home/user/.swa/core-tools/"]: {} }, { createTmp: false, createCwd: false });
 
       const binary = await getCoreToolsBinary();
-      expect(binary).toBe('/home/user/.swa/core-tools/v4/func');
+      // note: we have mocked os.platform(), so we can't check for os name!
+      if (sep === "/") {
+        expect(binary).toBe("/home/user/.swa/core-tools/v4/func");
+      } else {
+        expect(binary).toContain(":\\home\\user\\.swa\\core-tools\\v4\\func");
+      }
     });
 
-    it ('should return undefined if an error occured', async () => {
-      const execMock = jest.requireMock('child_process').exec;
-      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: 'func does not exist' }));
+    it("should return undefined if an error occured", async () => {
+      const execMock = jest.requireMock("child_process").exec;
+      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: "func does not exist" }));
 
-      const fetchMock = jest.requireMock('node-fetch');
+      const fetchMock = jest.requireMock("node-fetch");
       fetchMock.mockImplementationOnce(() => Promise.reject({}));
       mockFs({}, { createTmp: false, createCwd: false });
 
@@ -237,37 +286,42 @@ describe('funcCoreTools', () => {
     });
   });
 
-  describe('downloadCoreTools', () => {
-    it ('should throw an error if the download is corrupted', async () => {
-      const execMock = jest.requireMock('child_process').exec;
-      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: 'func does not exist' }));
+  describe("downloadCoreTools", () => {
+    it("should throw an error if the download is corrupted", async () => {
+      const execMock = jest.requireMock("child_process").exec;
+      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: "func does not exist" }));
 
-      const fetchMock = jest.requireMock('node-fetch');
-      fetchMock.mockImplementationOnce(() => Promise.resolve({
-        json: () => Promise.resolve({
-          tags: {
-            'v4': { release: '4.0.0'},
-          },
-          releases: {
-            '4.0.0': {
-              coreTools: [
-                {
-                  OS: "Linux",
-                  downloadLink: "https://abc.com/d.zip",
-                  sha2: "123",
-                  size: "full"
+      const fetchMock = jest.requireMock("node-fetch");
+      fetchMock.mockImplementationOnce(() =>
+        Promise.resolve({
+          json: () =>
+            Promise.resolve({
+              tags: {
+                v4: { release: "4.0.0" },
+              },
+              releases: {
+                "4.0.0": {
+                  coreTools: [
+                    {
+                      OS: "Linux",
+                      downloadLink: "https://abc.com/d.zip",
+                      sha2: "123",
+                      size: "full",
+                    },
+                  ],
                 },
-              ]
-            }
-          }
+              },
+            }),
         })
-      }));
-      const packageZip = Buffer.from('package');
-      fetchMock.mockImplementationOnce(() => Promise.resolve({
-        body: Readable.from(packageZip),
-        headers: new Headers({ 'content-length': packageZip.length.toString() })
-      }));
-      mockFs({ ['/home/user/.swa/core-tools/']: {} }, { createTmp: false, createCwd: false });
+      );
+      const packageZip = Buffer.from("package");
+      fetchMock.mockImplementationOnce(() =>
+        Promise.resolve({
+          body: Readable.from(packageZip),
+          headers: new Headers({ "content-length": packageZip.length.toString() }),
+        })
+      );
+      mockFs({ ["/home/user/.swa/core-tools/"]: {} }, { createTmp: false, createCwd: false });
 
       await expect(async () => await downloadCoreTools(4)).rejects.toThrowError(/SHA2 mismatch/);
     });
