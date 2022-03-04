@@ -47,3 +47,4 @@ dist
 *.orig
 cypress/videos/
 cypress/screenshots/
+/coverage

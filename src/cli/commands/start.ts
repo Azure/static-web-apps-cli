@@ -1,9 +1,8 @@
-import which from "which";
 import concurrently from "concurrently";
 import fs from "fs";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
-import { createStartupScriptCommand, isAcceptingTcpConnections, isHttpUrl, logger, parseUrl, readWorkflowFile } from "../../core";
+import { createStartupScriptCommand, isAcceptingTcpConnections, isHttpUrl, logger, parseUrl, readWorkflowFile, getCoreToolsBinary, detectTargetCoreToolsVersion, getNodeMajorVersion } from "../../core";
 import builder from "../../core/builder";
 let packageInfo = require("../../../package.json");
 
@@ -81,14 +80,15 @@ export async function start(startContext: string, options: SWACLIConfig) {
     apiPort = parseUrl(useApiDevServer)?.port;
   } else {
     if (options.apiLocation && userWorkflowConfig?.apiLocation) {
-      const funcBinary = "func";
-      // check if the func binary is globally available
-      if (!which.sync(funcBinary, { nothrow: true })) {
+      // check if the func binary is globally available and if not, download it
+      const funcBinary = await getCoreToolsBinary();
+      if (!funcBinary) {
+        const targetVersion = detectTargetCoreToolsVersion(getNodeMajorVersion());
         // prettier-ignore
         logger.error(
-          `Could not find the "${funcBinary}" binary.\n` +
+          `\nCould not find or install Azure Functions Core Tools.\n` +
           `Install Azure Functions Core Tools with:\n\n` +
-          `  npm i -g azure-functions-core-tools@4 --unsafe-perm true\n\n` +
+          `  npm i -g azure-functions-core-tools@${targetVersion} --unsafe-perm true\n\n` +
           `See https://aka.ms/functions-core-tools for more information.`,
           true
         );

@@ -144,3 +144,17 @@ declare type SWACLIConfigFile = {
     [name: string]: SWACLIOptions & { context?: string };
   };
 };
+
+declare interface CoreToolsRelease {
+  version: string;
+  url: string;
+  sha2: string;
+}
+
+declare interface CoreToolsZipInfo {
+  OS: string;
+  Architecture: string,
+  downloadLink: string;
+  size: string;
+  sha2: string;
+}
