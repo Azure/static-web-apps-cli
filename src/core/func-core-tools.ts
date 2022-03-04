@@ -246,6 +246,7 @@ export function removeDownloadedCoreTools(version?: number) {
   // If not specified, remove all versions
   const folder = version ? getCoreToolsFolder(version) : getCoreToolsDownloadFolder();
   if (fs.existsSync(folder)) {
-    fs.rmSync(folder, { recursive: true });
+    const rm = fs.rmSync ? fs.rmSync : fs.rmdirSync;
+    rm(folder, { recursive: true });
   }
 }
