@@ -137,6 +137,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
     SWA_CLI_STARTUP_COMMAND: startupCommand as string,
     SWA_CLI_VERSION: packageInfo.version,
     SWA_CLI_DEVSERVER_TIMEOUT: `${devserverTimeout}`,
+    SWA_CLI_OPEN: `${options.open}`,
   };
 
   // merge SWA env variables with process.env

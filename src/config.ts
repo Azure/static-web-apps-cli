@@ -19,4 +19,5 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   customUrlScheme: "swa://",
   overridableErrorCode: [400, 401, 403, 404],
   devserverTimeout: 30000,
+  open: false,
 };

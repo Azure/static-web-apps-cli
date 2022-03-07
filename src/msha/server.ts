@@ -1,3 +1,4 @@
+import open from "open";
 import chalk from "chalk";
 import fs from "fs";
 import http from "http";
@@ -23,6 +24,7 @@ import {
   SWA_CLI_ROUTES_LOCATION,
   SWA_WORKFLOW_CONFIG_FILE,
   SWA_CLI_DEVSERVER_TIMEOUT,
+  SWA_CLI_OPEN,
 } from "../core/constants";
 import { validateFunctionTriggers } from "./handlers/function.handler";
 import { handleUserConfig, onConnectionLost, requestMiddleware } from "./middlewares/request.middleware";
@@ -118,12 +120,15 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
     // note: this string must not change. It is used by the VS Code extension.
     // see: https://github.com/Azure/static-web-apps-cli/issues/124
     //--------------------------------------------------------------------------------
-    let logMessage = `\nAzure Static Web Apps emulator started at ${chalk.green(
-      address(SWA_CLI_HOST, SWA_CLI_PORT, SWA_CLI_APP_PROTOCOL)
-    )}. Press CTRL+C to exit.\n\n`;
+    const serverAddress = address(SWA_CLI_HOST, SWA_CLI_PORT, SWA_CLI_APP_PROTOCOL);
+    let logMessage = `\nAzure Static Web Apps emulator started at ${chalk.green(serverAddress)}. Press CTRL+C to exit.\n\n`;
     //--------------------------------------------------------------------------------
 
     logger.log(logMessage);
+
+    if (SWA_CLI_OPEN) {
+      open(serverAddress);
+    }
 
     server.on("upgrade", onWsUpgrade());
 
