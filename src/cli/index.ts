@@ -34,7 +34,7 @@ export async function run(argv?: string[]) {
     .option("--api-location <apiLocation>", "set the API folder or Azure Functions emulator address", DEFAULT_CONFIG.apiLocation)
     .option(
       "--swa-config-location <swaConfigLocation>",
-      "set the directory where the staticwebapp.config.json file is found",
+      "set the directory where the staticwebapp.config.json file is located",
       DEFAULT_CONFIG.swaConfigLocation
     )
 
@@ -43,6 +43,7 @@ export async function run(argv?: string[]) {
     .option("--host <host>", "set the cli host address", DEFAULT_CONFIG.host)
     .option<number>("--port <port>", "set the cli port", parsePort, DEFAULT_CONFIG.port)
 
+    // hide this flag from the help output
     .addOption(new Option("--build", "build the app and API before starting the emulator").default(false).hideHelp())
 
     .option("--ssl", "serve the app and API over HTTPS", DEFAULT_CONFIG.ssl)
@@ -52,7 +53,7 @@ export async function run(argv?: string[]) {
     .option("--run <startupScript>", "run a command at startup", DEFAULT_CONFIG.run)
     .option<number>(
       "--devserver-timeout <devserverTimeout>",
-      "time to wait(in ms) for the dev server to start",
+      "time to wait (in ms) for the dev server to start",
       parseDevserverTimeout,
       DEFAULT_CONFIG.devserverTimeout
     )
@@ -61,7 +62,8 @@ export async function run(argv?: string[]) {
     .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
 
     .action(async (context: string = `.${path.sep}`, options: SWACLIConfig) => {
-      const verbose = cli.opts().verbose;
+      const fileOptions = await getFileOptions(context, cli.opts().config);
+      const verbose = fileOptions.verbose;
 
       // make sure the start command gets the right verbosity level
       process.env.SWA_CLI_DEBUG = verbose;
@@ -71,12 +73,9 @@ export async function run(argv?: string[]) {
         process.env.DEBUG = "*";
       }
 
-      const fileOptions = await getFileOptions(context, cli.opts().config);
-
       options = {
         ...options,
         ...fileOptions,
-        verbose,
       };
 
       if (cli.opts().printConfig) {
