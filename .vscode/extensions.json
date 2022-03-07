@@ -4,6 +4,7 @@
     "editorconfig.editorconfig",
     "esbenp.prettier-vscode",
     "eg2.vscode-npm-script",
-    "visualstudioexptteam.vscodeintellicode"
+    "visualstudioexptteam.vscodeintellicode",
+    "tht13.html-preview-vscode"
   ]
 }
