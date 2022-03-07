@@ -10,11 +10,11 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  test-macos:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-18.04]
+        os: [macos-latest]
         node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
 
     steps:
@@ -23,23 +23,93 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm ci
-    - run: npm test
+    - run: |
+        npm ci
+        npm test
 
-  e2e:
+  test-windows:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-18.04]
+        os: [windows-latest]
         node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: |
+        npm ci
+        npm test -- --maxWorkers=1
+
+  test-linux:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+        node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: |
+        npm ci
+        npm test
+
+  e2e:
+    needs: [test-macos, test-windows, test-linux]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # when one test fails, DO NOT cancel the other
+      # containers, because this will kill Cypress processes
+      # https://github.com/cypress-io/github-action/issues/48
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-20.04]
+        node-version: [14.x]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      # Install NPM dependencies, cache them correctly
-      # and run all Cypress tests
       - name: Cypress run
         uses: cypress-io/github-action@v2
         with:
-          build: npm run build
+          record: false
           start: npm run e2e:static
+          browser: chrome
+          headless: true
+          wait-on: "http://0.0.0.0:1234, http://localhost:7071"
+          wait-on-timeout: 120
+        env:
+          DEBUG: "cypress:*"
+
+      - uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+
+  package:
+    needs: [e2e]
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+
+      - run: npm ci
+      - run: npm version prerelease --preid=ci-$GITHUB_RUN_ID --no-git-tag-version
+      - run: npm pack
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+            name: static-web-apps-cli
+            path: "*.tgz"
