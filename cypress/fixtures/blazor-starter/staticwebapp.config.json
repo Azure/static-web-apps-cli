@@ -1,0 +1,107 @@
+{
+  "routes": [
+    {
+      "route": "/redirect/301",
+      "redirect": "/index2.html",
+      "statusCode": 301
+    },
+    {
+      "route": "/redirect/302",
+      "redirect": "/index2.html",
+      "statusCode": 302
+    },
+    {
+      "route": "/redirect/*",
+      "redirect": "/index2.html"
+    },
+    {
+      "route": "/*.google",
+      "redirect": "https://www.google.com/"
+    },
+    {
+      "route": "/*.{jpg}",
+      "redirect": "/jpg.html"
+    },
+    {
+      "route": "*.foo",
+      "redirect": "/foo.html"
+    },
+    {
+      "route": "/*.{png,gif}",
+      "redirect": "/png_gif.html"
+    },
+    {
+      "route": "/folder/*.{html,xml}",
+      "rewrite": "/folder/"
+    },
+    {
+      "route": "/rewrite_index2",
+      "rewrite": "/index2.html",
+      "headers": {
+        "a": "c",
+        "foo": "bar"
+      }
+    },
+    {
+      "route": "/rewrite-to-function",
+      "rewrite": "/api/headers"
+    },
+    {
+      "route": "/login-github",
+      "rewrite": "/.auth/login/github"
+    },
+    {
+      "route": "/logout",
+      "rewrite": "/.auth/logout"
+    },
+    {
+      "route": "/.auth/login/aad",
+      "statusCode": 404
+    },
+    {
+      "route": "/status-code-401.txt",
+      "statusCode": 401
+    },
+    {
+      "route": "/status-code-403.txt",
+      "statusCode": 403
+    },
+    {
+      "route": "/status-code-404.txt",
+      "statusCode": 404
+    },
+    {
+      "route": "/only-authenticated",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/api/info",
+      "allowedRoles": ["authenticated"]
+    },
+    {
+      "route": "/api/error",
+      "statusCode": 403
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["*.{txt}"]
+  },
+  "responseOverrides": {
+    "401": {
+      "rewrite": "/custom-401.html"
+    },
+    "403": {
+      "rewrite": "/custom-403.html"
+    },
+    "404": {
+      "rewrite": "/custom-404.html"
+    }
+  },
+  "mimeTypes": {
+    ".swaconfig": "application/json"
+  },
+  "globalHeaders": {
+    "a": "b"
+  }
+}
