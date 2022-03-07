@@ -4,9 +4,11 @@
 .editorconfig
 *tsconfig*
 .nvmrc
+.devcontainer
 .prettierrc
-src
-scripts
 *.config.js
 *.tar.gz
 *.tgz
+src
+scripts
+cypress*
