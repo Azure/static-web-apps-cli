@@ -73,6 +73,10 @@ context(`/.auth/login/<provider>`, () => {
         cy.visit(`http://0.0.0.0:1234/.auth/login/${provider}`);
         cy.get("#userRoles").should("have.value", "anonymous\nauthenticated");
       });
+      it("claims should contains an empty array", () => {
+        cy.visit(`http://0.0.0.0:1234/.auth/login/${provider}`);
+        cy.get("#claims").should("have.value", "[]");
+      });
     });
   }
 });
@@ -161,6 +165,7 @@ context("checking localStorage", () => {
             expect(json.identityProvider).to.eq(provider);
             expect(json.userDetails).to.eq(`foobar-${provider}`);
             expect(json.userRoles).to.deep.eq(["anonymous", "authenticated"]);
+            expect(json.claims).to.deep.eq([]);
           });
       });
     }
@@ -183,6 +188,14 @@ context("UI buttons", () => {
       cy.get("#submit").click();
 
       cy.get("#userDetails:invalid").should("exist");
+    });
+
+    it("should not submit if invalid claims JSON value", () => {
+      cy.visit(`http://0.0.0.0:1234/.auth/login/github`);
+      cy.get("#claims").type("this is an invalid JSON value{} [] // 123 *&^%$#@!");
+
+      cy.get("#userClaimsHelpBlockError").should("be.visible");
+      cy.get("#submit").should("be.disabled");
     });
 
     it("should submit and redirect to /", () => {
