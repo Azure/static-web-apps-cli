@@ -6,6 +6,12 @@ const clientPrincipal = {
   userId: "d75b260a64504067bfc5b2905e3b8182",
   userDetails: "user@example.com",
   userRoles: ["authenticated"],
+  claims: [
+    {
+      typ: "name",
+      val: "Azure Static Web Apps",
+    },
+  ],
 };
 
 context("Authorization", () => {

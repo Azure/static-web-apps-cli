@@ -13,6 +13,12 @@ const clientPrincipal = {
   userId: "d75b260a64504067bfc5b2905e3b8182",
   userDetails: "user@example.com",
   userRoles: ["authenticated"],
+  claims: [
+    {
+      typ: "name",
+      val: "Azure Static Web Apps",
+    },
+  ],
 };
 
 context("Authentication", () => {
@@ -38,7 +44,11 @@ context("Authentication", () => {
 
       cy.request("/.auth/me").should((response) => {
         expect(response.status).to.eq(200);
-        expect(response.body.clientPrincipal).to.deep.eq(clientPrincipal);
+        expect(response.body.clientPrincipal.identityProvider).to.deep.eq(clientPrincipal.identityProvider);
+        expect(response.body.clientPrincipal.userId).to.deep.eq(clientPrincipal.userId);
+        expect(response.body.clientPrincipal.userDetails).to.deep.eq(clientPrincipal.userDetails);
+        expect(response.body.clientPrincipal.userRoles).to.deep.eq(clientPrincipal.userRoles);
+        expect(response.body.clientPrincipal.claims).to.deep.eq(clientPrincipal.claims);
       });
     });
     it("should have authenticated role", () => {
@@ -192,7 +202,7 @@ context("UI buttons", () => {
 
     it("should not submit if invalid claims JSON value", () => {
       cy.visit(`http://0.0.0.0:1234/.auth/login/github`);
-      cy.get("#claims").type("this is an invalid JSON value{} [] // 123 *&^%$#@!");
+      cy.get("#claims").type("*&^%$#@!");
 
       cy.get("#userClaimsHelpBlockError").should("be.visible");
       cy.get("#submit").should("be.disabled");
