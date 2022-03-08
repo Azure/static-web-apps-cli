@@ -127,14 +127,16 @@ context("route rules engine", { failOnStatusCode: false, defaultCommandTimeout: 
   });
 
   it("should parse and ignore query params", () => {
-    cy.request({ url: "http://0.0.0.0:1234/index.html?key=value", failOnStatusCode: false }).should((response) => {
+    cy.request({ url: "http://0.0.0.0:1234/index.html?key=value&foo=bar", failOnStatusCode: false }).should((response) => {
       expect(response.status).to.eq(200);
+      expect(response.body).to.include("/index.html");
     });
   });
 
   it("should parse and ignore query params (when rule has wildcard)", () => {
-    cy.request({ url: "http://0.0.0.0:1234/folder/index.html?key=value", failOnStatusCode: false }).should((response) => {
+    cy.request({ url: "http://0.0.0.0:1234/folder/index.html?key=value&foo=bar", failOnStatusCode: false }).should((response) => {
       expect(response.status).to.eq(200);
+      expect(response.body).to.include("/index.html");
     });
   });
 });

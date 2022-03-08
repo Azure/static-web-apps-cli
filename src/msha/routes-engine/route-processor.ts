@@ -124,12 +124,13 @@ export function parseQueryParams(req: http.IncomingMessage, matchingRouteRule: S
   const matchingRewriteRoute = matchingRouteRule?.rewrite || req.url;
   const sanitizedUrl = new URL(matchingRewriteRoute!, `${SWA_CLI_APP_PROTOCOL}://${req?.headers?.host}`);
   const matchingRewriteRouteQueryString = sanitizedUrl.searchParams.toString();
-  const doesMatchingRewriteRouteHaveQueryStringParameters = matchingRewriteRouteQueryString !== "";
-  let matchingRewriteRoutePath = matchingRewriteRoute ? matchingRewriteRoute : undefined;
+  const matchingRewriteRoutePath = sanitizedUrl.pathname;
 
-  if (doesMatchingRewriteRouteHaveQueryStringParameters) {
-    matchingRewriteRoutePath = sanitizedUrl.pathname + sanitizedUrl.search;
+  if (matchingRewriteRouteQueryString !== "") {
     logger.silly(` - query: ${chalk.yellow(matchingRewriteRouteQueryString)}`);
+    logger.silly(` - sanitizedUrl: ${chalk.yellow(sanitizedUrl)}`);
+    logger.silly(` - matchingRewriteRoute: ${chalk.yellow(matchingRewriteRoute)}`);
+    logger.silly(` - matchingRewriteRoutePath: ${chalk.yellow(matchingRewriteRoutePath)}`);
   }
   return { matchingRewriteRoutePath, sanitizedUrl, matchingRewriteRoute };
 }
