@@ -112,5 +112,5 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
-            name: static-web-apps-cli.zip
+            name: static-web-apps-cli
             path: "*.tgz"
