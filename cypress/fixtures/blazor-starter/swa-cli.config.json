@@ -6,6 +6,7 @@
       "apiLocation": "./cypress/fixtures/blazor-starter/Api",
       "run": "dotnet run --project ./cypress/fixtures/blazor-starter/Client",
       "port": 1234,
+      "host": "0.0.0.0",
       "devserverTimeout": 10000,
       "verbose": "silent"
     }
