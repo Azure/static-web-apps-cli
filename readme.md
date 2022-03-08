@@ -264,7 +264,11 @@ Here is an example:
     "identityProvider": "twitter",
     "userId": "<USER-UUID>",
     "userDetails": "<USER_NAME>",
-    "userRoles": ["anonymous", "authenticated"]
+    "userRoles": ["anonymous", "authenticated"],
+    "claims": [{
+      typ: "name",
+      val: "Azure Static Web Apps",
+    }]
   }
 }
 ```
