@@ -30,7 +30,7 @@ Using `npm` or `yarn`:
   ```
 - Start the emulator:
   ```bash
-  swa start
+  swa start ./
   ```
 - Access your SWA app from `http://localhost:4280`
 
@@ -181,6 +181,7 @@ If you need to override the default values, provide the following options:
 | `--func-args`           | Additional arguments to pass to `func start`            |                         | `--func-args="--javascript"`                                       |
 | `--config`              | Path to swa-cli.config.json file to use.                | `./swa-cli.config.json` | `--config ./config/swa-cli.config.json`                            |
 | `--print-config`        | Print all resolved options. Useful for debugging.       |                         | `--print-config` or `--print-config=true`                          |
+| `--open`                | Automatically open the SWA dev server in the default browser. | `false`           | `--open` or `--open=true` |
 
 ## swa-cli.config.json file
 
