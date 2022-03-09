@@ -1,24 +1,24 @@
-import os from 'os';
-import fs from 'fs';
-import path from 'path';
-import process from 'process';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import { PassThrough } from 'stream';
-import crypto from 'crypto';
-import fetch from 'node-fetch';
-import unzipper from 'unzipper';
-import cliProgress from 'cli-progress';
+import os from "os";
+import fs from "fs";
+import path from "path";
+import process from "process";
+import { exec } from "child_process";
+import { promisify } from "util";
+import { PassThrough } from "stream";
+import crypto from "crypto";
+import fetch from "node-fetch";
+import unzipper from "unzipper";
+import cliProgress from "cli-progress";
 import { logger } from "./utils/logger";
 
-const RELEASES_FEED_URL = 'https://functionscdn.azureedge.net/public/cli-feed-v4.json';
-const DEFAULT_FUNC_BINARY = 'func';
-const VERSION_FILE = '.release-version';
-const CORE_TOOLS_FOLDER = '.swa/core-tools';
+const RELEASES_FEED_URL = "https://functionscdn.azureedge.net/public/cli-feed-v4.json";
+const DEFAULT_FUNC_BINARY = "func";
+const VERSION_FILE = ".release-version";
+const CORE_TOOLS_FOLDER = ".swa/core-tools";
 
 function getMajorVersion(version: string): number {
-  return Number(version.split('.')[0]);
-};
+  return Number(version.split(".")[0]);
+}
 
 export function getNodeMajorVersion(): number {
   return getMajorVersion(process.versions.node);
@@ -35,7 +35,7 @@ function getCoreToolsFolder(version: number): string {
 
 function getCoreToolBinaryPath(version: number): string {
   const folder = getCoreToolsFolder(version);
-  return path.resolve(path.join(folder, 'func'));
+  return path.resolve(path.join(folder, "func"));
 }
 
 export function isCoreToolsVersionCompatible(coreToolsVersion: number, nodeVersion: number): boolean {
@@ -58,7 +58,7 @@ export function detectTargetCoreToolsVersion(nodeVersion: number): number {
   if (nodeVersion >= 10 && nodeVersion < 14) return 3;
   if (nodeVersion >= 8 && nodeVersion < 10) return 2;
 
-  logger.warn(`Unsupported Node version: ${nodeVersion} for Functions Core Tools`);
+  // Fallback to the latest version for Unsupported Node version
   return 4;
 }
 
@@ -84,17 +84,17 @@ function getDownloadedCoreToolsVersion(targetVersion: number): string | undefine
     return undefined;
   }
 
-  return fs.readFileSync(versionFile, 'utf8');
+  return fs.readFileSync(versionFile, "utf8");
 }
 
 function getPlatform() {
   switch (os.platform()) {
-    case 'win32':
-      return 'Windows';
-    case 'darwin':
-      return 'MacOS';
-    case 'linux':
-      return 'Linux';
+    case "win32":
+      return "Windows";
+    case "darwin":
+      return "MacOS";
+    case "linux":
+      return "Linux";
     default:
       throw new Error(`Unsupported platform: ${os.platform()}`);
   }
@@ -114,7 +114,7 @@ export async function getLatestCoreToolsRelease(targetVersion: number): Promise<
       throw new Error(`Cannot find release for ${tag.release}`);
     }
 
-    const coreTools = release.coreTools.filter((t: CoreToolsZipInfo) => t.size === 'full');
+    const coreTools = release.coreTools.filter((t: CoreToolsZipInfo) => t.size === "full");
     const platform = getPlatform();
     const info = coreTools.find((t: CoreToolsZipInfo) => t.OS === platform);
     if (!info) {
@@ -124,7 +124,7 @@ export async function getLatestCoreToolsRelease(targetVersion: number): Promise<
     return {
       version: tag.release,
       url: info.downloadLink,
-      sha2: info.sha2
+      sha2: info.sha2,
     };
   } catch (error: unknown) {
     throw new Error(`Error fetching Function Core Tools releases: ${(error as Error).message}`);
@@ -133,10 +133,13 @@ export async function getLatestCoreToolsRelease(targetVersion: number): Promise<
 
 async function downloadAndUnzipPackage(release: CoreToolsRelease, dest: string) {
   const response = await fetch(release.url);
-  const totalSize = Number(response.headers.get('content-length'));
-  const progressBar = new cliProgress.Bar({
-    format: '{bar} {percentage}% | ETA: {eta}s',
-  }, cliProgress.Presets.shades_classic);
+  const totalSize = Number(response.headers.get("content-length"));
+  const progressBar = new cliProgress.Bar(
+    {
+      format: "{bar} {percentage}% | ETA: {eta}s",
+    },
+    cliProgress.Presets.shades_classic
+  );
   let downloadedSize = 0;
   let since = Date.now();
   progressBar.start(totalSize, downloadedSize);
@@ -144,8 +147,8 @@ async function downloadAndUnzipPackage(release: CoreToolsRelease, dest: string) 
   const bodyStream1 = response.body.pipe(new PassThrough());
   const bodyStream2 = response.body.pipe(new PassThrough());
 
-  bodyStream2.on('data', (chunk) => {
-    downloadedSize += chunk.length
+  bodyStream2.on("data", (chunk) => {
+    downloadedSize += chunk.length;
     const now = Date.now();
     if (now - since > 100) {
       progressBar.update(downloadedSize);
@@ -160,9 +163,9 @@ async function downloadAndUnzipPackage(release: CoreToolsRelease, dest: string) 
   });
 
   const hash = await new Promise((resolve) => {
-    const hash = crypto.createHash('sha256');
-    hash.setEncoding('hex');
-    bodyStream1.on('end', () => {
+    const hash = crypto.createHash("sha256");
+    hash.setEncoding("hex");
+    bodyStream1.on("end", () => {
       hash.end();
       resolve(hash.read());
     });
@@ -188,7 +191,7 @@ export async function downloadCoreTools(version: number): Promise<string> {
   }
 
   try {
-    await downloadAndUnzipPackage(release,  dest);
+    await downloadAndUnzipPackage(release, dest);
   } catch (error) {
     // Clean up the folder if the download failed
     removeDownloadedCoreTools(version);
@@ -196,9 +199,9 @@ export async function downloadCoreTools(version: number): Promise<string> {
   }
 
   // Fix permissions on MacOS/Linux
-  if (os.platform() === 'linux' || os.platform() === 'darwin') {
-    fs.chmodSync(path.join(dest, 'func'), 0o755);
-    fs.chmodSync(path.join(dest, 'gozip'), 0o755);
+  if (os.platform() === "linux" || os.platform() === "darwin") {
+    fs.chmodSync(path.join(dest, "func"), 0o755);
+    fs.chmodSync(path.join(dest, "gozip"), 0o755);
   }
 
   fs.writeFileSync(path.join(dest, VERSION_FILE), release.version);
@@ -209,11 +212,11 @@ export async function downloadCoreTools(version: number): Promise<string> {
 export async function getCoreToolsBinary(): Promise<string | undefined> {
   const nodeVersion = getNodeMajorVersion();
   const systemVersion = await getInstalledSystemCoreToolsVersion();
-  
+
   if (systemVersion && isCoreToolsVersionCompatible(systemVersion, nodeVersion)) {
     return DEFAULT_FUNC_BINARY;
   }
-  
+
   const targetVersion = detectTargetCoreToolsVersion(nodeVersion);
   const downloadedVersion = getDownloadedCoreToolsVersion(targetVersion);
   if (downloadedVersion) {
@@ -224,7 +227,7 @@ export async function getCoreToolsBinary(): Promise<string | undefined> {
 
   if (systemVersion && systemVersion !== targetVersion) {
     logger.warn(`Functions Core Tools version mismatch. Detected v${systemVersion} but requires v${targetVersion}`);
-    logger.warn(`Downloading v${targetVersion}...`)
+    logger.warn(`Downloading v${targetVersion}...`);
   }
 
   if (!systemVersion) {

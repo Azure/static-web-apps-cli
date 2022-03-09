@@ -1,8 +1,20 @@
 import concurrently from "concurrently";
+import { CommandInfo } from "concurrently/dist/src/command";
 import fs from "fs";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
-import { createStartupScriptCommand, isAcceptingTcpConnections, isHttpUrl, logger, parseUrl, readWorkflowFile, getCoreToolsBinary, detectTargetCoreToolsVersion, getNodeMajorVersion } from "../../core";
+import {
+  createStartupScriptCommand,
+  detectTargetCoreToolsVersion,
+  getCoreToolsBinary,
+  getNodeMajorVersion,
+  isAcceptingTcpConnections,
+  isCoreToolsVersionCompatible,
+  isHttpUrl,
+  logger,
+  parseUrl,
+  readWorkflowFile,
+} from "../../core";
 import builder from "../../core/builder";
 let packageInfo = require("../../../package.json");
 
@@ -87,8 +99,10 @@ export async function start(startContext: string, options: SWACLIConfig) {
     if (options.apiLocation && userWorkflowConfig?.apiLocation) {
       // check if the func binary is globally available and if not, download it
       const funcBinary = await getCoreToolsBinary();
+      const nodeMajorVersion = getNodeMajorVersion();
+      const targetVersion = detectTargetCoreToolsVersion(nodeMajorVersion);
+
       if (!funcBinary) {
-        const targetVersion = detectTargetCoreToolsVersion(getNodeMajorVersion());
         // prettier-ignore
         logger.error(
           `\nCould not find or install Azure Functions Core Tools.\n` +
@@ -97,13 +111,21 @@ export async function start(startContext: string, options: SWACLIConfig) {
           `See https://aka.ms/functions-core-tools for more information.`,
           true
         );
-      }
+      } else {
+        if (isCoreToolsVersionCompatible(targetVersion, nodeMajorVersion) === false) {
+          logger.error(
+            `Found Azure Functions Core Tools v${targetVersion} which is incompatible with your current Node.js v${process.versions.node}.`
+          );
+          logger.error("See https://aka.ms/functions-node-versions for more information.");
+          process.exit(1);
+        }
 
-      // serve the api if and only if the user provides a folder via the --api-location flag
-      if (isApiLocationExistsOnDisk) {
-        serveApiCommand = `cd "${userWorkflowConfig.apiLocation}" && ${funcBinary} start --cors "*" --port ${options.apiPort} ${
-          options.funcArgs ?? ""
-        }`;
+        // serve the api if and only if the user provides a folder via the --api-location flag
+        if (isApiLocationExistsOnDisk) {
+          serveApiCommand = `cd "${userWorkflowConfig.apiLocation}" && ${funcBinary} start --cors "*" --port ${options.apiPort} ${
+            options.funcArgs ?? ""
+          }`;
+        }
       }
     }
   }
@@ -146,7 +168,7 @@ export async function start(startContext: string, options: SWACLIConfig) {
   // INFO: from here code may access SWA CLI env vars.
 
   const { env } = process;
-  const concurrentlyCommands: concurrently.CommandObj[] = [
+  const concurrentlyCommands: CommandInfo[] = [
     // start the reverse proxy
     { command: `node "${path.join(__dirname, "..", "..", "msha", "server.js")}"`, name: "swa", env, prefixColor: "gray.dim" },
   ];
@@ -185,10 +207,9 @@ export async function start(startContext: string, options: SWACLIConfig) {
     "swa"
   );
 
-  await concurrently(concurrentlyCommands, {
-    restartTries: 0,
-    prefix: "name",
-  }).then(
+  const { result } = concurrently(concurrentlyCommands, { restartTries: 0 });
+
+  await result.then(
     () => process.exit(),
     () => process.exit()
   );
