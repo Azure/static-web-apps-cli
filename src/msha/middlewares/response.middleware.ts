@@ -9,7 +9,7 @@ import {
   getMimeTypeForExtension,
   isRequestPathExcludedFromNavigationFallback,
   tryFindFileForRequest,
-  updateReponseHeaders,
+  updateResponseHeaders,
 } from "../routes-engine";
 import { parseQueryParams } from "../routes-engine/route-processor";
 
@@ -185,7 +185,7 @@ export function getStorageContent(
   if (responseOverridesRule) {
     // Handle HEAD request
     if (req.method === "HEAD") {
-      updateReponseHeaders(res, matchingRouteHeaders);
+      updateResponseHeaders(res, matchingRouteHeaders);
 
       res.statusCode = 200;
 
@@ -197,7 +197,7 @@ export function getStorageContent(
 
     // Handle OPTIONS request
     if (req.method === "OPTIONS") {
-      updateReponseHeaders(res, matchingRouteHeaders);
+      updateResponseHeaders(res, matchingRouteHeaders);
 
       const allowStr = "GET, HEAD, OPTIONS";
       res.setHeader("Allow", allowStr);
@@ -211,7 +211,7 @@ export function getStorageContent(
   }
 
   // Handle GET request
-  updateReponseHeaders(res, matchingRouteHeaders);
+  updateResponseHeaders(res, matchingRouteHeaders);
 
   req.url = filePathFromRequest;
 

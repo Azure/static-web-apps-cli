@@ -5,7 +5,7 @@ import { CACHE_CONTROL_MAX_AGE, HEADER_DELETE_KEYWORD } from "../../../core/cons
 
 // // See: https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#global-headers
 
-export function updateReponseHeaders(res: http.ServerResponse, matchingRouteHeaders: SWAConfigFileRouteHeaders) {
+export function updateResponseHeaders(res: http.ServerResponse, matchingRouteHeaders: SWAConfigFileRouteHeaders) {
   const headers = getResponseHeaders(matchingRouteHeaders);
   for (const header in headers) {
     if (headers[header].includes(HEADER_DELETE_KEYWORD)) {
