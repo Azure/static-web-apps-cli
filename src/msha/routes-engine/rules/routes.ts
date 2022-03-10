@@ -13,14 +13,16 @@ import {
 import { isAuthRequest } from "../../handlers/auth.handler";
 import { doesRequestPathMatchLegacyRoute, doesRequestPathMatchRoute } from "../route-processor";
 
-export function tryFindFileForRequest(requestPath: string) {
+export function tryFindFileForRequest(rawRequestPath: string) {
   logger.silly(`finding file for request`);
-  // if the user is connecting to a remote dev server, filePath will be an HTTP request pointing to the remote ressource.
+  // if the user is connecting to a remote dev server, filePath will be an HTTP request pointing to the remote resource.
   // We exit here and let the remote server handle the request.
   if (IS_APP_DEV_SERVER()) {
-    return requestPath;
+    return rawRequestPath;
   }
 
+  // percent decode request path
+  let requestPath = decodeURIComponent(rawRequestPath);
   if (requestPath.endsWith("/")) {
     requestPath = getIndexHtml(requestPath);
   }

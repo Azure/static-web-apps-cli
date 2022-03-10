@@ -13,9 +13,21 @@ context("route rules engine", { failOnStatusCode: false, defaultCommandTimeout: 
     });
   });
 
+  it("'/with space.html' returns '/with space.html'", () => {
+    cy.visit("http://0.0.0.0:1234/with space.html").should(() => {
+      cy.title().should("eq", "/with space.html");
+    });
+  });
+
   it("folder returns folder/index.html", () => {
     cy.visit("http://0.0.0.0:1234/folder/").should(() => {
       cy.title().should("eq", "/folder/index.html");
+    });
+  });
+
+  it("folder '/another folder' returns '/another folder/index.html'", () => {
+    cy.visit("http://0.0.0.0:1234/another folder/index.html").should(() => {
+      cy.title().should("eq", "/another folder/index.html");
     });
   });
 

@@ -75,6 +75,15 @@ describe("route", () => {
       expect(filePath).toBe("foo bar.png");
     });
 
+    it("should return file path when file (w/ percent-encoded symbols) exists", () => {
+      mockFs({
+        "/with space.html": "",
+      });
+
+      const filePath = tryFindFileForRequest("with%20space.html");
+      expect(filePath).toBe("with space.html");
+    });
+
     it("should return file path when file exists in subfolder", () => {
       mockFs({
         "/foo/bar.png": "",
@@ -82,6 +91,15 @@ describe("route", () => {
 
       const filePath = tryFindFileForRequest("foo/bar.png");
       expect(filePath).toBe("foo/bar.png");
+    });
+
+    it("should return file path when file exists in subfolder (w/ percent-encoded symbols)", () => {
+      mockFs({
+        "/with space/index.html": "",
+      });
+
+      const filePath = tryFindFileForRequest("with%20space/index.html");
+      expect(filePath).toBe("with space/index.html");
     });
 
     it("should return null when index.html does not exist", () => {
