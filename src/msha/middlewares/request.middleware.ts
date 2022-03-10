@@ -86,7 +86,7 @@ export async function handleUserConfig(appLocation: string): Promise<SWAConfigFi
  * @param proxyApp An `http-proxy` instance.
  * @param target The root folder of the static app (ie. `output_location`). Or, the HTTP host target, if connecting to a dev server, or
  */
-function serveStaticOrProxyReponse(req: http.IncomingMessage, res: http.ServerResponse, proxyApp: httpProxy, target: string) {
+function serveStaticOrProxyResponse(req: http.IncomingMessage, res: http.ServerResponse, proxyApp: httpProxy, target: string) {
   if ([301, 302].includes(res.statusCode)) {
     res.end();
     return;
@@ -137,8 +137,8 @@ function serveStaticOrProxyReponse(req: http.IncomingMessage, res: http.ServerRe
   } else {
     // not a dev server
 
-    // run one last check beforing serving the page:
-    // if the requested file is not foud on disk
+    // run one last check before serving the page:
+    // if the requested file is not found on disk
     // send our SWA 404 default page instead of serve-static's one.
 
     let file = null;
@@ -225,7 +225,7 @@ export async function requestMiddleware(
 
   if (isWebsocketRequest(req)) {
     logger.silly(`websocket request detected`);
-    return serveStaticOrProxyReponse(req, res, proxyApp, SWA_CLI_OUTPUT_LOCATION);
+    return serveStaticOrProxyResponse(req, res, proxyApp, SWA_CLI_OUTPUT_LOCATION);
   }
 
   let target = SWA_CLI_OUTPUT_LOCATION;
@@ -240,7 +240,7 @@ export async function requestMiddleware(
       logger.silly(` - ${statusCodeToServe} code detected. Exit`);
 
       handleErrorPage(req, res, statusCodeToServe, userConfig?.responseOverrides);
-      return serveStaticOrProxyReponse(req, res, proxyApp, target);
+      return serveStaticOrProxyResponse(req, res, proxyApp, target);
     }
   }
 
@@ -290,7 +290,7 @@ export async function requestMiddleware(
 
   if (!isRouteRequiringUserRolesCheck(req, matchingRouteRule, isFunctionReq, authStatus)) {
     handleErrorPage(req, res, 401, userConfig?.responseOverrides);
-    return serveStaticOrProxyReponse(req, res, proxyApp, target);
+    return serveStaticOrProxyResponse(req, res, proxyApp, target);
   }
 
   if (authStatus != AUTH_STATUS.NoAuth && (authStatus != AUTH_STATUS.HostNameAuthLogin || !matchingRewriteRoute)) {
@@ -305,6 +305,6 @@ export async function requestMiddleware(
     logger.silly(` - url: ${chalk.yellow(req.url)}`);
     logger.silly(` - target: ${chalk.yellow(target)}`);
 
-    serveStaticOrProxyReponse(req, res, proxyApp, target);
+    serveStaticOrProxyResponse(req, res, proxyApp, target);
   }
 }

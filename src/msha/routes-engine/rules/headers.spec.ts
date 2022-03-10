@@ -1,6 +1,6 @@
 import type http from "http";
 import { HEADER_DELETE_KEYWORD } from "../../../core/constants";
-import { getHeadersForRoute, getResponseHeaders, updateReponseHeaders } from "./headers";
+import { getHeadersForRoute, getResponseHeaders, updateResponseHeaders } from "./headers";
 
 describe("getHeadersForRoute()", () => {
   // TODO: for some weird reason, jest.spyOn() does'nt mock getDefaultHeaders()
@@ -72,24 +72,24 @@ describe("getResponseHeaders()", () => {
   });
 });
 
-describe("updateReponseHeaders()", () => {
+describe("updateResponseHeaders()", () => {
   const res = {
     setHeader: jest.fn(),
     removeHeader: jest.fn(),
   } as Partial<http.ServerResponse>;
   it("should not mutate response object if no headers are provided", () => {
-    updateReponseHeaders(res as http.ServerResponse, {});
+    updateResponseHeaders(res as http.ServerResponse, {});
     expect(res.removeHeader).not.toHaveBeenCalled();
     expect(res.setHeader).not.toHaveBeenCalled();
   });
 
   it("should set response header if a headers is provided", () => {
-    updateReponseHeaders(res as http.ServerResponse, { "x-foo": "bar" });
+    updateResponseHeaders(res as http.ServerResponse, { "x-foo": "bar" });
     expect(res.setHeader).toHaveBeenCalledWith("x-foo", "bar");
   });
 
   it("should remove response header if a headers is provided container deletion placeholder", () => {
-    updateReponseHeaders(res as http.ServerResponse, { "x-foo": `${HEADER_DELETE_KEYWORD} bar` });
+    updateResponseHeaders(res as http.ServerResponse, { "x-foo": `${HEADER_DELETE_KEYWORD} bar` });
     expect(res.removeHeader).toHaveBeenCalledWith("x-foo");
   });
 });
