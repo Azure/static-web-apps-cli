@@ -7,7 +7,7 @@ function tryGetResponseOverrideForStatusCode(responseOverrides: SWAConfigFileRes
   return responseOverrides?.[statusCode];
 }
 
-// See: https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#response-overrides
+// See: https://docs.microsoft.com/azure/static-web-apps/configuration#response-overrides
 export function responseOverrides(req: http.IncomingMessage, res: http.ServerResponse, responseOverrides: SWAConfigFileResponseOverrides) {
   const statusCode = res.statusCode;
 

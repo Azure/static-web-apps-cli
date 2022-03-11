@@ -3,7 +3,7 @@ import { logger } from "../../../core";
 
 import { CACHE_CONTROL_MAX_AGE, HEADER_DELETE_KEYWORD } from "../../../core/constants";
 
-// // See: https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#global-headers
+// // See: https://docs.microsoft.com/azure/static-web-apps/configuration#global-headers
 
 export function updateResponseHeaders(res: http.ServerResponse, matchingRouteHeaders: SWAConfigFileRouteHeaders) {
   const headers = getResponseHeaders(matchingRouteHeaders);
