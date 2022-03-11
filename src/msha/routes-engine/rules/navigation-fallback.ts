@@ -8,7 +8,7 @@ import { AUTH_STATUS } from "../../../core/constants";
 import { doesRequestPathMatchRoute } from "../route-processor";
 import { getIndexHtml } from "./routes";
 
-// See: https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#fallback-routes
+// See: https://docs.microsoft.com/azure/static-web-apps/configuration#fallback-routes
 
 export function navigationFallback(req: http.IncomingMessage, res: http.ServerResponse, navigationFallback: SWAConfigFileNavigationFallback) {
   let originlUrl = req.url;

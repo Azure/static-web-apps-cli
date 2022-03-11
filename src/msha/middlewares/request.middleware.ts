@@ -44,7 +44,7 @@ export function onConnectionLost(req: http.IncomingMessage, res: http.ServerResp
  * @param appLocation The location of the application code, where the application configuration file is located.
  * @returns The JSON content of the application configuration file defined in the `staticwebapp.config.json` file (or legacy file `routes.json`).
  * If no configuration file is found, returns `undefined`.
- * @see https://docs.microsoft.com/en-us/azure/static-web-apps/configuration
+ * @see https://docs.microsoft.com/azure/static-web-apps/configuration
  */
 export async function handleUserConfig(appLocation: string): Promise<SWAConfigFile | undefined> {
   if (!fs.existsSync(appLocation)) {
@@ -73,7 +73,7 @@ export async function handleUserConfig(appLocation: string): Promise<SWAConfigFi
     return configJson;
   } catch (error) {
     logger.silly(`${chalk.red("configuration file is invalid!")}`);
-    logger.silly(`${chalk.red(error.toString())}`);
+    logger.silly(`${chalk.red((error as any).toString())}`);
   }
 
   return configJson;
