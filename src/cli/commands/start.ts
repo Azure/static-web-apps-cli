@@ -81,9 +81,18 @@ export async function start(startContext: string, options: SWACLIConfig) {
   // mix CLI args with the project's build workflow configuration (if any)
   // use any specific workflow config that the user might provide undef ".github/workflows/"
   // Note: CLI args will take precedence over workflow config
-  userWorkflowConfig = readWorkflowFile({
-    userWorkflowConfig,
-  });
+  try {
+    userWorkflowConfig = readWorkflowFile({
+      userWorkflowConfig,
+    });
+  } catch (err) {
+    logger.warn(`Error reading workflow configuration:`);
+    logger.warn((err as any).message);
+    logger.warn(``);
+    logger.warn(
+      `See https://docs.microsoft.com/azure/static-web-apps/build-configuration?tabs=github-actions#build-configuration for more information.`
+    );
+  }
 
   const isApiLocationExistsOnDisk = fs.existsSync(userWorkflowConfig?.apiLocation!);
 
