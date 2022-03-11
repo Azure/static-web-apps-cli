@@ -26,7 +26,7 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
     }
   }
 
-  const githubActionFolder = path.resolve(process.cwd(), ".github/workflows/");
+  const githubActionFolder = path.resolve(userWorkflowConfig?.appLocation || process.cwd(), ".github/workflows/");
 
   // does the config folder exist?
   if (fs.existsSync(githubActionFolder) === false) {

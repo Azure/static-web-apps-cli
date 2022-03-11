@@ -3,6 +3,7 @@
   "configurations": {
     "app": {
       "context": "http://localhost:5000",
+      "appLocation": "./cypress/fixtures/blazor-starter",
       "apiLocation": "./cypress/fixtures/blazor-starter/Api",
       "run": "dotnet run --project ./cypress/fixtures/blazor-starter/Client",
       "port": 1234,

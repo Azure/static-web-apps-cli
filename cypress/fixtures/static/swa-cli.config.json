@@ -2,6 +2,7 @@
   "$schema": "../../../schema/swa-cli.config.schema.json",
   "configurations": {
     "app": {
+      "appLocation": "./cypress/fixtures/static",
       "context": "./cypress/fixtures/static/app",
       "apiLocation": "./cypress/fixtures/static/api",
       "port": 1234,
