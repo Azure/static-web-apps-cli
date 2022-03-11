@@ -1,0 +1,27 @@
+name: Azure Static Web Apps CI/CD
+
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - "wrapperapp/**"
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+    - main
+    paths:
+    - "wrapperapp/**"
+
+jobs:
+  call_aswa_flow:
+    uses: devrel-kr/integration-villain/.github/workflows/build-aswa.yaml@main
+    with:
+      event_name: ${{ github.event_name }}
+      event_action: ${{ github.event.action }}
+      app_location: "wrapperapp/Wrapper.WasmApp"
+      api_location: "wrapperapp/Wrapper.ApiApp"
+      output_location: "wwwroot"
+    secrets:
+      gha_token: ${{ secrets.GITHUB_TOKEN }}
+      aswa_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_KIND_GRASS_02A5C181E }}
