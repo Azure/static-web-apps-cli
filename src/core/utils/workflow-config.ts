@@ -60,38 +60,30 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
   const swaYaml = YAML.parse(githubActionContent);
 
   if (!swaYaml) {
-    throw Error(`could not parse the SWA workflow file "${githubActionFile}". Make sure it's a valid YAML file`);
+    throw Error(`could not parse the SWA workflow file "${githubActionFile}".`);
   }
 
   if (!swaYaml.jobs) {
-    throw Error(`missing property 'jobs' in the SWA workflow file "${githubActionFile}". Make sure it's a valid SWA workflow file`);
+    throw Error(`missing property "jobs" in the SWA workflow file "${githubActionFile}".`);
   }
 
   if (!swaYaml.jobs.build_and_deploy_job) {
-    throw Error(
-      `missing property 'jobs.build_and_deploy_job' in the SWA workflow file "${githubActionFile}". Make sure it's a valid SWA workflow file.`
-    );
+    throw Error(`missing property "jobs.build_and_deploy_job" in the SWA workflow file "${githubActionFile}".`);
   }
 
   if (!swaYaml.jobs.build_and_deploy_job.steps) {
-    throw Error(
-      `missing property 'jobs.build_and_deploy_job.steps' in the SWA workflow file "${githubActionFile}". Make sure it's a valid SWA workflow file.`
-    );
+    throw Error(`missing property "jobs.build_and_deploy_job.steps" in the SWA workflow file "${githubActionFile}".`);
   }
 
   // hacking this to have an `any` on the type in .find, mainly because a typescript definition for the YAML file is painful...
   const swaBuildConfig = swaYaml.jobs.build_and_deploy_job.steps.find((step: any) => step.uses && step.uses.includes("static-web-apps-deploy"));
 
   if (!swaBuildConfig) {
-    throw Error(
-      `invalid property 'jobs.build_and_deploy_job.steps[]' in the SWA workflow file "${githubActionFile}". Make sure it's a valid SWA workflow file.`
-    );
+    throw Error(`invalid property "jobs.build_and_deploy_job.steps[]" in the SWA workflow file "${githubActionFile}".`);
   }
 
   if (!swaBuildConfig.with) {
-    throw Error(
-      `missing property 'jobs.build_and_deploy_job.steps[].with' in the SWA workflow file "${githubActionFile}". Make sure it's a valid SWA workflow file.`
-    );
+    throw Error(`missing property "jobs.build_and_deploy_job.steps[].with" in the SWA workflow file "${githubActionFile}".`);
   }
 
   // extract the user's config and set defaults
