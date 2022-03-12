@@ -29,25 +29,25 @@ describe("readWorkflowFile()", () => {
   });
 
   describe("checking workflow properties", () => {
-    it("missing property 'jobs' should throw", () => {
+    it(`missing property "jobs" should throw`, () => {
       mockFs({
         ".github/workflows/azure-static-web-apps__not-valid.yml": `name: Azure Static Web Apps CI/CD`,
       });
 
-      expect(() => readWorkflowFile()).toThrow(/missing property 'jobs'/);
+      expect(() => readWorkflowFile()).toThrow(/missing property "jobs"/);
     });
 
-    it("missing property 'jobs.build_and_deploy_job' should throw", () => {
+    it(`missing property "jobs.build_and_deploy_job" should throw`, () => {
       mockFs({
         ".github/workflows/azure-static-web-apps.yml": `
 jobs:
   invalid_property:
 `,
       });
-      expect(() => readWorkflowFile()).toThrow(/missing property 'jobs.build_and_deploy_job'/);
+      expect(() => readWorkflowFile()).toThrow(/missing property "jobs.build_and_deploy_job"/);
     });
 
-    it("missing property 'jobs.build_and_deploy_job.steps' should throw", () => {
+    it(`missing property "jobs.build_and_deploy_job.steps" should throw`, () => {
       mockFs({
         ".github/workflows/azure-static-web-apps.yml": `
 jobs:
@@ -56,10 +56,10 @@ jobs:
 `,
       });
 
-      expect(() => readWorkflowFile()).toThrow(/missing property 'jobs.build_and_deploy_job.steps'/);
+      expect(() => readWorkflowFile()).toThrow(/missing property "jobs.build_and_deploy_job.steps"/);
     });
 
-    it("invalid property 'jobs.build_and_deploy_job.steps' should throw", () => {
+    it(`invalid property"jobs.build_and_deploy_job.steps" should throw`, () => {
       mockFs({
         ".github/workflows/azure-static-web-apps.yml": `
 jobs:
@@ -67,10 +67,10 @@ jobs:
     steps:
 `,
       });
-      expect(() => readWorkflowFile()).toThrow(/missing property 'jobs.build_and_deploy_job.steps'/);
+      expect(() => readWorkflowFile()).toThrow(/missing property "jobs.build_and_deploy_job.steps"/);
     });
 
-    it("invalid property 'jobs.build_and_deploy_job.steps[]' should throw", () => {
+    it(`invalid property "jobs.build_and_deploy_job.steps[]" should throw`, () => {
       mockFs({
         ".github/workflows/azure-static-web-apps.yml": `
 jobs:
@@ -80,10 +80,10 @@ jobs:
 `,
       });
 
-      expect(() => readWorkflowFile()).toThrow(/invalid property 'jobs.build_and_deploy_job.steps\[\]'/);
+      expect(() => readWorkflowFile()).toThrow(/invalid property "jobs.build_and_deploy_job.steps\[\]"/);
     });
 
-    it("missing property 'jobs.build_and_deploy_job.steps[].with' should throw", () => {
+    it(`missing property "jobs.build_and_deploy_job.steps[].with" should throw`, () => {
       mockFs({
         ".github/workflows/azure-static-web-apps.yml": `
 jobs:
@@ -94,7 +94,7 @@ jobs:
 `,
       });
 
-      expect(() => readWorkflowFile()).toThrow(/missing property 'jobs.build_and_deploy_job.steps\[\].with'/);
+      expect(() => readWorkflowFile()).toThrow(/missing property "jobs.build_and_deploy_job.steps\[\].with"/);
     });
   });
 
