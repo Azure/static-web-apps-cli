@@ -2,6 +2,7 @@ import fs, { promises as fsPromises } from "fs";
 import type http from "http";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
+import { logger } from "./logger";
 import { isHttpUrl } from "./net";
 const { readdir, readFile } = fsPromises;
 
@@ -44,7 +45,14 @@ export async function findSWAConfigFile(folder: string) {
     const filename = path.basename(file) as string;
 
     if (filename === DEFAULT_CONFIG.swaConfigFilename || filename === DEFAULT_CONFIG.swaConfigFilenameLegacy) {
-      const config = JSON.parse((await readFile(file)).toString("utf-8"));
+      let config = {} as SWAConfigFile;
+      try {
+        config = JSON.parse((await readFile(file)).toString("utf-8"));
+      } catch (err) {
+        logger.warn(``);
+        logger.warn(`Error reading ${filename} configuration:`);
+        logger.warn(`${(err as any).message} in "${file}"`);
+      }
 
       // make sure we are using the right SWA config file.
       // Note: some JS frameworks (eg. Nuxt, Scully) use routes.json as part of their config. We need to ignore those
