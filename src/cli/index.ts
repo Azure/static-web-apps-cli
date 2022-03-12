@@ -62,8 +62,7 @@ export async function run(argv?: string[]) {
     .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
 
     .action(async (context: string = `.${path.sep}`, options: SWACLIConfig) => {
-      const fileOptions = await getFileOptions(context, cli.opts().config);
-      const verbose = fileOptions.verbose;
+      const verbose = cli.opts().verbose;
 
       // make sure the start command gets the right verbosity level
       process.env.SWA_CLI_DEBUG = verbose;
@@ -72,10 +71,12 @@ export async function run(argv?: string[]) {
         // propagate debugging level to other tools using the DEBUG environment variable
         process.env.DEBUG = "*";
       }
+      const fileOptions = await getFileOptions(context, cli.opts().config);
 
       options = {
         ...options,
         ...fileOptions,
+        verbose,
       };
 
       if (cli.opts().printConfig) {
