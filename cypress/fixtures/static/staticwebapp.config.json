@@ -15,6 +15,10 @@
       "redirect": "/index2.html"
     },
     {
+      "route": "/redirect/*/invalid",
+      "statusCode": 418
+    },
+    {
       "route": "/*.google",
       "redirect": "https://www.google.com/"
     },
