@@ -3,7 +3,7 @@ import fs from "fs";
 import type http from "http";
 import path from "path";
 import { logger } from "../../../core";
-import { globToRegExp } from "../../../core/utils/glob";
+import { globToRegExp, isValidGlobExpression } from "../../../core/utils/glob";
 import { AUTH_STATUS } from "../../../core/constants";
 import { doesRequestPathMatchRoute } from "../route-processor";
 import { getIndexHtml } from "./routes";
@@ -50,12 +50,18 @@ export function navigationFallback(req: http.IncomingMessage, res: http.ServerRe
 
   // parse the exclusion rules and match at least one rule
   const isMatchedExcludeRule = navigationFallback?.exclude?.some((filter) => {
+    if (isValidGlobExpression(filter) === false) {
+      logger.silly(` - invalid rule ${chalk.yellow(filter)}`);
+      logger.silly(` - mark as no match`);
+      return false;
+    }
+
     // we don't support full globs in the config file.
     // add this little utility to convert a wildcard into a valid glob pattern
     const regexp = new RegExp(`^${globToRegExp(filter)}$`);
     const isMatch = regexp.test(originlUrl!);
 
-    logger.silly(`   - exclude: ${chalk.yellow(filter)}`);
+    logger.silly(`   - rule: ${chalk.yellow(filter)}`);
     logger.silly(`   - regexp: ${chalk.yellow(regexp)}`);
     logger.silly(`   - isRegexpMatch: ${chalk.yellow(isMatch)}`);
 

@@ -1,4 +1,4 @@
-import { globToRegExp } from "./glob";
+import { globToRegExp, isBalancedCurlyBrackets, isValidGlobExpression } from "./glob";
 
 describe("globToRegExp()", () => {
   it("glob = <empty>", () => {
@@ -24,19 +24,95 @@ describe("globToRegExp()", () => {
     expect(globToRegExp("/foo/*")).toBe("\\/foo\\/.*");
   });
 
-  it("glob = /*.{jpg}", () => {
-    expect(globToRegExp("/*.{jpg}")).toBe("\\/.*(jpg)");
+  it("glob = /*.{ext}", () => {
+    expect(globToRegExp("/*.{ext}")).toBe("\\/.*(ext)");
   });
 
-  it("glob = /*.{jpg,gif}", () => {
-    expect(globToRegExp("/*.{jpg,gif}")).toBe("\\/.*(jpg|gif)");
+  it("glob = /*.{ext,gif}", () => {
+    expect(globToRegExp("/*.{ext,gif}")).toBe("\\/.*(ext|gif)");
   });
 
-  it("glob = /foo/*.{jpg,gif}", () => {
-    expect(globToRegExp("/foo/*.{jpg,gif}")).toBe("\\/foo\\/.*(jpg|gif)");
+  it("glob = /foo/*.{ext,gif}", () => {
+    expect(globToRegExp("/foo/*.{ext,gif}")).toBe("\\/foo\\/.*(ext|gif)");
   });
 
   it("glob = {foo,bar}.json", () => {
     expect(globToRegExp("{foo,bar}.json")).toBe("(foo|bar).json");
+  });
+});
+
+// describe isValidGlobExpression
+
+describe("isValidGlobExpression()", () => {
+  // valid expressions
+  ["*", "/*", "/foo/*", "/foo/*.ext", "/*.ext", "*.ext", "/foo/*.ext", "/foo/*.{ext}", "/foo/*.{ext,ext}"].forEach((glob) => {
+    describe("should be TRUE for the following values", () => {
+      it(`glob = ${glob}`, () => {
+        expect(isValidGlobExpression(glob)).toBe(true);
+      });
+    });
+  });
+
+  // invalid expressions
+  [
+    undefined,
+    "",
+    "*.*",
+    "**.*",
+    "**.**",
+    "**",
+    "*/*",
+    "*/*.ext",
+    "*.ext/*",
+    "*/*.ext*",
+    "*.ext/*.ext",
+    "/blog/*/management",
+    "/foo/*.{ext,,,,}",
+    "/foo/*.{ext,",
+    "/foo/*.ext,}",
+    "/foo/*.ext}",
+    "/foo/*.{}",
+    "/foo/*.",
+    "/foo/.",
+  ].forEach((glob) => {
+    describe("should be FALSE for the following values", () => {
+      it(`glob = ${glob}`, () => {
+        expect(isValidGlobExpression(glob)).toBe(false);
+      });
+    });
+  });
+});
+
+describe("isBalancedCurlyBrackets()", () => {
+  it("should be true for {}", () => {
+    expect(isBalancedCurlyBrackets("{,,,}")).toBe(true);
+  });
+
+  it("should be true for {}{}{}", () => {
+    expect(isBalancedCurlyBrackets("{,,,}{,,,}{,,,}")).toBe(true);
+  });
+
+  it("should be true for {{}}", () => {
+    expect(isBalancedCurlyBrackets("{,,,{,,,},,,}")).toBe(true);
+  });
+
+  it("should be false for }{", () => {
+    expect(isBalancedCurlyBrackets("},,,{")).toBe(false);
+  });
+
+  it("should be false for }{}{", () => {
+    expect(isBalancedCurlyBrackets("},,,{,,,},,,{")).toBe(false);
+  });
+
+  it("should be false for {", () => {
+    expect(isBalancedCurlyBrackets("{,,,")).toBe(false);
+  });
+
+  it("should be false for }", () => {
+    expect(isBalancedCurlyBrackets(",,,}")).toBe(false);
+  });
+
+  it("should be false for {}}{{}", () => {
+    expect(isBalancedCurlyBrackets("{,,,}},,,{{,,,}")).toBe(false);
   });
 });
