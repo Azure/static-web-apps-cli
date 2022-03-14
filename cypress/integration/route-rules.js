@@ -97,6 +97,12 @@ context("route rules engine", { failOnStatusCode: false, defaultCommandTimeout: 
     });
   });
 
+  it("/redirect/*/invalid should not matched (invalid wildcard position)", () => {
+    cy.request("http://0.0.0.0:1234/redirect/foo/invalid").should((response) => {
+      expect(response.status).to.eq(200);
+    });
+  });
+
   it("/*.{jpg} matches extension", () => {
     cy.request({
       url: "http://0.0.0.0:1234/thing.jpg",
