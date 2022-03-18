@@ -6,7 +6,38 @@ import { parseDevserverTimeout } from "../core";
 import { start } from "./commands/start";
 import updateNotifier from "update-notifier";
 import { getFileOptions, swaCliConfigFilename } from "../core/utils/cli-config";
+import { deploy } from "./commands/deploy";
 const pkg = require("../../package.json");
+
+const processConfigurationFile = async (cli: SWACLIConfig & GithubActionWorkflow & program.Command, context: string, options: SWACLIConfig) => {
+  const verbose = cli.opts().verbose;
+
+  // make sure the start command gets the right verbosity level
+  process.env.SWA_CLI_DEBUG = verbose;
+  if (verbose?.includes("silly")) {
+    // when silly level is set,
+    // propagate debugging level to other tools using the DEBUG environment variable
+    process.env.DEBUG = "*";
+  }
+  const fileOptions = await getFileOptions(context, cli.opts().config);
+
+  options = {
+    ...options,
+    ...fileOptions,
+    verbose,
+  };
+
+  if (cli.opts().printConfig) {
+    logger.log("", "swa");
+    logger.log("Options: ", "swa");
+    logger.log({ ...DEFAULT_CONFIG, ...options }, "swa");
+  }
+
+  return {
+    options,
+    fileOptions,
+  };
+};
 
 export const defaultStartContext = `.${path.sep}`;
 
@@ -26,6 +57,7 @@ export async function run(argv?: string[]) {
     .option("--config <path>", "Path to swa-cli.config.json file to use.", path.relative(process.cwd(), swaCliConfigFilename))
     .option("--print-config", "Print all resolved options.", false);
 
+  // start command
   program
     .command("start [context]")
     .usage("[context] [options]")
@@ -61,33 +93,10 @@ export async function run(argv?: string[]) {
     .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
     .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
 
-    .action(async (context: string = `.${path.sep}`, options: SWACLIConfig) => {
-      const verbose = cli.opts().verbose;
-
-      // make sure the start command gets the right verbosity level
-      process.env.SWA_CLI_DEBUG = verbose;
-      if (verbose?.includes("silly")) {
-        // when silly level is set,
-        // propagate debugging level to other tools using the DEBUG environment variable
-        process.env.DEBUG = "*";
-      }
-      const fileOptions = await getFileOptions(context, cli.opts().config);
-
-      options = {
-        ...options,
-        ...fileOptions,
-        verbose,
-      };
-
-      if (cli.opts().printConfig) {
-        logger.log("", "swa");
-        logger.log("Options: ", "swa");
-        logger.log({ ...DEFAULT_CONFIG, ...options }, "swa");
-      }
-
+    .action(async (context: string = `.${path.sep}`, parsedOptions: SWACLIConfig) => {
+      let { options, fileOptions } = await processConfigurationFile(cli, context, parsedOptions);
       await start(fileOptions.context ?? context, options);
     })
-
     .addHelpText(
       "after",
       `
@@ -107,6 +116,34 @@ Examples:
 
   Use a custom command to run framework development server at startup
   swa start http://localhost:3000 --run "npm start"
+    `
+    );
+
+  program
+    .command("deploy [context]")
+    .usage("[context] [options]")
+    .description("deploy the current project to Azure Static Web Apps")
+    .option("--app-output-location <app-dist-folder>", "the location for the static app built folder")
+    .option("--api-output-location <api-dist-folder>", "the location for the API built folder")
+    .option("--deployment-token <secret>", "the secret toekn used to authenticate with the Static Web Apps")
+    .action(async (context: string = `.${path.sep}`, parsedOptions: SWACLIConfig) => {
+      let { options, fileOptions } = await processConfigurationFile(cli, context, parsedOptions);
+      await deploy(fileOptions.context ?? context, options);
+    })
+    .addHelpText(
+      "after",
+      `
+Examples:
+
+  Deploy using a deployment token
+  swa deploy --app-output-location ./app/dist/ --api-output-location ./api/ --deployment-token <token>
+
+  Deploy without a deployment token (requires swa login)
+  swa deploy --app-output-location ./app/dist/ --api-output-location ./api/
+
+  Deploy using a configuation file
+  swa deploy myproject
+  swa deploy --config ./swa-cli.config.json myproject
     `
     );
 

@@ -57,7 +57,7 @@ declare type GithubActionWorkflow = {
   files?: string[];
 };
 
-declare type SWACLIOptions = {
+declare type SWACLIStartOptions = {
   port?: number;
   host?: string;
   apiPort?: number;
@@ -80,7 +80,13 @@ declare type SWACLIOptions = {
   open?: boolean;
 };
 
-declare type SWACLIConfig = SWACLIOptions & GithubActionWorkflow;
+declare type SWACLIDeployOptions = {
+  appOutputLocation?: string;
+  apiOutputLocation?: string;
+  deploymentToken?: string;
+};
+
+declare type SWACLIConfig = SWACLIStartOptions & SWACLIDeployOptions & GithubActionWorkflow;
 
 declare type ResponseOptions = {
   [key: string]: any;
@@ -154,7 +160,7 @@ declare interface CoreToolsRelease {
 
 declare interface CoreToolsZipInfo {
   OS: string;
-  Architecture: string,
+  Architecture: string;
   downloadLink: string;
   size: string;
   sha2: string;
