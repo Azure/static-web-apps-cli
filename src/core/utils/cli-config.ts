@@ -1,4 +1,5 @@
 import * as path from "path";
+import * as process from "process";
 import fs, { promises as fsPromises } from "fs";
 import { logger } from "./logger";
 import { defaultStartContext } from "../../cli";
@@ -7,6 +8,7 @@ const { readFile } = fsPromises;
 export const swaCliConfigFilename = "swa-cli.config.json";
 
 export async function getFileOptions(context: string, configFilePath: string): Promise<SWACLIConfig & { context?: string }> {
+  configFilePath = path.resolve(configFilePath);
   if (!fs.existsSync(configFilePath)) {
     return {};
   }
@@ -16,6 +18,10 @@ export async function getFileOptions(context: string, configFilePath: string): P
     logger.warn(`${swaCliConfigFilename} is missing the "configurations" property. No options will be loaded.`);
     return {};
   }
+
+  // Use configuration root path as the directory context
+  const configDir = path.dirname(configFilePath);
+  process.chdir(configDir);
 
   const hasOnlyOneConfig = Object.entries(cliConfig.configurations).length === 1;
   if (hasOnlyOneConfig && context === defaultStartContext) {
@@ -47,7 +53,7 @@ async function tryParseSwaCliConfig(file: string) {
 
 function printConfigMsg(name: string, file: string) {
   logger.log(`Using configuration "${name}" from file:`, "swa");
-  logger.log(`\t${path.resolve(process.cwd(), file)}`, "swa");
+  logger.log(`\t${file}`, "swa");
   logger.log("", "swa");
   logger.log(`Options passed in via CLI will be overridden by options in file.`, "swa");
 }

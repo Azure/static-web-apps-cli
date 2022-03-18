@@ -1,3 +1,4 @@
+import * as path from "path";
 import mockFs from "mock-fs";
 import { defaultStartContext } from "../../cli";
 
@@ -83,5 +84,19 @@ describe("getFileOptions()", () => {
   it("Should return proper config without path specified", async () => {
     mockConfig(mockConfig1);
     expect(await getFileOptions("app", "swa-cli.config.json")).toStrictEqual(mockConfig1.configurations.app);
+  });
+
+  it("Should change cwd to the config root dir if a config exists", async () => {
+    const configDir = path.resolve("../../");
+    mockFs({ "../../swa-cli.config.json": JSON.stringify(mockConfig1) });
+    expect(await getFileOptions("app", "../../swa-cli.config.json")).toStrictEqual(mockConfig1.configurations.app);
+    expect(process.cwd()).toBe(configDir);
+  });
+
+  it("Should not change cwd no config is specified or found", async () => {
+    const currentDir = path.resolve(".");
+    mockFs({ "../../swa-cli.config.json": JSON.stringify(mockConfig1) });
+    expect(await getFileOptions("app", "swa-cli.config.json")).toEqual({});
+    expect(process.cwd()).toBe(currentDir);
   });
 });
