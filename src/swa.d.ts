@@ -57,7 +57,7 @@ declare type GithubActionWorkflow = {
   files?: string[];
 };
 
-declare type SWACLIOptions = {
+declare type SWACLIStartOptions = {
   port?: number;
   host?: string;
   apiPort?: number;
@@ -80,15 +80,13 @@ declare type SWACLIOptions = {
   open?: boolean;
 };
 
-declare type SWACLILoginOptions = {
-  persist?: boolean;
-  subscriptionId?: string;
-  resourceGroup?: string;
-  tenantId?: string;
-  appName?: string;
+declare type SWACLIDeployOptions = {
+  appOutputLocation?: string;
+  apiOutputLocation?: string;
+  deploymentToken?: string;
 };
 
-declare type SWACLIConfig = SWACLIOptions & SWACLILoginOptions & GithubActionWorkflow;
+declare type SWACLIConfig = SWACLIStartOptions & SWACLIDeployOptions & GithubActionWorkflow;
 
 declare type ResponseOptions = {
   [key: string]: any;
