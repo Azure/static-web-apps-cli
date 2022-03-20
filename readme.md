@@ -39,14 +39,14 @@ Using `npm` or `yarn`:
 Using `npx`:
 
 - Open a SWA app folder at the root (outside any /api or /app folders): `cd my-awesome-swa-app`
-- Start the emulator: `npx @azure/static-web-apps-cli start`
+- Start the emulator: `npx swa start`
 - Access your SWA app from `http://localhost:4280`
 
 ## Start the emulator
 
 ### Serve from a folder
 
-By default, CLI starts and serves any the static content from the current working directory `./`:
+By default, the CLI starts and serves any the static content from the current working directory `./`:
 
 ```bash
 swa start
@@ -103,21 +103,17 @@ Go to 4280 (`http://localhost:4280`) to access the application with the emulated
 
 ### Serve both the static app and API
 
-If your project includes API functions, install [Azure Functions Core Tools](https://github.com/Azure/azure-functions-core-tools):
+If your project includes API functions, the CLI will check if the Azure Functions Core Tools are installed and available. If not, the CLI will download and install the right version of the Azure Functions Core Tools.
 
-```bash
-npm install -g azure-functions-core-tools@3 --unsafe-perm true
-```
-
-#### Start API server automatically
+#### Start the API server automatically
 
 Run the CLI and provide the folder that contains the API backend (a valid Azure Functions App project):
 
 ```bash
-# static content plus API
+# static content plus an API
 swa start ./my-dist --api-location ./api-folder
 
-# frontend dev server plus API
+# frontend dev server plus an API
 swa start http://localhost:3000 --api-location ./api-folder
 ```
 
@@ -129,11 +125,40 @@ To use the CLI with your local API backend dev server, follow these two steps:
 
 1. Start your API using Azure Functions Core Tools: `func host start` or start debugging in VS Code.
 2. In a separate terminal, run the SWA CLI with the `--api-location` flag and the URI of the local API server, in the following format:
-   ```bash
-   swa start ./my-dist --api-location http://localhost:7071
-   ```
 
-## Use a configuration file (staticwebapp.config.json)
+```bash
+swa start ./my-dist --api-location http://localhost:7071
+```
+
+## Deploy to Azure Static Web Apps
+
+The CLI can also be used to deploy your app to Azure Static Web Apps. To do so, run the CLI with the `swa deploy` command:
+
+```bash
+swa deploy --output-location ./my-dist --api-location ./api-folder --deployment-token <token>
+```
+
+### Deployment token
+
+A deployment token is required to deploy to Azure Static Web Apps. You can get a token from the [Azure portal](https://portal.azure.com/): **Home → Static Web App → Your Instance → Overview → Manage deployment token**
+
+Or using the Azure CLI:
+
+```bash
+az staticwebapp secrets list --name <application-name> --query "properties.apiKey"
+```
+
+You can also create an environment variable called `SWA_CLI_DEPLOYMENT_TOKEN` and set it to the deployment token.
+
+### Deploy using the swa-cli.config.json
+
+If you are using a `swa-cli.config.json` file with your project and have a single configuration, you can run the command:
+
+```bash
+swa deploy
+```
+
+## Use a runtime configuration file (staticwebapp.config.json)
 
 Azure Static Web Apps can be configured with an optional `staticwebapp.config.json` file. For more information, see [Configure Static Web Apps documentation](https://docs.microsoft.com/azure/static-web-apps/configuration).
 
@@ -165,23 +190,23 @@ swa start http://localhost:3000 --swa-config-location ./my-app-source
 
 If you need to override the default values, provide the following options:
 
-| Options                 | Description                                             | Default                 | Example                                                            |
-| ----------------------- | ------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------ |
-| `--app-location`        | set location for the static app source code             | `./`                    | `--app-location="./my-project"`                                    |
-| `--api-location`        | set the API folder or dev server                        |                         | `--api-location="./api"` or `--api-location=http://localhost:8083` |
-| `--swa-config-location` | set the directory of the staticwebapp.config.json file. |                         | `--swa-config-location=./my-project-folder`                        |
-| `--api-port`            | set the API server port                                 | `7071`                  | `--api-port=8082`                                                  |
-| `--host`                | set the emulator host address                           | `0.0.0.0`               | `--host=192.168.68.80`                                             |
-| `--port`                | set the emulator port value                             | `4280`                  | `--port=8080`                                                      |
-| `--ssl`                 | serving the app and API over HTTPS (default: false)     | `false`                 | `--ssl` or `--ssl=true`                                            |
-| `--ssl-cert`            | SSL certificate to use for serving HTTPS                |                         | `--ssl-cert="/home/user/ssl/example.crt"`                          |
-| `--ssl-key`             | SSL key to use for serving HTTPS                        |                         | `--ssl-key="/home/user/ssl/example.key"`                           |
-| `--run`                 | Run a command at startup                                |                         | `--run="cd app & npm start"`                                       |
-| `--devserver-timeout`   | The time to wait(in ms) for the dev server to start     | 30000                   | `--devserver-timeout=60000`                                        |
-| `--func-args`           | Additional arguments to pass to `func start`            |                         | `--func-args="--javascript"`                                       |
-| `--config`              | Path to swa-cli.config.json file to use.                | `./swa-cli.config.json` | `--config ./config/swa-cli.config.json`                            |
-| `--print-config`        | Print all resolved options. Useful for debugging.       |                         | `--print-config` or `--print-config=true`                          |
-| `--open`                | Automatically open the SWA dev server in the default browser. | `false`           | `--open` or `--open=true` |
+| Options                 | Description                                                   | Default                 | Example                                                            |
+| ----------------------- | ------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------ |
+| `--app-location`        | set location for the static app source code                   | `./`                    | `--app-location="./my-project"`                                    |
+| `--api-location`        | set the API folder or dev server                              |                         | `--api-location="./api"` or `--api-location=http://localhost:8083` |
+| `--swa-config-location` | set the directory of the staticwebapp.config.json file.       |                         | `--swa-config-location=./my-project-folder`                        |
+| `--api-port`            | set the API server port                                       | `7071`                  | `--api-port=8082`                                                  |
+| `--host`                | set the emulator host address                                 | `0.0.0.0`               | `--host=192.168.68.80`                                             |
+| `--port`                | set the emulator port value                                   | `4280`                  | `--port=8080`                                                      |
+| `--ssl`                 | serving the app and API over HTTPS (default: false)           | `false`                 | `--ssl` or `--ssl=true`                                            |
+| `--ssl-cert`            | SSL certificate to use for serving HTTPS                      |                         | `--ssl-cert="/home/user/ssl/example.crt"`                          |
+| `--ssl-key`             | SSL key to use for serving HTTPS                              |                         | `--ssl-key="/home/user/ssl/example.key"`                           |
+| `--run`                 | Run a command at startup                                      |                         | `--run="cd app & npm start"`                                       |
+| `--devserver-timeout`   | The time to wait(in ms) for the dev server to start           | 30000                   | `--devserver-timeout=60000`                                        |
+| `--func-args`           | Additional arguments to pass to `func start`                  |                         | `--func-args="--javascript"`                                       |
+| `--config`              | Path to swa-cli.config.json file to use.                      | `./swa-cli.config.json` | `--config ./config/swa-cli.config.json`                            |
+| `--print-config`        | Print all resolved options. Useful for debugging.             |                         | `--print-config` or `--print-config=true`                          |
+| `--open`                | Automatically open the SWA dev server in the default browser. | `false`                 | `--open` or `--open=true`                                          |
 
 ## swa-cli.config.json file
 
@@ -265,10 +290,12 @@ Here is an example:
     "userId": "<USER-UUID>",
     "userDetails": "<USER_NAME>",
     "userRoles": ["anonymous", "authenticated"],
-    "claims": [{
-      typ: "name",
-      val: "Azure Static Web Apps",
-    }]
+    "claims": [
+      {
+        "typ": "name",
+        "val": "Azure Static Web Apps"
+      }
+    ]
   }
 }
 ```
