@@ -33,8 +33,8 @@ type StaticSiteClientLocalMetadata = {
   checksum: string;
 };
 
-const DEPLOY_BINARY_NAME = "StaticSitesClient";
-const DEPLOY_FOLDER = path.join(os.homedir(), ".swa");
+export const DEPLOY_BINARY_NAME = "StaticSitesClient";
+export const DEPLOY_FOLDER = path.join(os.homedir(), ".swa");
 
 export async function getDeployClientPath(): Promise<{ binary: string; version: string }> {
   const platform = getPlatform();
@@ -80,7 +80,7 @@ export async function getDeployClientPath(): Promise<{ binary: string; version: 
   };
 }
 
-function getLocalClientMetadata(): StaticSiteClientLocalMetadata | null {
+export function getLocalClientMetadata(): StaticSiteClientLocalMetadata | null {
   const binaryFilename = path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME);
   const metadataFilename = path.join(DEPLOY_FOLDER, `${DEPLOY_BINARY_NAME}.json`);
   if (fs.existsSync(DEPLOY_FOLDER) && fs.existsSync(binaryFilename) && fs.existsSync(metadataFilename)) {
