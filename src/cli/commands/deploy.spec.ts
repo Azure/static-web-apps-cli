@@ -1,0 +1,125 @@
+import child_process from "child_process";
+import { logger } from "../../core";
+import * as deployClientModule from "../../core/deploy-client";
+import { deploy } from "./deploy";
+import path from "path";
+const pkg = require(path.join(__dirname, "..", "..", "..", "package.json"));
+
+jest.spyOn(logger, "error").mockImplementation();
+jest.spyOn(logger, "log").mockImplementation();
+jest.spyOn(process, "exit").mockImplementation();
+jest.spyOn(child_process, "spawn").mockImplementation();
+jest.spyOn(deployClientModule, "getDeployClientPath").mockImplementation(() => {
+  return Promise.resolve({
+    binary: "mock-binary",
+    version: "mock-version",
+  });
+});
+jest.spyOn(deployClientModule, "cleanUp").mockImplementation(() => {});
+
+describe("deploy", () => {
+  const OLD_ENV = process.env;
+
+  beforeEach(() => {
+    jest.resetModules();
+    process.env = {};
+  });
+
+  afterAll(() => {
+    process.env = OLD_ENV;
+  });
+
+  it("should be a function", () => {
+    expect(typeof deploy).toBe("function");
+  });
+
+  it("should return a Promise", () => {
+    expect(deploy("./", {})).toBeInstanceOf(Promise);
+  });
+
+  it("should print an error and exit, if --output-location is not provided", async () => {
+    await deploy("./", {});
+    expect(logger.error).toBeCalledWith("--output-location option is missing", true);
+    expect(deployClientModule.getDeployClientPath).not.toBeCalled();
+    expect(child_process.spawn).not.toBeCalled();
+  });
+
+  it("should print an error and exit, if --api-location is not provided", async () => {
+    await deploy("./", {
+      outputLocation: "./dist",
+    });
+    expect(logger.error).toBeCalledWith("--api-location option is missing", true);
+    expect(deployClientModule.getDeployClientPath).not.toBeCalled();
+    expect(child_process.spawn).not.toBeCalled();
+  });
+
+  it("should print an error and exit, if --deployment-token is not provided", async () => {
+    await deploy("./", {
+      outputLocation: "./dist",
+      apiLocation: "./api",
+    });
+    expect(logger.error).toBeCalledWith("--deployment-token option is missing", true);
+    expect(deployClientModule.getDeployClientPath).not.toBeCalled();
+    expect(child_process.spawn).not.toBeCalled();
+  });
+
+  it("should accept a deploymentToken provided via --deployment-token", async () => {
+    await deploy("./", {
+      outputLocation: "./dist",
+      apiLocation: "./api",
+      deploymentToken: "123",
+    });
+
+    expect(logger.log).toBeCalledWith("Deployment token provide via flag");
+
+    expect(await deployClientModule.getDeployClientPath()).toEqual({
+      binary: "mock-binary",
+      version: "mock-version",
+    });
+
+    expect(child_process.spawn).toBeCalledWith("mock-binary", [], {
+      env: {
+        DEPLOYMENT_ACTION: "upload",
+        DEPLOYMENT_PROVIDER: `swa-cli-${pkg.version}`,
+        REPOSITORY_BASE: "./",
+        SKIP_APP_BUILD: "true",
+        SKIP_API_BUILD: "true",
+        DEPLOYMENT_TOKEN: "123",
+        APP_LOCATION: "./dist",
+        API_LOCATION: "./api",
+        VERBOSE: "false",
+      },
+    });
+  });
+
+  it("should accept a deploymentToken provided via the environment variable SWA_CLI_DEPLOYMENT_TOKEN", async () => {
+    process.env.SWA_CLI_DEPLOYMENT_TOKEN = "123";
+
+    await deploy("./", {
+      outputLocation: "./dist",
+      apiLocation: "./api",
+    });
+
+    expect(logger.log).toBeCalledWith("Deployment token found in Environment Variables:");
+
+    expect(await deployClientModule.getDeployClientPath()).toEqual({
+      binary: "mock-binary",
+      version: "mock-version",
+    });
+
+    expect(child_process.spawn).toBeCalledWith("mock-binary", [], {
+      env: {
+        DEPLOYMENT_ACTION: "upload",
+        DEPLOYMENT_PROVIDER: `swa-cli-${pkg.version}`,
+        REPOSITORY_BASE: "./",
+        SKIP_APP_BUILD: "true",
+        SKIP_API_BUILD: "true",
+        DEPLOYMENT_TOKEN: "123",
+        SWA_CLI_DEPLOYMENT_TOKEN: "123", // note: this is not the same as the env variable above
+        APP_LOCATION: "./dist",
+        API_LOCATION: "./api",
+        VERBOSE: "false",
+      },
+    });
+  });
+});

@@ -10,10 +10,12 @@ const pkg = require(path.join(__dirname, "..", "..", "..", "package.json"));
 export async function deploy(deployContext: string, options: SWACLIConfig) {
   if (!options.outputLocation) {
     logger.error("--output-location option is missing", true);
+    return;
   }
 
   if (!options.apiLocation) {
     logger.error("--api-location option is missing", true);
+    return;
   }
 
   let deploymentToken = "";
@@ -24,6 +26,9 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     deploymentToken = process.env.SWA_CLI_DEPLOYMENT_TOKEN;
     logger.log("Deployment token found in Environment Variables:");
     logger.log({ SWA_CLI_DEPLOYMENT_TOKEN: "<hidden>" });
+  } else {
+    logger.error("--deployment-token option is missing", true);
+    return;
   }
   logger.log(``);
 
