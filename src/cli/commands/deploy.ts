@@ -32,10 +32,11 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
   }
   logger.log(``);
 
+  // TODO: add support for .env file
   // TODO: add support for Azure CLI
   // TODO: add support for Service Principal
   // TODO: check that platform.apiRuntime in staticwebapp.config.json is provided.
-  // This is required by the StaticSiteClient!
+  //       This is required by the StaticSiteClient!
 
   const spinner = ora({ text: `Preparing deployment...`, prefixText: chalk.dim.gray(`[swa]`) }).start();
   try {
