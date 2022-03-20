@@ -57,7 +57,7 @@ export const logger = {
    */
   error(data: string | object, exit = false) {
     const { SWA_CLI_DEBUG } = process.env;
-    if (!SWA_CLI_DEBUG || SWA_CLI_DEBUG?.includes("silent")) {
+    if (SWA_CLI_DEBUG?.includes("silent")) {
       return;
     }
 
