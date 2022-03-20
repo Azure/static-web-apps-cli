@@ -144,12 +144,12 @@ Examples:
   Deploy using a deployment token
   swa deploy --output-location ./app/dist/ --api-location ./api/ --deployment-token <token>
 
-  Deploy without a deployment token (requires swa login)
-  swa deploy --output-location ./app/dist/ --api-location ./api/
+  Deploy using a deployment token from env
+  SWA_CLI_DEPLOYMENT_TOKEN=123 swa deploy --output-location ./app/dist/ --api-location ./api/
 
   Deploy using swa-cli.config.json file
-  swa deploy myproject
-  swa deploy --config ./swa-cli.config.json myproject
+  swa deploy myconfig
+  swa deploy
     `
     );
 
