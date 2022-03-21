@@ -186,31 +186,51 @@ swa start ./my-dist --swa-config-location ./my-app-source
 swa start http://localhost:3000 --swa-config-location ./my-app-source
 ```
 
-## Configuration
+## CLI options
 
-If you need to override the default values, provide the following options:
+### `swa` options
 
-| Options                 | Description                                                   | Default                 | Example                                                            |
-| ----------------------- | ------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------ |
-| `--app-location`        | set location for the static app source code                   | `./`                    | `--app-location="./my-project"`                                    |
-| `--api-location`        | set the API folder or dev server                              |                         | `--api-location="./api"` or `--api-location=http://localhost:8083` |
-| `--swa-config-location` | set the directory of the staticwebapp.config.json file.       |                         | `--swa-config-location=./my-project-folder`                        |
-| `--api-port`            | set the API server port                                       | `7071`                  | `--api-port=8082`                                                  |
-| `--host`                | set the emulator host address                                 | `0.0.0.0`               | `--host=192.168.68.80`                                             |
-| `--port`                | set the emulator port value                                   | `4280`                  | `--port=8080`                                                      |
-| `--ssl`                 | serving the app and API over HTTPS (default: false)           | `false`                 | `--ssl` or `--ssl=true`                                            |
-| `--ssl-cert`            | SSL certificate to use for serving HTTPS                      |                         | `--ssl-cert="/home/user/ssl/example.crt"`                          |
-| `--ssl-key`             | SSL key to use for serving HTTPS                              |                         | `--ssl-key="/home/user/ssl/example.key"`                           |
-| `--run`                 | Run a command at startup                                      |                         | `--run="cd app & npm start"`                                       |
-| `--devserver-timeout`   | The time to wait(in ms) for the dev server to start           | 30000                   | `--devserver-timeout=60000`                                        |
-| `--func-args`           | Additional arguments to pass to `func start`                  |                         | `--func-args="--javascript"`                                       |
-| `--config`              | Path to swa-cli.config.json file to use.                      | `./swa-cli.config.json` | `--config ./config/swa-cli.config.json`                            |
-| `--print-config`        | Print all resolved options. Useful for debugging.             |                         | `--print-config` or `--print-config=true`                          |
-| `--open`                | Automatically open the SWA dev server in the default browser. | `false`                 | `--open` or `--open=true`                                          |
+If you need to override the default values for the `swa` command, you can provide the following options:
 
-## swa-cli.config.json file
+| Option           | Description                                              | Default                 | Example                                   |
+| ---------------- | -------------------------------------------------------- | ----------------------- | ----------------------------------------- |
+| `--verbose`      | Enable verbose output. Values are: silly,info,log,silent | `log`                   | `--verbose=silly`                         |
+| `--config`       | Path to swa-cli.config.json file to use                  | `./swa-cli.config.json` | `--config=./path/to/swa-cli.config.json`  |
+| `--print-config` | Print all resolved options                               | `false`                 | `--print-config` or `--print-config=true` |
 
-The CLI can also load options from a `swa-cli.config.json` file.
+### `swa start` options
+
+If you need to override the default values for the `swa start` subcommand, you can provide the following options:
+
+| Option                  | Description                                                                                                    | Default   | Example                                                            |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------ |
+| `--app-location`        | The folder containing the source code of the front-end application                                             | `./`      | `--app-location="./app"`                                           |
+| `--api-location`        | The folder containing the source code of the API application. This could also be an URL to a `func` dev server | `./api`   | `--api-location="./api"` or `--api-location=http://localhost:8083` |
+| `--swa-config-location` | The directory where the `staticwebapp.config.json` file is located                                             | `./`      | `--swa-config-location=./app`                                      |
+| `--api-port`            | The API server port passed to `func start`                                                                     | `7071`    | `--api-port=8082`                                                  |
+| `--host`                | The host address to use for the CLI dev server                                                                 | `0.0.0.0` | `--host=192.168.68.80`                                             |
+| `--port`                | The port value to use for the CLI dev server                                                                   | `4280`    | `--port=8080`                                                      |
+| `--ssl`                 | Serve the front-end application and API over HTTPS (default: false)                                            | `false`   | `--ssl` or `--ssl=true`                                            |
+| `--ssl-cert`            | The SSL certificate (.crt) to use when enabling HTTPS                                                          |           | `--ssl-cert="/home/user/ssl/example.crt"`                          |
+| `--ssl-key`             | The SSL key (.key) to use when enabling HTTPS                                                                  |           | `--ssl-key="/home/user/ssl/example.key"`                           |
+| `--run`                 | Run a custon shell command or file at startup                                                                  |           | `--run="cd app & npm start"`                                       |
+| `--devserver-timeout`   | The time to wait (in ms) when connecting to a front-end application's dev server                               | `30000`   | `--devserver-timeout=60000`                                        |
+| `--func-args`           | Pass additional arguments to the `func start` command                                                          |           | `--func-args="--javascript"`                                       |
+| `--open`                | Automatically open the CLI dev server in the default browser.                                                  | `false`   | `--open` or `--open=true`                                          |
+
+### `swa deploy` options
+
+If you need to override the default values for the `swa deploy` subcommand, you can provide the following options:
+
+| Option               | Description                                                    | Default | Example                      |
+| -------------------- | -------------------------------------------------------------- | ------- | ---------------------------- |
+| `--output-location`  | The folder where the front-end public files are location       | `./`    | `--output-location="./dist"` |
+| `--api-location`     | The folder containing the source code of the API application   | `./api` | `--api-location="./api"`     |
+| `--deployment-token` | The secret toekn used to authenticate with the Static Web Apps |         | `--deployment-token="123"`   |
+
+## The CLI `swa-cli.config.json` configuration file
+
+The CLI can also load options from a `swa-cli.config.json` file:
 
 ```json
 {
@@ -229,7 +249,7 @@ If only a single configuration is present in the `swa-cli.config.json` file, run
 
 ### Example
 
-We can simplify these commands by putting the options into a config file.
+We can simplify these commands by putting the options into a config file:
 
 ```bash
 # static configuration
@@ -271,7 +291,7 @@ You can validate your `swa-cli.config.json` with a JSON Schema like so:
 
 ## Local authentication & authorization emulation
 
-The CLI allows you to mock and read authentication and authorization credentials.
+The CLI allows to mock and read authentication and authorization credentials.
 
 ### Mocking credentials
 
