@@ -111,7 +111,7 @@ export async function run(argv?: string[]) {
     .option("--api-location <apiLocation>", "The folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option(
       "--swa-config-location <swaConfigLocation>",
-      "The the directory where the staticwebapp.config.json file is located",
+      "The directory where the staticwebapp.config.json file is located",
       DEFAULT_CONFIG.swaConfigLocation
     )
     .option<number>("--api-port <apiPort>", "The API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
@@ -119,7 +119,7 @@ export async function run(argv?: string[]) {
     .option<number>("--port <port>", "The port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
 
     // hide this flag from the help output
-    .addOption(new Option("--build", "build the app and API before starting the emulator").default(false).hideHelp())
+    .addOption(new Option("--build", "Build the front-end app and API before starting the emulator").default(false).hideHelp())
 
     .option("--ssl", "Serve the front-end application and API over HTTPS", DEFAULT_CONFIG.ssl)
     .option("--ssl-cert <sslCertLocation>", "The SSL certificate (.crt) to use when enabling HTTPS", DEFAULT_CONFIG.sslCert)
@@ -132,7 +132,7 @@ export async function run(argv?: string[]) {
       DEFAULT_CONFIG.devserverTimeout
     )
     .option("--open", "Automatically open the CLI dev server in the default", DEFAULT_CONFIG.open)
-    .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
+    .option("--func-args <funcArgs>", "Pass additional arguments to the func start command")
     .action(async (context = DEFAULT_CONFIG.outputLocation as string, parsedOptions: SWACLIConfig) => {
       let { options, fileOptions } = await processConfigurationFile(cli, context, parsedOptions);
       await start(fileOptions.context ?? context, options);
