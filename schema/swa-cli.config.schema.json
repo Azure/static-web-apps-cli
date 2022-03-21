@@ -7,11 +7,19 @@
           {
             "properties": {
               "apiLocation": {
-                "description": "API folder or Azure Functions emulator address",
+                "description": "The folder containing the source code of the API application",
+                "type": "string"
+              },
+              "outputLocation": {
+                "description": "The folder where the front-end public files are location",
+                "type": "string"
+              },
+              "deploymentToken": {
+                "description": "The secret toekn used to authenticate with the Static Web Apps",
                 "type": "string"
               },
               "apiPort": {
-                "description": "API backend port",
+                "description": "The API server port passed to func start",
                 "type": "number"
               },
               "apiPrefix": {
@@ -23,7 +31,7 @@
                 "type": "string"
               },
               "appLocation": {
-                "description": "Location for the static app source code",
+                "description": "The folder containing the source code of the front-end application",
                 "type": "string"
               },
               "build": {
@@ -33,11 +41,11 @@
                 "type": "string"
               },
               "devserverTimeout": {
-                "description": "Time to wait(in ms) for the dev server to start",
+                "description": "The time to wait (in ms) when connecting to a front-end application's dev server",
                 "type": "number"
               },
               "host": {
-                "description": "CLI host address",
+                "description": "The host address to use for the CLI dev server",
                 "type": "string"
               },
               "overridableErrorCode": {
@@ -47,23 +55,23 @@
                 "type": "array"
               },
               "port": {
-                "description": "set the cli port",
+                "description": "The port value to use for the CLI dev server",
                 "type": "number"
               },
               "run": {
-                "description": "Run a command at startup",
+                "description": "Run a custon shell command or file at startup",
                 "type": "string"
               },
               "ssl": {
-                "description": "Serve the app and API over HTTPS",
+                "description": "Serve the front-end application and API over HTTPS",
                 "type": "boolean"
               },
               "sslCert": {
-                "description": "SSL certificate (.crt) to use for serving HTTPS",
+                "description": "The SSL certificate (.crt) to use when enabling HTTPS",
                 "type": "string"
               },
               "sslKey": {
-                "description": "SSL key (.key) to use for serving HTTPS",
+                "description": "The SSL key (.key) to use when enabling HTTPS",
                 "type": "string"
               },
               "swaConfigFilename": {
@@ -75,9 +83,11 @@
                 "type": "string"
               },
               "swaConfigLocation": {
+                "description": "The the directory where the staticwebapp.config.json file is located",
                 "type": "string"
               },
               "verbose": {
+                "description": "Enable verbose output. Values are: silly,info,log,silent",
                 "type": "string"
               }
             },
