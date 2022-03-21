@@ -57,7 +57,7 @@ export async function run(argv?: string[]) {
     // SWA CLI common configuration options
     /////////////////////////////////////////////////////////////////////////////////
 
-    .option("--verbose [prefix]", "enable verbose output. Values are: silly,info,log,silent", DEFAULT_CONFIG.verbose)
+    .option("--verbose [prefix]", "Enable verbose output. Values are: silly,info,log,silent", DEFAULT_CONFIG.verbose)
     .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development\n")
 
     .option("--config <path>", "Path to swa-cli.config.json file to use", path.relative(process.cwd(), swaCliConfigFilename))
@@ -106,32 +106,32 @@ export async function run(argv?: string[]) {
   program
     .command("start [context]")
     .usage("[context] [options]")
-    .description("start the emulator from a directory or bind to a dev server")
-    .option("--app-location <appLocation>", "set location for the static app source code", DEFAULT_CONFIG.appLocation)
-    .option("--api-location <apiLocation>", "set the API folder or Azure Functions emulator address", DEFAULT_CONFIG.apiLocation)
+    .description("Start the emulator from a directory or bind to a dev server")
+    .option("--app-location <appLocation>", "The folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
+    .option("--api-location <apiLocation>", "The folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option(
       "--swa-config-location <swaConfigLocation>",
-      "set the directory where the staticwebapp.config.json file is located",
+      "The the directory where the staticwebapp.config.json file is located",
       DEFAULT_CONFIG.swaConfigLocation
     )
-    .option<number>("--api-port <apiPort>", "set the API backend port", parsePort, DEFAULT_CONFIG.apiPort)
-    .option("--host <host>", "set the cli host address", DEFAULT_CONFIG.host)
-    .option<number>("--port <port>", "set the cli port", parsePort, DEFAULT_CONFIG.port)
+    .option<number>("--api-port <apiPort>", "The API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
+    .option("--host <host>", "The host address to use for the CLI dev server", DEFAULT_CONFIG.host)
+    .option<number>("--port <port>", "The port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
 
     // hide this flag from the help output
     .addOption(new Option("--build", "build the app and API before starting the emulator").default(false).hideHelp())
 
-    .option("--ssl", "serve the app and API over HTTPS", DEFAULT_CONFIG.ssl)
-    .option("--ssl-cert <sslCertLocation>", "SSL certificate (.crt) to use for serving HTTPS", DEFAULT_CONFIG.sslCert)
-    .option("--ssl-key <sslKeyLocation>", "SSL key (.key) to use for serving HTTPS", DEFAULT_CONFIG.sslKey)
-    .option("--run <startupScript>", "run a command at startup", DEFAULT_CONFIG.run)
+    .option("--ssl", "Serve the front-end application and API over HTTPS", DEFAULT_CONFIG.ssl)
+    .option("--ssl-cert <sslCertLocation>", "The SSL certificate (.crt) to use when enabling HTTPS", DEFAULT_CONFIG.sslCert)
+    .option("--ssl-key <sslKeyLocation>", "The SSL key (.key) to use when enabling HTTPS", DEFAULT_CONFIG.sslKey)
+    .option("--run <startupScript>", "Run a custon shell command or file at startup", DEFAULT_CONFIG.run)
     .option<number>(
       "--devserver-timeout <devserverTimeout>",
-      "time to wait (in ms) for the dev server to start",
+      "The time to wait (in ms) when connecting to a front-end application's dev server",
       parseDevserverTimeout,
       DEFAULT_CONFIG.devserverTimeout
     )
-    .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
+    .option("--open", "Automatically open the CLI dev server in the default", DEFAULT_CONFIG.open)
     .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
     .action(async (context = DEFAULT_CONFIG.outputLocation as string, parsedOptions: SWACLIConfig) => {
       let { options, fileOptions } = await processConfigurationFile(cli, context, parsedOptions);
@@ -165,10 +165,10 @@ Examples:
   program
     .command("deploy [context]")
     .usage("[context] [options]")
-    .description("deploy the current project to Azure Static Web Apps")
-    .option("--output-location <outputLocation>", "the location for the static app built folder")
-    .option("--api-location <apiLocation>", "the location for the API built folder")
-    .option("--deployment-token <secret>", "the secret toekn used to authenticate with the Static Web Apps")
+    .description("Deploy the current project to Azure Static Web Apps")
+    .option("--output-location <outputLocation>", "The folder where the front-end public files are location", DEFAULT_CONFIG.outputLocation)
+    .option("--api-location <apiLocation>", "The folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
+    .option("--deployment-token <secret>", "The secret toekn used to authenticate with the Static Web Apps")
     .action(async (context = DEFAULT_CONFIG.outputLocation as string, parsedOptions: SWACLIConfig) => {
       let { options, fileOptions } = await processConfigurationFile(cli, context, parsedOptions);
       await deploy(fileOptions.context ?? context, options);
