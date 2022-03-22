@@ -10,7 +10,7 @@ The Static Web Apps CLI, also known as SWA CLI, serves as a local development to
 - Serve static app assets, or proxy to your app dev server
 - Serve API requests, or proxy to APIs running in Azure Functions Core Tools
 - Emulate authentication and authorization
-- Emulate Static Web Apps configuration, including routing
+- Emulate Static Web Apps configuration, including routing and ACL roles
 
 **Static Web Apps CLI is in preview.** If you have suggestions or you encounter issues, please report them or help us fix them. Your contributions are very much appreciated. 🙏
 
@@ -39,7 +39,7 @@ Using `npm` or `yarn`:
 Using `npx`:
 
 - Open a SWA app folder at the root (outside any /api or /app folders): `cd my-awesome-swa-app`
-- Start the emulator: `npx swa start`
+- Start the emulator: `npx @azure/static-web-apps-cli start`
 - Access your SWA app from `http://localhost:4280`
 
 ## Start the emulator
