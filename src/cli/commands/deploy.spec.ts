@@ -12,7 +12,7 @@ jest.spyOn(child_process, "spawn").mockImplementation();
 jest.spyOn(deployClientModule, "getDeployClientPath").mockImplementation(() => {
   return Promise.resolve({
     binary: "mock-binary",
-    version: "mock-version",
+    version: "0.0.0",
   });
 });
 jest.spyOn(deployClientModule, "cleanUp").mockImplementation(() => {});
@@ -74,7 +74,7 @@ describe("deploy", () => {
 
     expect(await deployClientModule.getDeployClientPath()).toEqual({
       binary: "mock-binary",
-      version: "mock-version",
+      version: "0.0.0",
     });
 
     expect(child_process.spawn).toBeCalledWith("mock-binary", [], {
@@ -93,6 +93,7 @@ describe("deploy", () => {
         SWA_CLI_ROUTES_LOCATION: undefined,
         SWA_CLI_VERSION: `${pkg.version}`,
         SWA_WORKFLOW_FILES: undefined,
+        SWA_CLI_DEPLOY_BINARY: "mock-binary@0.0.0",
       },
     });
   });
@@ -109,7 +110,7 @@ describe("deploy", () => {
 
     expect(await deployClientModule.getDeployClientPath()).toEqual({
       binary: "mock-binary",
-      version: "mock-version",
+      version: "0.0.0",
     });
 
     expect(child_process.spawn).toBeCalledWith("mock-binary", [], {
@@ -123,7 +124,8 @@ describe("deploy", () => {
         APP_LOCATION: "./dist",
         API_LOCATION: "./api",
         VERBOSE: "false",
-        SWA_CLI_DEPLOYMENT_TOKEN: "123", // note: this is not the same as the env variable above
+        SWA_CLI_DEPLOYMENT_TOKEN: "123",
+        SWA_CLI_DEPLOY_BINARY: "mock-binary@0.0.0",
         SWA_CLI_DEBUG: undefined,
         SWA_CLI_DEPLOY_DRY_RUN: "undefined",
         SWA_CLI_ROUTES_LOCATION: undefined,
