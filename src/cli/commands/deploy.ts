@@ -69,6 +69,7 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     SWA_WORKFLOW_FILES: userWorkflowConfig?.files?.join(","),
     SWA_CLI_VERSION: packageInfo.version,
     SWA_CLI_DEPLOY_DRY_RUN: `${options.dryRun}`,
+    SWA_CLI_DEPLOY_BINARY: undefined,
   };
 
   const deployClientEnv = {
@@ -83,15 +84,6 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     VERBOSE: isVerboseEnabled ? "true" : "false",
   };
 
-  process.env = { ...process.env, ...cliEnv };
-
-  logger.silly(
-    {
-      env: { ...cliEnv, ...deployClientEnv },
-    },
-    "swa"
-  );
-
   // TODO: add support for .env file
   // TODO: add support for Azure CLI
   // TODO: add support for Service Principal
@@ -103,12 +95,19 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     const { binary, version } = await getDeployClientPath();
 
     if (binary) {
-      spinner = ora({ text: `Preparing deployment...`, prefixText: chalk.dim.gray(`[swa]`) }).start();
-      spinner.text = `Deploying using ${binary}@${version}`;
+      spinner = ora({ prefixText: chalk.dim.gray(`[swa]`) });
+      (cliEnv as any).SWA_CLI_DEPLOY_BINARY = `${binary}@${version}`;
+      spinner.text = `Deploying using ${cliEnv.SWA_CLI_DEPLOY_BINARY}`;
+
+      logger.silly(`Deploying using the following options:`, "swa");
+      logger.silly({ env: { ...cliEnv, ...deployClientEnv } }, "swa");
+
+      spinner.start(`Preparing deployment...`);
 
       const child = spawn(binary, [], {
         env: {
           ...process.env,
+          ...cliEnv,
           ...deployClientEnv,
         },
       });
@@ -125,6 +124,7 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
               spinner.stop();
             } else if (line.includes("Visit your site at:")) {
               projectUrl = line.match("http.*")?.pop()?.trim() as string;
+              line = "";
             }
 
             // catch errors printed to stdout
