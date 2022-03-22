@@ -18,6 +18,10 @@
                 "description": "The secret toekn used to authenticate with the Static Web Apps",
                 "type": "string"
               },
+              "dryRun": {
+                "description": "Simulate a deploy process without actually running it",
+                "type": "boolean"
+              },
               "apiPort": {
                 "description": "The API server port passed to func start",
                 "type": "number"
@@ -35,6 +39,11 @@
                 "type": "string"
               },
               "build": {
+                "description": "Build the front-end app and API before starting the emulator",
+                "type": "boolean"
+              },
+              "open": {
+                "description": "Automatically open the CLI dev server in the default browser",
                 "type": "boolean"
               },
               "customUrlScheme": {

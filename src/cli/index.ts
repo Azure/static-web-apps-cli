@@ -7,7 +7,14 @@ import { start } from "./commands/start";
 import updateNotifier from "update-notifier";
 import { getFileOptions, swaCliConfigFilename } from "../core/utils/cli-config";
 import { deploy } from "./commands/deploy";
+import chalk from "chalk";
 const pkg = require("../../package.json");
+
+const printWelcomeMessage = () => {
+  console.log(chalk.dim.gray(`[swa]`));
+  console.log(chalk.dim.gray(`[swa]`), `Azure Static Web App CLI v${pkg.version}`);
+  console.log(chalk.dim.gray(`[swa]`));
+};
 
 const processConfigurationFile = async (cli: SWACLIConfig & GithubActionWorkflow & program.Command, context: string, options: SWACLIConfig) => {
   const verbose = cli.opts().verbose;
@@ -46,7 +53,7 @@ export async function run(argv?: string[]) {
   updateNotifier({ pkg }).notify();
 
   // don't use logger here: SWA_CLI_DEBUG is not set yet
-  console.log(`Azure Static Web App CLI v${pkg.version}`);
+  printWelcomeMessage();
 
   const cli: SWACLIConfig & program.Command = program
     .name("swa")
@@ -94,7 +101,7 @@ export async function run(argv?: string[]) {
       parseDevserverTimeout,
       DEFAULT_CONFIG.devserverTimeout
     )
-    .option("--open", "Automatically open the CLI dev server in the default", DEFAULT_CONFIG.open)
+    .option("--open", "Automatically open the CLI dev server in the default browser", DEFAULT_CONFIG.open)
     .option("--func-args <funcArgs>", "Pass additional arguments to the func start command")
     .action(async (context = DEFAULT_CONFIG.outputLocation as string, parsedOptions: SWACLIConfig) => {
       let { options, fileOptions } = await processConfigurationFile(cli, context, parsedOptions);
@@ -132,6 +139,7 @@ Examples:
     .option("--output-location <outputLocation>", "The folder where the front-end public files are location", DEFAULT_CONFIG.outputLocation)
     .option("--api-location <apiLocation>", "The folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("--deployment-token <secret>", "The secret toekn used to authenticate with the Static Web Apps")
+    .option("--dry-run", "Simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
     .action(async (context = DEFAULT_CONFIG.outputLocation as string, parsedOptions: SWACLIConfig) => {
       let { options, fileOptions } = await processConfigurationFile(cli, context, parsedOptions);
       await deploy(fileOptions.context ?? context, options);
@@ -148,6 +156,7 @@ Examples:
   SWA_CLI_DEPLOYMENT_TOKEN=123 swa deploy --output-location ./app/dist/ --api-location ./api/
 
   Deploy using swa-cli.config.json file
+  swa deploy --dry-run
   swa deploy myconfig
   swa deploy
     `
