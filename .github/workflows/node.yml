@@ -45,7 +45,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: |
         npm ci
-        npm run build
         cd cypress/fixtures/static
         node ../../../dist/cli/bin.js --dry-run --verbose=silly --api-location=./api --output-location=./ --deployment-token=123
 
@@ -84,7 +83,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: |
         npm ci
-        npm run build
         cd cypress/fixtures/static
         node ../../../dist/cli/bin.js --dry-run --verbose=silly --api-location=./api --output-location=./ --deployment-token=123
 
@@ -123,7 +121,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: |
         npm ci
-        npm run build
         cd cypress/fixtures/static
         node ../../../dist/cli/bin.js --dry-run --verbose=silly --api-location=./api --output-location=./ --deployment-token=123
 
