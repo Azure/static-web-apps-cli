@@ -70,7 +70,7 @@ describe("deploy", () => {
       deploymentToken: "123",
     });
 
-    expect(logger.log).toBeCalledWith("Deployment token provide via flag");
+    expect(logger.log).toBeCalledWith("Deployment token provide via flag", "swa");
 
     expect(await deployClientModule.getDeployClientPath()).toEqual({
       binary: "mock-binary",
@@ -88,6 +88,11 @@ describe("deploy", () => {
         APP_LOCATION: "./dist",
         API_LOCATION: "./api",
         VERBOSE: "false",
+        SWA_CLI_DEBUG: undefined,
+        SWA_CLI_DEPLOY_DRY_RUN: "undefined",
+        SWA_CLI_ROUTES_LOCATION: undefined,
+        SWA_CLI_VERSION: `${pkg.version}`,
+        SWA_WORKFLOW_FILES: undefined,
       },
     });
   });
@@ -100,7 +105,7 @@ describe("deploy", () => {
       apiLocation: "./api",
     });
 
-    expect(logger.log).toBeCalledWith("Deployment token found in Environment Variables:");
+    expect(logger.log).toBeCalledWith("Deployment token found in Environment Variables:", "swa");
 
     expect(await deployClientModule.getDeployClientPath()).toEqual({
       binary: "mock-binary",
@@ -115,10 +120,15 @@ describe("deploy", () => {
         SKIP_APP_BUILD: "true",
         SKIP_API_BUILD: "true",
         DEPLOYMENT_TOKEN: "123",
-        SWA_CLI_DEPLOYMENT_TOKEN: "123", // note: this is not the same as the env variable above
         APP_LOCATION: "./dist",
         API_LOCATION: "./api",
         VERBOSE: "false",
+        SWA_CLI_DEPLOYMENT_TOKEN: "123", // note: this is not the same as the env variable above
+        SWA_CLI_DEBUG: undefined,
+        SWA_CLI_DEPLOY_DRY_RUN: "undefined",
+        SWA_CLI_ROUTES_LOCATION: undefined,
+        SWA_CLI_VERSION: `${pkg.version}`,
+        SWA_WORKFLOW_FILES: undefined,
       },
     });
   });
