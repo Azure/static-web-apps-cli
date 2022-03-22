@@ -8,7 +8,6 @@ context.only("/api", () => {
   describe(`Accessing /api/headers`, () => {
     it(`should respond with valid body content`, () => {
       cy.request({ url: `http://0.0.0.0:1234/api/headers`, failOnStatusCode: false }).then((response) => {
-        console.log(response);
         const body = Object.keys(response.body);
         expect(response.status).to.eq(200);
         expect(body).to.include("x-ms-original-url");
