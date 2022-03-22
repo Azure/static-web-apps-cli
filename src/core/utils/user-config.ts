@@ -13,7 +13,7 @@ const { readdir, readFile } = fsPromises;
  * @example
  * ```
  * for await (const file of traverseFolder(folder)) {
- *    console.log(path):
+ *    console.log(file);
  * }
  * ```
  */
