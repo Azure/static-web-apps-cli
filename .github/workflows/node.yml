@@ -154,7 +154,7 @@ jobs:
   #         path: cypress/screenshots
 
   package:
-    needs: [test-macos, test-windows, test-linux]
+    needs: [test-deploy-macos, test-deploy-windows, test-deploy-linux]
     runs-on: ubuntu-20.04
 
     steps:
