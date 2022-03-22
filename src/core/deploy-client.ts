@@ -34,7 +34,7 @@ type StaticSiteClientLocalMetadata = {
 };
 
 export const DEPLOY_BINARY_NAME = "StaticSitesClient";
-export const DEPLOY_FOLDER = path.join(os.homedir(), ".swa");
+export const DEPLOY_FOLDER = path.join(os.homedir(), ".swa", "deploy");
 
 export async function getDeployClientPath(): Promise<{ binary: string; version: string }> {
   const platform = getPlatform();
@@ -141,11 +141,11 @@ async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadat
 
   const url = release.files[platform].url;
 
+  const spinner = ora({ prefixText: chalk.dim.gray(`[swa]`) });
+  spinner.start(`Downloading ${url}@${release.version}`);
+
   const response = await fetch(url);
   const bodyStream = response.body.pipe(new PassThrough());
-
-  const spinner = ora({ text: `Downloading latest client...}}`, prefixText: chalk.dim.gray(`[swa]`) }).start();
-  logger.log(``);
 
   return await new Promise<string>((resolve, reject) => {
     const isPosix = platform === "linux-x64" || platform === "osx-x64";
@@ -163,16 +163,16 @@ async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadat
         reject(new Error(`Checksum mismatch! Expected ${computedHash}, got ${releaseChecksum}`));
         spinner.fail();
       } else {
-        logger.log(`Checksum match: ${computedHash}`);
-
-        saveMetadata(release, outputFile, computedHash);
+        spinner.succeed(`Checksum match: ${computedHash}`);
 
         if (fs.existsSync(`${outputFile}.exe`)) {
           outputFile = `${outputFile}.exe`;
         }
+        logger.silly(`Saved binary to ${outputFile}`, "swa");
+
+        saveMetadata(release, outputFile, computedHash);
 
         resolve(outputFile);
-        spinner.succeed("").stop();
       }
     });
   });
@@ -186,7 +186,7 @@ function saveMetadata(release: StaticSiteClientReleaseMetadata, binaryFilename: 
     checksum: sha256,
   };
   fs.writeFileSync(metatdaFilename, JSON.stringify(metdata));
-  logger.log(`Saved metadata to ${metatdaFilename}`);
+  logger.silly(`Saved metadata to ${metatdaFilename}`, "swa");
 }
 
 // TODO: get StaticSiteClient to remove zip files
