@@ -27,6 +27,25 @@ jobs:
         npm ci
         npm test
 
+  test-deploy-macos:
+    needs: [test-macos]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest]
+        node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: |
+        npm ci
+        npm run build
+        node dist/cli/bin.js deploy --dry-run --verbose silly
+
   test-windows:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -44,6 +63,25 @@ jobs:
         npm ci
         npm test -- --maxWorkers=1
 
+  test-deploy-windows:
+    needs: [test-windows]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+        node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: |
+        npm ci
+        npm run build
+        node dist/cli/bin.js deploy --dry-run --verbose silly
+
   test-linux:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -60,6 +98,26 @@ jobs:
     - run: |
         npm ci
         npm test
+
+  test-deploy-linux:
+    needs: [test-linux]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [linux-latest]
+        node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: |
+        npm ci
+        npm run build
+        node dist/cli/bin.js deploy --dry-run --verbose silly
+
 
   # TODO: Cypress setup is failing on CI. Investigate.
   # e2e:
