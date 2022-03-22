@@ -17,6 +17,7 @@ jobs:
         os: [macos-latest]
         node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
 
+    name: test-darwin ${{ matrix.node-version }}
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
@@ -27,7 +28,7 @@ jobs:
         npm ci
         npm test
 
-  test-deploy-macos:
+  deploy-macos:
     needs: [test-macos]
     runs-on: ${{ matrix.os }}
     strategy:
@@ -35,6 +36,7 @@ jobs:
         os: [macos-latest]
         node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
 
+    name: deploy-darwin ${{ matrix.node-version }}
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
@@ -44,7 +46,8 @@ jobs:
     - run: |
         npm ci
         npm run build
-        node dist/cli/bin.js deploy --dry-run --verbose silly
+        cd cypress/fixtures/static
+        node dist/cli/bin.js deploy --dry-run --verbose=silly --api-location=./api --output-location=./ --deployment-token=123
 
   test-windows:
     runs-on: ${{ matrix.os }}
@@ -53,6 +56,7 @@ jobs:
         os: [windows-latest]
         node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
 
+    name: test-winx64 ${{ matrix.node-version }}
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
@@ -63,7 +67,7 @@ jobs:
         npm ci
         npm test -- --maxWorkers=1
 
-  test-deploy-windows:
+  deploy-windows:
     needs: [test-windows]
     runs-on: ${{ matrix.os }}
     strategy:
@@ -71,6 +75,7 @@ jobs:
         os: [windows-latest]
         node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
 
+    name: deploy-winx64 ${{ matrix.node-version }}
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
@@ -80,7 +85,8 @@ jobs:
     - run: |
         npm ci
         npm run build
-        node dist/cli/bin.js deploy --dry-run --verbose silly
+        cd cypress/fixtures/static
+        node dist/cli/bin.js deploy --dry-run --verbose=silly --api-location=./api --output-location=./ --deployment-token=123
 
   test-linux:
     runs-on: ${{ matrix.os }}
@@ -89,6 +95,7 @@ jobs:
         os: [ubuntu-20.04]
         node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
 
+    name: test-linux ${{ matrix.node-version }}
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
@@ -99,7 +106,7 @@ jobs:
         npm ci
         npm test
 
-  test-deploy-linux:
+  deploy-linux:
     needs: [test-linux]
     runs-on: ${{ matrix.os }}
     strategy:
@@ -107,6 +114,7 @@ jobs:
         os: [linux-latest]
         node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
 
+    name: deploy-linux ${{ matrix.node-version }}
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
@@ -116,7 +124,8 @@ jobs:
     - run: |
         npm ci
         npm run build
-        node dist/cli/bin.js deploy --dry-run --verbose silly
+        cd cypress/fixtures/static
+        node dist/cli/bin.js deploy --dry-run --verbose=silly --api-location=./api --output-location=./ --deployment-token=123
 
 
   # TODO: Cypress setup is failing on CI. Investigate.
@@ -154,7 +163,7 @@ jobs:
   #         path: cypress/screenshots
 
   package:
-    needs: [test-deploy-macos, test-deploy-windows, test-deploy-linux]
+    needs: [deploy-macos, deploy-windows, deploy-linux]
     runs-on: ubuntu-20.04
 
     steps:
