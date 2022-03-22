@@ -5,4 +5,5 @@ module.exports = {
     "^.+\\.(ts)$": "ts-jest",
   },
   setupFilesAfterEnv: ["jest-extended/all"],
+  verbose: true,
 };

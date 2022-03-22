@@ -88,7 +88,7 @@ export function getLocalClientMetadata(): StaticSiteClientLocalMetadata | null {
   }
 
   const metadataFilename = path.join(DEPLOY_FOLDER, `${DEPLOY_BINARY_NAME}.json`);
-  if (fs.existsSync(DEPLOY_FOLDER) && fs.existsSync(binaryFilename) && fs.existsSync(metadataFilename)) {
+  if (fs.existsSync(binaryFilename) && fs.existsSync(metadataFilename)) {
     try {
       const metadata = JSON.parse(fs.readFileSync(metadataFilename, "utf8"));
       return metadata;
@@ -112,12 +112,16 @@ function computeChecksumfromFile(filePath: string | undefined): string {
   return hash.digest("hex");
 }
 
-function getPlatform(): "win-x64" | "osx-x64" | "linux-x64" | null {
+export function getPlatform(): "win-x64" | "osx-x64" | "linux-x64" | null {
   switch (os.platform()) {
     case "win32":
       return "win-x64";
     case "darwin":
       return "osx-x64";
+    case "aix":
+    case "freebsd":
+    case "openbsd":
+    case "sunos":
     case "linux":
       return "linux-x64";
     default:
