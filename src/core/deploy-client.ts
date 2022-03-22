@@ -163,7 +163,9 @@ async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadat
         reject(new Error(`Checksum mismatch! Expected ${computedHash}, got ${releaseChecksum}`));
         spinner.fail();
       } else {
-        spinner.succeed(`Checksum match: ${computedHash}`);
+        spinner.succeed();
+
+        logger.silly(`Checksum match: ${computedHash}`);
 
         if (fs.existsSync(`${outputFile}.exe`)) {
           outputFile = `${outputFile}.exe`;
