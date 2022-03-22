@@ -129,6 +129,10 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
 
             // catch errors printed to stdout
             else if (line.includes("[31m")) {
+              if (line.includes("Cannot deploy to the function app because Function language info isn't provided.")) {
+                line = "The platform.apiRuntime is missing. See https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#platform";
+              }
+
               spinner.fail(line);
             }
 
