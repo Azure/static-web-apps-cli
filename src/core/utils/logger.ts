@@ -3,6 +3,8 @@ import type http from "http";
 import { DEFAULT_CONFIG } from "../../config";
 import { SWA_CLI_APP_PROTOCOL } from "../constants";
 
+const SENSITIVE_KEYS = ["DEPLOYMENT_TOKEN", "SWA_CLI_DEPLOYMENT_TOKEN"];
+
 export const logger = {
   _print(prefix: string | null, data: string) {
     if (prefix) {
@@ -39,9 +41,10 @@ export const logger = {
    * @param data Either a string or an object to be printed.
    * @param prefix (optional) A prefix to prepend to the printed message.
    */
-  log(data: string | object, prefix: string | null = "swa") {
+  log(data: string | object, prefix: string | null = null) {
     this.silly(data, prefix, "log", chalk.reset);
   },
+
   /**
    * Print information data.
    * @param data Either a string or an object to be printed.
@@ -50,6 +53,7 @@ export const logger = {
   warn(data: string | object, prefix: string | null = null) {
     this.silly(data, prefix, "log", chalk.yellow);
   },
+
   /**
    * Print error data and optionally exit the CLI instance.
    * @param data Either a string or an object to be printed.
@@ -61,7 +65,7 @@ export const logger = {
       return;
     }
 
-    console.error(chalk.red(data));
+    console.error(chalk.red(`[swa]`), chalk.red(data));
     if (exit) {
       process.exit(-1);
     }
@@ -84,7 +88,12 @@ export const logger = {
       if (typeof data === "object") {
         this._traverseObjectProperties(data, (key: string, value: string | null, indent: string) => {
           if (value !== null) {
-            value = typeof value === "undefined" ? chalk.yellow("<undefined>") : value;
+            if (SENSITIVE_KEYS.includes(key)) {
+              value = chalk.yellow("<hidden>");
+            } else if (typeof value === "undefined") {
+              value = chalk.yellow("<undefined>");
+            }
+
             this._print(prefix, color(`${indent}- ${key}: ${chalk.yellow(value)}`));
           } else {
             this._print(prefix, color(`${indent}- ${key}:`));

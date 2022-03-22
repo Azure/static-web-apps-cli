@@ -14,6 +14,7 @@ declare global {
       SWA_CLI_APP_SSL_CERT: string;
       SWA_CLI_STARTUP_COMMAND: string;
       SWA_CLI_DEPLOYMENT_TOKEN: string;
+      SWA_CLI_DEPLOY_DRY_RUN: string;
     }
   }
 }
@@ -85,6 +86,7 @@ declare type SWACLIDeployOptions = {
   appOutputLocation?: string;
   apiOutputLocation?: string;
   deploymentToken?: string;
+  dryRun?: boolean;
 };
 
 declare type SWACLIConfig = SWACLIStartOptions & SWACLIDeployOptions & GithubActionWorkflow;

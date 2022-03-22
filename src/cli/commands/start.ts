@@ -86,9 +86,9 @@ export async function start(startContext: string, options: SWACLIConfig) {
       userWorkflowConfig,
     });
   } catch (err) {
-    logger.warn(``, "swa");
-    logger.warn(`Error reading workflow configuration:`, "swa");
-    logger.warn((err as any).message, "swa");
+    logger.warn(``);
+    logger.warn(`Error reading workflow configuration:`);
+    logger.warn((err as any).message);
     logger.warn(
       `See https://docs.microsoft.com/azure/static-web-apps/build-configuration?tabs=github-actions#build-configuration for more information.`,
       "swa"

@@ -222,11 +222,12 @@ If you need to override the default values for the `swa start` subcommand, you c
 
 If you need to override the default values for the `swa deploy` subcommand, you can provide the following options:
 
-| Option               | Description                                                    | Default | Example                      |
-| -------------------- | -------------------------------------------------------------- | ------- | ---------------------------- |
-| `--output-location`  | The folder where the front-end public files are location       | `./`    | `--output-location="./dist"` |
-| `--api-location`     | The folder containing the source code of the API application   | `./api` | `--api-location="./api"`     |
-| `--deployment-token` | The secret toekn used to authenticate with the Static Web Apps |         | `--deployment-token="123"`   |
+| Option               | Description                                                    | Default | Example                         |
+| -------------------- | -------------------------------------------------------------- | ------- | ------------------------------- |
+| `--output-location`  | The folder where the front-end public files are location       | `./`    | `--output-location="./dist"`    |
+| `--api-location`     | The folder containing the source code of the API application   | `./api` | `--api-location="./api"`        |
+| `--deployment-token` | The secret toekn used to authenticate with the Static Web Apps |         | `--deployment-token="123"`      |
+| `--dry-run`          | Simulate a deploy process without actually running it          | `false` | `--dry-run` or `--dry-run=true` |
 
 ## The CLI `swa-cli.config.json` configuration file
 

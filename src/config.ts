@@ -27,4 +27,5 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   resourceGroup: undefined,
   tenantId: undefined,
   appName: undefined,
+  dryRun: false,
 };
