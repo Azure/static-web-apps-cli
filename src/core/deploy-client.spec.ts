@@ -1,12 +1,14 @@
 import mockFs from "mock-fs";
+import os from "os";
 import path from "path";
-import { DEPLOY_BINARY_NAME, DEPLOY_FOLDER, fetchLatestClientVersionDefinition, getLocalClientMetadata } from "./deploy-client";
+import { DEPLOY_BINARY_NAME, DEPLOY_FOLDER, fetchLatestClientVersionDefinition, getLocalClientMetadata, getPlatform } from "./deploy-client";
 
 jest.mock("node-fetch", () => jest.fn());
+jest.mock("os", () => ({ platform: () => "linux", homedir: () => "/home/user", tmpdir: () => "/tmp" }));
 
 function mockResponse(response: any, status = 200) {
   const fetchMock = jest.requireMock("node-fetch");
-  fetchMock.mockImplementationOnce(() =>
+  fetchMock.mockImplementation(() =>
     Promise.resolve({
       status,
       json: () => Promise.resolve(response),
@@ -14,7 +16,8 @@ function mockResponse(response: any, status = 200) {
   );
 }
 
-function getMockedLocalClientMetadata() {
+function getMockedLocalClientMetadata({ isWindows }: { isWindows?: boolean }) {
+  const getBinary = () => path.join(DEPLOY_FOLDER, isWindows ? DEPLOY_BINARY_NAME + ".exe" : DEPLOY_BINARY_NAME);
   return {
     metadata: {
       version: "latest",
@@ -34,12 +37,14 @@ function getMockedLocalClientMetadata() {
         },
       },
     },
-    binary: path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME),
+    binary: getBinary(),
     checksum: "e9e97e82eb0f50fdb40639a5dff46e78db4251c9036ee9a82e73931234cef5cf",
   };
 }
 
 describe("fetchLatestClientVersionDefinition()", () => {
+  afterEach(() => jest.resetAllMocks());
+
   describe("should return undefined when API response is", () => {
     it("an empty object", async () => {
       mockResponse({});
@@ -150,7 +155,7 @@ describe("getLocalClientMetadata()", () => {
   });
 
   it("should return null if the local binary file is missing", () => {
-    const content = getMockedLocalClientMetadata();
+    const content = getMockedLocalClientMetadata({ isWindows: false });
     mockFs({
       [`${path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME)}.json`]: JSON.stringify(content),
     });
@@ -159,8 +164,8 @@ describe("getLocalClientMetadata()", () => {
     expect(result).toEqual(null);
   });
 
-  it("should return local metadata when both config and binary files are defined", () => {
-    const content = getMockedLocalClientMetadata();
+  it("should return local metadata when both config and binary files are defined (Linux/macOS)", () => {
+    const content = getMockedLocalClientMetadata({ isWindows: false });
     mockFs({
       [`${path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME)}.json`]: JSON.stringify(content),
       [path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME)]: "<binary content>",
@@ -170,19 +175,34 @@ describe("getLocalClientMetadata()", () => {
     expect(result).toEqual(content);
   });
 
-  it("should return local metadata when both config and binary files are defined", () => {
-    const content = getMockedLocalClientMetadata();
+  it("should return local metadata when both config and binary files are defined (Windows)", () => {
+    jest.spyOn(os, "platform").mockReturnValue("win32");
+
+    const content = getMockedLocalClientMetadata({ isWindows: true });
+    mockFs({
+      [`${path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME)}.json`]: JSON.stringify(content),
+      [`${path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME)}.exe`]: "<binary content>",
+    });
+
+    const result = getLocalClientMetadata();
+    expect(result).toEqual(content);
+  });
+
+  it("should return a valid metadata", () => {
+    jest.spyOn(os, "platform").mockReturnValue("linux");
+
+    const content = getMockedLocalClientMetadata({ isWindows: false });
     mockFs({
       [`${path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME)}.json`]: JSON.stringify(content),
       [path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME)]: "<binary content>",
     });
 
     const result = getLocalClientMetadata();
-    expect(result?.binary).toBeDefined();
+    expect(result?.binary).toBe(path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME));
     expect(result?.checksum).toBeDefined();
     expect(result?.metadata).toBeDefined();
-    expect(result?.metadata.version).toBeDefined();
-    expect(result?.metadata.publishDate).toBeDefined();
+    expect(result?.metadata.version).toBe("latest");
+    expect(result?.metadata.publishDate).toBe("2022-03-05");
 
     expect(result?.metadata.files["linux-x64"]).toBeDefined();
     expect(result?.metadata.files["linux-x64"].sha256).toBeDefined();
@@ -195,5 +215,55 @@ describe("getLocalClientMetadata()", () => {
     expect(result?.metadata.files["win-x64"]).toBeDefined();
     expect(result?.metadata.files["win-x64"].sha256).toBeDefined();
     expect(result?.metadata.files["win-x64"].url).toBeDefined();
+  });
+});
+
+describe("getPlatform()", () => {
+  it("should return 'linux-x64' when platform is 'linux'", () => {
+    jest.spyOn(os, "platform").mockReturnValue("linux");
+    const result = getPlatform();
+    expect(result).toBe("linux-x64");
+  });
+
+  it("should return 'linux-x64' when platform is 'aix'", () => {
+    jest.spyOn(os, "platform").mockReturnValue("aix");
+    const result = getPlatform();
+    expect(result).toBe("linux-x64");
+  });
+
+  it("should return 'linux-x64' when platform is 'freebsd'", () => {
+    jest.spyOn(os, "platform").mockReturnValue("freebsd");
+    const result = getPlatform();
+    expect(result).toBe("linux-x64");
+  });
+
+  it("should return 'linux-x64' when platform is 'sunos'", () => {
+    jest.spyOn(os, "platform").mockReturnValue("sunos");
+    const result = getPlatform();
+    expect(result).toBe("linux-x64");
+  });
+
+  it("should return 'linux-x64' when platform is 'openbsd'", () => {
+    jest.spyOn(os, "platform").mockReturnValue("openbsd");
+    const result = getPlatform();
+    expect(result).toBe("linux-x64");
+  });
+
+  it("should return 'win-x64' when platform is 'win32'", () => {
+    jest.spyOn(os, "platform").mockReturnValue("win32");
+    const result = getPlatform();
+    expect(result).toBe("win-x64");
+  });
+
+  it("should return 'osx-x64' when platform is 'darwin'", () => {
+    jest.spyOn(os, "platform").mockReturnValue("darwin");
+    const result = getPlatform();
+    expect(result).toBe("osx-x64");
+  });
+
+  it("should return null when platform is unsupported", () => {
+    jest.spyOn(os, "platform").mockReturnValue("unsupported" as any);
+    const result = getPlatform();
+    expect(result).toBe(null);
   });
 });
