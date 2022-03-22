@@ -81,7 +81,12 @@ export async function getDeployClientPath(): Promise<{ binary: string; version: 
 }
 
 export function getLocalClientMetadata(): StaticSiteClientLocalMetadata | null {
-  const binaryFilename = path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME);
+  let binaryFilename = path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME);
+
+  if (getPlatform() === "win-x64") {
+    binaryFilename += ".exe";
+  }
+
   const metadataFilename = path.join(DEPLOY_FOLDER, `${DEPLOY_BINARY_NAME}.json`);
   if (fs.existsSync(DEPLOY_FOLDER) && fs.existsSync(binaryFilename) && fs.existsSync(metadataFilename)) {
     try {
