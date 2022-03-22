@@ -17,18 +17,19 @@ jobs:
         os: [macos-latest]
         node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
 
-    name: test-darwin ${{ matrix.node-version }}
+    name: "test: darwin w/ Node v${{ matrix.node-version }}"
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: |
+    - name: "npm test"
+      run: |
         npm ci
         npm test
 
-  deploy-macos:
+  e2e-deploy-macos:
     needs: [test-macos]
     runs-on: ${{ matrix.os }}
     strategy:
@@ -36,14 +37,15 @@ jobs:
         os: [macos-latest]
         node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
 
-    name: deploy-darwin ${{ matrix.node-version }}
+    name: "e2e: deploy on darwin w/ Node v${{ matrix.node-version }}"
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: |
+    - name: "swa deploy"
+      run: |
         npm ci
         cd cypress/fixtures/
         node ../../dist/cli/bin.js deploy --dry-run --verbose=silly --api-location=./api --output-location=./static --deployment-token=123
@@ -55,18 +57,19 @@ jobs:
         os: [windows-latest]
         node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
 
-    name: test-winx64 ${{ matrix.node-version }}
+    name: "test: winx64 w/ Node v${{ matrix.node-version }}"
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: |
+    - name: "npm test"
+      run: |
         npm ci
         npm test -- --maxWorkers=1
 
-  deploy-windows:
+  e2e-deploy-windows:
     needs: [test-windows]
     runs-on: ${{ matrix.os }}
     strategy:
@@ -74,14 +77,15 @@ jobs:
         os: [windows-latest]
         node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
 
-    name: deploy-winx64 ${{ matrix.node-version }}
+    name: "e2e: deploy on winx64 w/ Node v${{ matrix.node-version }}"
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: |
+    - name: "swa deploy"
+      run: |
         npm ci
         cd cypress/fixtures/
         node ../../dist/cli/bin.js deploy --dry-run --verbose=silly --api-location=./api --output-location=./static --deployment-token=123
@@ -93,18 +97,19 @@ jobs:
         os: [ubuntu-20.04]
         node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
 
-    name: test-linux ${{ matrix.node-version }}
+    name: "test: linux w/ Node v${{ matrix.node-version }}"
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: |
+    - name: "npm test"
+      run: |
         npm ci
         npm test
 
-  deploy-linux:
+  e2e-deploy-linux:
     needs: [test-linux]
     runs-on: ${{ matrix.os }}
     strategy:
@@ -112,14 +117,15 @@ jobs:
         os: [linux-latest]
         node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
 
-    name: deploy-linux ${{ matrix.node-version }}
+    name: "e2e: deploy on linux w/ Node v${{ matrix.node-version }}"
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: |
+    - name: "swa deploy"
+      run: |
         npm ci
         cd cypress/fixtures/
         node ../../dist/cli/bin.js deploy --dry-run --verbose=silly --api-location=./api --output-location=./static --deployment-token=123
@@ -160,7 +166,7 @@ jobs:
   #         path: cypress/screenshots
 
   package:
-    needs: [deploy-macos, deploy-windows, deploy-linux]
+    needs: [e2e-deploy-macos, e2e-deploy-windows, e2e-deploy-linux]
     runs-on: ubuntu-20.04
 
     steps:
