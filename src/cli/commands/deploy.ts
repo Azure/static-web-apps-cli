@@ -1,11 +1,11 @@
+import chalk from "chalk";
 import { spawn } from "child_process";
-import path from "path";
 import fs from "fs";
 import ora from "ora";
-import { logger, readWorkflowFile } from "../../core";
-import { cleanUp, getDeployClientPath } from "../../core/deploy-client";
-import chalk from "chalk";
+import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
+import { findSWAConfigFile, logger, readWorkflowFile } from "../../core";
+import { cleanUp, getDeployClientPath } from "../../core/deploy-client";
 
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "package.json"));
 
@@ -18,22 +18,43 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     logger.warn("WARNING: Running in dry run mode. This project will not be deployed!", "swa");
   }
 
+  if (options.outputLocation) {
+    const outputFolder = path.resolve(process.cwd(), options.outputLocation);
+    logger.log(`Deploying front-end files from folder:`, "swa");
+    logger.log(`  ${chalk.green(outputFolder)}`, "swa");
+    logger.log(``, "swa");
+  }
+
   const apiFolder = path.resolve(process.cwd(), DEFAULT_CONFIG.apiPrefix!);
-  if (!options.apiLocation && fs.existsSync(apiFolder)) {
-    logger.warn(`An API folder was found at ".${path.sep + DEFAULT_CONFIG.apiPrefix!}" but the --api-location option was not provided`, "swa");
+  if (!options.apiLocation) {
+    if (fs.existsSync(apiFolder)) {
+      logger.warn(
+        `An API folder was found at ".${
+          path.sep + DEFAULT_CONFIG.apiPrefix!
+        }" but the --api-location option was not provided. API will not be deployed!`,
+        "swa"
+      );
+    } else {
+      logger.warn(`No API found. Skipping...`, "swa");
+    }
+  } else {
+    logger.log(`Deploying API from folder:`, "swa");
+    logger.log(`  ${chalk.green(apiFolder)}`, "swa");
+    logger.log(``, "swa");
   }
 
   let deploymentToken = "";
   if (options.deploymentToken) {
     deploymentToken = options.deploymentToken;
     logger.log("Deployment token provide via flag", "swa");
-    logger.log({ SWA_CLI_DEPLOYMENT_TOKEN: options.deploymentToken }, "swa");
+    logger.log({ [chalk.green(`--deployment-token`)]: options.deploymentToken }, "swa");
   } else if (SWA_CLI_DEPLOYMENT_TOKEN) {
     deploymentToken = SWA_CLI_DEPLOYMENT_TOKEN;
     logger.log("Deployment token found in Environment Variables:", "swa");
-    logger.log({ SWA_CLI_DEPLOYMENT_TOKEN }, "swa");
+    logger.log({ [chalk.green(`SWA_CLI_DEPLOYMENT_TOKEN`)]: SWA_CLI_DEPLOYMENT_TOKEN }, "swa");
   } else {
-    logger.error("The --deployment-token option is missing", true);
+    logger.error("A deployment token is required to deploy to Azure Static Web Apps");
+    logger.error("Provide a deployment token using the --deployment-token option or SWA_CLI_DEPLOYMENT_TOKEN environment variable", true);
     return;
   }
   logger.log(``, "swa");
@@ -65,6 +86,7 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     SWA_CLI_DEBUG: options.verbose,
     SWA_CLI_ROUTES_LOCATION: options.swaConfigLocation,
     SWA_WORKFLOW_FILES: userWorkflowConfig?.files?.join(","),
+    SWA_RUNTIME_CONFIG: options.swaConfigLocation ? (await findSWAConfigFile(options.swaConfigLocation))?.file : undefined,
     SWA_CLI_VERSION: packageInfo.version,
     SWA_CLI_DEPLOY_DRY_RUN: `${options.dryRun}`,
     SWA_CLI_DEPLOY_BINARY: undefined,
@@ -128,9 +150,9 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
             // catch errors printed to stdout
             else if (line.includes("[31m")) {
               if (line.includes("Cannot deploy to the function app because Function language info isn't provided.")) {
-                line =
-                  line +
-                  ` Add a "platform.apiRuntime" property in your staticwebapp.config.json file. See https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#platform`;
+                line = chalk.red(
+                  `Cannot deploy to the function app because Function language info isn't provided. Add a "platform.apiRuntime" property to your staticwebapp.config.json file.`
+                );
               }
 
               spinner.fail(chalk.red(line));
