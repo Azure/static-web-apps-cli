@@ -134,12 +134,12 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
               }
 
               spinner.fail(line);
-            }
-
-            if (isVerboseEnabled || options.dryRun) {
-              spinner.info(line.trim());
             } else {
-              spinner.text = line.trim();
+              if (isVerboseEnabled || options.dryRun) {
+                spinner.info(line.trim());
+              } else {
+                spinner.text = line.trim();
+              }
             }
           });
       });
