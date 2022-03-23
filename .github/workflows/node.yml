@@ -48,7 +48,7 @@ jobs:
         os: [macos-latest]
         node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
 
-    name: "e2e: deploy with node ${{ matrix.node-version }}"
+    name: "deploy: use node ${{ matrix.node-version }}"
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
@@ -110,7 +110,7 @@ jobs:
         os: [windows-latest]
         node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
 
-    name: "e2e: deploy with node ${{ matrix.node-version }}"
+    name: "deploy: use node ${{ matrix.node-version }}"
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
@@ -172,7 +172,7 @@ jobs:
         os: [ubuntu-20.04]
         node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
 
-    name: "e2e: deploy with node ${{ matrix.node-version }}"
+    name: "deploy: use node ${{ matrix.node-version }}"
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
