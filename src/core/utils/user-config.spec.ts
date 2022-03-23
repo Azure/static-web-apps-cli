@@ -1,8 +1,6 @@
-jest.mock("./logger", () => {
-  logger: {
-    silly: jest.fn();
-  }
-});
+import { logger } from "./logger";
+
+jest.spyOn(logger, "silly").mockImplementation();
 
 import mockFs from "mock-fs";
 import path from "path";

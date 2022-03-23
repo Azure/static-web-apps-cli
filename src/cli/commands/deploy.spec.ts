@@ -37,28 +37,18 @@ describe("deploy", () => {
     expect(deploy("./", {})).toBeInstanceOf(Promise);
   });
 
-  it("should print an error and exit, if --output-location is not provided", async () => {
-    await deploy("./", {});
-    expect(logger.error).toBeCalledWith("--output-location option is missing", true);
-    expect(deployClientModule.getDeployClientPath).not.toBeCalled();
-    expect(child_process.spawn).not.toBeCalled();
-  });
-
-  it("should print an error and exit, if --api-location is not provided", async () => {
-    await deploy("./", {
-      outputLocation: "./dist",
-    });
-    expect(logger.error).toBeCalledWith("--api-location option is missing", true);
-    expect(deployClientModule.getDeployClientPath).not.toBeCalled();
-    expect(child_process.spawn).not.toBeCalled();
-  });
-
   it("should print an error and exit, if --deployment-token is not provided", async () => {
     await deploy("./", {
       outputLocation: "./dist",
       apiLocation: "./api",
     });
-    expect(logger.error).toBeCalledWith("--deployment-token option is missing", true);
+    expect(logger.error).toHaveBeenNthCalledWith(1, "A deployment token is required to deploy to Azure Static Web Apps");
+    expect(logger.error).toHaveBeenNthCalledWith(
+      2,
+      "Provide a deployment token using the --deployment-token option or SWA_CLI_DEPLOYMENT_TOKEN environment variable",
+      true
+    );
+    expect(logger.error).toHaveBeenNthCalledWith(3, "A deployment token is required to deploy to Azure Static Web Apps");
     expect(deployClientModule.getDeployClientPath).not.toBeCalled();
     expect(child_process.spawn).not.toBeCalled();
   });
