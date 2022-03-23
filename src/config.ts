@@ -6,6 +6,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   apiPrefix: "api",
   ssl: false,
   appLocation: `.${path.sep}`,
+  apiLocation: undefined,
   outputLocation: `.${path.sep}`,
   swaConfigLocation: `.${path.sep}`,
   sslCert: undefined,
