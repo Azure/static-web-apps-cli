@@ -30,6 +30,7 @@ const processConfigurationFile = async (cli: SWACLIConfig & GithubActionWorkflow
   const fileOptions = await getFileOptions(context, cli.opts().config);
 
   options = {
+    ...cli.opts(),
     ...options,
     ...fileOptions,
     verbose,
@@ -69,7 +70,12 @@ export async function run(argv?: string[]) {
     .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development\n")
 
     .option("--config <path>", "Path to swa-cli.config.json file to use", path.relative(process.cwd(), swaCliConfigFilename))
-    .option("--print-config", "Print all resolved options", false);
+    .option("--print-config", "Print all resolved options", false)
+    .option(
+      "--swa-config-location <swaConfigLocation>",
+      "The directory where the staticwebapp.config.json file is located",
+      DEFAULT_CONFIG.swaConfigLocation
+    );
 
   /////////////////////////////////////////////////////////////////////////////////
   // start command
@@ -117,11 +123,6 @@ export async function run(argv?: string[]) {
     .description("Start the emulator from a directory or bind to a dev server")
     .option("--app-location <appLocation>", "The folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
     .option("--api-location <apiLocation>", "The folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
-    .option(
-      "--swa-config-location <swaConfigLocation>",
-      "The directory where the staticwebapp.config.json file is located",
-      DEFAULT_CONFIG.swaConfigLocation
-    )
     .option<number>("--api-port <apiPort>", "The API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
     .option("--host <host>", "The host address to use for the CLI dev server", DEFAULT_CONFIG.host)
     .option<number>("--port <port>", "The port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)

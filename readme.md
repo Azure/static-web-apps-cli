@@ -210,31 +210,31 @@ swa start http://localhost:3000 --swa-config-location ./my-app-source
 
 If you need to override the default values for the `swa` command, you can provide the following options:
 
-| Option           | Description                                              | Default                 | Example                                   |
-| ---------------- | -------------------------------------------------------- | ----------------------- | ----------------------------------------- |
-| `--verbose`      | Enable verbose output. Values are: silly,info,log,silent | `log`                   | `--verbose=silly`                         |
-| `--config`       | Path to swa-cli.config.json file to use                  | `./swa-cli.config.json` | `--config=./path/to/swa-cli.config.json`  |
-| `--print-config` | Print all resolved options                               | `false`                 | `--print-config` or `--print-config=true` |
+| Option                  | Description                                                        | Default                 | Example                                   |
+| ----------------------- | ------------------------------------------------------------------ | ----------------------- | ----------------------------------------- |
+| `--verbose`             | Enable verbose output. Values are: silly,info,log,silent           | `log`                   | `--verbose=silly`                         |
+| `--config`              | Path to swa-cli.config.json file to use                            | `./swa-cli.config.json` | `--config=./path/to/swa-cli.config.json`  |
+| `--print-config`        | Print all resolved options                                         | `false`                 | `--print-config` or `--print-config=true` |
+| `--swa-config-location` | The directory where the `staticwebapp.config.json` file is located | `./`                    | `--swa-config-location=./app`             |
 
 ### `swa start` options
 
 If you need to override the default values for the `swa start` subcommand, you can provide the following options:
 
-| Option                  | Description                                                                                                    | Default   | Example                                                            |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------ |
-| `--app-location`        | The folder containing the source code of the front-end application                                             | `./`      | `--app-location="./app"`                                           |
-| `--api-location`        | The folder containing the source code of the API application. This could also be an URL to a `func` dev server | `./api`   | `--api-location="./api"` or `--api-location=http://localhost:8083` |
-| `--swa-config-location` | The directory where the `staticwebapp.config.json` file is located                                             | `./`      | `--swa-config-location=./app`                                      |
-| `--api-port`            | The API server port passed to `func start`                                                                     | `7071`    | `--api-port=8082`                                                  |
-| `--host`                | The host address to use for the CLI dev server                                                                 | `0.0.0.0` | `--host=192.168.68.80`                                             |
-| `--port`                | The port value to use for the CLI dev server                                                                   | `4280`    | `--port=8080`                                                      |
-| `--ssl`                 | Serve the front-end application and API over HTTPS (default: false)                                            | `false`   | `--ssl` or `--ssl=true`                                            |
-| `--ssl-cert`            | The SSL certificate (.crt) to use when enabling HTTPS                                                          |           | `--ssl-cert="/home/user/ssl/example.crt"`                          |
-| `--ssl-key`             | The SSL key (.key) to use when enabling HTTPS                                                                  |           | `--ssl-key="/home/user/ssl/example.key"`                           |
-| `--run`                 | Run a custon shell command or file at startup                                                                  |           | `--run="cd app & npm start"`                                       |
-| `--devserver-timeout`   | The time to wait (in ms) when connecting to a front-end application's dev server                               | `30000`   | `--devserver-timeout=60000`                                        |
-| `--func-args`           | Pass additional arguments to the `func start` command                                                          |           | `--func-args="--javascript"`                                       |
-| `--open`                | Automatically open the CLI dev server in the default browser.                                                  | `false`   | `--open` or `--open=true`                                          |
+| Option                | Description                                                                                                    | Default   | Example                                                            |
+| --------------------- | -------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------ |
+| `--app-location`      | The folder containing the source code of the front-end application                                             | `./`      | `--app-location="./app"`                                           |
+| `--api-location`      | The folder containing the source code of the API application. This could also be an URL to a `func` dev server | `./api`   | `--api-location="./api"` or `--api-location=http://localhost:8083` |
+| `--api-port`          | The API server port passed to `func start`                                                                     | `7071`    | `--api-port=8082`                                                  |
+| `--host`              | The host address to use for the CLI dev server                                                                 | `0.0.0.0` | `--host=192.168.68.80`                                             |
+| `--port`              | The port value to use for the CLI dev server                                                                   | `4280`    | `--port=8080`                                                      |
+| `--ssl`               | Serve the front-end application and API over HTTPS (default: false)                                            | `false`   | `--ssl` or `--ssl=true`                                            |
+| `--ssl-cert`          | The SSL certificate (.crt) to use when enabling HTTPS                                                          |           | `--ssl-cert="/home/user/ssl/example.crt"`                          |
+| `--ssl-key`           | The SSL key (.key) to use when enabling HTTPS                                                                  |           | `--ssl-key="/home/user/ssl/example.key"`                           |
+| `--run`               | Run a custon shell command or file at startup                                                                  |           | `--run="cd app & npm start"`                                       |
+| `--devserver-timeout` | The time to wait (in ms) when connecting to a front-end application's dev server                               | `30000`   | `--devserver-timeout=60000`                                        |
+| `--func-args`         | Pass additional arguments to the `func start` command                                                          |           | `--func-args="--javascript"`                                       |
+| `--open`              | Automatically open the CLI dev server in the default browser.                                                  | `false`   | `--open` or `--open=true`                                          |
 
 ### `swa deploy` options
 
