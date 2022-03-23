@@ -84,11 +84,13 @@ export const logger = {
       return;
     }
 
+    const isSensitiveKey = (key: string) => SENSITIVE_KEYS.some((sensitiveKey) => key.includes(sensitiveKey));
+
     if (SWA_CLI_DEBUG?.includes("silly") || SWA_CLI_DEBUG?.includes(debugFilter)) {
       if (typeof data === "object") {
         this._traverseObjectProperties(data, (key: string, value: string | null, indent: string) => {
           if (value !== null) {
-            if (SENSITIVE_KEYS.includes(key)) {
+            if (isSensitiveKey(key)) {
               value = chalk.yellow("<hidden>");
             } else if (typeof value === "undefined") {
               value = chalk.yellow("<undefined>");
