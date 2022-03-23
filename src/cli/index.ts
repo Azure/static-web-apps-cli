@@ -136,7 +136,7 @@ Examples:
     .command("deploy [context]")
     .usage("[context] [options]")
     .description("Deploy the current project to Azure Static Web Apps")
-    .option("--output-location <outputLocation>", "The folder where the front-end public files are location", DEFAULT_CONFIG.outputLocation)
+    .option("--output-location <outputLocation>", "The folder where the front-end public files are located", DEFAULT_CONFIG.outputLocation)
     .option("--api-location <apiLocation>", "The folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("--deployment-token <secret>", "The secret toekn used to authenticate with the Static Web Apps")
     .option("--dry-run", "Simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)

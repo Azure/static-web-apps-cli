@@ -83,8 +83,8 @@ declare type SWACLIStartOptions = {
 };
 
 declare type SWACLIDeployOptions = {
-  appOutputLocation?: string;
-  apiOutputLocation?: string;
+  outputLocation?: string;
+  apiLocation?: string;
   deploymentToken?: string;
   dryRun?: boolean;
 };
