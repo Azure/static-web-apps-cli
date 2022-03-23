@@ -111,10 +111,10 @@ Run the CLI and provide the folder that contains the API backend (a valid Azure 
 
 ```bash
 # static content plus an API
-swa start ./my-dist --api-location ./api-folder
+swa start ./my-dist --api-location ./api
 
 # frontend dev server plus an API
-swa start http://localhost:3000 --api-location ./api-folder
+swa start http://localhost:3000 --api-location ./api
 ```
 
 #### Start API server manually
@@ -132,11 +132,7 @@ swa start ./my-dist --api-location http://localhost:7071
 
 ## Deploy to Azure Static Web Apps
 
-The CLI can also be used to deploy your app to Azure Static Web Apps. To do so, run the CLI with the `swa deploy` command:
-
-```bash
-swa deploy --output-location ./my-dist --api-location ./api-folder --deployment-token <token>
-```
+The CLI can also be used to deploy your app to Azure Static Web Apps. To do so, you will use the `swa deploy` command. In order to deploy your app to Azure Static Web Apps, you need to provide a Deployment Token. You can create a Deployment Token by following the instructions.
 
 ### Deployment token
 
@@ -148,7 +144,29 @@ Or using the Azure CLI:
 az staticwebapp secrets list --name <application-name> --query "properties.apiKey"
 ```
 
-You can also create an environment variable called `SWA_CLI_DEPLOYMENT_TOKEN` and set it to the deployment token.
+You can the use that value with the `--deployment-token <token>`, or you can create an environment variable called `SWA_CLI_DEPLOYMENT_TOKEN` and set it to the deployment token.
+
+### Deploying a static app to Azure Static Web Apps
+
+Deploying the current folder to Azure Static Web Apps by running the following command:
+
+```bash
+swa deploy --deployment-token <token>
+```
+
+Deploying a specific folder to Azure Static Web Apps by running the following command:
+
+```bash
+swa deploy --output-location ./my-dist --deployment-token <token>
+```
+
+### Deploying a static app and an API to Azure Static Web Apps
+
+Deploying a static app and an API to Azure Static Web Apps by running the following command:
+
+```bash
+swa deploy --output-location ./my-dist --api-location ./api --deployment-token <token>
+```
 
 ### Deploy using the swa-cli.config.json
 
