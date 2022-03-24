@@ -3,7 +3,6 @@
   "version": "0.8.4-alpha",
   "description": "Azure Static Web Apps CLI",
   "scripts": {
-    "pretest": "npm run build",
     "test": "jest --detectOpenHandles --silent --verbose",
     "e2e:start:static": "npm run build && node ./dist/cli/bin.js --config ./cypress/fixtures/static/swa-cli.config.json start app",
     "e2e:start:blazor": "npm run build && node ./dist/cli/bin.js --config ./cypress/fixtures/blazor-starter/swa-cli.config.json start app",
