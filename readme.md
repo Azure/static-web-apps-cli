@@ -154,15 +154,19 @@ The CLI can also be used to deploy an app to Azure Static Web Apps using the com
 
 ### Deployment token
 
-A deployment token is required to deploy to Azure Static Web Apps. You can get a token from the [Azure portal](https://portal.azure.com/): **Home → Static Web App → Your Instance → Overview → Manage deployment token**
+Before deploying your application to Azure Static Web Apps, you need to create a new application instance. This is done by following the instructions in the [Azure Static Web Apps documentation](https://docs.microsoft.com/en-us/azure/static-web-apps/get-started-portal).
 
-If you are using the [Azure CLI](https://aka.ms/azcli), you can get the deployment token of your project using the following command:
+Once your application instance is ready, you can get a deployment token from:
+
+- The [Azure portal](https://portal.azure.com/): **Home → Static Web App → Your Instance → Overview → Manage deployment token**
+
+- If you are using the [Azure CLI](https://aka.ms/azcli), you can get the deployment token of your project using the following command:
 
 ```bash
 az staticwebapp secrets list --name <application-name> --query "properties.apiKey"
 ```
 
-You can then use that value with the `--deployment-token <token>`, or you can create an environment variable called `SWA_CLI_DEPLOYMENT_TOKEN` and set it to the deployment token.
+You can then use that value with the `--deployment-token <token>`, or you can create an environment variable called `SWA_CLI_DEPLOYMENT_TOKEN` and set it to the deployment token. Read the next section for more details.
 
 **IMPORTANT:** Don't store the deployment token in a public repository. It should be kept secret!
 
