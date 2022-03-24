@@ -1,4 +1,4 @@
-import program from "commander";
+import { program } from "commander";
 import { UpdateNotifier } from "update-notifier";
 import { run } from "./index";
 const pkg = require("../../package.json");

@@ -1,4 +1,4 @@
-import program, { Option } from "commander";
+import { program, Option } from "commander";
 import path from "path";
 import { DEFAULT_CONFIG } from "../config";
 import { logger, parsePort } from "../core";
@@ -14,7 +14,7 @@ export async function run(argv?: string[]) {
   // Once a day, check for updates
   updateNotifier({ pkg }).notify();
 
-  const cli: SWACLIConfig & program.Command = program
+  const cli = program
     .name("swa")
     .usage("<command> [options]")
     .version(pkg.version, "-v, --version")
