@@ -56,4 +56,5 @@ function printConfigMsg(name: string, file: string) {
   logger.log(`\t${file}`, "swa");
   logger.log("", "swa");
   logger.warn(`Options passed in via CLI will be overridden by options in file.`, "swa");
+  logger.log("", "swa");
 }
