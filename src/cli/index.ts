@@ -1,11 +1,12 @@
-import { program, Option } from "commander";
+import { program, Option, Command } from "commander";
 import path from "path";
 import { DEFAULT_CONFIG } from "../config";
-import { logger, parsePort } from "../core";
+import { parsePort } from "../core";
 import { parseDevserverTimeout } from "../core";
 import { start } from "./commands/start";
 import updateNotifier from "update-notifier";
-import { getFileOptions, swaCliConfigFilename } from "../core/utils/cli-config";
+import { swaCliConfigFilename } from "../core/utils/cli-config";
+import { configureOptions } from "../core/utils/options";
 const pkg = require("../../package.json");
 
 export const defaultStartContext = `.${path.sep}`;
@@ -14,7 +15,7 @@ export async function run(argv?: string[]) {
   // Once a day, check for updates
   updateNotifier({ pkg }).notify();
 
-  const cli = program
+  program
     .name("swa")
     .usage("<command> [options]")
     .version(pkg.version, "-v, --version")
@@ -61,31 +62,9 @@ export async function run(argv?: string[]) {
     .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
     .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
 
-    .action(async (context: string = `.${path.sep}`, options: SWACLIConfig) => {
-      const verbose = cli.opts().verbose;
-
-      // make sure the start command gets the right verbosity level
-      process.env.SWA_CLI_DEBUG = verbose;
-      if (verbose?.includes("silly")) {
-        // when silly level is set,
-        // propagate debugging level to other tools using the DEBUG environment variable
-        process.env.DEBUG = "*";
-      }
-      const fileOptions = await getFileOptions(context, cli.opts().config);
-
-      options = {
-        ...options,
-        ...fileOptions,
-        verbose,
-      };
-
-      if (cli.opts().printConfig) {
-        logger.log("", "swa");
-        logger.log("Options: ", "swa");
-        logger.log({ ...DEFAULT_CONFIG, ...options }, "swa");
-      }
-
-      await start(fileOptions.context ?? context, options);
+    .action(async (context: string = `.${path.sep}`, options: SWACLIConfig, command: Command) => {
+      const config = await configureOptions(context, options, command);
+      await start(config.context, config.options);
     })
 
     .addHelpText(
