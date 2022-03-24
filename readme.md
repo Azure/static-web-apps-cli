@@ -11,6 +11,9 @@ The Static Web Apps CLI, also known as SWA CLI, serves as a local development to
 - Serve API requests, or proxy to APIs running in Azure Functions Core Tools
 - Emulate authentication and authorization
 - Emulate Static Web Apps configuration, including routing and ACL roles
+- Deploy your app to Azure Static Web Apps
+
+## Important Notes
 
 **Static Web Apps CLI is in preview.** If you have suggestions or you encounter issues, please report them or help us fix them. Your contributions are very much appreciated. 🙏
 
@@ -18,28 +21,42 @@ The CLI emulates commonly used capabilities of the Azure Static Web Apps cloud s
 
 ## Quickstart
 
-Using `npm` or `yarn`:
+> Note: This quickstart assumes you are serving a front-end app from the curent folder. For more advanced use cases, see below.
+
+### Using `npm` or `yarn`:
 
 - Install the cli
+
   ```bash
   npm install -g @azure/static-web-apps-cli
   ```
+
+  > Note: The CLI can also be installed locally as a devDependency: `npm install -D @azure/static-web-apps-cli`. This is highly recommended.
+
 - Open a SWA app folder at the root (outside any /api or /app folders):
   ```bash
   cd my-awesome-swa-app
   ```
 - Start the emulator:
   ```bash
-  swa start ./
+  swa start
   ```
 - Access your SWA app from `http://localhost:4280`
 
-> Note: The cli can also be installed locally as a devDependency: `npm install -D @azure/static-web-apps-cli`
+### Using `npx`:
 
-Using `npx`:
+- Open a SWA app folder at the root (outside any /api or /app folders):
 
-- Open a SWA app folder at the root (outside any /api or /app folders): `cd my-awesome-swa-app`
-- Start the emulator: `npx @azure/static-web-apps-cli start`
+```bash
+cd my-awesome-swa-app
+```
+
+- Start the emulator:
+
+```bash
+npx @azure/static-web-apps-cli start
+```
+
 - Access your SWA app from `http://localhost:4280`
 
 ## Start the emulator
@@ -60,15 +77,16 @@ swa start ./my-dist
 
 ### Serve from a dev server
 
-When developing your frontend app locally, it's often useful to use the dev server that comes with your frontend framework's CLI to serve your app content. Using the framework CLI allows you to use built-in features like the livereload and HMR (hot module replacement).
+When developing your front-end app locally, it's often useful to use the dev server that comes with your front-end framework's CLI to serve your app content. Using the framework CLI allows you to use built-in features like the livereload and HMR (hot module replacement).
 
 To use SWA CLI with your local dev server, follow these two steps:
 
-1. Start your local dev server (as usual). For example, if you are using Angular: `ng serve`
+1. Start your local dev server (as usual). For example, if you are using Angular: `ng serve` (or `npm start`)
 1. In a separate terminal, run `swa start` with the URI provided by the dev server, in the following format:
-   ```bash
-   swa start http://<APP_DEV_SERVER_HOST>:<APP_DEV_SERVER_PORT>
-   ```
+
+```bash
+swa start http://<APP_DEV_SERVER_HOST>:<APP_DEV_SERVER_PORT>
+```
 
 Here is a list of the default ports used by some popular dev servers:
 
@@ -99,9 +117,9 @@ swa start http://localhost:4000 --run "jekyll serve"
 swa start http://localhost:4200 --run "./startup.sh"
 ```
 
-Go to 4280 (`http://localhost:4280`) to access the application with the emulated services.
+Then access the application with the emulated services from `http://localhost:4280`
 
-### Serve both the static app and API
+### Serve both the front-end app and API
 
 If your project includes API functions, the CLI will check if the Azure Functions Core Tools are installed and available. If not, the CLI will download and install the right version of the Azure Functions Core Tools.
 
@@ -113,7 +131,7 @@ Run the CLI and provide the folder that contains the API backend (a valid Azure 
 # static content plus an API
 swa start ./my-dist --api-location ./api
 
-# frontend dev server plus an API
+# front-end dev server plus an API
 swa start http://localhost:3000 --api-location ./api
 ```
 
@@ -132,37 +150,41 @@ swa start ./my-dist --api-location http://localhost:7071
 
 ## Deploy to Azure Static Web Apps
 
-The CLI can also be used to deploy your app to Azure Static Web Apps. To do so, you will use the `swa deploy` command. In order to deploy your app to Azure Static Web Apps, you need to provide a Deployment Token. You can create a Deployment Token by following the instructions.
+The CLI can also be used to deploy an app to Azure Static Web Apps using the command: `swa deploy`. A **Deployment Token** is required in order to make a deployment. You can access your Deployment Token by following the instructions.
 
 ### Deployment token
 
 A deployment token is required to deploy to Azure Static Web Apps. You can get a token from the [Azure portal](https://portal.azure.com/): **Home → Static Web App → Your Instance → Overview → Manage deployment token**
 
-Or using the Azure CLI:
+If you are using the [Azure CLI](https://aka.ms/azcli), you can get the deployment token of your project using the following command:
 
 ```bash
 az staticwebapp secrets list --name <application-name> --query "properties.apiKey"
 ```
 
-You can the use that value with the `--deployment-token <token>`, or you can create an environment variable called `SWA_CLI_DEPLOYMENT_TOKEN` and set it to the deployment token.
+You can then use that value with the `--deployment-token <token>`, or you can create an environment variable called `SWA_CLI_DEPLOYMENT_TOKEN` and set it to the deployment token.
 
-### Deploying a static app to Azure Static Web Apps
+**IMPORTANT:** Don't store the deployment token in a public repository. It should be kept secret!
 
-Deploying the current folder to Azure Static Web Apps by running the following command:
+### Deploying a front-end app to Azure Static Web Apps
+
+You can deploy a front-end application (without an API) from the current folder to Azure Static Web Apps by running the following command:
 
 ```bash
 swa deploy --deployment-token <token>
 ```
 
-Deploying a specific folder to Azure Static Web Apps by running the following command:
+> Note: the current folder must contain the static content of your app to be deployed!
+
+You can also deploy the front-end application from a specific folder by providing the `--output-location` option:
 
 ```bash
 swa deploy --output-location ./my-dist --deployment-token <token>
 ```
 
-### Deploying a static app and an API to Azure Static Web Apps
+### Deploying a front-end app and an API to Azure Static Web Apps
 
-Deploying a static app and an API to Azure Static Web Apps by running the following command:
+To deploy both the front-end app and an API to Azure Static Web Apps, use the following command:
 
 ```bash
 swa deploy --output-location ./my-dist --api-location ./api --deployment-token <token>
@@ -170,10 +192,31 @@ swa deploy --output-location ./my-dist --api-location ./api --deployment-token <
 
 ### Deploy using the swa-cli.config.json
 
-If you are using a `swa-cli.config.json` file with your project and have a single configuration, you can run the command:
+If you are using a [`swa-cli.config.json`](#swa-cli.config.json) configuration file in your project and have a single configuration entry, for example:
+
+```json
+{
+  "configurations": {
+    "app": {
+      "appLocation": "./",
+      "context": "./",
+      "outputLocation": "./front-end",
+      "apiLocation": "./api"
+    }
+  }
+}
+```
+
+Then you can deploy your app by running the following command:
 
 ```bash
 swa deploy
+```
+
+If you have multiple configuration entries, you can provide the entry ID to specify which one to use:
+
+```bash
+swa deploy otherapp
 ```
 
 ## Use a runtime configuration file (staticwebapp.config.json)
@@ -183,11 +226,11 @@ Azure Static Web Apps can be configured with an optional `staticwebapp.config.js
 If you are serving static files from a folder, the CLI will search this folder for `staticwebapp.config.json`.
 
 ```bash
-# ./my-dist is searched for staticwebapp.config.json
+# this assumes that ./my-dist or its subfolders contains a staticwebapp.config.json file
 swa start ./my-dist
 ```
 
-If you are using a frontend dev server, the CLI will search the current directory for `staticwebapp.config.json`.
+If you are using a front-end dev server, the CLI will search the current directory for `staticwebapp.config.json`.
 
 ```bash
 # current working directory is searched for staticwebapp.config.json
@@ -200,7 +243,7 @@ To control where the CLI searches for `staticwebapp.config.json`, use `--swa-con
 # static files
 swa start ./my-dist --swa-config-location ./my-app-source
 
-# frontend dev server
+# front-end dev server
 swa start http://localhost:3000 --swa-config-location ./my-app-source
 ```
 
@@ -212,8 +255,8 @@ If you need to override the default values for the `swa` command, you can provid
 
 | Option                  | Description                                                        | Default                 | Example                                   |
 | ----------------------- | ------------------------------------------------------------------ | ----------------------- | ----------------------------------------- |
-| `--verbose`             | Enable verbose output. Values are: silly,info,log,silent           | `log`                   | `--verbose=silly`                         |
-| `--config`              | Path to swa-cli.config.json file to use                            | `./swa-cli.config.json` | `--config=./path/to/swa-cli.config.json`  |
+| `--verbose`             | Enable verbose output. Values are: `silly, info, log, silent`      | `log`                   | `--verbose=silly`                         |
+| `--config`              | Path to [`swa-cli.config.json`](#swa-cli.config.json) file to use  | `./swa-cli.config.json` | `--config=./path/to/swa-cli.config.json`  |
 | `--print-config`        | Print all resolved options                                         | `false`                 | `--print-config` or `--print-config=true` |
 | `--swa-config-location` | The directory where the `staticwebapp.config.json` file is located | `./`                    | `--swa-config-location=./app`             |
 
@@ -228,11 +271,11 @@ If you need to override the default values for the `swa start` subcommand, you c
 | `--api-port`          | The API server port passed to `func start`                                                                     | `7071`    | `--api-port=8082`                                                  |
 | `--host`              | The host address to use for the CLI dev server                                                                 | `0.0.0.0` | `--host=192.168.68.80`                                             |
 | `--port`              | The port value to use for the CLI dev server                                                                   | `4280`    | `--port=8080`                                                      |
-| `--ssl`               | Serve the front-end application and API over HTTPS (default: false)                                            | `false`   | `--ssl` or `--ssl=true`                                            |
+| `--ssl`               | Serve the front-end application and API over HTTPS                                                             | `false`   | `--ssl` or `--ssl=true`                                            |
 | `--ssl-cert`          | The SSL certificate (.crt) to use when enabling HTTPS                                                          |           | `--ssl-cert="/home/user/ssl/example.crt"`                          |
 | `--ssl-key`           | The SSL key (.key) to use when enabling HTTPS                                                                  |           | `--ssl-key="/home/user/ssl/example.key"`                           |
 | `--run`               | Run a custon shell command or file at startup                                                                  |           | `--run="cd app & npm start"`                                       |
-| `--devserver-timeout` | The time to wait (in ms) when connecting to a front-end application's dev server                               | `30000`   | `--devserver-timeout=60000`                                        |
+| `--devserver-timeout` | The time (in milliseconds) to wait when connecting to a front-end application's dev server                     | `30000`   | `--devserver-timeout=60000`                                        |
 | `--func-args`         | Pass additional arguments to the `func start` command                                                          |           | `--func-args="--javascript"`                                       |
 | `--open`              | Automatically open the CLI dev server in the default browser.                                                  | `false`   | `--open` or `--open=true`                                          |
 
@@ -242,10 +285,12 @@ If you need to override the default values for the `swa deploy` subcommand, you 
 
 | Option               | Description                                                    | Default | Example                         |
 | -------------------- | -------------------------------------------------------------- | ------- | ------------------------------- |
-| `--output-location`  | The folder where the front-end public files are location       | `./`    | `--output-location="./dist"`    |
+| `--output-location`  | The folder where the front-end public files are located        | `./`    | `--output-location="./dist"`    |
 | `--api-location`     | The folder containing the source code of the API application   | `./api` | `--api-location="./api"`        |
 | `--deployment-token` | The secret toekn used to authenticate with the Static Web Apps |         | `--deployment-token="123"`      |
 | `--dry-run`          | Simulate a deploy process without actually running it          | `false` | `--dry-run` or `--dry-run=true` |
+
+<a id="swa-cli.config.json"></a>
 
 ## The CLI `swa-cli.config.json` configuration file
 
@@ -318,7 +363,7 @@ When requesting the Static Web Apps login endpoints (`http://localhost:4280/.aut
 
 ### Reading credentials
 
-The frontend application can request the `http://localhost:4280/.auth/me` endpoint and a `clientPrincipal` containing the fake information will be returned by the authentication API.
+The front-end application can request the `http://localhost:4280/.auth/me` endpoint and a `clientPrincipal` containing the fake information will be returned by the authentication API.
 
 Here is an example:
 
