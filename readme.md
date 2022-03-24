@@ -168,7 +168,11 @@ You can then use that value with the `--deployment-token <token>`, or you can cr
 
 ### Deploying a front-end app to Azure Static Web Apps
 
-You can deploy a front-end application (without an API) from the current folder to Azure Static Web Apps by running the following command:
+You can deploy a front-end application (without an API) from the current folder to Azure Static Web Apps by running the following steps:
+
+1. If your front-end application requires a build step, run the build step (e.g. `npm run build`) or refer to your application build instructions.
+
+2. From the application build folder, run the deploy command:
 
 ```bash
 swa deploy --deployment-token <token>
@@ -178,6 +182,10 @@ swa deploy --deployment-token <token>
 
 You can also deploy the front-end application from a specific folder by providing the `--output-location` option:
 
+1. If your front-end application requires a build step, run the build step (e.g. `npm run build`) or refer to your application build instructions.
+
+2. Deploy your app:
+
 ```bash
 swa deploy --output-location ./my-dist --deployment-token <token>
 ```
@@ -185,6 +193,10 @@ swa deploy --output-location ./my-dist --deployment-token <token>
 ### Deploying a front-end app and an API to Azure Static Web Apps
 
 To deploy both the front-end app and an API to Azure Static Web Apps, use the following command:
+
+1. If your front-end application requires a build step, run the build step (e.g. `npm run build`) or refer to your application build instructions.
+
+2. Deploy your app:
 
 ```bash
 swa deploy --output-location ./my-dist --api-location ./api --deployment-token <token>
@@ -207,7 +219,11 @@ If you are using a [`swa-cli.config.json`](#swa-cli.config.json) configuration f
 }
 ```
 
-Then you can deploy your app by running the following command:
+Then you can deploy your application by running the following steps:
+
+1. If your front-end application requires a build step, run the build step (e.g. `npm run build`) or refer to your application build instructions.
+
+2. Deploy your app:
 
 ```bash
 swa deploy
