@@ -200,7 +200,17 @@ To deploy both the front-end app and an API to Azure Static Web Apps, use the fo
 
 1. If your front-end application requires a build step, run the build step (e.g. `npm run build`) or refer to your application build instructions.
 
-2. Deploy your app:
+2. Make sure the[ API language runtime version](https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#platform) in the `staticwebapp.config.json` file is set correctly, for example:
+
+```json
+{
+  "platform": {
+    "apiRuntime": "node:16"
+  }
+}
+```
+
+3. Deploy your app:
 
 ```bash
 swa deploy --output-location ./my-dist --api-location ./api --deployment-token <token>
@@ -269,7 +279,7 @@ swa start http://localhost:3000 --swa-config-location ./my-app-source
 
 ## CLI options
 
-### `swa` options
+### Top-level `swa` options
 
 If you need to override the default values for the `swa` command, you can provide the following options:
 
@@ -280,7 +290,7 @@ If you need to override the default values for the `swa` command, you can provid
 | `--print-config`        | Print all resolved options                                         | `false`                 | `--print-config` or `--print-config=true` |
 | `--swa-config-location` | The directory where the `staticwebapp.config.json` file is located | `./`                    | `--swa-config-location=./app`             |
 
-### `swa start` options
+### Subcommand `swa start` options
 
 If you need to override the default values for the `swa start` subcommand, you can provide the following options:
 
@@ -299,7 +309,7 @@ If you need to override the default values for the `swa start` subcommand, you c
 | `--func-args`         | Pass additional arguments to the `func start` command                                                          |           | `--func-args="--javascript"`                                       |
 | `--open`              | Automatically open the CLI dev server in the default browser.                                                  | `false`   | `--open` or `--open=true`                                          |
 
-### `swa deploy` options
+### Subcommand `swa deploy` options
 
 If you need to override the default values for the `swa deploy` subcommand, you can provide the following options:
 
