@@ -78,6 +78,8 @@ declare type SWACLIOptions = {
   devserverTimeout?: number;
   funcArgs?: string;
   open?: boolean;
+  config?: string;
+  printConfig?: boolean;
 };
 
 declare type SWACLIConfig = SWACLIOptions & GithubActionWorkflow;
@@ -154,7 +156,7 @@ declare interface CoreToolsRelease {
 
 declare interface CoreToolsZipInfo {
   OS: string;
-  Architecture: string,
+  Architecture: string;
   downloadLink: string;
   size: string;
   sha2: string;
