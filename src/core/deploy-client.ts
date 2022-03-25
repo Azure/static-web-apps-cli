@@ -1,12 +1,13 @@
-import path from "path";
-import os from "os";
 import crypto from "crypto";
 import fs from "fs";
 import fetch from "node-fetch";
+import os from "os";
+import path from "path";
+import { PassThrough } from "stream";
 import { logger } from "./utils";
 
-type StaticSiteClientVersionDefinition = {
-  version: string;
+type StaticSiteClientReleaseMetadata = {
+  version: "stable" | "latest";
   publishDate: string;
   files: {
     ["linux-x64"]: {
@@ -24,88 +25,58 @@ type StaticSiteClientVersionDefinition = {
   };
 };
 
+type StaticSiteClientLocalMetadata = {
+  metadata: StaticSiteClientReleaseMetadata;
+  binary: string;
+  checksum: string;
+};
+
 const DEPLOY_BINARY_NAME = "StaticSitesClient";
 const DEPLOY_FOLDER = path.join(os.homedir(), ".swa", "deploy");
 
-export async function downloadClient(): Promise<string | undefined> {
+export async function getDeployClientPath(): Promise<string | undefined> {
   const platform = getPlatform();
   if (!platform) {
     throw new Error(`Unsupported platform: ${os.platform()}`);
   }
-  const localClientVersion = getLocalClientVersionDefinition();
-  const remoteClientVersion = await fetchLatestClientVersionDefinition();
+
+  const localClientMetadata = getLocalClientMetadata() as StaticSiteClientLocalMetadata;
+
+  const remoteClientMetadata = await fetchLatestClientVersionDefinition();
+  if (remoteClientMetadata === undefined) {
+    throw new Error(`Could not load ${DEPLOY_BINARY_NAME} version information from remote. Please check your internet connection.`);
+  }
 
   // if the latest version is the same as the local version, we can skip the download
-  if (localClientVersion) {
-    if (remoteClientVersion?.publishDate === localClientVersion?.version?.publishDate) {
-      if (computeSHA256fromFile(localClientVersion?.binary) === remoteClientVersion?.files[platform!].sha256.toLocaleLowerCase()) {
-        logger.info(`${DEPLOY_BINARY_NAME} is up to date (${localClientVersion?.version?.publishDate}).`);
-        return localClientVersion?.binary;
+  if (localClientMetadata) {
+    const localChecksum = localClientMetadata.checksum;
+    const releaseChecksum = remoteClientMetadata.files[platform].sha256.toLowerCase();
+    const remotePublishDate = remoteClientMetadata.publishDate;
+    const localPublishDate = localClientMetadata.metadata.publishDate;
+
+    if (remotePublishDate === localPublishDate) {
+      if (localChecksum === releaseChecksum) {
+        return localClientMetadata.binary;
+      } else {
+        logger.warn(`Checksum mismatch! Expected ${localChecksum}, got ${releaseChecksum}`);
       }
+    } else {
+      logger.warn(`${DEPLOY_BINARY_NAME} is outdated! Expected ${remotePublishDate}, got ${localPublishDate}`);
     }
   }
 
-  if (remoteClientVersion === undefined) {
-    throw new Error(`Could not load ${DEPLOY_BINARY_NAME} version information`);
-    return;
-  }
-
-  if (localClientVersion?.version.publishDate !== remoteClientVersion.publishDate) {
-    const downloadUrl = remoteClientVersion.files[platform!].url;
-    const downloadFilename = path.basename(downloadUrl);
-    const downloadPath = path.join(DEPLOY_FOLDER, downloadFilename);
-
-    logger.info(`Downloading ${downloadUrl} to ${downloadPath}`);
-
-    fs.mkdirSync(DEPLOY_FOLDER, { recursive: true });
-
-    const abort = new AbortController();
-    try {
-      await fetch(downloadUrl, {
-        signal: abort.signal,
-      })
-        .then((res) => res.buffer())
-        .then((buffer) => fs.writeFileSync(downloadPath, buffer));
-    } catch (err) {
-      throw new Error(`Could not download ${DEPLOY_BINARY_NAME}: ${err}`);
-      return;
-    }
-
-    const isPosix = platform === "linux-x64" || platform === "osx-x64";
-    if (isPosix) {
-      fs.chmodSync(downloadPath, 0o755);
-    }
-
-    fs.writeFileSync(path.join(DEPLOY_FOLDER, `${DEPLOY_BINARY_NAME}.json`), JSON.stringify(remoteClientVersion, null, 2));
-
-    logger.info(`Binary saved to ${downloadPath}`);
-  }
-
-  let binary = path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME);
-  if (fs.existsSync(`${binary}.exe`)) {
-    binary = `${binary}.exe`;
-  }
-
-  if (computeSHA256fromFile(binary) === remoteClientVersion?.files[platform!].sha256.toLocaleLowerCase()) {
-    logger.info(`${DEPLOY_BINARY_NAME} was updated to ${remoteClientVersion?.publishDate}.`);
-    return binary;
-  }
-
-  return undefined;
+  return await downloadAndValidateBinary(remoteClientMetadata, platform);
 }
 
-function getLocalClientVersionDefinition() {
+function getLocalClientMetadata(): StaticSiteClientLocalMetadata | null {
   const binaryFilename = path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME);
-  const versionFilename = path.join(DEPLOY_FOLDER, `${DEPLOY_BINARY_NAME}.json`);
-  if (fs.existsSync(DEPLOY_FOLDER) && fs.existsSync(binaryFilename) && fs.existsSync(versionFilename)) {
+  const metadataFilename = path.join(DEPLOY_FOLDER, `${DEPLOY_BINARY_NAME}.json`);
+  if (fs.existsSync(DEPLOY_FOLDER) && fs.existsSync(binaryFilename) && fs.existsSync(metadataFilename)) {
     try {
-      const version: StaticSiteClientVersionDefinition = JSON.parse(fs.readFileSync(versionFilename, "utf8"));
-      return {
-        binary: binaryFilename,
-        version,
-      };
+      const metadata = JSON.parse(fs.readFileSync(metadataFilename, "utf8"));
+      return metadata;
     } catch (err) {
-      logger.warn(`Could not read ${DEPLOY_BINARY_NAME} configuration: ${err}`);
+      logger.warn(`Could not read ${DEPLOY_BINARY_NAME} metadata: ${err}`);
       return null;
     }
   }
@@ -113,8 +84,8 @@ function getLocalClientVersionDefinition() {
   return null;
 }
 
-function computeSHA256fromFile(filePath: string | undefined): string {
-  if (!filePath) {
+function computeChecksumfromFile(filePath: string | undefined): string {
+  if (!filePath || !fs.existsSync(filePath)) {
     return "";
   }
 
@@ -133,16 +104,91 @@ function getPlatform(): "win-x64" | "osx-x64" | "linux-x64" | null {
     case "linux":
       return "linux-x64";
     default:
-      throw new Error(`Cannot deploy because of unsupported platform: ${os.platform()}`);
+      return null;
   }
 }
 
-export async function fetchLatestClientVersionDefinition() {
-  const remoteVersionDefinitions: StaticSiteClientVersionDefinition[] = await fetch(
+export async function fetchLatestClientVersionDefinition(): Promise<StaticSiteClientReleaseMetadata | undefined> {
+  const remoteVersionDefinitions: StaticSiteClientReleaseMetadata[] = await fetch(
     "https://swalocaldeploy.azureedge.net/downloads/versions.json"
   ).then((res) => res.json());
   if (Array.isArray(remoteVersionDefinitions) && remoteVersionDefinitions.length) {
     return remoteVersionDefinitions.find((versionDefinition) => versionDefinition?.version === "latest");
   }
   return undefined;
+}
+
+async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadata, platform: "win-x64" | "osx-x64" | "linux-x64") {
+  const downloadUrl = release.files[platform!].url;
+  const downloadFilename = path.basename(downloadUrl);
+  let outputFile = path.join(DEPLOY_FOLDER, downloadFilename);
+
+  if (!fs.existsSync(DEPLOY_FOLDER)) {
+    fs.mkdirSync(DEPLOY_FOLDER, { recursive: true });
+  }
+
+  const url = release.files[platform].url;
+  logger.log(`Downloading latest version client to ${outputFile}`, "deploy");
+  logger.log(`Please wait...`, "deploy");
+
+  const response = await fetch(url);
+  const totalSize = Number(response.headers.get("content-length"));
+  const bodyStream = response.body.pipe(new PassThrough());
+
+  return await new Promise<string>((resolve, reject) => {
+    const isPosix = platform === "linux-x64" || platform === "osx-x64";
+    const writableStream = fs.createWriteStream(outputFile, { mode: isPosix ? 0o755 : undefined });
+    bodyStream.pipe(writableStream);
+
+    writableStream.on("end", () => {
+      bodyStream.end();
+    });
+
+    writableStream.on("finish", () => {
+      logger.log(`Downloaded ${totalSize} bytes`, "deploy");
+
+      const computedHash = computeChecksumfromFile(outputFile);
+      const releaseChecksum = release.files[platform].sha256.toLocaleLowerCase();
+      if (computedHash !== releaseChecksum) {
+        reject(new Error(`Checksum mismatch! Expected ${computedHash}, got ${releaseChecksum}`));
+      } else {
+        logger.log(`Checksum match: ${computedHash}`, "deploy");
+
+        saveMetadata(release, outputFile, computedHash);
+
+        if (fs.existsSync(`${outputFile}.exe`)) {
+          outputFile = `${outputFile}.exe`;
+        }
+
+        resolve(outputFile);
+      }
+    });
+  });
+}
+
+function saveMetadata(release: StaticSiteClientReleaseMetadata, binaryFilename: string, sha256: string) {
+  const metatdaFilename = path.join(DEPLOY_FOLDER, `${DEPLOY_BINARY_NAME}.json`);
+  const metdata: StaticSiteClientLocalMetadata = {
+    metadata: release,
+    binary: binaryFilename,
+    checksum: sha256,
+  };
+  fs.writeFileSync(metatdaFilename, JSON.stringify(metdata));
+  logger.log(`Saved metadata to ${metatdaFilename}`, "deploy");
+}
+
+// TODO: get StaticSiteClient to remove zip files
+// TODO: can these ZIPs be created under /tmp?
+export function cleanUp() {
+  const clean = (file: string) => {
+    const filepath = path.join(process.cwd(), file);
+    if (fs.existsSync(filepath)) {
+      try {
+        fs.unlinkSync(filepath);
+      } catch {}
+    }
+  };
+
+  clean(".\\app.zip");
+  clean(".\\api.zip");
 }
