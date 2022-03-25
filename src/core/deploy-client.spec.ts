@@ -232,7 +232,7 @@ describe("getLocalClientMetadata()", () => {
     expect(result).toEqual(content);
   });
 
-  it.skip("should return a valid metadata", () => {
+  it("should return a valid metadata", () => {
     jest.spyOn(os, "platform").mockReturnValue("linux");
 
     const version = "v1";
