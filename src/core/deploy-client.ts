@@ -87,7 +87,7 @@ export function getLocalClientMetadata(): StaticSiteClientLocalMetadata | null {
   const metadataFilename = path.join(DEPLOY_FOLDER, `${DEPLOY_BINARY_NAME}.json`);
 
   if (!fs.existsSync(metadataFilename)) {
-    logger.warn(`Could not find ${DEPLOY_BINARY_NAME} local metadata`, "swa");
+    logger.warn(`Could not find ${DEPLOY_BINARY_NAME} local binary`, "swa");
     return null;
   }
 
