@@ -15,6 +15,7 @@ declare global {
       SWA_CLI_STARTUP_COMMAND: string;
       SWA_CLI_DEPLOYMENT_TOKEN: string;
       SWA_CLI_DEPLOY_DRY_RUN: string;
+      SWA_CLI_DEPLOY_BINARY_VERSION: string;
     }
   }
 }
