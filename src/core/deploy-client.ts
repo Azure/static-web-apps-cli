@@ -52,7 +52,7 @@ export async function getDeployClientPath(): Promise<{ binary: string; version: 
   // if the latest version is the same as the local version, we can skip the download
   if (localClientMetadata) {
     if (!localClientMetadata.metadata || !localClientMetadata.binary || !localClientMetadata.checksum) {
-      logger.warn(`Local client metadata is invalid!`);
+      logger.warn(`Local client metadata is invalid!`, "swa");
     } else {
       const localChecksum = localClientMetadata.checksum;
       const releaseChecksum = remoteClientMetadata.files[platform].sha256.toLowerCase();
@@ -72,7 +72,7 @@ export async function getDeployClientPath(): Promise<{ binary: string; version: 
           logger.warn(`  Received ${localChecksum}`, "swa");
         }
       } else {
-        logger.warn(`${DEPLOY_BINARY_NAME} is outdated! Expected ${remotePublishDate}, got ${localPublishDate}`);
+        logger.warn(`${DEPLOY_BINARY_NAME} is outdated! Expected ${remotePublishDate}, got ${localPublishDate}`, "swa");
       }
     }
   }
@@ -87,7 +87,7 @@ export function getLocalClientMetadata(): StaticSiteClientLocalMetadata | null {
   const metadataFilename = path.join(DEPLOY_FOLDER, `${DEPLOY_BINARY_NAME}.json`);
 
   if (!fs.existsSync(metadataFilename)) {
-    logger.warn(`Could not find ${DEPLOY_BINARY_NAME} local metadata`);
+    logger.warn(`Could not find ${DEPLOY_BINARY_NAME} local metadata`, "swa");
     return null;
   }
 
@@ -96,13 +96,13 @@ export function getLocalClientMetadata(): StaticSiteClientLocalMetadata | null {
   try {
     metadata = JSON.parse(fs.readFileSync(metadataFilename, "utf8"));
   } catch (err) {
-    logger.warn(`Could not read ${DEPLOY_BINARY_NAME} metadata: ${err}`);
+    logger.warn(`Could not read ${DEPLOY_BINARY_NAME} metadata: ${err}`, "swa");
     return null;
   }
 
   if (metadata) {
     if (!fs.existsSync(metadata.binary)) {
-      logger.warn(`Could not find ${DEPLOY_BINARY_NAME} binary: ${metadata.binary}`);
+      logger.warn(`Could not find ${DEPLOY_BINARY_NAME} binary: ${metadata.binary}`, "swa");
       return null;
     } else if (fs.existsSync(metadata.binary)) {
       return metadata;

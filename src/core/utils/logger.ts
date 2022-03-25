@@ -3,7 +3,7 @@ import type http from "http";
 import { DEFAULT_CONFIG } from "../../config";
 import { SWA_CLI_APP_PROTOCOL } from "../constants";
 
-const SENSITIVE_KEYS = ["DEPLOYMENT_TOKEN", "SWA_CLI_DEPLOYMENT_TOKEN"];
+const SENSITIVE_KEYS = ["DEPLOYMENT_TOKEN", "SWA_CLI_DEPLOYMENT_TOKEN", "--deployment-token"];
 
 export const logger = {
   _print(prefix: string | null, data: string) {
