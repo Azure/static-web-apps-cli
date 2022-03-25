@@ -70,7 +70,7 @@ jobs:
         run: |
           npm ci
           cd cypress/fixtures/
-          node ../../dist/cli/bin.js deploy --dry-run --verbose=silly --api-location=./api --output-location=./static --deployment-token=123
+          node ../../dist/cli/bin.js deploy ./static --dry-run --verbose=silly --api-location=./api --deployment-token=123
 
   test-windows:
     runs-on: ${{ matrix.os }}
@@ -132,7 +132,7 @@ jobs:
         run: |
           npm ci
           cd cypress/fixtures/
-          node ../../dist/cli/bin.js deploy --dry-run --verbose=silly --api-location=./api --output-location=./static --deployment-token=123
+          node ../../dist/cli/bin.js deploy ./static --dry-run --verbose=silly --api-location=./api --deployment-token=123
 
   test-linux:
     runs-on: ${{ matrix.os }}
@@ -194,7 +194,7 @@ jobs:
         run: |
           npm ci
           cd cypress/fixtures/
-          node ../../dist/cli/bin.js deploy --dry-run --verbose=silly --api-location=./api --output-location=./static --deployment-token=123
+          node ../../dist/cli/bin.js deploy ./static --dry-run --verbose=silly --api-location=./api --deployment-token=123
 
   # TODO: Cypress setup is failing on CI. Investigate.
   # e2e:
