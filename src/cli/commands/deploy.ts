@@ -20,12 +20,10 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     logger.warn("", "swa");
   }
 
-  if (options.outputLocation) {
-    const outputFolder = path.resolve(process.cwd(), options.outputLocation);
-    logger.log(`Deploying front-end files from folder:`, "swa");
-    logger.log(`  ${chalk.green(outputFolder)}`, "swa");
-    logger.log(``, "swa");
-  }
+  const frontendFolder = path.resolve(process.cwd(), deployContext);
+  logger.log(`Deploying front-end files from folder:`, "swa");
+  logger.log(`  ${chalk.green(frontendFolder)}`, "swa");
+  logger.log(``, "swa");
 
   const apiFolder = path.resolve(process.cwd(), DEFAULT_CONFIG.apiPrefix!);
   if (!options.apiLocation) {
