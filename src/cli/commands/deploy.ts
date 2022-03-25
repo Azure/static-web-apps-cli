@@ -14,8 +14,10 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
 
   if (options.dryRun) {
+    logger.warn("***********************************************************************", "swa");
+    logger.warn("* WARNING: Running in dry run mode. This project will not be deployed *", "swa");
+    logger.warn("***********************************************************************", "swa");
     logger.warn("", "swa");
-    logger.warn("WARNING: Running in dry run mode. This project will not be deployed!", "swa");
   }
 
   if (options.outputLocation) {
@@ -179,7 +181,14 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
       });
     }
   } catch (error) {
-    logger.error((error as any).message, true);
+    logger.error("");
+    logger.error("Deployment Failed :(");
+    logger.error(`Deployment Failure Reason: ${(error as any).message}`);
+    logger.error(
+      `For further information, please visit the Azure Static Web Apps documentation at https://docs.microsoft.com/en-us/azure/static-web-apps/`
+    );
+    logger.error("If you believe this behavior is unexpected, please raise a GitHub issue at https://github.com/azure/static-web-apps-cli/issues/");
+    logger.error("Exiting", true);
   } finally {
     cleanUp();
   }
