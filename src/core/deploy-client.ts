@@ -1,6 +1,8 @@
+import chalk from "chalk";
 import crypto from "crypto";
 import fs from "fs";
 import fetch from "node-fetch";
+import ora from "ora";
 import os from "os";
 import path from "path";
 import { PassThrough } from "stream";
@@ -32,9 +34,9 @@ type StaticSiteClientLocalMetadata = {
 };
 
 const DEPLOY_BINARY_NAME = "StaticSitesClient";
-const DEPLOY_FOLDER = path.join(os.homedir(), ".swa", "deploy");
+const DEPLOY_FOLDER = path.join(os.homedir(), ".swa");
 
-export async function getDeployClientPath(): Promise<string | undefined> {
+export async function getDeployClientPath(): Promise<{ binary: string; version: string }> {
   const platform = getPlatform();
   if (!platform) {
     throw new Error(`Unsupported platform: ${os.platform()}`);
@@ -49,23 +51,33 @@ export async function getDeployClientPath(): Promise<string | undefined> {
 
   // if the latest version is the same as the local version, we can skip the download
   if (localClientMetadata) {
-    const localChecksum = localClientMetadata.checksum;
-    const releaseChecksum = remoteClientMetadata.files[platform].sha256.toLowerCase();
-    const remotePublishDate = remoteClientMetadata.publishDate;
-    const localPublishDate = localClientMetadata.metadata.publishDate;
-
-    if (remotePublishDate === localPublishDate) {
-      if (localChecksum === releaseChecksum) {
-        return localClientMetadata.binary;
-      } else {
-        logger.warn(`Checksum mismatch! Expected ${localChecksum}, got ${releaseChecksum}`);
-      }
+    if (!localClientMetadata.metadata || !localClientMetadata.binary || !localClientMetadata.checksum) {
+      logger.warn("Local client metadata is invalid, will download latest version and override local metadata");
     } else {
-      logger.warn(`${DEPLOY_BINARY_NAME} is outdated! Expected ${remotePublishDate}, got ${localPublishDate}`);
+      const localChecksum = localClientMetadata.checksum;
+      const releaseChecksum = remoteClientMetadata.files[platform].sha256.toLowerCase();
+      const remotePublishDate = remoteClientMetadata.publishDate;
+      const localPublishDate = localClientMetadata.metadata.publishDate;
+
+      if (remotePublishDate === localPublishDate) {
+        if (localChecksum === releaseChecksum) {
+          return {
+            binary: localClientMetadata.binary,
+            version: localPublishDate,
+          };
+        } else {
+          logger.warn(`Checksum mismatch! Expected ${localChecksum}, got ${releaseChecksum}`);
+        }
+      } else {
+        logger.warn(`${DEPLOY_BINARY_NAME} is outdated! Expected ${remotePublishDate}, got ${localPublishDate}`);
+      }
     }
   }
 
-  return await downloadAndValidateBinary(remoteClientMetadata, platform);
+  return {
+    binary: await downloadAndValidateBinary(remoteClientMetadata, platform),
+    version: remoteClientMetadata.publishDate,
+  };
 }
 
 function getLocalClientMetadata(): StaticSiteClientLocalMetadata | null {
@@ -128,12 +140,12 @@ async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadat
   }
 
   const url = release.files[platform].url;
-  logger.log(`Downloading latest version client to ${outputFile}`, "deploy");
-  logger.log(`Please wait...`, "deploy");
 
   const response = await fetch(url);
-  const totalSize = Number(response.headers.get("content-length"));
   const bodyStream = response.body.pipe(new PassThrough());
+
+  const spinner = ora({ text: `Downloading latest client...}}`, prefixText: chalk.dim.gray(`[swa]`) }).start();
+  logger.log(``);
 
   return await new Promise<string>((resolve, reject) => {
     const isPosix = platform === "linux-x64" || platform === "osx-x64";
@@ -145,14 +157,13 @@ async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadat
     });
 
     writableStream.on("finish", () => {
-      logger.log(`Downloaded ${totalSize} bytes`, "deploy");
-
       const computedHash = computeChecksumfromFile(outputFile);
       const releaseChecksum = release.files[platform].sha256.toLocaleLowerCase();
       if (computedHash !== releaseChecksum) {
         reject(new Error(`Checksum mismatch! Expected ${computedHash}, got ${releaseChecksum}`));
+        spinner.fail();
       } else {
-        logger.log(`Checksum match: ${computedHash}`, "deploy");
+        logger.log(`Checksum match: ${computedHash}`);
 
         saveMetadata(release, outputFile, computedHash);
 
@@ -161,6 +172,7 @@ async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadat
         }
 
         resolve(outputFile);
+        spinner.succeed("").stop();
       }
     });
   });
@@ -174,7 +186,7 @@ function saveMetadata(release: StaticSiteClientReleaseMetadata, binaryFilename: 
     checksum: sha256,
   };
   fs.writeFileSync(metatdaFilename, JSON.stringify(metdata));
-  logger.log(`Saved metadata to ${metatdaFilename}`, "deploy");
+  logger.log(`Saved metadata to ${metatdaFilename}`);
 }
 
 // TODO: get StaticSiteClient to remove zip files
