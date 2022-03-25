@@ -150,7 +150,13 @@ swa start ./my-dist --api-location http://localhost:7071
 
 ## Deploy to Azure Static Web Apps
 
-The CLI can also be used to deploy an app to Azure Static Web Apps using the command: `swa deploy`. A **Deployment Token** is required in order to make a deployment. You can access your Deployment Token by following the instructions.
+The CLI can also be used to deploy an app to Azure Static Web Apps using the command: `swa deploy`. Here are some common use cases:
+
+1. Deploy a front-end app without an API
+2. Deploy a front-end app with an API
+3. Deploy a Blazor app
+
+A **Deployment Token** is required in order to make a deployment! Read the steps below to learn how to access a deployment token.
 
 ### Deployment token
 
@@ -170,13 +176,13 @@ You can then use that value with the `--deployment-token <token>`, or you can cr
 
 **IMPORTANT:** Don't store the deployment token in a public repository. It should be kept secret!
 
-### Deploying a front-end app to Azure Static Web Apps
+### Deploy a front-end app without an API
 
-You can deploy a front-end application (without an API) from the current folder to Azure Static Web Apps by running the following steps:
+You can deploy a front-end application (without an API) to Azure Static Web Apps by running the following steps:
 
 1. If your front-end application requires a build step, run the build step (e.g. `npm run build`) or refer to your application build instructions.
 
-2. From the application build folder, run the deploy command:
+**Option 1:** From build folder you would like to deploy, run the deploy command:
 
 ```bash
 swa deploy --deployment-token <token>
@@ -184,19 +190,19 @@ swa deploy --deployment-token <token>
 
 > Note: the current folder must contain the static content of your app to be deployed!
 
-You can also deploy the front-end application from a specific folder by providing the `--output-location` option:
+**Option 2:** You can also deploy a specific folder:
 
 1. If your front-end application requires a build step, run the build step (e.g. `npm run build`) or refer to your application build instructions.
 
 2. Deploy your app:
 
 ```bash
-swa deploy --output-location ./my-dist --deployment-token <token>
+swa deploy ./my-dist --deployment-token <token>
 ```
 
-### Deploying a front-end app and an API to Azure Static Web Apps
+### Deploy a front-end app with an API
 
-To deploy both the front-end app and an API to Azure Static Web Apps, use the following command:
+To deploy both the front-end app and an API to Azure Static Web Apps, use the following steps:
 
 1. If your front-end application requires a build step, run the build step (e.g. `npm run build`) or refer to your application build instructions.
 
@@ -213,7 +219,43 @@ To deploy both the front-end app and an API to Azure Static Web Apps, use the fo
 3. Deploy your app:
 
 ```bash
-swa deploy --output-location ./my-dist --api-location ./api --deployment-token <token>
+swa deploy ./my-dist --api-location ./api --deployment-token <token>
+```
+
+### Deploy a Blazor app
+
+To deploy a Blazor app with (optional) an API to Azure Static Web Apps, use the following steps:
+
+1. Build your Blazor app in Release mode:
+
+```bash
+dotnet publish -c Release
+```
+
+2. From the root of your project, run the deploy command:
+
+```bash
+swa deploy ./Client/bin/Release/net6.0/publish/wwwroot --api-location ./Api --deployment-token <token>
+```
+
+3.a (Optional) create a `swa-cli.config.json` file at the root of your project with the following content:
+
+```json
+{
+  "configurations": {
+    "deploy": {
+      "context": "./",
+      "apiLocation": "./Api",
+      "outputLocation": "Client/bin/Release/net6.0/publish/wwwroot"
+    }
+  }
+}
+```
+
+3.b Deploy your app using the configuration file:
+
+```bash
+swa deploy --deployment-token <token>
 ```
 
 ### Deploy using the swa-cli.config.json
@@ -315,7 +357,6 @@ If you need to override the default values for the `swa deploy` subcommand, you 
 
 | Option               | Description                                                    | Default | Example                         |
 | -------------------- | -------------------------------------------------------------- | ------- | ------------------------------- |
-| `--output-location`  | The folder where the front-end public files are located        | `./`    | `--output-location="./dist"`    |
 | `--api-location`     | The folder containing the source code of the API application   | `./api` | `--api-location="./api"`        |
 | `--deployment-token` | The secret toekn used to authenticate with the Static Web Apps |         | `--deployment-token="123"`      |
 | `--dry-run`          | Simulate a deploy process without actually running it          | `false` | `--dry-run` or `--dry-run=true` |
