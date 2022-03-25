@@ -50,14 +50,19 @@ export async function run(argv?: string[]) {
     .usage("<command> [options]")
     .version(pkg.version, "-v, --version")
 
-    // SWA config
+    /////////////////////////////////////////////////////////////////////////////////
+    // SWA CLI common configuration options
+    /////////////////////////////////////////////////////////////////////////////////
+
     .option("--verbose [prefix]", "enable verbose output. Values are: silly,info,log,silent", DEFAULT_CONFIG.verbose)
     .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development\n")
 
-    .option("--config <path>", "Path to swa-cli.config.json file to use.", path.relative(process.cwd(), swaCliConfigFilename))
-    .option("--print-config", "Print all resolved options.", false);
+    .option("--config <path>", "Path to swa-cli.config.json file to use", path.relative(process.cwd(), swaCliConfigFilename))
+    .option("--print-config", "Print all resolved options", false);
 
+  /////////////////////////////////////////////////////////////////////////////////
   // start command
+  /////////////////////////////////////////////////////////////////////////////////
   program
     .command("start [context]")
     .usage("[context] [options]")
@@ -69,8 +74,6 @@ export async function run(argv?: string[]) {
       "set the directory where the staticwebapp.config.json file is located",
       DEFAULT_CONFIG.swaConfigLocation
     )
-
-    // CLI config
     .option<number>("--api-port <apiPort>", "set the API backend port", parsePort, DEFAULT_CONFIG.apiPort)
     .option("--host <host>", "set the cli host address", DEFAULT_CONFIG.host)
     .option<number>("--port <port>", "set the cli port", parsePort, DEFAULT_CONFIG.port)
@@ -81,7 +84,6 @@ export async function run(argv?: string[]) {
     .option("--ssl", "serve the app and API over HTTPS", DEFAULT_CONFIG.ssl)
     .option("--ssl-cert <sslCertLocation>", "SSL certificate (.crt) to use for serving HTTPS", DEFAULT_CONFIG.sslCert)
     .option("--ssl-key <sslKeyLocation>", "SSL key (.key) to use for serving HTTPS", DEFAULT_CONFIG.sslKey)
-
     .option("--run <startupScript>", "run a command at startup", DEFAULT_CONFIG.run)
     .option<number>(
       "--devserver-timeout <devserverTimeout>",
@@ -89,11 +91,9 @@ export async function run(argv?: string[]) {
       parseDevserverTimeout,
       DEFAULT_CONFIG.devserverTimeout
     )
-
     .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
     .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
-
-    .action(async (context: string = `.${path.sep}`, parsedOptions: SWACLIConfig) => {
+    .action(async (context = DEFAULT_CONFIG.outputLocation as string, parsedOptions: SWACLIConfig) => {
       let { options, fileOptions } = await processConfigurationFile(cli, context, parsedOptions);
       await start(fileOptions.context ?? context, options);
     })
@@ -119,14 +119,17 @@ Examples:
     `
     );
 
+  /////////////////////////////////////////////////////////////////////////////////
+  // deploy command
+  /////////////////////////////////////////////////////////////////////////////////
   program
     .command("deploy [context]")
     .usage("[context] [options]")
     .description("deploy the current project to Azure Static Web Apps")
-    .option("--app-output-location <app-dist-folder>", "the location for the static app built folder")
-    .option("--api-output-location <api-dist-folder>", "the location for the API built folder")
+    .option("--output-location <outputLocation>", "the location for the static app built folder")
+    .option("--api-location <apiLocation>", "the location for the API built folder")
     .option("--deployment-token <secret>", "the secret toekn used to authenticate with the Static Web Apps")
-    .action(async (context: string = `.${path.sep}`, parsedOptions: SWACLIConfig) => {
+    .action(async (context = DEFAULT_CONFIG.outputLocation as string, parsedOptions: SWACLIConfig) => {
       let { options, fileOptions } = await processConfigurationFile(cli, context, parsedOptions);
       await deploy(fileOptions.context ?? context, options);
     })
@@ -136,12 +139,12 @@ Examples:
 Examples:
 
   Deploy using a deployment token
-  swa deploy --app-output-location ./app/dist/ --api-output-location ./api/ --deployment-token <token>
+  swa deploy --output-location ./app/dist/ --api-location ./api/ --deployment-token <token>
 
   Deploy without a deployment token (requires swa login)
-  swa deploy --app-output-location ./app/dist/ --api-output-location ./api/
+  swa deploy --output-location ./app/dist/ --api-location ./api/
 
-  Deploy using a configuation file
+  Deploy using swa-cli.config.json file
   swa deploy myproject
   swa deploy --config ./swa-cli.config.json myproject
     `
