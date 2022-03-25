@@ -101,7 +101,8 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     SKIP_APP_BUILD: "true",
     SKIP_API_BUILD: "true",
     DEPLOYMENT_TOKEN: deploymentToken,
-    APP_LOCATION: options.outputLocation,
+    APP_LOCATION: deployContext,
+    OUTPUT_LOCATION: options.outputLocation,
     API_LOCATION: options.apiLocation,
     VERBOSE: isVerboseEnabled ? "true" : "false",
   };

@@ -137,7 +137,6 @@ Examples:
     .command("deploy [context]")
     .usage("[context] [options]")
     .description("Deploy the current project to Azure Static Web Apps")
-    .option("--output-location <outputLocation>", "The folder where the front-end public files are located", DEFAULT_CONFIG.outputLocation)
     .option("--api-location <apiLocation>", "The folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("--deployment-token <secret>", "The secret toekn used to authenticate with the Static Web Apps")
     .option("--dry-run", "Simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
@@ -151,15 +150,14 @@ Examples:
 Examples:
 
   Deploy using a deployment token
-  swa deploy --output-location ./app/dist/ --api-location ./api/ --deployment-token <token>
+  swa deploy ./dist/ --api-location ./api/ --deployment-token <token>
 
   Deploy using a deployment token from env
-  SWA_CLI_DEPLOYMENT_TOKEN=123 swa deploy --output-location ./app/dist/ --api-location ./api/
+  SWA_CLI_DEPLOYMENT_TOKEN=123 swa deploy ./dist/ --api-location ./api/
 
   Deploy using swa-cli.config.json file
-  swa deploy --dry-run
-  swa deploy myconfig
   swa deploy
+  swa deploy myconfig
     `
     );
 
