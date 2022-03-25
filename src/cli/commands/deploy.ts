@@ -1,7 +1,9 @@
 import { spawn } from "child_process";
 import path from "path";
+import ora from "ora";
 import { logger } from "../../core";
 import { cleanUp, getDeployClientPath } from "../../core/deploy-client";
+import chalk from "chalk";
 
 const pkg = require(path.join(__dirname, "..", "..", "..", "package.json"));
 
@@ -17,21 +19,25 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
   let deploymentToken = "";
   if (options.deploymentToken) {
     deploymentToken = options.deploymentToken;
-    logger.log("Deployment token provide via flag", "deploy");
+    logger.log("Deployment token provide via flag");
   } else if (process.env.SWA_CLI_DEPLOYMENT_TOKEN) {
     deploymentToken = process.env.SWA_CLI_DEPLOYMENT_TOKEN;
-    logger.log("Deployment token found in env: SWA_CLI_DEPLOYMENT_TOKEN=<hidden>", "deploy");
+    logger.log("Deployment token found in Environment Variables:");
+    logger.log({ SWA_CLI_DEPLOYMENT_TOKEN: "<hidden>" });
   }
+  logger.log(``);
+
   // TODO: add support for Azure CLI
   // TODO: add support for Service Principal
   // TODO: check that platform.apiRuntime in staticwebapp.config.json is provided.
   // This is required by the StaticSiteClient!
 
+  const spinner = ora({ text: `Preparing deployment...`, prefixText: chalk.dim.gray(`[swa]`) }).start();
   try {
-    const clientPath = await getDeployClientPath();
-    logger.log(`Deploying using ${clientPath}`, "deploy");
+    const { binary, version } = await getDeployClientPath();
+    spinner.text = `Deploying using ${binary}@${version}`;
 
-    if (clientPath) {
+    if (binary) {
       const env = {
         ...process.env,
         DEPLOYMENT_ACTION: "upload",
@@ -45,9 +51,8 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
         VERBOSE: options.verbose === "silly" ? "true" : "false",
       };
 
-      const child = spawn(clientPath, [], {
-        env,
-      });
+      let projectUrl = "";
+      const child = spawn(binary, [], { env });
 
       child.stdout!.on("data", (data) => {
         data
@@ -55,12 +60,21 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
           .trim()
           .split("\n")
           .forEach((line: string) => {
-            logger.log(line.trim(), "deploy");
-          });
-      });
+            if (line.includes("Visit your site at:")) {
+              projectUrl = line.match("http.*")?.pop()?.trim() as string;
+            }
 
-      child.stderr!.on("data", (data) => {
-        logger.warn(data.toString(), "deploy");
+            // catch errors printed to stdout
+            else if (line.includes("[31m")) {
+              spinner.fail(line);
+            }
+
+            if (options.verbose === "silly") {
+              spinner.succeed(line.trim());
+            } else {
+              spinner.text = line.trim();
+            }
+          });
       });
 
       child.on("error", (error) => {
@@ -69,14 +83,14 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
 
       child.on("close", (code) => {
         cleanUp();
+
         if (code === 0) {
-          logger.log("Deployment completed successfully", "deploy");
-        } else {
-          logger.error(`Deployment failed with exit code ${code}`, true);
+          spinner.succeed(chalk.green(`Deployed to ${projectUrl}`));
         }
       });
     }
   } catch (error) {
+    spinner.stop();
     logger.error((error as any).message, true);
   }
 }

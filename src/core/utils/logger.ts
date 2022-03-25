@@ -39,7 +39,7 @@ export const logger = {
    * @param data Either a string or an object to be printed.
    * @param prefix (optional) A prefix to prepend to the printed message.
    */
-  log(data: string | object, prefix: string | null = null) {
+  log(data: string | object, prefix: string | null = "swa") {
     this.silly(data, prefix, "log", chalk.reset);
   },
   /**

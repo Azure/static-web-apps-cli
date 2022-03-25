@@ -45,6 +45,9 @@ export async function run(argv?: string[]) {
   // Once a day, check for updates
   updateNotifier({ pkg }).notify();
 
+  // don't use logger here: SWA_CLI_DEBUG is not set yet
+  console.log(`Azure Static Web App CLI v${pkg.version}`);
+
   const cli: SWACLIConfig & program.Command = program
     .name("swa")
     .usage("<command> [options]")
