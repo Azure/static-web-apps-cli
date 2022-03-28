@@ -21,7 +21,7 @@ export async function run(argv?: string[]) {
     .version(pkg.version, "-v, --version")
 
     // SWA config
-    .option("--verbose [prefix]", "enable verbose output. Values are: silly,info,log,silent", DEFAULT_CONFIG.verbose)
+    .addOption(new Option("--verbose [prefix]", "enable verbose output. Values are: silly,info,log,silent").preset(DEFAULT_CONFIG.verbose))
     .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development\n")
 
     .option("--config <path>", "Path to swa-cli.config.json file to use.", path.relative(process.cwd(), swaCliConfigFilename))
