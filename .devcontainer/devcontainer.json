@@ -7,7 +7,7 @@
     "args": {
       // Please look at runtime version support to make sure you're using compatible versions
       // https://docs.microsoft.com/en-us/azure/azure-functions/supported-languages#languages-by-runtime-version
-      "NODE_VERSION": "14",
+      "NODE_VERSION": "16",
       "CORE_TOOLS_VERSION": "4"
     }
   },
