@@ -62,8 +62,8 @@ export async function run(argv?: string[]) {
     .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
     .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
 
-    .action(async (context: string = `.${path.sep}`, options: SWACLIConfig, command: Command) => {
-      const config = await configureOptions(context, options, command);
+    .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+      const config = await configureOptions(context, command.optsWithGlobals(), command);
       await start(config.context, config.options);
     })
 
