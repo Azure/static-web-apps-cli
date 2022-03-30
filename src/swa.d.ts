@@ -80,6 +80,7 @@ declare type SWACLIOptions = {
   open?: boolean;
   config?: string;
   printConfig?: boolean;
+  yes?: boolean;
 };
 
 declare type SWACLIConfig = SWACLIOptions & GithubActionWorkflow;
@@ -143,6 +144,7 @@ declare type SWAConfigFile = {
 declare type DebugFilterLevel = "silly" | "silent" | "log" | "info" | "error";
 
 declare type SWACLIConfigFile = {
+  $schema?: string;
   configurations?: {
     [name: string]: SWACLIOptions & { context?: string };
   };

@@ -3,10 +3,11 @@ import path from "path";
 import { DEFAULT_CONFIG } from "../config";
 import { parsePort } from "../core";
 import { parseDevserverTimeout } from "../core";
-import { start } from "./commands/start";
 import updateNotifier from "update-notifier";
 import { swaCliConfigFilename } from "../core/utils/cli-config";
 import { configureOptions } from "../core/utils/options";
+import { start } from "./commands/start";
+import { init } from "./commands/init";
 const pkg = require("../../package.json");
 
 export const defaultStartContext = `.${path.sep}`;
@@ -64,7 +65,7 @@ export async function run(argv?: string[]) {
 
     .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
       const config = await configureOptions(context, command.optsWithGlobals(), command);
-      await start(config.context, config.options);
+      await start(config.context ?? context, config.options);
     })
 
     .addHelpText(
@@ -88,6 +89,16 @@ Examples:
   swa start http://localhost:3000 --run "npm start"
     `
     );
+
+  program.command("init [name]")
+    .usage("[name] [options]")
+    .description("initialize a new static web app project")
+    .option("--yes", "answer yes to all prompts (disable interactive mode)", false)
+
+    .action(async (name: string, options: SWACLIConfig, command: Command) => {
+      const config = await configureOptions(undefined, command.optsWithGlobals(), command);
+      await init(name, config.options);
+    })
 
   await program.parseAsync(argv);
 }

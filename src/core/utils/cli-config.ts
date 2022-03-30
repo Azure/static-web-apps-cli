@@ -1,15 +1,16 @@
 import * as path from "path";
 import * as process from "process";
-import fs, { promises as fsPromises } from "fs";
+import { existsSync } from "fs";
+import { readFile, writeFile } from "fs/promises";
 import { logger } from "./logger";
 import { defaultStartContext } from "../../cli";
-const { readFile } = fsPromises;
 
+export const swaCliConfigSchemaUrl = "https://aka.ms/azure/static-web-apps-cli/schema";
 export const swaCliConfigFilename = "swa-cli.config.json";
 
-export const configExists = (configFilePath: string) => fs.existsSync(configFilePath);
+export const configExists = (configFilePath: string) => existsSync(configFilePath);
 
-export async function getConfigFileOptions(context: string, configFilePath: string): Promise<SWACLIConfig & { context?: string }> {
+export async function getConfigFileOptions(context: string | undefined, configFilePath: string): Promise<SWACLIConfig & { context?: string }> {
   configFilePath = path.resolve(configFilePath);
   if (!configExists(configFilePath)) {
     return {};
@@ -30,6 +31,10 @@ export async function getConfigFileOptions(context: string, configFilePath: stri
     const [configName, config] = Object.entries(cliConfig.configurations)[0];
     printConfigMsg(configName, configFilePath);
     return { ...config };
+  }
+
+  if (context === undefined) {
+    return {};
   }
 
   const config = cliConfig.configurations?.[context];
@@ -57,4 +62,46 @@ function printConfigMsg(name: string, file: string) {
   logger.log(`Using configuration "${name}" from file:`, "swa");
   logger.log(`\t${file}`, "swa");
   logger.log("", "swa");
+}
+
+export async function hasConfigurationNameInConfigFile(configFilePath: string, name: string): Promise<boolean> {
+  const configJson = await tryParseSwaCliConfig(configFilePath);
+  return configJson.configurations?.[name] !== undefined;
+}
+
+export async function writeConfigFile(configFilePath: string, projectName: string, config: SWACLIConfig) {
+  let configFile: SWACLIConfigFile = {
+    // TODO: find node_modules/ path and use local schema if found
+    $schema: swaCliConfigSchemaUrl,
+    configurations: {}
+  }
+
+  if (configExists(configFilePath)) {
+    try {
+      const configJson = await readFile(configFilePath, "utf-8");
+      configFile = JSON.parse(configJson) as SWACLIConfigFile;
+    } catch (error) {
+      logger.error(`Error parsing ${configFilePath}`);
+      if (error instanceof Error) {
+        logger.error(error);
+      }
+      logger.error("Cannot update existing configuration file.");
+      logger.error("Please fix or remove your swa-cli.config.json file and try again.");
+      return;
+    }
+  }
+
+  if (configFile.configurations === undefined) {
+    configFile.configurations = {};
+  }
+
+  configFile.configurations[projectName] = config;
+  try {
+    await writeFile(configFilePath, JSON.stringify(configFile, null, 2));
+  } catch (error) {
+    logger.error(`Error writing configuration to ${configFilePath}`);
+    if (error instanceof Error) {
+      logger.error(error);
+    }
+  }
 }
