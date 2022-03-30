@@ -150,6 +150,13 @@ declare type SWACLIConfigFile = {
   };
 };
 
+declare type FrameworkConfig = GithubActionWorkflow & {
+  name?: string;
+  apiBuildCommand?: string,
+  devServerCommand?: string,
+  devServerUrl?: string,
+}
+
 declare interface CoreToolsRelease {
   version: string;
   url: string;
