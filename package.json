@@ -35,6 +35,7 @@
     "commander": "^7.2.0",
     "concurrently": "^7.0.0",
     "cookie": "^0.4.1",
+    "dotenv": "^16.0.0",
     "finalhandler": "^1.1.2",
     "globalyzer": "^0.1.4",
     "globrex": "^0.1.2",
