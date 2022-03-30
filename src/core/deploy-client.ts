@@ -163,7 +163,7 @@ async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadat
 
   spinner.start(`Downloading ${url}@${version}`);
 
-  const response = await fetch("https://swalocaldeploy.azureedge.net/downloads/latest/darwin/StaticSitesClient");
+  const response = await fetch(url);
 
   if (response.status !== 200) {
     spinner.fail();
@@ -186,19 +186,20 @@ async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadat
     });
 
     writableStream.on("finish", () => {
-      const computedHash = computeChecksumfromFile(outputFile);
+      const computedHash = computeChecksumfromFile(outputFile).toLowerCase();
       const releaseChecksum = release.files[platform].sha256.toLocaleLowerCase();
       if (computedHash !== releaseChecksum) {
+        try {
+          // in case of a failure, we remove the file
+          fs.unlinkSync(outputFile);
+        } catch {}
+
         spinner.fail();
-        reject(new Error(`Checksum mismatch! Expected ${computedHash}, got ${releaseChecksum}. Please retry again.`));
+        reject(new Error(`Checksum mismatch! Expected ${computedHash}, got ${releaseChecksum}.`));
       } else {
         spinner.succeed();
 
         logger.silly(`Checksum match: ${computedHash}`, "swa");
-
-        if (fs.existsSync(`${outputFile}.exe`)) {
-          outputFile = `${outputFile}.exe`;
-        }
         logger.silly(`Saved binary to ${outputFile}`, "swa");
 
         saveMetadata(release, outputFile, computedHash);
