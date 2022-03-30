@@ -6,6 +6,7 @@ import { parseDevserverTimeout } from "../core";
 import { start } from "./commands/start";
 import updateNotifier from "update-notifier";
 import { getFileOptions, swaCliConfigFilename } from "../core/utils/cli-config";
+import { login } from "./commands/login";
 const pkg = require("../../package.json");
 
 export const defaultStartContext = `.${path.sep}`;
@@ -25,6 +26,43 @@ export async function run(argv?: string[]) {
 
     .option("--config <path>", "Path to swa-cli.config.json file to use.", path.relative(process.cwd(), swaCliConfigFilename))
     .option("--print-config", "Print all resolved options.", false);
+
+  program
+    .command("login")
+    .usage("<command> [options]")
+    .description("login into Azure Static Web Apps")
+    .option("--persist", "Enable credentials cache persistence", DEFAULT_CONFIG.persist)
+    .option("--subscription [subscriptionId]", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
+    .option("--resource-group [resourceGroup]", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroup)
+    .option("--tenant [tenantId]", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
+    .option("--app-name [appName]", "Azure Static Web App application name", DEFAULT_CONFIG.appName)
+
+    .action(async (context: string = `.${path.sep}`, options: SWACLIConfig) => {
+      const verbose = cli.opts().verbose;
+
+      // make sure the start command gets the right verbosity level
+      process.env.SWA_CLI_DEBUG = verbose;
+      if (verbose?.includes("silly")) {
+        // when silly level is set,
+        // propagate debugging level to other tools using the DEBUG environment variable
+        process.env.DEBUG = "*";
+      }
+      const fileOptions = await getFileOptions(context, cli.opts().config);
+
+      options = {
+        ...options,
+        ...fileOptions,
+        verbose,
+      };
+
+      if (cli.opts().printConfig) {
+        logger.log("", "swa");
+        logger.log("Options: ", "swa");
+        logger.log({ ...DEFAULT_CONFIG, ...options }, "swa");
+      }
+
+      await login(options);
+    });
 
   program
     .command("start [context]")

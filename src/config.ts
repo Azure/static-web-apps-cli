@@ -20,4 +20,11 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   overridableErrorCode: [400, 401, 403, 404],
   devserverTimeout: 30000,
   open: false,
+
+  // swa login options
+  persist: true,
+  subscriptionId: undefined,
+  resourceGroup: undefined,
+  tenantId: undefined,
+  appName: undefined,
 };
