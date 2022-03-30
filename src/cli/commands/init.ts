@@ -6,29 +6,23 @@ import chalk from "chalk";
 import { logger, dasherize, hasConfigurationNameInConfigFile, writeConfigFile, swaCliConfigFilename, configExists } from "../../core/utils";
 import { DEFAULT_CONFIG } from "../../config";
 
-interface FrameworkConfig {
-  name?: string;
-  appLocation: string,
-  outputLocation: string,
-  apiLocation?: string,
-  appBuildCommand?: string,
-  apiBuildCommand?: string,
-  devServerCommand?: string,
-  devServerUrl?: string,
-}
-
 export async function init(name: string | undefined, options: SWACLIConfig, showHints: boolean = true) {
   const configFilePath = options.config!;
   const disablePrompts = options.yes ?? false;
   const outputFolder = process.cwd();
-  const { projectName } = await promptOrUseDefault(disablePrompts, {
-    type: 'text',
-    name: 'projectName',
-    message: 'Choose a project name:',
-    initial: dasherize(path.basename(outputFolder)),
-    validate: (value: string) => value.trim() !== '' || 'Project name cannot be empty',
-    format: (value: string) => dasherize(value.trim()),
-  });
+  let projectName: string = name?.trim() ?? '';
+
+  if (projectName === '') {
+    const response = await promptOrUseDefault(disablePrompts, {
+      type: 'text',
+      name: 'projectName',
+      message: 'Choose a project name:',
+      initial: dasherize(path.basename(outputFolder)),
+      validate: (value: string) => value.trim() !== '' || 'Project name cannot be empty',
+      format: (value: string) => dasherize(value.trim()),
+    });
+    projectName = response.projectName;
+  }
 
   // TODO: start from template
   // if (isEmptyFolder(outputFolder)) {
