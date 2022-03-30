@@ -1,0 +1,19 @@
+--- 
+blank_issues_enabled: false
+contact_links: 
+  - 
+    about: "Please ask and answer usage questions on Stack Overflow."
+    name: Question
+    url: "https://stackoverflow.com/questions/tagged/swa-cli"
+  - 
+    about: "Open an issue about Azure Static Web Apps for Visual Studio Code."
+    name: "Azure Static Web Apps for Visual Studio Code"
+    url: "https://github.com/microsoft/vscode-azurestaticwebapps/issues/new"
+  - 
+    about: "Open issues about the Azure Static Web Apps service."
+    name: Azure Static Web Apps service
+    url: "https://github.com/Azure/static-web-apps/issues/new/choose"  
+  - 
+    about: "Follow our updates on Twitter."
+    name: "Updates & annoucements"
+    url: "https://twitter.com/AzureStaticApps"
