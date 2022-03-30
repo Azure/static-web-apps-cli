@@ -1,39 +1,39 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.224.3/containers/azure-static-web-apps
 {
-	"name": "Azure Static Web Apps",
-	"build": {
-		"dockerfile": "Dockerfile",
-		"args": {
-			// Please look at runtime version support to make sure you're using compatible versions
-			// https://docs.microsoft.com/en-us/azure/azure-functions/supported-languages#languages-by-runtime-version
-			"NODE_VERSION": "14",
-			"CORE_TOOLS_VERSION": "4"
-		}
-	},
-	"forwardPorts": [ 7071, 4280 ],
+  "name": "Azure Static Web Apps",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      // Please look at runtime version support to make sure you're using compatible versions
+      // https://docs.microsoft.com/en-us/azure/azure-functions/supported-languages#languages-by-runtime-version
+      "NODE_VERSION": "14",
+      "CORE_TOOLS_VERSION": "4"
+    }
+  },
+  "forwardPorts": [7071, 4280],
 
-	// Set *default* container specific settings.json values on container create.
+  // Set *default* container specific settings.json values on container create.
   "settings": {
     "terminal.integrated.shell.linux": "/bin/bash"
   },
 
-	// Add the IDs of extensions you want installed when the container is created.
-	"extensions": [
+  // Add the IDs of extensions you want installed when the container is created.
+  "extensions": [
     "dbaeumer.vscode-eslint",
     "editorconfig.editorconfig",
     "esbenp.prettier-vscode",
     "eg2.vscode-npm-script",
     "visualstudioexptteam.vscodeintellicode",
-		"ms-azuretools.vscode-azurefunctions",
-		"ms-azuretools.vscode-azurestaticwebapps",
-		"ms-dotnettools.csharp",
-		"ms-python.python"
-	],
+    "ms-azuretools.vscode-azurefunctions",
+    "ms-azuretools.vscode-azurestaticwebapps",
+    "ms-dotnettools.csharp",
+    "ms-python.python"
+  ],
 
-	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "npm install && npm link",
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": "npm install && npm link && npx cypress install",
 
-	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode"
+  // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+  "remoteUser": "vscode"
 }
