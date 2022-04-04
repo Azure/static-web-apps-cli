@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import { logger } from "../../core";
 import { azureLogin, getStaticSiteDeployment, listResourceGroups, listStaticSites, listSubscriptions, listTenants } from "../../core/account";
 import { chooseResourceGroup, chooseStaticSite, chooseSubscription, chooseTenant } from "../../core/prompts";
@@ -76,8 +77,10 @@ export async function login(options: SWACLIConfig) {
       throw new Error("No deployment token found. Aborting.");
     }
 
-    logger.log(`Found deployment token:`, "swa");
-    logger.log(` - Token:${deploymentTokenResponse?.properties?.apiKey}`, "swa");
+    // logger.log(`Found deployment token:`, "swa");
+    // logger.log(` - Token:${deploymentTokenResponse?.properties?.apiKey}`, "swa");
+
+    logger.log(chalk.green(`✔ You have been successfully logged in to Azure.`));
   } catch (error) {
     logger.error((error as any).message, true);
   }
