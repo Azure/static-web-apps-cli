@@ -81,6 +81,8 @@ declare type SWACLIStartOptions = {
   devserverTimeout?: number;
   funcArgs?: string;
   open?: boolean;
+  config?: string;
+  printConfig?: boolean;
 };
 
 declare type SWACLIDeployOptions = {

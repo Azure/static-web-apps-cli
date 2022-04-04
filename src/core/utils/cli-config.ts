@@ -7,9 +7,11 @@ const { readFile } = fsPromises;
 
 export const swaCliConfigFilename = "swa-cli.config.json";
 
-export async function getFileOptions(context: string, configFilePath: string): Promise<SWACLIConfig & { context?: string }> {
+export const configExists = (configFilePath: string) => fs.existsSync(configFilePath);
+
+export async function getConfigFileOptions(context: string, configFilePath: string): Promise<SWACLIConfig & { context?: string }> {
   configFilePath = path.resolve(configFilePath);
-  if (!fs.existsSync(configFilePath)) {
+  if (!configExists(configFilePath)) {
     return {};
   }
 
@@ -27,13 +29,13 @@ export async function getFileOptions(context: string, configFilePath: string): P
   if (hasOnlyOneConfig && context === defaultStartContext) {
     const [configName, config] = Object.entries(cliConfig.configurations)[0];
     printConfigMsg(configName, configFilePath);
-    return { context: `.${path.sep}`, ...config };
+    return { ...config };
   }
 
   const config = cliConfig.configurations?.[context];
   if (config) {
     printConfigMsg(context, configFilePath);
-    return { context: `.${path.sep}`, ...config };
+    return { ...config };
   }
 
   return {};

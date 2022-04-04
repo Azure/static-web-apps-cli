@@ -1,51 +1,20 @@
-import program, { Option } from "commander";
+import chalk from "chalk";
+import { Command, Option, program } from "commander";
 import path from "path";
-import { DEFAULT_CONFIG } from "../config";
-import { logger, parsePort } from "../core";
-import { parseDevserverTimeout } from "../core";
-import { start } from "./commands/start";
 import updateNotifier from "update-notifier";
 import { getFileOptions, swaCliConfigFilename } from "../core/utils/cli-config";
 import { login } from "./commands/login";
+import { DEFAULT_CONFIG } from "../config";
+import { parseDevserverTimeout, parsePort } from "../core";
+import { configureOptions } from "../core/utils/options";
 import { deploy } from "./commands/deploy";
-import chalk from "chalk";
+import { start } from "./commands/start";
 const pkg = require("../../package.json");
 
 const printWelcomeMessage = () => {
   console.log(chalk.dim.gray(`[swa]`));
   console.log(chalk.dim.gray(`[swa]`), `Azure Static Web App CLI v${pkg.version}`);
   console.log(chalk.dim.gray(`[swa]`));
-};
-
-const processConfigurationFile = async (cli: SWACLIConfig & GithubActionWorkflow & program.Command, context: string, options: SWACLIConfig) => {
-  const verbose = cli.opts().verbose;
-
-  // make sure the start command gets the right verbosity level
-  process.env.SWA_CLI_DEBUG = verbose;
-  if (verbose?.includes("silly")) {
-    // when silly level is set,
-    // propagate debugging level to other tools using the DEBUG environment variable
-    process.env.DEBUG = "*";
-  }
-  const fileOptions = await getFileOptions(context, cli.opts().config);
-
-  options = {
-    ...cli.opts(),
-    ...options,
-    ...fileOptions,
-    verbose,
-  };
-
-  if (cli.opts().printConfig) {
-    logger.log("", "swa");
-    logger.log("Options: ", "swa");
-    logger.log({ ...DEFAULT_CONFIG, ...options }, "swa");
-  }
-
-  return {
-    options,
-    fileOptions,
-  };
 };
 
 export const defaultStartContext = `.${path.sep}`;
@@ -57,7 +26,7 @@ export async function run(argv?: string[]) {
   // don't use logger here: SWA_CLI_DEBUG is not set yet
   printWelcomeMessage();
 
-  const cli: SWACLIConfig & program.Command = program
+  program
     .name("swa")
     .usage("<command> [options]")
     .version(pkg.version, "-v, --version")
@@ -65,6 +34,13 @@ export async function run(argv?: string[]) {
     /////////////////////////////////////////////////////////////////////////////////
     // SWA CLI common configuration options
     /////////////////////////////////////////////////////////////////////////////////
+    // SWA config
+    .addOption(
+      new Option("--verbose [prefix]", "enable verbose output. Values are: silly,info,log,silent")
+        .preset(DEFAULT_CONFIG.verbose)
+        .default(DEFAULT_CONFIG.verbose)
+    )
+    .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development\n")
 
     .option("--verbose [prefix]", "Enable verbose output. Values are: silly,info,log,silent", DEFAULT_CONFIG.verbose)
     .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development\n")
@@ -140,11 +116,13 @@ export async function run(argv?: string[]) {
       parseDevserverTimeout,
       DEFAULT_CONFIG.devserverTimeout
     )
+
     .option("--open", "Automatically open the CLI dev server in the default browser", DEFAULT_CONFIG.open)
     .option("--func-args <funcArgs>", "Pass additional arguments to the func start command")
-    .action(async (context = DEFAULT_CONFIG.outputLocation as string, parsedOptions: SWACLIConfig) => {
-      let { options, fileOptions } = await processConfigurationFile(cli, context, parsedOptions);
-      await start(fileOptions.context ?? context, options);
+
+    .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+      const config = await configureOptions(context, command.optsWithGlobals(), command);
+      await start(config.context, config.options);
     })
     .addHelpText(
       "after",
@@ -178,9 +156,9 @@ Examples:
     .option("--api-location <apiLocation>", "The folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("--deployment-token <secret>", "The secret toekn used to authenticate with the Static Web Apps")
     .option("--dry-run", "Simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
-    .action(async (context = DEFAULT_CONFIG.outputLocation as string, parsedOptions: SWACLIConfig) => {
-      let { options, fileOptions } = await processConfigurationFile(cli, context, parsedOptions);
-      await deploy(fileOptions.context ?? context, options);
+    .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+      const config = await configureOptions(context, command.optsWithGlobals(), command);
+      await deploy(config.context, config.options);
     })
     .addHelpText(
       "after",
