@@ -268,23 +268,23 @@ export async function requestMiddleware(
 
   logger.silly(`checking for query params`);
 
-  const { matchingRewriteRoutePath, sanitizedUrl, matchingRewriteRoute } = parseQueryParams(req, matchingRouteRule);
+  const { urlPathnameWithoutQueryParams, url, urlPathnameWithQueryParams } = parseQueryParams(req, matchingRouteRule);
 
   logger.silly(`checking rewrite auth login request`);
-  if (matchingRewriteRoute && isLoginRequest(matchingRewriteRoutePath)) {
+  if (urlPathnameWithQueryParams && isLoginRequest(urlPathnameWithoutQueryParams)) {
     logger.silly(` - auth login dectected`);
 
     authStatus = AUTH_STATUS.HostNameAuthLogin;
-    req.url = sanitizedUrl.toString();
+    req.url = url.toString();
     return await handleAuthRequest(req, res, matchingRouteRule, userConfig);
   }
 
   logger.silly(`checking rewrite auth logout request`);
-  if (matchingRewriteRoute && isLogoutRequest(matchingRewriteRoutePath)) {
+  if (urlPathnameWithQueryParams && isLogoutRequest(urlPathnameWithoutQueryParams)) {
     logger.silly(` - auth logout dectected`);
 
     authStatus = AUTH_STATUS.HostNameAuthLogout;
-    req.url = sanitizedUrl.toString();
+    req.url = url.toString();
     return await handleAuthRequest(req, res, matchingRouteRule, userConfig);
   }
 
@@ -293,7 +293,7 @@ export async function requestMiddleware(
     return serveStaticOrProxyResponse(req, res, proxyApp, target);
   }
 
-  if (authStatus != AUTH_STATUS.NoAuth && (authStatus != AUTH_STATUS.HostNameAuthLogin || !matchingRewriteRoute)) {
+  if (authStatus != AUTH_STATUS.NoAuth && (authStatus != AUTH_STATUS.HostNameAuthLogin || !urlPathnameWithQueryParams)) {
     if (authStatus == AUTH_STATUS.HostNameAuthLogin && matchingRouteRule) {
       return getAuthBlockResponse(req, res, userConfig, matchingRouteRule);
     }

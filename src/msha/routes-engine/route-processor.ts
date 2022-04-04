@@ -1,5 +1,5 @@
-import type http from "http";
 import chalk from "chalk";
+import type http from "http";
 import { DEFAULT_CONFIG } from "../../config";
 import { logger } from "../../core";
 import { AUTH_STATUS, SWA_CLI_APP_PROTOCOL } from "../../core/constants";
@@ -127,16 +127,23 @@ export function isCustomUrl(req: http.IncomingMessage) {
 }
 
 export function parseQueryParams(req: http.IncomingMessage, matchingRouteRule: SWAConfigFileRoute | undefined) {
-  const matchingRewriteRoute = matchingRouteRule?.rewrite || req.url;
-  const sanitizedUrl = new URL(matchingRewriteRoute!, `${SWA_CLI_APP_PROTOCOL}://${req?.headers?.host}`);
-  const matchingRewriteRouteQueryString = sanitizedUrl.searchParams.toString();
-  const matchingRewriteRoutePath = sanitizedUrl.pathname;
+  const urlPathnameWithQueryParams = matchingRouteRule?.rewrite || req.url;
+  const url = new URL(urlPathnameWithQueryParams!, `${SWA_CLI_APP_PROTOCOL}://${req?.headers?.host}`);
+  const urlQueryString = url.searchParams.toString();
+  const urlPathnameWithoutQueryParams = url.pathname;
 
-  if (matchingRewriteRouteQueryString !== "") {
-    logger.silly(` - query: ${chalk.yellow(matchingRewriteRouteQueryString)}`);
-    logger.silly(` - sanitizedUrl: ${chalk.yellow(sanitizedUrl)}`);
-    logger.silly(` - matchingRewriteRoute: ${chalk.yellow(matchingRewriteRoute)}`);
-    logger.silly(` - matchingRewriteRoutePath: ${chalk.yellow(matchingRewriteRoutePath)}`);
+  if (urlQueryString !== "") {
+    logger.silly(` - url: ${chalk.yellow(url)}`);
+    logger.silly(` - urlQueryString: ${chalk.yellow(urlQueryString)}`);
+    url.searchParams.forEach((value, key) => {
+      logger.silly(`   - ${key}: ${chalk.yellow(value || "<undefined>")}`);
+    });
+    logger.silly(` - urlPathnameWithQueryParams: ${chalk.yellow(urlPathnameWithQueryParams)}`);
+    logger.silly(` - urlPathnameWithoutQueryParams: ${chalk.yellow(urlPathnameWithoutQueryParams)}`);
   }
-  return { matchingRewriteRoutePath, sanitizedUrl, matchingRewriteRoute };
+  return {
+    url,
+    urlPathnameWithoutQueryParams,
+    urlPathnameWithQueryParams,
+  };
 }

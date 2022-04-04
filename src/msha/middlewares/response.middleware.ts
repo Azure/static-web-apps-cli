@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import type http from "http";
 import { isHttpUrl, isSWAConfigFileUrl, logger } from "../../core";
+import { IS_APP_DEV_SERVER } from "../../core/constants";
 import { handleErrorPage } from "../handlers/error-page.handler";
 import { handleFunctionRequest, isFunctionRequest } from "../handlers/function.handler";
 import {
@@ -100,18 +101,26 @@ export function getStorageContent(
     };
   }
 
-  const { matchingRewriteRoutePath } = parseQueryParams(req, matchedRoute);
+  let requestPath = req.url as string;
+  let filePathFromRequest: string | null = null;
+  let decodedRequestPath = req.url;
+  const { urlPathnameWithoutQueryParams } = parseQueryParams(req, matchedRoute);
 
-  let requestPath = matchingRewriteRoutePath;
-  let decodedRequestPath = matchingRewriteRoutePath;
+  // we only process if the user is NOT connecting to a remote dev server.
+  // if the user is connecting to a remote dev server, we skip the following logic.
+  if (IS_APP_DEV_SERVER()) {
+    logger.silly(`remote dev server detected.`);
+  } else {
+    requestPath = urlPathnameWithoutQueryParams;
+    decodedRequestPath = urlPathnameWithoutQueryParams;
 
-  if (pathToServe) {
-    requestPath = pathToServe;
-    decodedRequestPath = decodeURI(pathToServe);
+    if (pathToServe) {
+      requestPath = pathToServe;
+      decodedRequestPath = decodeURI(pathToServe);
+    }
+
+    filePathFromRequest = tryFindFileForRequest(requestPath!);
   }
-
-  let filePathFromRequest = tryFindFileForRequest(requestPath!);
-  logger.silly(` - filePathFromRequest: ${chalk.yellow(filePathFromRequest)}`);
 
   if (!filePathFromRequest) {
     let shouldDisplayNotFoundPage = true;
