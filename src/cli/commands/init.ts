@@ -1,5 +1,5 @@
 import path from "path";
-import fs from "fs";
+// import fs from "fs";
 import process from "process";
 import prompts from 'prompts';
 import chalk from "chalk";
@@ -140,17 +140,17 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
   return response;
 }
 
-function printFrameworkConfig(config: FrameworkConfig) {
-  logger.log(chalk.bold('\nDetected configuration for your app:'));
-  logger.log(`- Framework: ${chalk.green(config.name ?? 'none')}`);
-  logger.log(`- App location: ${chalk.green(config.appLocation)}`);
-  logger.log(`- Output location: ${chalk.green(config.outputLocation)}`);
-  logger.log(`- API location: ${chalk.green(config.apiLocation ?? '')}`);
-  logger.log(`- App build command: ${chalk.green(config.appBuildCommand ?? '')}`);
-  logger.log(`- API build command: ${chalk.green(config.apiBuildCommand ?? '')}`);
-  logger.log(`- Dev command: ${chalk.green(config.devServerCommand ?? '')}`);
-  logger.log(`- Dev server URL: ${chalk.green(config.devServerUrl ?? '')}\n`);
-}
+// function printFrameworkConfig(config: FrameworkConfig) {
+//   logger.log(chalk.bold('\nDetected configuration for your app:'));
+//   logger.log(`- Framework: ${chalk.green(config.name ?? 'none')}`);
+//   logger.log(`- App location: ${chalk.green(config.appLocation)}`);
+//   logger.log(`- Output location: ${chalk.green(config.outputLocation)}`);
+//   logger.log(`- API location: ${chalk.green(config.apiLocation ?? '')}`);
+//   logger.log(`- App build command: ${chalk.green(config.appBuildCommand ?? '')}`);
+//   logger.log(`- API build command: ${chalk.green(config.apiBuildCommand ?? '')}`);
+//   logger.log(`- Dev command: ${chalk.green(config.devServerCommand ?? '')}`);
+//   logger.log(`- Dev server URL: ${chalk.green(config.devServerUrl ?? '')}\n`);
+// }
 
 async function promptOrUseDefault<T extends string = string>(
   disablePrompts: boolean,
@@ -173,7 +173,7 @@ function cancelPrompt() {
   process.exit(-1);
 }
 
-function isEmptyFolder(path: string) {
-  const files = fs.readdirSync(path);
-  return files.length === 0;
-}
+// function isEmptyFolder(path: string) {
+//   const files = fs.readdirSync(path);
+//   return files.length === 0;
+// }

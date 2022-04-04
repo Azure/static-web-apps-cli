@@ -95,7 +95,7 @@ Examples:
     .description("initialize a new static web app project")
     .option("--yes", "answer yes to all prompts (disable interactive mode)", false)
 
-    .action(async (name: string, options: SWACLIConfig, command: Command) => {
+    .action(async (name: string, _options: SWACLIConfig, command: Command) => {
       const config = await configureOptions(undefined, command.optsWithGlobals(), command);
       await init(name, config.options);
     })
