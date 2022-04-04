@@ -7,7 +7,9 @@ import ora from "ora";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
 import { findSWAConfigFile, logger, readWorkflowFile } from "../../core";
+import { getStaticSiteDeployment } from "../../core/account";
 import { cleanUp, getDeployClientPath } from "../../core/deploy-client";
+import { login } from "./login";
 
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "package.json"));
 
@@ -45,7 +47,7 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     logger.log(``, "swa");
   }
 
-  let deploymentToken = "";
+  let deploymentToken: string | undefined = undefined;
   if (options.deploymentToken) {
     deploymentToken = options.deploymentToken;
     logger.log("Deployment token provide via flag", "swa");
@@ -55,9 +57,29 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     logger.log("Deployment token found in Environment Variables:", "swa");
     logger.log({ [chalk.green(`SWA_CLI_DEPLOYMENT_TOKEN`)]: SWA_CLI_DEPLOYMENT_TOKEN }, "swa");
   } else {
-    logger.error("A deployment token is required to deploy to Azure Static Web Apps");
-    logger.error("Provide a deployment token using the --deployment-token option or SWA_CLI_DEPLOYMENT_TOKEN environment variable", true);
-    return;
+    logger.warn(`No deployment token found. Trying interactive login...`, "swa");
+
+    try {
+      const { credentialChain, subscriptionId, resourceGroupName, staticSiteName } = await login({
+        ...options,
+        persist: true,
+      });
+
+      const deploymentTokenResponse = await getStaticSiteDeployment(credentialChain, subscriptionId, resourceGroupName, staticSiteName);
+
+      deploymentToken = deploymentTokenResponse?.properties?.apiKey;
+
+      if (!deploymentToken) {
+        throw new Error("Cannot find a deployment token. Aborting.");
+      }
+
+      logger.log("Deployment token provided via remote config", "swa");
+      logger.log({ [chalk.green(`deploymentToken`)]: deploymentToken }, "swa");
+    } catch {
+      logger.error("A deployment token is required to deploy to Azure Static Web Apps");
+      logger.error("Provide a deployment token using the --deployment-token option or SWA_CLI_DEPLOYMENT_TOKEN environment variable", true);
+      return;
+    }
   }
   logger.log(``, "swa");
 

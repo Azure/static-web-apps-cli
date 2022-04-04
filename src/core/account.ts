@@ -83,17 +83,22 @@ export async function listStaticSites(credentialChain: TokenCredential, subscrip
 }
 
 export async function getStaticSiteDeployment(
-  credentialChain: TokenCredential,
+  credentialChain: TokenCredential | undefined,
   subscriptionId: string | undefined,
   resourceGroupName: string | undefined,
   staticSiteName: string | undefined
 ) {
-  if (subscriptionId && resourceGroupName && staticSiteName) {
+  if (credentialChain && subscriptionId && resourceGroupName && staticSiteName) {
     const websiteClient = new WebSiteManagementClient(credentialChain, subscriptionId);
     const deploymentTokenResponse = await websiteClient.staticSites.listStaticSiteSecrets(resourceGroupName, staticSiteName);
     return deploymentTokenResponse;
   } else {
-    logger.warn("Invalid subscription found. Cannot fetch static site deployment token", "swa");
+    logger.warn("Cannot fetch deployment token", "swa");
+    logger.silly({
+      subscriptionId,
+      resourceGroupName,
+      staticSiteName,
+    });
   }
 
   return undefined;

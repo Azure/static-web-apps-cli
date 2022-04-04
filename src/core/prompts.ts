@@ -15,10 +15,10 @@ export async function chooseResourceGroup(resourceGroups: GenericResourceExpande
     initial,
     choices,
   });
-  return response.ResourceGroup;
+  return response.ResourceGroup as GenericResourceExpanded;
 }
 
-export async function chooseTenant(tenants: TenantIdDescription[], initial?: string) {
+export async function chooseTenant(tenants: TenantIdDescription[], initial?: string): Promise<TenantIdDescription> {
   const choices = tenants.map((tenant) => ({
     title: tenant.tenantId as string,
     value: tenant,
@@ -30,7 +30,7 @@ export async function chooseTenant(tenants: TenantIdDescription[], initial?: str
     initial,
     choices,
   });
-  return response.Tenant;
+  return response.Tenant as TenantIdDescription;
 }
 
 export async function chooseSubscription(subscriptions: Subscription[], initial?: string): Promise<Subscription> {
@@ -60,5 +60,5 @@ export async function chooseStaticSite(staticSites: StaticSiteARMResource[], ini
     initial,
     choices,
   });
-  return response.staticSite;
+  return response.staticSite as StaticSiteARMResource;
 }
