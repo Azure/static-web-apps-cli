@@ -92,7 +92,15 @@ declare type SWACLIDeployOptions = {
   dryRun?: boolean;
 };
 
-declare type SWACLIConfig = SWACLIStartOptions & SWACLIDeployOptions & GithubActionWorkflow;
+declare type SWACLILoginOptions = {
+  persist?: boolean;
+  subscriptionId?: string;
+  resourceGroup?: string;
+  tenantId?: string;
+  appName?: string;
+};
+
+declare type SWACLIConfig = SWACLIStartOptions & SWACLILoginOptions & SWACLIDeployOptions & GithubActionWorkflow;
 
 declare type ResponseOptions = {
   [key: string]: any;

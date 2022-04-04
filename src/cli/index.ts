@@ -2,16 +2,17 @@ import chalk from "chalk";
 import { Command, Option, program } from "commander";
 import path from "path";
 import updateNotifier from "update-notifier";
-import { getFileOptions, swaCliConfigFilename } from "../core/utils/cli-config";
-import { login } from "./commands/login";
 import { DEFAULT_CONFIG } from "../config";
 import { parseDevserverTimeout, parsePort } from "../core";
+import { swaCliConfigFilename } from "../core/utils/cli-config";
 import { configureOptions } from "../core/utils/options";
 import { deploy } from "./commands/deploy";
+import { login } from "./commands/login";
 import { start } from "./commands/start";
 const pkg = require("../../package.json");
 
 const printWelcomeMessage = () => {
+  // don't use logger here: SWA_CLI_DEBUG is not set yet
   console.log(chalk.dim.gray(`[swa]`));
   console.log(chalk.dim.gray(`[swa]`), `Azure Static Web App CLI v${pkg.version}`);
   console.log(chalk.dim.gray(`[swa]`));
@@ -20,11 +21,10 @@ const printWelcomeMessage = () => {
 export const defaultStartContext = `.${path.sep}`;
 
 export async function run(argv?: string[]) {
+  printWelcomeMessage();
+
   // Once a day, check for updates
   updateNotifier({ pkg }).notify();
-
-  // don't use logger here: SWA_CLI_DEBUG is not set yet
-  printWelcomeMessage();
 
   program
     .name("swa")
@@ -42,9 +42,6 @@ export async function run(argv?: string[]) {
     )
     .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development\n")
 
-    .option("--verbose [prefix]", "Enable verbose output. Values are: silly,info,log,silent", DEFAULT_CONFIG.verbose)
-    .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development\n")
-
     .option("--config <path>", "Path to swa-cli.config.json file to use", path.relative(process.cwd(), swaCliConfigFilename))
     .option("--print-config", "Print all resolved options", false)
     .option(
@@ -58,7 +55,7 @@ export async function run(argv?: string[]) {
   /////////////////////////////////////////////////////////////////////////////////
   program
     .command("login")
-    .usage("<command> [options]")
+    .usage("[options]")
     .description("login into Azure Static Web Apps")
     .option("--persist", "Enable credentials cache persistence", DEFAULT_CONFIG.persist)
     .option("--subscription [subscriptionId]", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
@@ -66,31 +63,9 @@ export async function run(argv?: string[]) {
     .option("--tenant [tenantId]", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
     .option("--app-name [appName]", "Azure Static Web App application name", DEFAULT_CONFIG.appName)
 
-    .action(async (context: string = `.${path.sep}`, options: SWACLIConfig) => {
-      const verbose = cli.opts().verbose;
-
-      // make sure the start command gets the right verbosity level
-      process.env.SWA_CLI_DEBUG = verbose;
-      if (verbose?.includes("silly")) {
-        // when silly level is set,
-        // propagate debugging level to other tools using the DEBUG environment variable
-        process.env.DEBUG = "*";
-      }
-      const fileOptions = await getFileOptions(context, cli.opts().config);
-
-      options = {
-        ...options,
-        ...fileOptions,
-        verbose,
-      };
-
-      if (cli.opts().printConfig) {
-        logger.log("", "swa");
-        logger.log("Options: ", "swa");
-        logger.log({ ...DEFAULT_CONFIG, ...options }, "swa");
-      }
-
-      await login(options);
+    .action(async (_options: SWACLIConfig, command: Command) => {
+      const config = await configureOptions("./", command.optsWithGlobals(), command);
+      await login(config.options);
     });
 
   program
