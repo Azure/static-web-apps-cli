@@ -83,6 +83,7 @@ declare type SWACLIStartOptions = {
   open?: boolean;
   config?: string;
   printConfig?: boolean;
+  yes?: boolean;
 };
 
 declare type SWACLIDeployOptions = {
@@ -161,10 +162,18 @@ declare type SWAConfigFile = {
 declare type DebugFilterLevel = "silly" | "silent" | "log" | "info" | "error";
 
 declare type SWACLIConfigFile = {
+  $schema?: string;
   configurations?: {
     [name: string]: SWACLIOptions & { context?: string };
   };
 };
+
+declare type FrameworkConfig = GithubActionWorkflow & {
+  name?: string;
+  apiBuildCommand?: string,
+  devServerCommand?: string,
+  devServerUrl?: string,
+}
 
 declare interface CoreToolsRelease {
   version: string;

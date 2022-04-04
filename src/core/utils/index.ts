@@ -4,3 +4,6 @@ export * from "./net";
 export * from "./user-config";
 export * from "./workflow-config";
 export * from "./cli";
+export * from "./cli-config";
+export * from "./options";
+export * from "./strings";

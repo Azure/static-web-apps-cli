@@ -4,10 +4,10 @@ import { getConfigFileOptions } from "./cli-config";
 import { DEFAULT_CONFIG } from "../../config";
 
 export async function configureOptions(
-  context: string,
+  context: string | undefined,
   options: SWACLIConfig,
   command: Command
-): Promise<{ context: string; options: SWACLIConfig }> {
+): Promise<{ context: string | undefined; options: SWACLIConfig }> {
   const verbose = options.verbose;
   process.env.SWA_CLI_DEBUG = verbose;
 

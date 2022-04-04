@@ -9,6 +9,7 @@ import { configureOptions } from "../core/utils/options";
 import { deploy } from "./commands/deploy";
 import { login } from "./commands/login";
 import { start } from "./commands/start";
+import { init } from "./commands/init";
 const pkg = require("../../package.json");
 
 const printWelcomeMessage = () => {
@@ -92,12 +93,17 @@ export async function run(argv?: string[]) {
       DEFAULT_CONFIG.devserverTimeout
     )
 
-    .option("--open", "Automatically open the CLI dev server in the default browser", DEFAULT_CONFIG.open)
-    .option("--func-args <funcArgs>", "Pass additional arguments to the func start command")
+    .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
+    .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
 
     .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
       const config = await configureOptions(context, command.optsWithGlobals(), command);
-      await start(config.context, config.options);
+      await start(config.context ?? context, config.options);
+    })
+
+    .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+      const config = await configureOptions(context, command.optsWithGlobals(), command);
+      await start(config.context ?? context, config.options);
     })
     .addHelpText(
       "after",
@@ -133,7 +139,7 @@ Examples:
     .option("--dry-run", "Simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
     .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
       const config = await configureOptions(context, command.optsWithGlobals(), command);
-      await deploy(config.context, config.options);
+      await deploy(config.context ?? context, config.options);
     })
     .addHelpText(
       "after",
@@ -151,6 +157,16 @@ Examples:
   swa deploy myconfig
     `
     );
+
+  program.command("init [name]")
+    .usage("[name] [options]")
+    .description("Initialize a new static web app project")
+    .option("--yes", "Answer yes to all prompts (disable interactive mode)", false)
+
+    .action(async (name: string, _options: SWACLIConfig, command: Command) => {
+      const config = await configureOptions(undefined, command.optsWithGlobals(), command);
+      await init(name, config.options);
+    })
 
   await program.parseAsync(argv);
 }
