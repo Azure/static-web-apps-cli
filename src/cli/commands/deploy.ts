@@ -41,7 +41,7 @@ Examples:
   swa deploy
   swa deploy myconfig
     `
-  );
+    );
 }
 
 export async function deploy(deployContext: string, options: SWACLIConfig) {
@@ -60,22 +60,29 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
   logger.log(`  ${chalk.green(frontendFolder)}`, "swa");
   logger.log(``, "swa");
 
-  const apiFolder = path.resolve(process.cwd(), DEFAULT_CONFIG.apiPrefix!);
-  if (!options.apiLocation) {
-    if (fs.existsSync(apiFolder)) {
+  // if --api-location is provided, use it as the api folder
+  if (options.apiLocation) {
+    const userApiFolder = path.resolve(process.cwd(), options.apiLocation!);
+    if (!fs.existsSync(userApiFolder)) {
+      logger.error(`The provided API folder ${userApiFolder} does not exist. Abort.`, true);
+      return;
+    } else {
+      logger.log(`Deploying API from folder:`, "swa");
+      logger.log(`  ${chalk.green(userApiFolder)}`, "swa");
+      logger.log(``, "swa");
+    }
+  }
+  // otherwise, check if the default api folder exists and print a warning
+  else {
+    const defaultApiFolder = path.resolve(process.cwd(), DEFAULT_CONFIG.apiPrefix!);
+    if (fs.existsSync(defaultApiFolder)) {
       logger.warn(
         `An API folder was found at ".${
           path.sep + DEFAULT_CONFIG.apiPrefix!
         }" but the --api-location option was not provided. API will not be deployed!`,
         "swa"
       );
-    } else {
-      logger.warn(`No API found. Skipping...`, "swa");
     }
-  } else {
-    logger.log(`Deploying API from folder:`, "swa");
-    logger.log(`  ${chalk.green(apiFolder)}`, "swa");
-    logger.log(``, "swa");
   }
 
   let deploymentToken: string | undefined = undefined;
