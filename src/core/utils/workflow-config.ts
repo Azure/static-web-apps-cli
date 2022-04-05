@@ -135,6 +135,7 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
     files,
   };
 
-  logger.silly({ config }, "swa");
+  logger.silly(`Workflow configuration:`);
+  logger.silly({ config });
   return config;
 }

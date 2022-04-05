@@ -1,7 +1,15 @@
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 import { GenericResourceExpanded, ResourceManagementClient } from "@azure/arm-resources";
 import { Subscription, SubscriptionClient } from "@azure/arm-subscriptions";
-import { ChainedTokenCredential, ClientSecretCredential, DeviceCodeCredential, EnvironmentCredential, InteractiveBrowserCredential, TokenCredential, useIdentityPlugin } from "@azure/identity";
+import {
+  ChainedTokenCredential,
+  ClientSecretCredential,
+  DeviceCodeCredential,
+  EnvironmentCredential,
+  InteractiveBrowserCredential,
+  TokenCredential,
+  useIdentityPlugin,
+} from "@azure/identity";
 import { cachePersistencePlugin } from "@azure/identity-cache-persistence";
 import { vsCodePlugin } from "@azure/identity-vscode";
 import { logger } from "./utils";
@@ -17,7 +25,7 @@ export async function azureLogin(details: LoginDetails = {}, persist = false) {
 
   if (persist) {
     if (isWSL()) {
-      logger.warn("Authentication cache persistence is not currently supported on WSL.", "swa");
+      logger.warn("Authentication cache persistence is not currently supported on WSL.");
     } else {
       useIdentityPlugin(cachePersistencePlugin);
       useIdentityPlugin(vsCodePlugin);
@@ -39,12 +47,9 @@ export async function azureLogin(details: LoginDetails = {}, persist = false) {
   const credentials = [environmentCredential, browserCredential, deviceCredential];
 
   if (details.tenantId && details.clientId && details.clientSecret) {
-    const clientSecretCredential = new ClientSecretCredential(
-      details.tenantId,
-      details.clientId,
-      details.clientSecret,
-      { tokenCachePersistenceOptions }
-    );
+    const clientSecretCredential = new ClientSecretCredential(details.tenantId, details.clientId, details.clientSecret, {
+      tokenCachePersistenceOptions,
+    });
     credentials.unshift(clientSecretCredential);
   }
 
@@ -68,7 +73,7 @@ export async function listResourceGroups(credentialChain: TokenCredential, subsc
       resourceGroups.push(resource);
     }
   } else {
-    logger.warn("Invalid subscription found. Cannot fetch resource groups", "swa");
+    logger.warn("Invalid subscription found. Cannot fetch resource groups");
   }
   return resourceGroups;
 }
@@ -90,7 +95,7 @@ export async function listStaticSites(credentialChain: TokenCredential, subscrip
       staticSites.push(staticSite);
     }
   } else {
-    logger.warn("Invalid subscription found. Cannot fetch static sites", "swa");
+    logger.warn("Invalid subscription found. Cannot fetch static sites");
   }
   return staticSites;
 }
@@ -106,7 +111,7 @@ export async function getStaticSiteDeployment(
     const deploymentTokenResponse = await websiteClient.staticSites.listStaticSiteSecrets(resourceGroupName, staticSiteName);
     return deploymentTokenResponse;
   } else {
-    logger.warn("Cannot fetch deployment token", "swa");
+    logger.warn("Cannot fetch deployment token");
     logger.silly({
       subscriptionId,
       resourceGroupName,

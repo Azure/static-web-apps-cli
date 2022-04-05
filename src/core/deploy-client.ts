@@ -52,7 +52,7 @@ export async function getDeployClientPath(): Promise<{ binary: string; version: 
   // if the latest version is the same as the local version, we can skip the download
   if (localClientMetadata) {
     if (!localClientMetadata.metadata || !localClientMetadata.binary || !localClientMetadata.checksum) {
-      logger.warn(`Local client metadata is invalid!`, "swa");
+      logger.warn(`Local client metadata is invalid!`);
     } else {
       const localChecksum = localClientMetadata.checksum;
       const releaseChecksum = remoteClientMetadata.files[platform].sha256.toLowerCase();
@@ -61,18 +61,18 @@ export async function getDeployClientPath(): Promise<{ binary: string; version: 
 
       if (remotePublishDate === localPublishDate) {
         if (localChecksum === releaseChecksum) {
-          logger.silly(`Local client binary is up to date. Skipping download.`, "swa");
+          logger.silly(`Local client binary is up to date. Skipping download.`);
           return {
             binary: localClientMetadata.binary,
             version: localPublishDate,
           };
         } else {
-          logger.warn(`Local metatada contains invalid checksum hash!`, "swa");
-          logger.warn(`  Expected ${releaseChecksum}`, "swa");
-          logger.warn(`  Received ${localChecksum}`, "swa");
+          logger.warn(`Local metatada contains invalid checksum hash!`);
+          logger.warn(`  Expected ${releaseChecksum}`);
+          logger.warn(`  Received ${localChecksum}`);
         }
       } else {
-        logger.warn(`${DEPLOY_BINARY_NAME} is outdated! Expected ${remotePublishDate}, got ${localPublishDate}`, "swa");
+        logger.warn(`${DEPLOY_BINARY_NAME} is outdated! Expected ${remotePublishDate}, got ${localPublishDate}`);
       }
     }
   }
@@ -87,7 +87,7 @@ export function getLocalClientMetadata(): StaticSiteClientLocalMetadata | null {
   const metadataFilename = path.join(DEPLOY_FOLDER, `${DEPLOY_BINARY_NAME}.json`);
 
   if (!fs.existsSync(metadataFilename)) {
-    logger.warn(`Could not find ${DEPLOY_BINARY_NAME} local binary`, "swa");
+    logger.warn(`Could not find ${DEPLOY_BINARY_NAME} local binary`);
     return null;
   }
 
@@ -96,13 +96,13 @@ export function getLocalClientMetadata(): StaticSiteClientLocalMetadata | null {
   try {
     metadata = JSON.parse(fs.readFileSync(metadataFilename, "utf8"));
   } catch (err) {
-    logger.warn(`Could not read ${DEPLOY_BINARY_NAME} metadata: ${err}`, "swa");
+    logger.warn(`Could not read ${DEPLOY_BINARY_NAME} metadata: ${err}`);
     return null;
   }
 
   if (metadata) {
     if (!fs.existsSync(metadata.binary)) {
-      logger.warn(`Could not find ${DEPLOY_BINARY_NAME} binary: ${metadata.binary}`, "swa");
+      logger.warn(`Could not find ${DEPLOY_BINARY_NAME} binary: ${metadata.binary}`);
       return null;
     } else if (fs.existsSync(metadata.binary)) {
       return metadata;
@@ -141,7 +141,7 @@ export function getPlatform(): "win-x64" | "osx-x64" | "linux-x64" | null {
 }
 
 export async function fetchClientVersionDefinition(releaseVersion: string): Promise<StaticSiteClientReleaseMetadata | undefined> {
-  logger.silly(`Fetching release metadata for version: ${releaseVersion}. Please wait...`, "swa");
+  logger.silly(`Fetching release metadata for version: ${releaseVersion}. Please wait...`);
 
   const remoteVersionDefinitions: StaticSiteClientReleaseMetadata[] = await fetch(
     "https://swalocaldeploy.azureedge.net/downloads/versions.json"
@@ -199,8 +199,8 @@ async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadat
       } else {
         spinner.succeed();
 
-        logger.silly(`Checksum match: ${computedHash}`, "swa");
-        logger.silly(`Saved binary to ${outputFile}`, "swa");
+        logger.silly(`Checksum match: ${computedHash}`);
+        logger.silly(`Saved binary to ${outputFile}`);
 
         saveMetadata(release, outputFile, computedHash);
 
@@ -218,7 +218,7 @@ function saveMetadata(release: StaticSiteClientReleaseMetadata, binaryFilename: 
     checksum: sha256,
   };
   fs.writeFileSync(metatdaFilename, JSON.stringify(metdata));
-  logger.silly(`Saved metadata to ${metatdaFilename}`, "swa");
+  logger.silly(`Saved metadata to ${metatdaFilename}`);
 }
 
 // TODO: get StaticSiteClient to remove zip files

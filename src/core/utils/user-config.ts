@@ -67,19 +67,19 @@ export async function findSWAConfigFile(folder: string) {
   // take staticwebapp.config.json if it exists (and ignore routes.json legacy file)
   if (configFiles.has(DEFAULT_CONFIG.swaConfigFilename!)) {
     const file = configFiles.get(DEFAULT_CONFIG.swaConfigFilename!);
-    logger.silly(`Found ${DEFAULT_CONFIG.swaConfigFilename} in ${file?.file}`, "swa");
+    logger.silly(`Found ${DEFAULT_CONFIG.swaConfigFilename} in ${file?.file}`);
     return file;
   }
 
   // fallback to legacy config file
   if (configFiles.has(DEFAULT_CONFIG.swaConfigFilenameLegacy!)) {
     const file = configFiles.get(DEFAULT_CONFIG.swaConfigFilenameLegacy!);
-    logger.silly(`Found ${DEFAULT_CONFIG.swaConfigFilenameLegacy} in ${file?.file}`, "swa");
+    logger.silly(`Found ${DEFAULT_CONFIG.swaConfigFilenameLegacy} in ${file?.file}`);
     return file;
   }
 
   // no config file found
-  logger.silly(`No ${DEFAULT_CONFIG.swaConfigFilename} found in current project`, "swa");
+  logger.silly(`No ${DEFAULT_CONFIG.swaConfigFilename} found in current project`);
   return null;
 }
 

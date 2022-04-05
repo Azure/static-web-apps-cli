@@ -49,16 +49,16 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
 
   if (options.dryRun) {
-    logger.warn("***********************************************************************", "swa");
-    logger.warn("* WARNING: Running in dry run mode. This project will not be deployed *", "swa");
-    logger.warn("***********************************************************************", "swa");
-    logger.warn("", "swa");
+    logger.warn("***********************************************************************");
+    logger.warn("* WARNING: Running in dry run mode. This project will not be deployed *");
+    logger.warn("***********************************************************************");
+    logger.warn("");
   }
 
   const frontendFolder = path.resolve(process.cwd(), deployContext);
-  logger.log(`Deploying front-end files from folder:`, "swa");
-  logger.log(`  ${chalk.green(frontendFolder)}`, "swa");
-  logger.log(``, "swa");
+  logger.log(`Deploying front-end files from folder:`);
+  logger.log(`  ${chalk.green(frontendFolder)}`);
+  logger.log(``);
 
   // if --api-location is provided, use it as the api folder
   if (options.apiLocation) {
@@ -67,9 +67,9 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
       logger.error(`The provided API folder ${userApiFolder} does not exist. Abort.`, true);
       return;
     } else {
-      logger.log(`Deploying API from folder:`, "swa");
-      logger.log(`  ${chalk.green(userApiFolder)}`, "swa");
-      logger.log(``, "swa");
+      logger.log(`Deploying API from folder:`);
+      logger.log(`  ${chalk.green(userApiFolder)}`);
+      logger.log(``);
     }
   }
   // otherwise, check if the default api folder exists and print a warning
@@ -88,14 +88,14 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
   let deploymentToken: string | undefined = undefined;
   if (options.deploymentToken) {
     deploymentToken = options.deploymentToken;
-    logger.log("Deployment token provide via flag", "swa");
-    logger.log({ [chalk.green(`--deployment-token`)]: options.deploymentToken }, "swa");
+    logger.log("Deployment token provide via flag");
+    logger.log({ [chalk.green(`--deployment-token`)]: options.deploymentToken });
   } else if (SWA_CLI_DEPLOYMENT_TOKEN) {
     deploymentToken = SWA_CLI_DEPLOYMENT_TOKEN;
-    logger.log("Deployment token found in Environment Variables:", "swa");
-    logger.log({ [chalk.green(`SWA_CLI_DEPLOYMENT_TOKEN`)]: SWA_CLI_DEPLOYMENT_TOKEN }, "swa");
+    logger.log("Deployment token found in Environment Variables:");
+    logger.log({ [chalk.green(`SWA_CLI_DEPLOYMENT_TOKEN`)]: SWA_CLI_DEPLOYMENT_TOKEN });
   } else if (options.dryRun === false) {
-    logger.warn(`No deployment token found. Trying interactive login...`, "swa");
+    logger.warn(`No deployment token found. Trying interactive login...`);
 
     try {
       const { credentialChain, subscriptionId, resourceGroupName, staticSiteName } = await login({
@@ -111,15 +111,15 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
         throw new Error("Cannot find a deployment token. Aborting.");
       }
 
-      logger.log("Deployment token provided via remote config", "swa");
-      logger.log({ [chalk.green(`deploymentToken`)]: deploymentToken }, "swa");
+      logger.log("Deployment token provided via remote config");
+      logger.log({ [chalk.green(`deploymentToken`)]: deploymentToken });
     } catch {
       logger.error("A deployment token is required to deploy to Azure Static Web Apps");
       logger.error("Provide a deployment token using the --deployment-token option or SWA_CLI_DEPLOYMENT_TOKEN environment variable", true);
       return;
     }
   }
-  logger.log(``, "swa");
+  logger.log(``);
 
   let userWorkflowConfig: Partial<GithubActionWorkflow> | undefined = {
     appLocation: options.appLocation,
@@ -139,8 +139,7 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     logger.warn(`Error reading workflow configuration:`);
     logger.warn((err as any).message);
     logger.warn(
-      `See https://docs.microsoft.com/azure/static-web-apps/build-configuration?tabs=github-actions#build-configuration for more information.`,
-      "swa"
+      `See https://docs.microsoft.com/azure/static-web-apps/build-configuration?tabs=github-actions#build-configuration for more information.`
     );
   }
 
@@ -178,12 +177,12 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     const { binary, version } = await getDeployClientPath();
 
     if (binary) {
-      spinner = ora({ prefixText: chalk.dim.gray(`[swa]`) });
+      spinner = ora();
       (cliEnv as any).SWA_CLI_DEPLOY_BINARY = `${binary}@${version}`;
       spinner.text = `Deploying using ${cliEnv.SWA_CLI_DEPLOY_BINARY}`;
 
-      logger.silly(`Deploying using the following options:`, "swa");
-      logger.silly({ env: { ...cliEnv, ...deployClientEnv } }, "swa");
+      logger.silly(`Deploying using the following options:`);
+      logger.silly({ env: { ...cliEnv, ...deployClientEnv } });
 
       spinner.start(`Preparing deployment...`);
 

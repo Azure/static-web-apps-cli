@@ -25,7 +25,7 @@ export function detectRuntime(appLocation: string | undefined) {
     }
   }
 
-  logger.silly(`Detected runtime:`, "swa");
-  logger.silly({ runtime }, "swa");
+  logger.silly(`Detected runtime:`);
+  logger.silly({ runtime });
   return runtime;
 }

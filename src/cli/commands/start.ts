@@ -26,44 +26,44 @@ export const defaultStartContext = `.${path.sep}`;
 
 export default function registerCommand(program: Command) {
   program
-  .command("start [context]")
-  .usage("[context] [options]")
-  .description("Start the emulator from a directory or bind to a dev server")
-  .option("--app-location <appLocation>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
-  .option("--api-location <apiLocation>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
-  .option<number>("--api-port <apiPort>", "the API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
-  .option("--host <host>", "the host address to use for the CLI dev server", DEFAULT_CONFIG.host)
-  .option<number>("--port <port>", "the port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
+    .command("start [context]")
+    .usage("[context] [options]")
+    .description("Start the emulator from a directory or bind to a dev server")
+    .option("--app-location <appLocation>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
+    .option("--api-location <apiLocation>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
+    .option<number>("--api-port <apiPort>", "the API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
+    .option("--host <host>", "the host address to use for the CLI dev server", DEFAULT_CONFIG.host)
+    .option<number>("--port <port>", "the port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
 
-  // hide this flag from the help output
-  .addOption(new Option("--build", "build the front-end app and API before starting the emulator").default(false).hideHelp())
+    // hide this flag from the help output
+    .addOption(new Option("--build", "build the front-end app and API before starting the emulator").default(false).hideHelp())
 
-  .option("--ssl", "serve the front-end application and API over HTTPS", DEFAULT_CONFIG.ssl)
-  .option("--ssl-cert <sslCertLocation>", "the SSL certificate (.crt) to use when enabling HTTPS", DEFAULT_CONFIG.sslCert)
-  .option("--ssl-key <sslKeyLocation>", "the SSL key (.key) to use when enabling HTTPS", DEFAULT_CONFIG.sslKey)
-  .option("--run <startupScript>", "run a custon shell command or file at startup", DEFAULT_CONFIG.run)
-  .option<number>(
-    "--devserver-timeout <devserverTimeout>",
-    "the time to wait (in ms) when connecting to a front-end application's dev server",
-    parseDevserverTimeout,
-    DEFAULT_CONFIG.devserverTimeout
-  )
+    .option("--ssl", "serve the front-end application and API over HTTPS", DEFAULT_CONFIG.ssl)
+    .option("--ssl-cert <sslCertLocation>", "the SSL certificate (.crt) to use when enabling HTTPS", DEFAULT_CONFIG.sslCert)
+    .option("--ssl-key <sslKeyLocation>", "the SSL key (.key) to use when enabling HTTPS", DEFAULT_CONFIG.sslKey)
+    .option("--run <startupScript>", "run a custon shell command or file at startup", DEFAULT_CONFIG.run)
+    .option<number>(
+      "--devserver-timeout <devserverTimeout>",
+      "the time to wait (in ms) when connecting to a front-end application's dev server",
+      parseDevserverTimeout,
+      DEFAULT_CONFIG.devserverTimeout
+    )
 
-  .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
-  .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
+    .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
+    .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
 
-  .action(async (context: string = defaultStartContext, _options: SWACLIConfig, command: Command) => {
-    const config = await configureOptions(context, command.optsWithGlobals(), command);
-    await start(config.context ?? context, config.options);
-  })
+    .action(async (context: string = defaultStartContext, _options: SWACLIConfig, command: Command) => {
+      const config = await configureOptions(context, command.optsWithGlobals(), command);
+      await start(config.context ?? context, config.options);
+    })
 
-  .action(async (context: string = defaultStartContext, _options: SWACLIConfig, command: Command) => {
-    const config = await configureOptions(context, command.optsWithGlobals(), command);
-    await start(config.context ?? context, config.options);
-  })
-  .addHelpText(
-    "after",
-    `
+    .action(async (context: string = defaultStartContext, _options: SWACLIConfig, command: Command) => {
+      const config = await configureOptions(context, command.optsWithGlobals(), command);
+      await start(config.context ?? context, config.options);
+    })
+    .addHelpText(
+      "after",
+      `
 Examples:
 
 Serve static content from a specific folder
@@ -81,7 +81,7 @@ swa start ./output-folder --api-location ./api
 Use a custom command to run framework development server at startup
 swa start http://localhost:3000 --run "npm start"
   `
-  );
+    );
 }
 
 export async function start(startContext: string, options: SWACLIConfig) {
@@ -270,18 +270,15 @@ export async function start(startContext: string, options: SWACLIConfig) {
     });
   }
 
-  logger.silly(
-    {
-      ssl: [options.ssl, options.sslCert, options.sslKey],
-      env: envVarsObj,
-      commands: {
-        swa: concurrentlyCommands.find((c) => c.name === "swa")?.command,
-        api: concurrentlyCommands.find((c) => c.name === "api")?.command,
-        run: concurrentlyCommands.find((c) => c.name === "run")?.command,
-      },
+  logger.silly({
+    ssl: [options.ssl, options.sslCert, options.sslKey],
+    env: envVarsObj,
+    commands: {
+      swa: concurrentlyCommands.find((c) => c.name === "swa")?.command,
+      api: concurrentlyCommands.find((c) => c.name === "api")?.command,
+      run: concurrentlyCommands.find((c) => c.name === "run")?.command,
     },
-    "swa"
-  );
+  });
 
   const { result } = concurrently(concurrentlyCommands, { restartTries: 0 });
 
