@@ -22,6 +22,8 @@ import {
 import builder from "../../core/builder";
 let packageInfo = require("../../../package.json");
 
+export const defaultStartContext = `.${path.sep}`;
+
 export default function registerCommand(program: Command) {
   program
   .command("start [context]")
@@ -50,12 +52,12 @@ export default function registerCommand(program: Command) {
   .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
   .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
 
-  .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+  .action(async (context: string = defaultStartContext, _options: SWACLIConfig, command: Command) => {
     const config = await configureOptions(context, command.optsWithGlobals(), command);
     await start(config.context ?? context, config.options);
   })
 
-  .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+  .action(async (context: string = defaultStartContext, _options: SWACLIConfig, command: Command) => {
     const config = await configureOptions(context, command.optsWithGlobals(), command);
     await start(config.context ?? context, config.options);
   })

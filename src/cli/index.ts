@@ -1,3 +1,5 @@
+export * from "./commands";
+
 import chalk from "chalk";
 import { Option, program } from "commander";
 import path from "path";
@@ -16,8 +18,6 @@ const printWelcomeMessage = () => {
   console.log(chalk.dim.gray(`[swa]`), `Azure Static Web App CLI v${pkg.version}`);
   console.log(chalk.dim.gray(`[swa]`));
 };
-
-export const defaultStartContext = `.${path.sep}`;
 
 export async function run(argv?: string[]) {
   printWelcomeMessage();
