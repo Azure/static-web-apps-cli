@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 export * from "./commands";
 
 import chalk from "chalk";

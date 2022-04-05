@@ -20,6 +20,7 @@ import {
   readWorkflowFile,
 } from "../../core";
 import builder from "../../core/builder";
+import { swaCLiEnv } from "../../core/env";
 let packageInfo = require("../../../package.json");
 
 export const defaultStartContext = `.${path.sep}`;
@@ -219,31 +220,33 @@ export async function start(startContext: string, options: SWACLIConfig) {
   // WARNING: code from above doesn't have access to env vars which are only defined below
 
   // set env vars for current command
-  const envVarsObj = {
+  const envVarsObj: SWACLIEnv = {
     SWA_RUNTIME_CONFIG_LOCATION: options.swaConfigLocation,
     SWA_RUNTIME_WORKFLOW_LOCATION: `${userWorkflowConfig?.files?.[0]}`,
-    SWA_CLI_DEBUG: options.verbose,
+    SWA_CLI_DEBUG: options.verbose as DebugFilterLevel,
     SWA_CLI_API_PORT: `${apiPort}`,
     SWA_CLI_APP_LOCATION: userWorkflowConfig?.appLocation as string,
     SWA_CLI_OUTPUT_LOCATION: userWorkflowConfig?.outputLocation as string,
     SWA_CLI_API_LOCATION: userWorkflowConfig?.apiLocation as string,
     SWA_CLI_HOST: `${options.host}`,
     SWA_CLI_PORT: `${options.port}`,
-    SWA_CLI_APP_SSL: `${options.ssl}`,
+    SWA_CLI_APP_SSL: options.ssl ? "true" : "false",
     SWA_CLI_APP_SSL_CERT: options.sslCert,
     SWA_CLI_APP_SSL_KEY: options.sslKey,
     SWA_CLI_STARTUP_COMMAND: startupCommand as string,
     SWA_CLI_VERSION: packageInfo.version,
     SWA_CLI_DEVSERVER_TIMEOUT: `${devserverTimeout}`,
-    SWA_CLI_OPEN_BROWSER: `${options.open}`,
+    SWA_CLI_OPEN_BROWSER: options.open ? "true" : "false",
   };
 
-  // merge SWA env variables with process.env
-  process.env = { ...process.env, ...envVarsObj };
+  // merge SWA CLI env variables with process.env
+  process.env = {
+    ...swaCLiEnv(envVarsObj),
+  };
 
-  // INFO: from here code may access SWA CLI env vars.
+  // INFO: from here, code may access SWA CLI env vars.
 
-  const { env } = process;
+  const env = swaCLiEnv();
   const concurrentlyCommands: CommandInfo[] = [
     // start the reverse proxy
     { command: `node "${path.join(__dirname, "..", "..", "msha", "server.js")}"`, name: "swa", env, prefixColor: "gray.dim" },

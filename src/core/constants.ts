@@ -1,5 +1,6 @@
 import path from "path";
 import { DEFAULT_CONFIG } from "../config";
+import { swaCLiEnv } from "./env";
 import { address, isHttpUrl } from "./utils/net";
 
 export const SWA_AUTH_COOKIE = `StaticWebAppsAuthCookie`;
@@ -160,21 +161,23 @@ export const HEADER_DELETE_KEYWORD = "@@HEADER_DELETE_KEYWORD@@";
 
 export const CACHE_CONTROL_MAX_AGE = 30;
 
-export const SWA_WORKFLOW_CONFIG_FILE = process.env.SWA_WORKFLOW_CONFIG_FILE as string;
-export const SWA_CLI_HOST = process.env.SWA_CLI_HOST as string;
-export const SWA_CLI_PORT = parseInt((process.env.SWA_CLI_PORT || DEFAULT_CONFIG.port) as string, 10);
-export const SWA_CLI_APP_LOCATION = (process.env.SWA_CLI_APP_LOCATION || DEFAULT_CONFIG.appLocation) as string;
-export const SWA_RUNTIME_CONFIG_LOCATION = (process.env.SWA_RUNTIME_CONFIG_LOCATION || DEFAULT_CONFIG.swaConfigLocation) as string;
-export const SWA_CLI_OUTPUT_LOCATION = (process.env.SWA_CLI_OUTPUT_LOCATION || DEFAULT_CONFIG.outputLocation) as string;
-export const SWA_CLI_API_LOCATION = (process.env.SWA_CLI_API_LOCATION || DEFAULT_CONFIG.apiLocation) as string;
-export const SWA_CLI_APP_SSL = process.env.SWA_CLI_APP_SSL === "true" || DEFAULT_CONFIG.ssl === true;
-export const SWA_CLI_APP_SSL_KEY = process.env.SWA_CLI_APP_SSL_KEY as string;
-export const SWA_CLI_APP_SSL_CERT = process.env.SWA_CLI_APP_SSL_CERT as string;
+const _env = swaCLiEnv();
+
+export const SWA_RUNTIME_WORKFLOW_LOCATION = _env.SWA_RUNTIME_WORKFLOW_LOCATION as string;
+export const SWA_CLI_HOST = _env.SWA_CLI_HOST as string;
+export const SWA_CLI_PORT = parseInt((_env.SWA_CLI_PORT || DEFAULT_CONFIG.port) as string, 10);
+export const SWA_CLI_APP_LOCATION = (_env.SWA_CLI_APP_LOCATION || DEFAULT_CONFIG.appLocation) as string;
+export const SWA_RUNTIME_CONFIG_LOCATION = (_env.SWA_RUNTIME_CONFIG_LOCATION || DEFAULT_CONFIG.swaConfigLocation) as string;
+export const SWA_CLI_OUTPUT_LOCATION = (_env.SWA_CLI_OUTPUT_LOCATION || DEFAULT_CONFIG.outputLocation) as string;
+export const SWA_CLI_API_LOCATION = (_env.SWA_CLI_API_LOCATION || DEFAULT_CONFIG.apiLocation) as string;
+export const SWA_CLI_APP_SSL = _env.SWA_CLI_APP_SSL === "true" || DEFAULT_CONFIG.ssl === true;
+export const SWA_CLI_APP_SSL_KEY = _env.SWA_CLI_APP_SSL_KEY as string;
+export const SWA_CLI_APP_SSL_CERT = _env.SWA_CLI_APP_SSL_CERT as string;
 export const SWA_CLI_APP_PROTOCOL = SWA_CLI_APP_SSL ? `https` : `http`;
 export const SWA_PUBLIC_DIR = path.resolve(__dirname, "..", "public"); //SWA_PUBLIC_DIR = "../public"
 export const HAS_API = Boolean(SWA_CLI_API_LOCATION && SWA_CLI_API_URI());
-export const SWA_CLI_DEVSERVER_TIMEOUT = parseInt((process.env.SWA_CLI_DEVSERVER_TIMEOUT || DEFAULT_CONFIG.devserverTimeout) as string, 10);
-export const SWA_CLI_OPEN_BROWSER = (process.env.SWA_CLI_OPEN_BROWSER === "true" || DEFAULT_CONFIG.open) as boolean;
+export const SWA_CLI_DEVSERVER_TIMEOUT = parseInt((_env.SWA_CLI_DEVSERVER_TIMEOUT || DEFAULT_CONFIG.devserverTimeout) as string, 10);
+export const SWA_CLI_OPEN_BROWSER = (_env.SWA_CLI_OPEN_BROWSER === "true" || DEFAULT_CONFIG.open) as boolean;
 
 // --
 // Note: declare these as functions so that their body gets evaluated at runtime!
@@ -187,5 +190,5 @@ export function IS_API_DEV_SERVER() {
   return isHttpUrl(SWA_CLI_API_LOCATION);
 }
 export function SWA_CLI_API_URI() {
-  return IS_API_DEV_SERVER() ? SWA_CLI_API_LOCATION : address(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
+  return IS_API_DEV_SERVER() ? SWA_CLI_API_LOCATION : address(SWA_CLI_HOST, _env.SWA_CLI_API_PORT);
 }

@@ -1,25 +1,56 @@
 declare global {
-  namespace NodeJS {
-    interface ProcessEnv {
-      SWA_CLI_DEBUG: DebugFilterLevel;
-      SWA_RUNTIME_CONFIG_LOCATION: string;
-      SWA_RUNTIME_WORKFLOW_LOCATION: string;
-      SWA_CLI_DEBUG: string;
-      SWA_CLI_API_PORT: string;
-      SWA_CLI_APP_LOCATION: string;
-      SWA_CLI_OUTPUT_LOCATION: string;
-      SWA_CLI_API_LOCATION: string;
-      SWA_CLI_HOST: string;
-      SWA_CLI_PORT: string;
-      SWA_CLI_APP_SSL: string;
-      SWA_CLI_APP_SSL_CERT: string;
-      SWA_CLI_APP_SSL_KEY: string;
-      SWA_CLI_STARTUP_COMMAND: string;
-      SWA_CLI_VERSION: string;
-      SWA_CLI_DEVSERVER_TIMEOUT: string;
-      SWA_CLI_OPEN_BROWSER: string;
-    }
+  declare namespace NodeJS {
+    export interface ProcessEnv extends SWACLIEnv {}
   }
+}
+
+declare interface SWACLIEnv {
+  DEBUG?: string; // general purpose debug variable
+  SWA_CLI_DEBUG?: DebugFilterLevel;
+  SWA_RUNTIME_CONFIG_LOCATION?: string;
+  SWA_RUNTIME_WORKFLOW_LOCATION?: string;
+
+  // swa start
+  SWA_CLI_API_PORT?: string;
+  SWA_CLI_APP_LOCATION?: string;
+  SWA_CLI_OUTPUT_LOCATION?: string;
+  SWA_CLI_API_LOCATION?: string;
+  SWA_CLI_HOST?: string;
+  SWA_CLI_PORT?: string;
+  SWA_CLI_APP_SSL?: "true" | "false";
+  SWA_CLI_APP_SSL_CERT?: string;
+  SWA_CLI_APP_SSL_KEY?: string;
+  SWA_CLI_STARTUP_COMMAND?: string;
+  SWA_CLI_DEVSERVER_TIMEOUT?: string;
+  SWA_CLI_OPEN_BROWSER?: "true" | "false";
+
+  // swa deploy
+  SWA_CLI_DEPLOY_DRY_RUN?: string;
+  SWA_CLI_DEPLOY_BINARY?: string;
+  SWA_CLI_DEPLOY_BINARY_VERSION?: string;
+  SWA_CLI_DEPLOYMENT_TOKEN?: string;
+  SWA_RUNTIME_CONFIG?: string;
+  SWA_CLI_VERSION?: string;
+
+  // StaticSitesClient env vars
+  DEPLOYMENT_ACTION?: "close" | "upload";
+  DEPLOYMENT_PROVIDER?: string;
+  REPOSITORY_BASE?: string;
+  SKIP_APP_BUILD?: "true";
+  SKIP_API_BUILD?: "true";
+  DEPLOYMENT_TOKEN?: string;
+  APP_LOCATION?: string;
+  OUTPUT_LOCATION?: string;
+  API_LOCATION?: string;
+  VERBOSE?: "true" | "false";
+
+  // swa login
+  AZURE_SUBSCRIPTION_ID?: string;
+  AZURE_RESOURCE_GROUP?: string;
+  SWA_CLI_APP_NAME?: string;
+  AZURE_TENANT_ID?: string;
+  AZURE_CLIENT_ID?: string;
+  AZURE_CLIENT_SECRET?: string;
 }
 
 declare interface Context {

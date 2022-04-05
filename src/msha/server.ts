@@ -22,7 +22,7 @@ import {
   SWA_CLI_OUTPUT_LOCATION,
   SWA_CLI_PORT,
   SWA_RUNTIME_CONFIG_LOCATION,
-  SWA_WORKFLOW_CONFIG_FILE,
+  SWA_RUNTIME_WORKFLOW_LOCATION,
   SWA_CLI_DEVSERVER_TIMEOUT,
   SWA_CLI_OPEN_BROWSER,
 } from "../core/constants";
@@ -36,8 +36,8 @@ if (!isHttpUrl(SWA_CLI_API_URI())) {
 }
 
 // TODO: handle multiple workflow files (see #32)
-if (SWA_WORKFLOW_CONFIG_FILE) {
-  logger.info(`\nFound workflow file:\n    ${chalk.green(SWA_WORKFLOW_CONFIG_FILE)}`);
+if (SWA_RUNTIME_WORKFLOW_LOCATION) {
+  logger.info(`\nFound workflow file:\n    ${chalk.green(SWA_RUNTIME_WORKFLOW_LOCATION)}`);
 }
 
 const httpsServerOptions: Pick<https.ServerOptions, "cert" | "key"> | null = SWA_CLI_APP_SSL
