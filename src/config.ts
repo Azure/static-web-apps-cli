@@ -27,6 +27,8 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   subscriptionId: undefined,
   resourceGroup: undefined,
   tenantId: undefined,
+  clientId: undefined,
+  clientSecret: undefined,
   appName: undefined,
   dryRun: false,
 };

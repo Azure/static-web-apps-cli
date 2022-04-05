@@ -93,13 +93,18 @@ declare type SWACLIDeployOptions = {
   dryRun?: boolean;
 };
 
-declare type SWACLILoginOptions = {
+declare type SWACLILoginOptions = LoginDetails & {
   persist?: boolean;
   subscriptionId?: string;
   resourceGroup?: string;
-  tenantId?: string;
   appName?: string;
 };
+
+interface LoginDetails {
+  tenantId?: string;
+  clientId?: string;
+  clientSecret?: string;
+}
 
 declare type SWACLIConfig = SWACLIStartOptions & SWACLILoginOptions & SWACLIDeployOptions & GithubActionWorkflow;
 

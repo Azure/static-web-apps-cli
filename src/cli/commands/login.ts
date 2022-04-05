@@ -1,4 +1,4 @@
-import { TenantIdDescription } from "@azure/arm-subscriptions";
+import process from 'process';
 import { TokenCredential } from "@azure/identity";
 import { Command } from "commander";
 import { DEFAULT_CONFIG } from "../../config";
@@ -8,18 +8,37 @@ import { chooseResourceGroup, chooseStaticSite, chooseSubscription, chooseTenant
 
 export default function registerCommand(program: Command) {
   program
-  .command("login")
-  .usage("[options]")
-  .description("login into Azure Static Web Apps")
-  .option("--persist", "enable credentials cache persistence", DEFAULT_CONFIG.persist)
-  .option("--subscription [subscriptionId]", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
-  .option("--resource-group [resourceGroup]", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroup)
-  .option("--tenant [tenantId]", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
-  .option("--app-name [appName]", "Azure Static Web App application name", DEFAULT_CONFIG.appName)
-  .action(async (_options: SWACLIConfig, command: Command) => {
-    const config = await configureOptions("./", command.optsWithGlobals(), command);
-    await login(config.options);
-  });
+    .command("login")
+    .usage("[options]")
+    .description("login into Azure Static Web Apps")
+    .option("--persist", "Enable credentials cache persistence", DEFAULT_CONFIG.persist)
+    .option("--subscription [subscriptionId]", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
+    .option("--resource-group [resourceGroup]", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroup)
+    .option("--tenant [tenantId]", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
+    .option("--client-id [clientId]", "Azure client ID", DEFAULT_CONFIG.clientId)
+    .option("--client-secret [clientSecret]", "Azure client secret", DEFAULT_CONFIG.clientSecret)
+    .option("--app-name [appName]", "Azure Static Web App application name", DEFAULT_CONFIG.appName)
+    .action(async (_options: SWACLIConfig, command: Command) => {
+      const config = await configureOptions("./", command.optsWithGlobals(), command);
+      await login(config.options);
+    })
+    .addHelpText(
+      "after",
+      `
+Examples:
+
+  Interactive login
+  swa login
+
+  Login into specific tenant
+  swa login --tenant 12345678-abcd-0123-4567-abcdef012345
+
+  Login using service principal
+  swa login --tenant 12345678-abcd-0123-4567-abcdef012345 \
+            --client-id 00000000-0000-0000-0000-000000000000 \
+            --client-secret 0000000000000000000000000000000000000000000000000000000000000000
+    `
+    );
 }
 
 export async function login(options: SWACLIConfig) {
@@ -27,30 +46,33 @@ export async function login(options: SWACLIConfig) {
   let subscriptionId: string | undefined = undefined;
   let resourceGroupName: string | undefined = undefined;
   let staticSiteName: string | undefined = undefined;
-  let tenant: TenantIdDescription | undefined = undefined;
+  let tenantId: string | undefined = process.env.AZURE_TENANT_ID ?? options.tenantId;
+  let clientId: string | undefined = process.env.AZURE_CLIENT_ID ?? options.clientId;
+  let clientSecret: string | undefined = process.env.AZURE_CLIENT_SECRET ?? options.clientSecret;
 
   logger.silly({ options });
 
   try {
-    ({ credentialChain } = await azureLogin(options.tenantId, options.persist));
+    credentialChain = await azureLogin({ tenantId, clientId, clientSecret }, options.persist);
 
     // If the user has not specified a tenantId, we will prompt them to choose one
-    if (!options.tenantId) {
+    if (!tenantId) {
       const tenants = await listTenants(credentialChain);
       if (tenants.length === 0) {
         throw new Error("No tenants found. Aborting.");
       } else if (tenants.length === 1) {
         logger.silly("A single tenant found", "swa");
-        tenant = tenants[0];
+        tenantId = tenants[0].tenantId;
       } else {
-        tenant = await chooseTenant(tenants, options.tenantId);
+        const tenant = await chooseTenant(tenants, options.tenantId);
+        tenantId = tenant.tenantId;
         // login again with the new tenant
         // TODO: can we silently authenticate the user with the new tenant?
-        ({ credentialChain } = await azureLogin(tenant.tenantId, options.persist));
+        credentialChain = await azureLogin({ tenantId, clientId, clientSecret }, options.persist);
       }
     }
 
-    logger.silly({ tenant: tenant?.tenantId }, "swa");
+    logger.silly({ tenant: tenantId }, "swa");
 
     // If the user has not specified a subscriptionId, we will prompt them to choose one
     subscriptionId = options.subscriptionId;

@@ -1,13 +1,13 @@
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 import { GenericResourceExpanded, ResourceManagementClient } from "@azure/arm-resources";
 import { Subscription, SubscriptionClient } from "@azure/arm-subscriptions";
-import { ChainedTokenCredential, DeviceCodeCredential, InteractiveBrowserCredential, TokenCredential, useIdentityPlugin } from "@azure/identity";
+import { ChainedTokenCredential, ClientSecretCredential, DeviceCodeCredential, EnvironmentCredential, InteractiveBrowserCredential, TokenCredential, useIdentityPlugin } from "@azure/identity";
 import { cachePersistencePlugin } from "@azure/identity-cache-persistence";
 import { vsCodePlugin } from "@azure/identity-vscode";
 import { logger } from "./utils";
 import { isWSL } from "./utils/platform";
 
-export async function azureLogin(tenantId?: string, persist = false) {
+export async function azureLogin(details: LoginDetails = {}, persist = false) {
   let tokenCachePersistenceOptions = {
     enabled: false,
     name: "identity.cache",
@@ -25,17 +25,30 @@ export async function azureLogin(tenantId?: string, persist = false) {
     }
   }
 
+  const environmentCredential = new EnvironmentCredential();
   const browserCredential = new InteractiveBrowserCredential({
     redirectUri: "http://localhost:8888",
     tokenCachePersistenceOptions,
-    tenantId,
+    tenantId: details.tenantId,
   });
   const deviceCredential = new DeviceCodeCredential({
     tokenCachePersistenceOptions,
-    tenantId,
+    tenantId: details.tenantId,
   });
-  const credentialChain = new ChainedTokenCredential(browserCredential, deviceCredential);
-  return { credentialChain };
+
+  const credentials = [environmentCredential, browserCredential, deviceCredential];
+
+  if (details.tenantId && details.clientId && details.clientSecret) {
+    const clientSecretCredential = new ClientSecretCredential(
+      details.tenantId,
+      details.clientId,
+      details.clientSecret,
+      { tokenCachePersistenceOptions }
+    );
+    credentials.unshift(clientSecretCredential);
+  }
+
+  return new ChainedTokenCredential(...credentials);
 }
 
 export async function listTenants(credentialChain: TokenCredential) {
