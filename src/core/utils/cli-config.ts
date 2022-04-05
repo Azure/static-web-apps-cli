@@ -1,12 +1,12 @@
 import * as path from "path";
 import * as process from "process";
-import { existsSync } from "fs";
-import { readFile, writeFile } from "fs/promises";
+import { existsSync, promises as fsPromises } from "fs";
 import { logger } from "./logger";
 import { DEFAULT_CONFIG } from "../../config";
 
 export const swaCliConfigSchemaUrl = "https://aka.ms/azure/static-web-apps-cli/schema";
 export const swaCliConfigFilename = "swa-cli.config.json";
+const { readFile, writeFile } = fsPromises;
 
 export const configExists = (configFilePath: string) => existsSync(configFilePath);
 
