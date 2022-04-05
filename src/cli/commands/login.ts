@@ -1,8 +1,26 @@
 import { TenantIdDescription } from "@azure/arm-subscriptions";
 import { TokenCredential } from "@azure/identity";
-import { logger } from "../../core";
+import { Command } from "commander";
+import { DEFAULT_CONFIG } from "../../config";
+import { configureOptions, logger } from "../../core";
 import { azureLogin, listResourceGroups, listStaticSites, listSubscriptions, listTenants } from "../../core/account";
 import { chooseResourceGroup, chooseStaticSite, chooseSubscription, chooseTenant } from "../../core/prompts";
+
+export default function registerCommand(program: Command) {
+  program
+  .command("login")
+  .usage("[options]")
+  .description("login into Azure Static Web Apps")
+  .option("--persist", "enable credentials cache persistence", DEFAULT_CONFIG.persist)
+  .option("--subscription [subscriptionId]", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
+  .option("--resource-group [resourceGroup]", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroup)
+  .option("--tenant [tenantId]", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
+  .option("--app-name [appName]", "Azure Static Web App application name", DEFAULT_CONFIG.appName)
+  .action(async (_options: SWACLIConfig, command: Command) => {
+    const config = await configureOptions("./", command.optsWithGlobals(), command);
+    await login(config.options);
+  });
+}
 
 export async function login(options: SWACLIConfig) {
   let credentialChain: TokenCredential | undefined = undefined;

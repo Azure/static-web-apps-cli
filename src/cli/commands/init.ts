@@ -3,8 +3,20 @@ import path from "path";
 import process from "process";
 import prompts from 'prompts';
 import chalk from "chalk";
-import { logger, dasherize, hasConfigurationNameInConfigFile, writeConfigFile, swaCliConfigFilename, configExists } from "../../core/utils";
+import { Command } from "commander";
+import { logger, dasherize, hasConfigurationNameInConfigFile, writeConfigFile, swaCliConfigFilename, configExists, configureOptions } from "../../core/utils";
 import { DEFAULT_CONFIG } from "../../config";
+
+export default function registerCommand(program: Command) {
+  program.command("init [name]")
+    .usage("[name] [options]")
+    .description("initialize a new static web app project")
+    .option("--yes", "Answer yes to all prompts (disable interactive mode)", false)
+    .action(async (name: string, _options: SWACLIConfig, command: Command) => {
+      const config = await configureOptions(undefined, command.optsWithGlobals(), command);
+      await init(name, config.options);
+    });
+}
 
 export async function init(name: string | undefined, options: SWACLIConfig, showHints: boolean = true) {
   const configFilePath = options.config!;

@@ -2,16 +2,47 @@ require("dotenv").config();
 
 import chalk from "chalk";
 import { spawn } from "child_process";
+import { Command } from "commander";
 import fs from "fs";
 import ora from "ora";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
-import { findSWAConfigFile, logger, readWorkflowFile } from "../../core";
+import { configureOptions, findSWAConfigFile, logger, readWorkflowFile } from "../../core";
 import { getStaticSiteDeployment } from "../../core/account";
 import { cleanUp, getDeployClientPath } from "../../core/deploy-client";
 import { login } from "./login";
 
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "package.json"));
+
+export default function registerCommand(program: Command) {
+  program
+    .command("deploy [context]")
+    .usage("[context] [options]")
+    .description("Deploy the current project to Azure Static Web Apps")
+    .option("--api-location <apiLocation>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
+    .option("--deployment-token <secret>", "the secret toekn used to authenticate with the Static Web Apps")
+    .option("--dry-run", "simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
+    .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+      const config = await configureOptions(context, command.optsWithGlobals(), command);
+      await deploy(config.context ?? context, config.options);
+    })
+    .addHelpText(
+      "after",
+      `
+Examples:
+
+  Deploy using a deployment token
+  swa deploy ./dist/ --api-location ./api/ --deployment-token <token>
+
+  Deploy using a deployment token from env
+  SWA_CLI_DEPLOYMENT_TOKEN=123 swa deploy ./dist/ --api-location ./api/
+
+  Deploy using swa-cli.config.json file
+  swa deploy
+  swa deploy myconfig
+    `
+  );
+}
 
 export async function deploy(deployContext: string, options: SWACLIConfig) {
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = process.env;
