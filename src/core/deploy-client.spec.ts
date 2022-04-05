@@ -4,7 +4,7 @@ import path from "path";
 import { DEPLOY_BINARY_NAME, DEPLOY_FOLDER, fetchClientVersionDefinition, getLocalClientMetadata, getPlatform } from "./deploy-client";
 
 jest.mock("node-fetch", () => jest.fn());
-jest.mock("os", () => ({ platform: () => "linux", homedir: () => "/home/user", tmpdir: () => "/tmp" }));
+jest.mock("os", () => ({ platform: () => "linux", homedir: () => "/home/user", tmpdir: () => "/tmp", release: () => "4.4.0-1-amd64" }));
 
 function mockResponse(response: any, status = 200) {
   const fetchMock = jest.requireMock("node-fetch");

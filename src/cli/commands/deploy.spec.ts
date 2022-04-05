@@ -50,15 +50,18 @@ describe("deploy", () => {
     expect(deploy("./", {})).toBeInstanceOf(Promise);
   });
 
-  it("should print an error and exit, if --deployment-token is not provided and login failed", async () => {
-    jest.spyOn(loginModule, "login").mockImplementation(() => Promise.reject());
+  it.skip("should print an error and exit, if --deployment-token is not provided and login failed", async () => {
+    jest.spyOn(loginModule, "login").mockImplementation(() => Promise.reject("mock-error"));
 
     await deploy("./", {
       outputLocation: "./dist",
       apiLocation: "./api",
+      dryRun: false,
     });
     expect(loginModule.login).toHaveBeenCalled();
-    expect(accountModule.getStaticSiteDeployment).toHaveBeenCalled();
+
+    // getStaticSiteDeployment should not be called because login failed
+    expect(accountModule.getStaticSiteDeployment).not.toHaveBeenCalled();
 
     expect(logger.error).toHaveBeenNthCalledWith(1, "A deployment token is required to deploy to Azure Static Web Apps");
     expect(logger.error).toHaveBeenNthCalledWith(
@@ -76,6 +79,7 @@ describe("deploy", () => {
       outputLocation: "./dist",
       apiLocation: "./api",
       deploymentToken: "123",
+      dryRun: false,
     });
 
     expect(logger.log).toBeCalledWith("Deployment token provide via flag", "swa");
@@ -98,7 +102,7 @@ describe("deploy", () => {
         API_LOCATION: "./api",
         VERBOSE: "false",
         SWA_CLI_DEBUG: undefined,
-        SWA_CLI_DEPLOY_DRY_RUN: "undefined",
+        SWA_CLI_DEPLOY_DRY_RUN: "false",
         SWA_CLI_ROUTES_LOCATION: undefined,
         SWA_CLI_VERSION: `${pkg.version}`,
         SWA_WORKFLOW_FILES: undefined,
@@ -113,6 +117,7 @@ describe("deploy", () => {
     await deploy("./", {
       outputLocation: "./dist",
       apiLocation: "./api",
+      dryRun: false,
     });
 
     expect(logger.log).toBeCalledWith("Deployment token found in Environment Variables:", "swa");
@@ -137,7 +142,7 @@ describe("deploy", () => {
         SWA_CLI_DEPLOYMENT_TOKEN: "123",
         SWA_CLI_DEPLOY_BINARY: "mock-binary@0.0.0",
         SWA_CLI_DEBUG: undefined,
-        SWA_CLI_DEPLOY_DRY_RUN: "undefined",
+        SWA_CLI_DEPLOY_DRY_RUN: "false",
         SWA_CLI_ROUTES_LOCATION: undefined,
         SWA_CLI_VERSION: `${pkg.version}`,
         SWA_WORKFLOW_FILES: undefined,
