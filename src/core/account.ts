@@ -87,12 +87,18 @@ export async function listSubscriptions(credentialChain: TokenCredential) {
   return subscriptions;
 }
 
-export async function listStaticSites(credentialChain: TokenCredential, subscriptionId: string | undefined) {
+export async function listStaticSites(credentialChain: TokenCredential, subscriptionId: string | undefined, resourceGroupName?: string) {
   const staticSites = [];
   if (subscriptionId) {
     const websiteClient = new WebSiteManagementClient(credentialChain, subscriptionId);
     for await (let staticSite of websiteClient.staticSites.list()) {
-      staticSites.push(staticSite);
+      if (resourceGroupName) {
+        if (staticSite.id?.includes(`/resourceGroups/${resourceGroupName}/`)) {
+          staticSites.push(staticSite);
+        }
+      } else {
+        staticSites.push(staticSite);
+      }
     }
   } else {
     logger.warn("Invalid subscription found. Cannot fetch static sites");
