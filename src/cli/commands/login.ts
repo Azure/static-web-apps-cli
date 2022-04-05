@@ -1,6 +1,6 @@
-import process from 'process';
 import { TokenCredential } from "@azure/identity";
 import { Command } from "commander";
+import process from "process";
 import { DEFAULT_CONFIG } from "../../config";
 import { configureOptions, logger } from "../../core";
 import { azureLogin, listResourceGroups, listStaticSites, listSubscriptions, listTenants } from "../../core/account";
@@ -12,12 +12,6 @@ export default function registerCommand(program: Command) {
     .usage("[options]")
     .description("login into Azure Static Web Apps")
     .option("--persist", "Enable credentials cache persistence", DEFAULT_CONFIG.persist)
-    .option("--subscription [subscriptionId]", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
-    .option("--resource-group [resourceGroup]", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroup)
-    .option("--tenant [tenantId]", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
-    .option("--client-id [clientId]", "Azure client ID", DEFAULT_CONFIG.clientId)
-    .option("--client-secret [clientSecret]", "Azure client secret", DEFAULT_CONFIG.clientSecret)
-    .option("--app-name [appName]", "Azure Static Web App application name", DEFAULT_CONFIG.appName)
     .action(async (_options: SWACLIConfig, command: Command) => {
       const config = await configureOptions("./", command.optsWithGlobals(), command);
       await login(config.options);

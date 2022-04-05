@@ -6,10 +6,10 @@ import path from "path";
 import updateNotifier from "update-notifier";
 import { DEFAULT_CONFIG } from "../config";
 import { swaCliConfigFilename } from "../core/utils/cli-config";
-import registerLogin from "./commands/login";
-import registerStart from "./commands/start";
 import registerDeploy from "./commands/deploy";
 import registerInit from "./commands/init";
+import registerLogin from "./commands/login";
+import registerStart from "./commands/start";
 const pkg = require("../../package.json");
 
 const printWelcomeMessage = () => {
@@ -44,7 +44,13 @@ export async function run(argv?: string[]) {
       "--swa-config-location <swaConfigLocation>",
       "the directory where the staticwebapp.config.json file is located",
       DEFAULT_CONFIG.swaConfigLocation
-    );
+    )
+    .option("--subscription [subscriptionId]", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
+    .option("--resource-group [resourceGroup]", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroup)
+    .option("--tenant [tenantId]", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
+    .option("--client-id [clientId]", "Azure client ID", DEFAULT_CONFIG.clientId)
+    .option("--client-secret [clientSecret]", "Azure client secret", DEFAULT_CONFIG.clientSecret)
+    .option("--app-name [appName]", "Azure Static Web App application name", DEFAULT_CONFIG.appName);
 
   // Register commands
   registerLogin(program);
