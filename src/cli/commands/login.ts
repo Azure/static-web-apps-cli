@@ -44,9 +44,9 @@ Examples:
 
 export async function login(options: SWACLIConfig) {
   let credentialChain: TokenCredential | undefined = undefined;
-  let subscriptionId: string | undefined = undefined;
-  let resourceGroupName: string | undefined = undefined;
-  let staticSiteName: string | undefined = undefined;
+  let subscriptionId: string | undefined = process.env.AZURE_SUBSCRIPTION_ID ?? options.subscriptionId;
+  let resourceGroupName: string | undefined = process.env.AZURE_RESOURCE_GROUP ?? options.resourceGroupName;
+  let staticSiteName: string | undefined = process.env.SWA_CLI_APP_NAME ?? options.appName;
   let tenantId: string | undefined = process.env.AZURE_TENANT_ID ?? options.tenantId;
   let clientId: string | undefined = process.env.AZURE_CLIENT_ID ?? options.clientId;
   let clientSecret: string | undefined = process.env.AZURE_CLIENT_SECRET ?? options.clientSecret;
