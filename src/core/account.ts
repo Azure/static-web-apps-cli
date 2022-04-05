@@ -17,7 +17,7 @@ export async function azureLogin(details: LoginDetails = {}, persist = false) {
 
   if (persist) {
     if (isWSL()) {
-      logger.warn("Cache persistence is not supported on WSL.", "swa");
+      logger.warn("Authentication cache persistence is not currently supported on WSL.", "swa");
     } else {
       useIdentityPlugin(cachePersistencePlugin);
       useIdentityPlugin(vsCodePlugin);
