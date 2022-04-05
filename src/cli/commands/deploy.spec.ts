@@ -112,9 +112,9 @@ describe.skip("deploy", () => {
         VERBOSE: "false",
         SWA_CLI_DEBUG: undefined,
         SWA_CLI_DEPLOY_DRY_RUN: "false",
-        SWA_CLI_ROUTES_LOCATION: undefined,
+        SWA_RUNTIME_CONFIG_LOCATION: undefined,
         SWA_CLI_VERSION: `${pkg.version}`,
-        SWA_WORKFLOW_FILES: undefined,
+        SWA_RUNTIME_WORKFLOW_LOCATION: undefined,
         SWA_CLI_DEPLOY_BINARY: "mock-binary@0.0.0",
       },
     });
@@ -150,9 +150,9 @@ describe.skip("deploy", () => {
         SWA_CLI_DEPLOY_BINARY: "mock-binary@0.0.0",
         SWA_CLI_DEBUG: undefined,
         SWA_CLI_DEPLOY_DRY_RUN: "false",
-        SWA_CLI_ROUTES_LOCATION: undefined,
+        SWA_RUNTIME_CONFIG_LOCATION: undefined,
         SWA_CLI_VERSION: `${pkg.version}`,
-        SWA_WORKFLOW_FILES: undefined,
+        SWA_RUNTIME_WORKFLOW_LOCATION: undefined,
       },
     });
   });

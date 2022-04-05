@@ -21,10 +21,10 @@ import {
   SWA_CLI_HOST,
   SWA_CLI_OUTPUT_LOCATION,
   SWA_CLI_PORT,
-  SWA_CLI_ROUTES_LOCATION,
+  SWA_RUNTIME_CONFIG_LOCATION,
   SWA_WORKFLOW_CONFIG_FILE,
   SWA_CLI_DEVSERVER_TIMEOUT,
-  SWA_CLI_OPEN,
+  SWA_CLI_OPEN_BROWSER,
 } from "../core/constants";
 import { validateFunctionTriggers } from "./handlers/function.handler";
 import { handleUserConfig, onConnectionLost, requestMiddleware } from "./middlewares/request.middleware";
@@ -126,7 +126,7 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
 
     logger.log(logMessage);
 
-    if (SWA_CLI_OPEN) {
+    if (SWA_CLI_OPEN_BROWSER) {
       open(serverAddress);
     }
 
@@ -150,7 +150,7 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
   // load user custom rules if running in local mode (non-dev server)
   let userConfig: SWAConfigFile | undefined;
   // load user configuration even when using a dev server
-  userConfig = await handleUserConfig(SWA_CLI_ROUTES_LOCATION || SWA_CLI_APP_LOCATION);
+  userConfig = await handleUserConfig(SWA_RUNTIME_CONFIG_LOCATION || SWA_CLI_APP_LOCATION);
   const createServer = () => {
     if (SWA_CLI_APP_SSL && httpsServerOptions !== null) {
       return https.createServer(httpsServerOptions, requestHandler(userConfig));

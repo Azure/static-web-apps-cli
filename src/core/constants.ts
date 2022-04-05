@@ -164,7 +164,7 @@ export const SWA_WORKFLOW_CONFIG_FILE = process.env.SWA_WORKFLOW_CONFIG_FILE as 
 export const SWA_CLI_HOST = process.env.SWA_CLI_HOST as string;
 export const SWA_CLI_PORT = parseInt((process.env.SWA_CLI_PORT || DEFAULT_CONFIG.port) as string, 10);
 export const SWA_CLI_APP_LOCATION = (process.env.SWA_CLI_APP_LOCATION || DEFAULT_CONFIG.appLocation) as string;
-export const SWA_CLI_ROUTES_LOCATION = (process.env.SWA_CLI_ROUTES_LOCATION || DEFAULT_CONFIG.swaConfigLocation) as string;
+export const SWA_RUNTIME_CONFIG_LOCATION = (process.env.SWA_RUNTIME_CONFIG_LOCATION || DEFAULT_CONFIG.swaConfigLocation) as string;
 export const SWA_CLI_OUTPUT_LOCATION = (process.env.SWA_CLI_OUTPUT_LOCATION || DEFAULT_CONFIG.outputLocation) as string;
 export const SWA_CLI_API_LOCATION = (process.env.SWA_CLI_API_LOCATION || DEFAULT_CONFIG.apiLocation) as string;
 export const SWA_CLI_APP_SSL = process.env.SWA_CLI_APP_SSL === "true" || DEFAULT_CONFIG.ssl === true;
@@ -174,7 +174,7 @@ export const SWA_CLI_APP_PROTOCOL = SWA_CLI_APP_SSL ? `https` : `http`;
 export const SWA_PUBLIC_DIR = path.resolve(__dirname, "..", "public"); //SWA_PUBLIC_DIR = "../public"
 export const HAS_API = Boolean(SWA_CLI_API_LOCATION && SWA_CLI_API_URI());
 export const SWA_CLI_DEVSERVER_TIMEOUT = parseInt((process.env.SWA_CLI_DEVSERVER_TIMEOUT || DEFAULT_CONFIG.devserverTimeout) as string, 10);
-export const SWA_CLI_OPEN = (process.env.SWA_CLI_OPEN === "true" || DEFAULT_CONFIG.open) as boolean;
+export const SWA_CLI_OPEN_BROWSER = (process.env.SWA_CLI_OPEN_BROWSER === "true" || DEFAULT_CONFIG.open) as boolean;
 
 // --
 // Note: declare these as functions so that their body gets evaluated at runtime!

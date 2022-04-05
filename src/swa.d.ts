@@ -2,20 +2,22 @@ declare global {
   namespace NodeJS {
     interface ProcessEnv {
       SWA_CLI_DEBUG: DebugFilterLevel;
-      SWA_CLI_API_URI: string;
-      SWA_CLI_APP_URI: string;
+      SWA_RUNTIME_CONFIG_LOCATION: string;
+      SWA_RUNTIME_WORKFLOW_LOCATION: string;
+      SWA_CLI_DEBUG: string;
+      SWA_CLI_API_PORT: string;
+      SWA_CLI_APP_LOCATION: string;
       SWA_CLI_OUTPUT_LOCATION: string;
-      SWA_CLI_ROUTES_LOCATION: String;
+      SWA_CLI_API_LOCATION: string;
       SWA_CLI_HOST: string;
       SWA_CLI_PORT: string;
-      SWA_WORKFLOW_FILE: string;
-      SWA_CLI_APP_SSL: boolean;
-      SWA_CLI_APP_SSL_KEY: string;
+      SWA_CLI_APP_SSL: string;
       SWA_CLI_APP_SSL_CERT: string;
+      SWA_CLI_APP_SSL_KEY: string;
       SWA_CLI_STARTUP_COMMAND: string;
-      SWA_CLI_DEPLOYMENT_TOKEN: string;
-      SWA_CLI_DEPLOY_DRY_RUN: string;
-      SWA_CLI_DEPLOY_BINARY_VERSION: string;
+      SWA_CLI_VERSION: string;
+      SWA_CLI_DEVSERVER_TIMEOUT: string;
+      SWA_CLI_OPEN_BROWSER: string;
     }
   }
 }

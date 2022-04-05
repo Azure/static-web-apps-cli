@@ -41,7 +41,7 @@ export default function registerCommand(program: Command) {
     .option("--ssl", "serve the front-end application and API over HTTPS", DEFAULT_CONFIG.ssl)
     .option("--ssl-cert <sslCertLocation>", "the SSL certificate (.crt) to use when enabling HTTPS", DEFAULT_CONFIG.sslCert)
     .option("--ssl-key <sslKeyLocation>", "the SSL key (.key) to use when enabling HTTPS", DEFAULT_CONFIG.sslKey)
-    .option("--run <startupScript>", "run a custon shell command or file at startup", DEFAULT_CONFIG.run)
+    .option("--run <startupScript>", "run a custom shell command or script file at startup", DEFAULT_CONFIG.run)
     .option<number>(
       "--devserver-timeout <devserverTimeout>",
       "the time to wait (in ms) when connecting to a front-end application's dev server",
@@ -220,22 +220,22 @@ export async function start(startContext: string, options: SWACLIConfig) {
 
   // set env vars for current command
   const envVarsObj = {
+    SWA_RUNTIME_CONFIG_LOCATION: options.swaConfigLocation,
+    SWA_RUNTIME_WORKFLOW_LOCATION: `${userWorkflowConfig?.files?.[0]}`,
     SWA_CLI_DEBUG: options.verbose,
     SWA_CLI_API_PORT: `${apiPort}`,
     SWA_CLI_APP_LOCATION: userWorkflowConfig?.appLocation as string,
     SWA_CLI_OUTPUT_LOCATION: userWorkflowConfig?.outputLocation as string,
     SWA_CLI_API_LOCATION: userWorkflowConfig?.apiLocation as string,
-    SWA_CLI_ROUTES_LOCATION: options.swaConfigLocation,
-    SWA_CLI_HOST: options.host,
+    SWA_CLI_HOST: `${options.host}`,
     SWA_CLI_PORT: `${options.port}`,
-    SWA_WORKFLOW_FILES: userWorkflowConfig?.files?.join(","),
     SWA_CLI_APP_SSL: `${options.ssl}`,
     SWA_CLI_APP_SSL_CERT: options.sslCert,
     SWA_CLI_APP_SSL_KEY: options.sslKey,
     SWA_CLI_STARTUP_COMMAND: startupCommand as string,
     SWA_CLI_VERSION: packageInfo.version,
     SWA_CLI_DEVSERVER_TIMEOUT: `${devserverTimeout}`,
-    SWA_CLI_OPEN: `${options.open}`,
+    SWA_CLI_OPEN_BROWSER: `${options.open}`,
   };
 
   // merge SWA env variables with process.env

@@ -20,7 +20,7 @@ export default function registerCommand(program: Command) {
     .usage("[context] [options]")
     .description("Deploy the current project to Azure Static Web Apps")
     .option("--api-location <apiLocation>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
-    .option("--deployment-token <secret>", "the secret toekn used to authenticate with the Static Web Apps")
+    .option("--deployment-token <secret>", "the secret token used to authenticate with the Static Web Apps")
     .option("--dry-run", "simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
     .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
       const config = await configureOptions(context, command.optsWithGlobals(), command);
@@ -145,8 +145,8 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
 
   const cliEnv = {
     SWA_CLI_DEBUG: options.verbose,
-    SWA_CLI_ROUTES_LOCATION: options.swaConfigLocation,
-    SWA_WORKFLOW_FILES: userWorkflowConfig?.files?.join(","),
+    SWA_RUNTIME_WORKFLOW_LOCATION: userWorkflowConfig?.files?.[0],
+    SWA_RUNTIME_CONFIG_LOCATION: options.swaConfigLocation,
     SWA_RUNTIME_CONFIG: options.swaConfigLocation ? (await findSWAConfigFile(options.swaConfigLocation))?.file : undefined,
     SWA_CLI_VERSION: packageInfo.version,
     SWA_CLI_DEPLOY_DRY_RUN: `${options.dryRun}`,
