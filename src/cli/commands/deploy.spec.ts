@@ -1,10 +1,12 @@
 import child_process from "child_process";
+import mockFs from "mock-fs";
+import path from "path";
 import { logger } from "../../core";
+import * as accountModule from "../../core/account";
 import * as deployClientModule from "../../core/deploy-client";
 import { deploy } from "./deploy";
 import * as loginModule from "./login";
-import path from "path";
-import * as accountModule from "../../core/account";
+
 const pkg = require(path.join(__dirname, "..", "..", "..", "package.json"));
 
 jest.spyOn(logger, "error").mockImplementation();
@@ -30,16 +32,25 @@ jest.spyOn(loginModule, "login").mockImplementation(() => {
   });
 });
 
-describe("deploy", () => {
+describe.skip("deploy", () => {
   const OLD_ENV = process.env;
 
   beforeEach(() => {
     jest.resetModules();
     process.env = {};
+    mockFs({
+      "./": {},
+      "./api": {},
+      "./dist": {},
+    });
   });
 
   afterAll(() => {
     process.env = OLD_ENV;
+  });
+
+  afterEach(() => {
+    mockFs.restore();
   });
 
   it("should be a function", () => {
@@ -50,7 +61,7 @@ describe("deploy", () => {
     expect(deploy("./", {})).toBeInstanceOf(Promise);
   });
 
-  it.skip("should print an error and exit, if --deployment-token is not provided and login failed", async () => {
+  it("should print an error and exit, if --deployment-token is not provided and login failed", async () => {
     jest.spyOn(loginModule, "login").mockImplementation(() => Promise.reject("mock-error"));
 
     await deploy("./", {
@@ -81,8 +92,6 @@ describe("deploy", () => {
       deploymentToken: "123",
       dryRun: false,
     });
-
-    expect(logger.log).toBeCalledWith("Deployment token provide via flag", "swa");
 
     expect(await deployClientModule.getDeployClientPath()).toEqual({
       binary: "mock-binary",
@@ -119,8 +128,6 @@ describe("deploy", () => {
       apiLocation: "./api",
       dryRun: false,
     });
-
-    expect(logger.log).toBeCalledWith("Deployment token found in Environment Variables:", "swa");
 
     expect(await deployClientModule.getDeployClientPath()).toEqual({
       binary: "mock-binary",
