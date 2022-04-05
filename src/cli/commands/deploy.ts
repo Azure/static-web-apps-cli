@@ -87,7 +87,7 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     deploymentToken = SWA_CLI_DEPLOYMENT_TOKEN;
     logger.log("Deployment token found in Environment Variables:", "swa");
     logger.log({ [chalk.green(`SWA_CLI_DEPLOYMENT_TOKEN`)]: SWA_CLI_DEPLOYMENT_TOKEN }, "swa");
-  } else {
+  } else if (options.dryRun === false) {
     logger.warn(`No deployment token found. Trying interactive login...`, "swa");
 
     try {
