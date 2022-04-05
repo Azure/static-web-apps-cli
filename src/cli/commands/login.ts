@@ -14,9 +14,14 @@ export default function registerCommand(program: Command) {
     .description("login into Azure Static Web Apps")
     .option("--persist", "Enable credentials cache persistence", DEFAULT_CONFIG.persist)
     .action(async (_options: SWACLIConfig, command: Command) => {
-      const config = await configureOptions("./", command.optsWithGlobals(), command);
-      await login(config.options);
+      const config = await configureOptions(undefined, command.optsWithGlobals(), command);
+      const { subscriptionId, resourceGroupName, staticSiteName } = await login(config.options);
       logger.log(chalk.green(`✔ Logged in successfully!`));
+      logger.log({
+        subscriptionId,
+        resourceGroupName,
+        staticSiteName,
+      });
     })
     .addHelpText(
       "after",
