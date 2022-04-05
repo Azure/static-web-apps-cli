@@ -88,8 +88,8 @@ export async function login(options: SWACLIConfig) {
     logger.silly({ subscriptionId });
 
     // If the user has not specified a resourceGroup, we will prompt them to choose one
-    resourceGroupName = options.resourceGroup;
-    if (!options.resourceGroup) {
+    resourceGroupName = options.resourceGroupName;
+    if (!options.resourceGroupName) {
       const resourceGroups = await listResourceGroups(credentialChain, subscriptionId);
       if (resourceGroups.length === 0) {
         // TODO: create a new resource group
@@ -98,7 +98,7 @@ export async function login(options: SWACLIConfig) {
         logger.silly("A single resource group found");
         resourceGroupName = resourceGroups[0].name;
       } else {
-        const resourceGroup = await chooseResourceGroup(resourceGroups, options.resourceGroup);
+        const resourceGroup = await chooseResourceGroup(resourceGroups, options.resourceGroupName);
         resourceGroupName = resourceGroup.name;
       }
     }
@@ -108,7 +108,7 @@ export async function login(options: SWACLIConfig) {
     // If the user has not specified a staticSite, we will prompt them to choose one
     staticSiteName = options.appName;
     if (!options.appName) {
-      const staticSites = await listStaticSites(credentialChain, subscriptionId);
+      const staticSites = await listStaticSites(credentialChain, subscriptionId, resourceGroupName);
       if (staticSites.length === 0) {
         // TODO: create a new static site
         throw new Error("No static sites found. Aborting.");

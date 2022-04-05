@@ -46,7 +46,7 @@ export async function run(argv?: string[]) {
       DEFAULT_CONFIG.swaConfigLocation
     )
     .option("--subscription [subscriptionId]", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
-    .option("--resource-group [resourceGroup]", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroup)
+    .option("--resource-group-name [resourceGroupName]", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroupName)
     .option("--tenant [tenantId]", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
     .option("--client-id [clientId]", "Azure client ID", DEFAULT_CONFIG.clientId)
     .option("--client-secret [clientSecret]", "Azure client secret", DEFAULT_CONFIG.clientSecret)

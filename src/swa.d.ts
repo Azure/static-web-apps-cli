@@ -96,7 +96,7 @@ declare type SWACLIDeployOptions = {
 declare type SWACLILoginOptions = LoginDetails & {
   persist?: boolean;
   subscriptionId?: string;
-  resourceGroup?: string;
+  resourceGroupName?: string;
   appName?: string;
 };
 
@@ -175,10 +175,10 @@ declare type SWACLIConfigFile = {
 
 declare type FrameworkConfig = GithubActionWorkflow & {
   name?: string;
-  apiBuildCommand?: string,
-  devServerCommand?: string,
-  devServerUrl?: string,
-}
+  apiBuildCommand?: string;
+  devServerCommand?: string;
+  devServerUrl?: string;
+};
 
 declare interface CoreToolsRelease {
   version: string;

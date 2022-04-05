@@ -25,7 +25,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   // swa login options
   persist: true,
   subscriptionId: undefined,
-  resourceGroup: undefined,
+  resourceGroupName: undefined,
   tenantId: undefined,
   clientId: undefined,
   clientSecret: undefined,
