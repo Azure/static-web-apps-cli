@@ -9,8 +9,18 @@ import { azureLoginWithIdentitySDK, listResourceGroups, listStaticSites, listSub
 import { chooseResourceGroup, chooseStaticSite, chooseSubscription, chooseTenant } from "../../core/prompts";
 import { Environment } from "../../core/swa-cli-persistence-plugin/impl/azure-environment";
 
+export function addSharedLoginOptionsToCommand(command: Command) {
+  command
+    .option("--subscription [subscriptionId]", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
+    .option("--resource-group [resourceGroup]", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroupName)
+    .option("--tenant [tenantId]", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
+    .option("--client-id [clientId]", "Azure client ID", DEFAULT_CONFIG.clientId)
+    .option("--client-secret [clientSecret]", "Azure client secret", DEFAULT_CONFIG.clientSecret)
+    .option("--app-name [appName]", "Azure Static Web App application name", DEFAULT_CONFIG.appName);
+}
+
 export default function registerCommand(program: Command) {
-  program
+  const loginCommand = program
     .command("login")
     .usage("[options]")
     .description("login into Azure Static Web Apps")
@@ -38,6 +48,7 @@ Examples:
             --client-secret 0000000000000000000000000000000000000000000000000000000000000000
     `
     );
+  addSharedLoginOptionsToCommand(loginCommand);
 }
 
 export async function login(options: SWACLIConfig) {

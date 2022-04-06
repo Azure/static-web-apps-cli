@@ -9,12 +9,12 @@ import { configureOptions, findSWAConfigFile, logger, readWorkflowFile } from ".
 import { getStaticSiteDeployment } from "../../core/account";
 import { cleanUp, getDeployClientPath } from "../../core/deploy-client";
 import { swaCLIEnv } from "../../core/env";
-import { login } from "./login";
+import { login, addSharedLoginOptionsToCommand } from "./login";
 
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "package.json"));
 
 export default function registerCommand(program: Command) {
-  program
+  const deployCommand = program
     .command("deploy [context]")
     .usage("[context] [options]")
     .description("Deploy the current project to Azure Static Web Apps")
@@ -41,6 +41,7 @@ Examples:
   swa deploy myconfig
     `
     );
+  addSharedLoginOptionsToCommand(deployCommand);
 }
 
 export async function deploy(deployContext: string, options: SWACLIConfig) {
