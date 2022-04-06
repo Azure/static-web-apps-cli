@@ -39,8 +39,6 @@ export async function run(argv?: string[]) {
         .preset(DEFAULT_CONFIG.verbose)
         .default(DEFAULT_CONFIG.verbose)
     )
-    .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development\n")
-
     .option("--config <path>", "path to swa-cli.config.json file to use", path.relative(process.cwd(), swaCliConfigFilename))
     .option("--print-config", "print all resolved options", false)
     .option(
