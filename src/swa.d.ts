@@ -6,7 +6,7 @@ declare global {
 
 declare interface SWACLIEnv {
   DEBUG?: string; // general purpose debug variable
-  SWA_CLI_DEBUG?: DebugFilterLevel;
+  SWA_CLI_DEBUG?: typeof DebugFilterLevel;
   SWA_RUNTIME_CONFIG_LOCATION?: string;
   SWA_RUNTIME_WORKFLOW_LOCATION?: string;
 
@@ -101,8 +101,8 @@ declare type SWACLIStartOptions = {
   apiPrefix?: "api";
   sslCert?: string;
   sslKey?: string;
-  swaConfigFilename?: "staticwebapp.config.json";
-  swaConfigFilenameLegacy?: "routes.json";
+  swaConfigFilename?: string;
+  swaConfigFilenameLegacy?: string;
   app?: string;
   apiLocation?: string;
   build?: boolean;
@@ -117,6 +117,7 @@ declare type SWACLIStartOptions = {
   config?: string;
   printConfig?: boolean;
   yes?: boolean;
+  githubActionWorkflowLocation?: string;
 };
 
 declare type SWACLIDeployOptions = {
@@ -125,6 +126,8 @@ declare type SWACLIDeployOptions = {
   deploymentToken?: string;
   dryRun?: boolean;
 };
+
+declare type SWACLIConfig = SWACLIStartOptions & SWACLILoginOptions & SWACLIDeployOptions & GithubActionWorkflow;
 
 declare type SWACLILoginOptions = LoginDetails & {
   persist?: boolean;
@@ -138,8 +141,6 @@ interface LoginDetails {
   clientId?: string;
   clientSecret?: string;
 }
-
-declare type SWACLIConfig = SWACLIStartOptions & SWACLILoginOptions & SWACLIDeployOptions & GithubActionWorkflow;
 
 declare type ResponseOptions = {
   [key: string]: any;

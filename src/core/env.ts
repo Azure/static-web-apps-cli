@@ -1,20 +1,23 @@
 /**
- * Gets or sets the environment variables.
+ * Gets or sets the environment variables from `process.env`.
  *
- * @param args A list of environment variables to merge into the `process.env` object
- * @returns The `process.env` object
+ * @param newEnvs A list of environment variables to merge into the `process.env` object
+ * @returns The SWA CLI environment variables from the `process.env` object
  */
-export function swaCLiEnv(...args: SWACLIEnv[]): SWACLIEnv {
-  let newEnv: SWACLIEnv = {
+export function swaCLIEnv(...newEnvs: SWACLIEnv[]): SWACLIEnv {
+  // Note: logger is not available in this context
+  // use console.log instead
+
+  let env: SWACLIEnv = {
     ...process.env,
   };
 
-  for (const arg of args) {
-    newEnv = {
+  for (const newEnv of newEnvs) {
+    env = {
+      ...env,
       ...newEnv,
-      ...arg,
     };
   }
 
-  return newEnv;
+  return env;
 }

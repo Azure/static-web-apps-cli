@@ -5,7 +5,7 @@ import process from "process";
 import { DEFAULT_CONFIG } from "../../config";
 import { configureOptions, logger } from "../../core";
 import { azureLogin, listResourceGroups, listStaticSites, listSubscriptions, listTenants } from "../../core/account";
-import { swaCLiEnv } from "../../core/env";
+import { swaCLIEnv } from "../../core/env";
 import { chooseResourceGroup, chooseStaticSite, chooseSubscription, chooseTenant } from "../../core/prompts";
 
 export default function registerCommand(program: Command) {
@@ -44,7 +44,7 @@ Examples:
 }
 
 export async function login(options: SWACLIConfig) {
-  const { AZURE_SUBSCRIPTION_ID, AZURE_RESOURCE_GROUP, SWA_CLI_APP_NAME, AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET } = swaCLiEnv();
+  const { AZURE_SUBSCRIPTION_ID, AZURE_RESOURCE_GROUP, SWA_CLI_APP_NAME, AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET } = swaCLIEnv();
 
   let credentialChain: TokenCredential | undefined = undefined;
   let subscriptionId: string | undefined = AZURE_SUBSCRIPTION_ID ?? options.subscriptionId;

@@ -8,7 +8,7 @@ import { DEFAULT_CONFIG } from "../../config";
 import { configureOptions, findSWAConfigFile, logger, readWorkflowFile } from "../../core";
 import { getStaticSiteDeployment } from "../../core/account";
 import { cleanUp, getDeployClientPath } from "../../core/deploy-client";
-import { swaCLiEnv } from "../../core/env";
+import { swaCLIEnv } from "../../core/env";
 import { login } from "./login";
 
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "package.json"));
@@ -44,7 +44,7 @@ Examples:
 }
 
 export async function deploy(deployContext: string, options: SWACLIConfig) {
-  const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLiEnv();
+  const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
 
   if (options.dryRun) {
@@ -165,8 +165,6 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     VERBOSE: isVerboseEnabled ? "true" : "false",
   };
 
-  // TODO: add support for Service Principal
-
   let spinner: ora.Ora = {} as ora.Ora;
   try {
     const { binary, version } = await getDeployClientPath();
@@ -183,7 +181,7 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
 
       const child = spawn(binary, [], {
         env: {
-          ...swaCLiEnv(cliEnv, deployClientEnv),
+          ...swaCLIEnv(cliEnv, deployClientEnv),
         },
       });
 

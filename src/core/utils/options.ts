@@ -1,8 +1,7 @@
 import { Command, OptionValues } from "commander";
-import { logger } from "./logger";
-import { getConfigFileOptions } from "./cli-config";
 import { DEFAULT_CONFIG } from "../../config";
-import { swaCLiEnv } from "../env";
+import { getConfigFileOptions } from "./cli-config";
+import { logger } from "./logger";
 
 export async function configureOptions(
   context: string | undefined,
@@ -10,16 +9,16 @@ export async function configureOptions(
   command: Command
 ): Promise<{ context: string | undefined; options: SWACLIConfig }> {
   const verbose = options.verbose;
-  swaCLiEnv({
-    SWA_CLI_DEBUG: verbose as DebugFilterLevel,
-  });
+
+  // TODO: we cannot use swaCLIEnv() here!
+  process.env.SWA_CLI_DEBUG = verbose;
 
   if (verbose?.includes("silly")) {
     // When silly level is set,
     // propagate debugging level to other tools using the DEBUG environment variable
-    swaCLiEnv({
-      DEBUG: "*",
-    });
+
+    // TODO: we cannot use swaCLIEnv() here!
+    process.env.DEBUG = "*";
   }
 
   const userOptions = getUserOptions(command);

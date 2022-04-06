@@ -16,6 +16,15 @@ jest.mock("../../../core/constants", () => {
     },
   };
 });
+
+jest.mock("../../../config", () => {
+  return {
+    DEFAULT_CONFIG: {
+      outputLocation: "/",
+    },
+  };
+});
+
 import type http from "http";
 import mockFs from "mock-fs";
 import { applyRedirectResponse, isRequestMethodValid, isRouteRequiringUserRolesCheck, tryFindFileForRequest, tryGetMatchingRoute } from "./routes";
@@ -25,7 +34,6 @@ import * as cookieModule from "../../../core/utils/cookie";
 
 describe("route", () => {
   describe("tryFindFileForRequest()", () => {
-    beforeEach(() => {});
     afterEach(() => {
       mockFs.restore();
     });
@@ -121,6 +129,20 @@ describe("route", () => {
       });
 
       const filePath = tryFindFileForRequest("/foo/");
+      expect(filePath).toBe("/foo/index.html");
+    });
+
+    it("should return same file if using dev server", () => {
+      mockFs({
+        "/foo": {
+          "index.html": "",
+        },
+      });
+
+      const constantsMock = jest.requireMock("../../../core/constants");
+      constantsMock.IS_APP_DEV_SERVER = () => true;
+
+      const filePath = tryFindFileForRequest("/foo/index.html");
       expect(filePath).toBe("/foo/index.html");
     });
   });
