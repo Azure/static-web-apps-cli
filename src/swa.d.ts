@@ -187,12 +187,13 @@ declare type SWACLIConfig =
   SWACLIInitOptions &
   SWACLIBuildOptions &
   SWACLIStartOptions &
-  SWACLIDeployOptions & {
+  SWACLIDeployOptions &
+  SWACLIContextOptions & {
 
-  login?: SWACLIGlobalOptions & SWACLILoginOptions,
-  init?: SWACLIGlobalOptions & SWACLIInitOptions,
-  start?: SWACLIGlobalOptions & SWACLIStartOptions,
-  deploy?: SWACLIGlobalOptions & SWACLIDeployOptions
+  login?: SWACLIGlobalOptions & SWACLILoginOptions & SWACLIContextOptions,
+  init?: SWACLIGlobalOptions & SWACLIInitOptions & SWACLIContextOptions,
+  start?: SWACLIGlobalOptions & SWACLIStartOptions & SWACLIContextOptions,
+  deploy?: SWACLIGlobalOptions & SWACLIDeployOptions & SWACLIContextOptions
 };
 
 declare type ResponseOptions = {
@@ -256,7 +257,7 @@ declare type DebugFilterLevel = "silly" | "silent" | "log" | "info" | "error";
 declare type SWACLIConfigFile = {
   $schema?: string;
   configurations?: {
-    [name: string]: SWACLIOptions & { context?: string };
+    [name: string]: SWACLIOptions;
   };
 };
 
