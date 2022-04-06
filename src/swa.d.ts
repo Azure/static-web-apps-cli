@@ -76,6 +76,7 @@ declare interface Path {
   method: "GET" | "POST";
 }
 
+// TODO: cleanup when we rework RuntimeHost
 declare type RuntimeHostConfig = {
   appPort: number;
   proxyHost: string;
@@ -93,54 +94,106 @@ declare type GithubActionWorkflow = {
   files?: string[];
 };
 
-declare type SWACLIStartOptions = {
-  port?: number;
-  host?: string;
-  apiPort?: number;
-  ssl?: boolean;
-  apiPrefix?: "api";
-  sslCert?: string;
-  sslKey?: string;
-  swaConfigFilename?: string;
-  swaConfigFilenameLegacy?: string;
-  app?: string;
-  apiLocation?: string;
+// -- CLI Global options -----------------------------------------------------
+
+declare type SWACLIOptionsToCleanUp = {
+  // TODO: cleanup
+  // app?: string;
   build?: boolean;
-  verbose?: string;
-  run?: string;
-  swaConfigLocation?: string;
   customUrlScheme?: string;
   overridableErrorCode?: number[];
-  devserverTimeout?: number;
-  funcArgs?: string;
-  open?: boolean;
-  config?: string;
-  printConfig?: boolean;
-  yes?: boolean;
-  githubActionWorkflowLocation?: string;
+  swaConfigFilename?: "staticwebapp.config.json";
+  swaConfigFilenameLegacy?: "routes.json";
+  apiPrefix?: "api";
 };
 
-declare type SWACLIDeployOptions = {
-  outputLocation?: string;
+declare type SWACLIGlobalOptions = {
+  verbose?: string;
+  config?: string;
+  printConfig?: boolean;
+  swaConfigLocation?: string;
+};
+
+// -- CLI Init options -------------------------------------------------------
+
+declare type SWACLIInitOptions = {
+  yes?: boolean;
+};
+
+// -- CLI Start options ------------------------------------------------------
+
+declare type SWACLIStartOptions = {
+  appLocation?: string;
   apiLocation?: string;
+  apiPort?: number;
+  host?: string;
+  port?: number;
+  ssl?: boolean;
+  sslCert?: string;
+  sslKey?: string;
+  run?: string;
+  devserverTimeout?: number;
+  open?: boolean;
+  funcArgs?: string;
+};
+
+// -- CLI Build options ------------------------------------------------------
+
+// Note: build command does not exist at the moment
+declare type SWACLIBuildOptions = {
+  appBuildCommand?: string;
+  apiBuildCommand?: string;
+};
+
+// -- CLI Deploy options -----------------------------------------------------
+
+declare type SWACLIDeployOptions = SWACLISharedLoginOptions & {
+  apiLocation?: string;
+  outputLocation?: string;
   deploymentToken?: string;
   dryRun?: boolean;
 };
 
-declare type SWACLIConfig = SWACLIStartOptions & SWACLILoginOptions & SWACLIDeployOptions & GithubActionWorkflow;
+// -- CLI Login options ------------------------------------------------------
 
-declare type SWACLILoginOptions = LoginDetails & {
-  persist?: boolean;
+declare type LoginDetails = {
+  tenantId?: string;
+  clientId?: string;
+  clientSecret?: string;
+};
+
+declare type SWACLISharedLoginOptions = LoginDetails & {
   subscriptionId?: string;
   resourceGroupName?: string;
   appName?: string;
 };
 
-interface LoginDetails {
-  tenantId?: string;
-  clientId?: string;
-  clientSecret?: string;
-}
+declare type SWACLILoginOptions = SWACLISharedLoginOptions & {
+  persist?: boolean;
+};
+
+// -- CLI Context options ----------------------------------------------------
+
+declare type SWACLIContextOptions = {
+  context?: string;
+};
+
+// -- CLI Login options ------------------------------------------------------
+
+declare type SWACLIConfig =
+  SWACLIOptionsToCleanUp &
+  SWACLIGlobalOptions &
+  SWACLILoginOptions &
+  SWACLIInitOptions &
+  SWACLIBuildOptions &
+  SWACLIStartOptions &
+  SWACLIDeployOptions & {
+
+  login?: SWACLIGlobalOptions & SWACLILoginOptions,
+  init?: SWACLIGlobalOptions & SWACLIInitOptions,
+  start?: SWACLIGlobalOptions & SWACLIStartOptions,
+  deploy?: SWACLIGlobalOptions & SWACLIDeployOptions
+};
 
 declare type ResponseOptions = {
   [key: string]: any;
