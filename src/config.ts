@@ -30,18 +30,11 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   sslKey: SWA_CLI_APP_SSL_KEY || undefined,
   appBuildCommand: "npm run build --if-present",
   apiBuildCommand: "npm run build --if-present",
-  swaConfigFilename: "staticwebapp.config.json",
-  swaConfigFilenameLegacy: "routes.json",
   run: undefined,
   verbose: "log",
   devserverTimeout: parseInt(SWA_CLI_DEVSERVER_TIMEOUT || "30000", 10),
   open: SWA_CLI_OPEN_BROWSER === "true" || false,
   githubActionWorkflowLocation: SWA_RUNTIME_WORKFLOW_LOCATION || undefined,
-
-  // @internal
-  overridableErrorCode: [400, 401, 403, 404],
-  customUrlScheme: "swa://",
-  apiPrefix: "api",
 
   // swa login options
   persist: true,
@@ -52,4 +45,12 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   clientSecret: undefined,
   appName: undefined,
   dryRun: false,
+
+  // TODO: these are constants, not configurable
+  // they should be moved out of the config
+  apiPrefix: "api",
+  swaConfigFilename: "staticwebapp.config.json",
+  swaConfigFilenameLegacy: "routes.json",
+  customUrlScheme: "swa://",
+  overridableErrorCode: [400, 401, 403, 404],
 };
