@@ -18,7 +18,7 @@ const pkg = require("../../package.json");
 const printWelcomeMessage = () => {
   // don't use logger here: SWA_CLI_DEBUG is not set yet
   console.log(``);
-  console.log(`Welcome to Azure Static Web App CLI ${chalk.green(pkg.version)}`);
+  console.log(`Welcome to Azure Static Web Apps CLI (${chalk.green(pkg.version)})`);
   console.log(``);
 };
 
