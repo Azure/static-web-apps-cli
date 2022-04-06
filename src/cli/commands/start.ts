@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import { Command, Option } from "commander";
 import concurrently from "concurrently";
 import { CommandInfo } from "concurrently/dist/src/command";
@@ -20,7 +21,7 @@ import {
   readWorkflowFile,
 } from "../../core";
 import builder from "../../core/builder";
-import { swaCLiEnv } from "../../core/env";
+import { swaCLIEnv } from "../../core/env";
 let packageInfo = require("../../../package.json");
 
 export const defaultStartContext = `.${path.sep}`;
@@ -52,15 +53,15 @@ export default function registerCommand(program: Command) {
 
     .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
     .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
+    .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+      console.warn(chalk.yellow("************************************************************************"));
+      console.warn(chalk.yellow("* WARNING: This emulator is currently in preview and may not match the *"));
+      console.warn(chalk.yellow("* cloud environment exactly. Always deploy and test your app in Azure. *"));
+      console.warn(chalk.yellow("************************************************************************"));
+      console.warn();
 
-    .action(async (context: string = defaultStartContext, _options: SWACLIConfig, command: Command) => {
       const config = await configureOptions(context, command.optsWithGlobals(), command);
-      await start(config.context ?? context, config.options);
-    })
-
-    .action(async (context: string = defaultStartContext, _options: SWACLIConfig, command: Command) => {
-      const config = await configureOptions(context, command.optsWithGlobals(), command);
-      await start(config.context ?? context, config.options);
+      await start(config.context, config.options);
     })
     .addHelpText(
       "after",
@@ -85,7 +86,7 @@ swa start http://localhost:3000 --run "npm start"
     );
 }
 
-export async function start(startContext: string, options: SWACLIConfig) {
+export async function start(startContext: string | undefined, options: SWACLIConfig) {
   // WARNING:
   // environment variables are populated using values provided by the user to the CLI.
   // Code below doesn't have access to these environment variables which are defined later below.
@@ -104,6 +105,11 @@ export async function start(startContext: string, options: SWACLIConfig) {
     useAppDevServer = startContext;
     options.outputLocation = useAppDevServer;
   } else {
+    if (!startContext) {
+      logger.error(`The folder "${startContext}" is not found. Aborting.`, true);
+      return;
+    }
+
     let outputLocationRelative = path.resolve(options.appLocation as string, startContext);
     // start the emulator from a specific artifact folder relative to appLocation, if folder exists
     if (fs.existsSync(outputLocationRelative)) {
@@ -113,12 +119,8 @@ export async function start(startContext: string, options: SWACLIConfig) {
     else if (fs.existsSync(startContext)) {
       options.outputLocation = startContext;
     } else {
-      // prettier-ignore
-      logger.error(
-        `The dist folder "${outputLocationRelative}" is not found.\n` +
-        `Make sure that this folder exists or use the --build option to pre-build the static app.`,
-        true
-      );
+      logger.error(`The folder "${outputLocationRelative}" is not found. Aborting.`, true);
+      return;
     }
   }
 
@@ -241,12 +243,12 @@ export async function start(startContext: string, options: SWACLIConfig) {
 
   // merge SWA CLI env variables with process.env
   process.env = {
-    ...swaCLiEnv(envVarsObj),
+    ...swaCLIEnv(envVarsObj),
   };
 
   // INFO: from here, code may access SWA CLI env vars.
 
-  const env = swaCLiEnv();
+  const env = swaCLIEnv();
   const concurrentlyCommands: CommandInfo[] = [
     // start the reverse proxy
     { command: `node "${path.join(__dirname, "..", "..", "msha", "server.js")}"`, name: "swa", env, prefixColor: "gray.dim" },
