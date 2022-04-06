@@ -1,6 +1,7 @@
 import { DEFAULT_CONFIG } from "../config";
 import { detectRuntime, RuntimeType } from "./runtimes";
 
+// TODO: unused, clean up
 const httpServerBin = "npx http-server";
 export function createRuntimeHost({ appPort, proxyHost, appLocation, outputLocation }: RuntimeHostConfig) {
   const runtimeType = detectRuntime(appLocation);
