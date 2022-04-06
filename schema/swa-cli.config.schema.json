@@ -8,13 +8,13 @@
             "$ref": "#/$defs/globalParameters"
           },
           {
-            "$ref": "#/$defs/workflowParameters"
-          },
-          {
             "$ref": "#/$defs/startCommandParameters"
           },
           {
             "$ref": "#/$defs/loginCommandParameters"
+          },
+          {
+            "$ref": "#/$defs/loginSharedCommandParameters"
           },
           {
             "$ref": "#/$defs/initCommandParameters"
@@ -36,6 +36,9 @@
                     "$ref": "#/$defs/loginCommandParameters"
                   },
                   {
+                    "$ref": "#/$defs/loginSharedCommandParameters"
+                  },
+                  {
                     "$ref": "#/$defs/contextParameters"
                   }
                 ]
@@ -48,9 +51,6 @@
                 "allOf": [
                   {
                     "$ref": "#/$defs/globalParameters"
-                  },
-                  {
-                    "$ref": "#/$defs/workflowParameters"
                   },
                   {
                     "$ref": "#/$defs/startCommandParameters"
@@ -87,7 +87,7 @@
                     "$ref": "#/$defs/globalParameters"
                   },
                   {
-                    "$ref": "#/$defs/workflowParameters"
+                    "$ref": "#/$defs/loginSharedCommandParameters"
                   },
                   {
                     "$ref": "#/$defs/deployCommandParameters"
@@ -119,60 +119,32 @@
           "description": "Enable verbose output. Values are: silly,info,log,silent",
           "type": "string"
         },
+        "config": {
+          "description": "Path to swa-cli.config.json file to use",
+          "type": "string",
+          "not": {}
+        },
+        "printConfig": {
+          "description": "Print all resolved options",
+          "type": "string"
+        },
         "swaConfigLocation": {
-          "description": "The the directory where the staticwebapp.config.json file is located",
+          "description": "The directory where the staticwebapp.config.json file is located",
           "type": "string"
-        },
-        "subscription": {
-          "description": "Azure subscription ID used by this project",
-          "type": "string"
-        },
-        "resourceGroup": {
-          "description": "Azure resource group used by this project",
-          "type": "string"
-        },
-        "tenant": {
-          "description": "Azure tenant ID",
-          "type": "string"
-        },
-        "appName": {
-          "description": "Azure Static Web App application name",
-          "type": "string"
-        },
-        "clientId": {
-          "description": "Azure client ID",
-          "type": "string"
-        },
-        "clientSecret": {
-          "description": "Azure client secret",
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "workflowParameters": {
-      "properties": {
-        "apiLocation": {
-          "description": "The folder containing the source code of the API application",
-          "type": "string"
-        },
-        "appLocation": {
-          "description": "The folder containing the source code of the front-end application",
-          "type": "string"
-        },
-        "outputLocation": {
-          "description": "The folder where the front-end public files are location",
-          "type": "string"
-        },
-        "build": {
-          "description": "Build the front-end app and API before starting the emulator",
-          "type": "boolean"
         }
       },
       "type": "object"
     },
     "startCommandParameters": {
       "properties": {
+        "appLocation": {
+          "description": "The folder containing the source code of the front-end application",
+          "type": "string"
+        },
+        "apiLocation": {
+          "description": "The folder containing the source code of the API application",
+          "type": "string"
+        },
         "apiPort": {
           "description": "The API server port passed to func start",
           "type": "number"
@@ -208,6 +180,39 @@
         "sslKey": {
           "description": "The SSL key (.key) to use when enabling HTTPS",
           "type": "string"
+        },
+        "funcArgs": {
+          "description": "Pass additional arguments to the func start command",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "loginSharedCommandParameters": {
+      "properties": {
+        "subscription": {
+          "description": "Azure subscription ID used by this project",
+          "type": "string"
+        },
+        "resourceGroup": {
+          "description": "Azure resource group used by this project",
+          "type": "string"
+        },
+        "appName": {
+          "description": "Azure Static Web App application name",
+          "type": "string"
+        },
+        "tenant": {
+          "description": "Azure tenant ID",
+          "type": "string"
+        },
+        "clientId": {
+          "description": "Azure client ID",
+          "type": "string"
+        },
+        "clientSecret": {
+          "description": "Azure client secret",
+          "type": "string"
         }
       },
       "type": "object"
@@ -223,8 +228,16 @@
     },
     "deployCommandParameters": {
       "properties": {
+        "apiLocation": {
+          "description": "The folder containing the source code of the API application",
+          "type": "string"
+        },
+        "outputLocation": {
+          "description": "The folder where the front-end public files are location",
+          "type": "string"
+        },
         "deploymentToken": {
-          "description": "The secret toekn used to authenticate with the Static Web Apps",
+          "description": "The secret token used to authenticate with the Static Web Apps",
           "not": {}
         },
         "dryRun": {
