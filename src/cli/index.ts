@@ -46,12 +46,7 @@ export async function run(argv?: string[]) {
       "the directory where the staticwebapp.config.json file is located",
       DEFAULT_CONFIG.swaConfigLocation
     )
-    .option("--subscription [subscriptionId]", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
-    .option("--resource-group-name [resourceGroupName]", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroupName)
-    .option("--tenant [tenantId]", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
-    .option("--client-id [clientId]", "Azure client ID", DEFAULT_CONFIG.clientId)
-    .option("--client-secret [clientSecret]", "Azure client secret", DEFAULT_CONFIG.clientSecret)
-    .option("--app-name [appName]", "Azure Static Web App application name", DEFAULT_CONFIG.appName);
+    .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development\n");
 
   // Register commands
   registerLogin(program);
