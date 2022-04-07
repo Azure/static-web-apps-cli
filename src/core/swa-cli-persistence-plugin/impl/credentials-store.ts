@@ -1,51 +1,61 @@
+import { TokenCachePersistenceOptions } from "@azure/identity";
 import { logger } from "../../utils";
 
 type KeytarModule = typeof import("keytar");
-interface ChunkedPassword {
+
+interface ChunkedData {
   content: string;
   hasNextChunk: boolean;
 }
 
-interface ICredentialsStore {
+interface KeytarCredentialsAccount {
+  account: string;
+  password: string;
+}
+
+interface KeytarCredentialsStore {
   getPassword(service: string, account: string): Promise<string | null>;
-  setPassword(service: string, account: string, password: string): Promise<void>;
+  setPassword(service: string, account: string, credentials: string): Promise<void>;
   deletePassword(service: string, account: string): Promise<boolean>;
   findPassword(service: string): Promise<string | null>;
-  findCredentials(service: string): Promise<Array<{ account: string; password: string }>>;
+  findCredentials(service: string): Promise<Array<KeytarCredentialsAccount>>;
   clear(): Promise<void>;
 }
 
-export class CredentialsStore implements ICredentialsStore {
-  constructor(private disableKeytar: boolean) {}
+export class CredentialsStore implements KeytarCredentialsStore {
+  constructor(private options: TokenCachePersistenceOptions) {}
 
-  private static readonly MAX_PASSWORD_LENGTH = 2500;
-  private static readonly PASSWORD_CHUNK_SIZE = CredentialsStore.MAX_PASSWORD_LENGTH - 100;
+  private static readonly KEYTAR_ENTRY_MAX_LENGTH = 2500;
+  private static readonly KEYTAR_ENTRY_CHUNK_SIZE = CredentialsStore.KEYTAR_ENTRY_MAX_LENGTH - 100;
+  private static readonly KEYTAR_SERVICE = "swa-cli";
 
-  protected _keytarCache: KeytarModule | undefined;
+  private keytarCache: KeytarModule | undefined;
 
   async getPassword(service: string, account: string): Promise<string | null> {
+    logger.silly("Getting credentials from keychain");
+
     const keytar = await this.withKeytar();
-    logger.silly("Getting password from keytar");
+    logger.silly("Got keychain reference");
 
-    const password = await keytar.getPassword(service, account);
-    logger.silly("Got password from keytar: " + (password ? "<hidden>" : "<empty>"));
+    const credentials = await keytar.getPassword(service, account);
+    logger.silly("Got credentials from keychain: " + (credentials ? "<hidden>" : "<empty>"));
 
-    if (password) {
-      logger.silly("Password found in keytar");
+    if (credentials) {
+      logger.silly("Credentials found in keychain");
 
       try {
-        let { content, hasNextChunk }: ChunkedPassword = JSON.parse(password);
+        let { content, hasNextChunk }: ChunkedData = JSON.parse(credentials);
 
         if (!content || !hasNextChunk) {
-          return password;
+          return credentials;
         }
 
-        logger.silly("Password is chunked. Reading all chunks...");
+        logger.silly("Credentials is chunked. Reading all chunks...");
 
         let index = 1;
         while (hasNextChunk) {
           const nextChunk = await keytar.getPassword(service, `${account}-${index}`);
-          const result: ChunkedPassword = JSON.parse(nextChunk!);
+          const result: ChunkedData = JSON.parse(nextChunk!);
           content += result.content;
           hasNextChunk = result.hasNextChunk;
           index++;
@@ -54,104 +64,96 @@ export class CredentialsStore implements ICredentialsStore {
         logger.silly("Got all chunks successfully");
         return content;
       } catch {
-        logger.silly("Password is not chunked");
-        logger.silly("Returning password as is");
-        return password;
+        logger.silly("Credentials is not chunked");
+        logger.silly("Returning credentials as is");
+        return credentials;
       }
     }
 
-    logger.silly("Password not found in keytar");
-    return password;
+    logger.silly("Credentials not found in keychain");
+    return credentials;
   }
 
-  async setPassword(service: string, account: string, password: string): Promise<void> {
-    logger.silly("Setting password in keytar");
+  async setPassword(service: string, account: string, credentials: string): Promise<void> {
+    logger.silly("Setting credentials in keychain");
 
     const keytar = await this.withKeytar();
-    logger.silly("Got keytar");
+    logger.silly("Got keychain reference");
 
     const MAX_SET_ATTEMPTS = 3;
 
     // Sometimes Keytar has a problem talking to the keychain on the OS. To be more resilient, we retry a few times.
-    const setPasswordWithRetry = async (service: string, account: string, password: string) => {
-      logger.silly("set password with retry...");
-
+    const setPasswordWithRetry = async (service: string, account: string, credentials: string) => {
       let attempts = 0;
-      let error: any;
+      let error: Error | undefined;
       while (attempts < MAX_SET_ATTEMPTS) {
         try {
-          logger.silly("Attempting to set password");
+          logger.silly("Attempting to set credentials");
 
-          await keytar.setPassword(service, account, password);
+          await keytar.setPassword(service, account, credentials);
 
-          logger.silly("Set password successfully");
+          logger.silly("Set credentials successfully");
 
           return;
-        } catch (e) {
-          error = e;
-          logger.warn("Error attempting to set a password. Trying again... (" + attempts + ")");
+        } catch (error) {
+          error = error;
+          logger.warn("Error attempting to set a credentials. Trying again... (" + attempts + ")");
           logger.warn(error as any);
           attempts++;
           await new Promise((resolve) => setTimeout(resolve, 200));
         }
       }
 
-      // throw last error
       throw error;
     };
 
-    if (password.length > CredentialsStore.MAX_PASSWORD_LENGTH) {
-      logger.silly("Password is too long. Chunking it.");
+    if (credentials.length > CredentialsStore.KEYTAR_ENTRY_MAX_LENGTH) {
+      logger.silly("Credentials value is too long. Chunking it.");
 
       let index = 0;
       let chunk = 0;
       let hasNextChunk = true;
       while (hasNextChunk) {
-        const passwordChunk = password.substring(index, index + CredentialsStore.PASSWORD_CHUNK_SIZE);
-        index += CredentialsStore.PASSWORD_CHUNK_SIZE;
-        hasNextChunk = password.length - index > 0;
+        const credentialsChunk = credentials.substring(index, index + CredentialsStore.KEYTAR_ENTRY_CHUNK_SIZE);
+        index += CredentialsStore.KEYTAR_ENTRY_CHUNK_SIZE;
+        hasNextChunk = credentials.length - index > 0;
 
-        const content: ChunkedPassword = {
-          content: passwordChunk,
+        const content: ChunkedData = {
+          content: credentialsChunk,
           hasNextChunk: hasNextChunk,
         };
 
+        logger.silly("Setting credentials chunk #" + chunk + " ...");
         await setPasswordWithRetry(service, chunk ? `${account}-${chunk}` : account, JSON.stringify(content));
         chunk++;
       }
     } else {
-      await setPasswordWithRetry(service, account, password);
+      await setPasswordWithRetry(service, account, credentials);
     }
-
-    // TODO: emit password change event
   }
 
   async deletePassword(service: string, account: string): Promise<boolean> {
-    logger.silly("Deleting password from keytar");
+    logger.silly("Deleting credentials from keychain");
 
     const keytar = await this.withKeytar();
-    logger.silly("Got keytar");
+    logger.silly("Got keychain reference");
 
     const didDelete = await keytar.deletePassword(service, account);
-    logger.silly("Deleted password from keytar: " + didDelete);
-
-    if (didDelete) {
-      // TODO: emit password change event
-    }
+    logger.silly("Deleted credentials from keychain: " + didDelete);
 
     return didDelete;
   }
 
   async findPassword(service: string): Promise<string | null> {
-    logger.silly("findPassword called");
+    logger.silly("Find password in keychain");
 
     const keytar = await this.withKeytar();
-    logger.silly("Got keytar");
+    logger.silly("Got keychain reference");
 
-    const password = await keytar.findPassword(service);
-    logger.silly("Got password from keytar: " + (password ? "<hidden>" : "<empty>"));
+    const credentials = await keytar.findPassword(service);
+    logger.silly("Got credentials from keychain: " + (credentials ? "<hidden>" : "<empty>"));
 
-    return password;
+    return credentials;
   }
 
   async findCredentials(service: string): Promise<Array<{ account: string; password: string }>> {
@@ -161,12 +163,12 @@ export class CredentialsStore implements ICredentialsStore {
   }
 
   public clear(): Promise<void> {
-    logger.silly("clear called");
+    logger.silly("Clear keychain");
 
-    if (this._keytarCache instanceof InMemoryCredentialsStore) {
+    if (this.keytarCache instanceof InMemoryCredentialsStore) {
       logger.silly("Clearing in-memory credentials");
 
-      return this._keytarCache.clear();
+      return this.keytarCache.clear();
     }
 
     // We don't know how to properly clear Keytar because we don't know
@@ -176,49 +178,49 @@ export class CredentialsStore implements ICredentialsStore {
   }
 
   public async getSecretStoragePrefix() {
-    return Promise.resolve("swa-cli");
+    return Promise.resolve(CredentialsStore.KEYTAR_SERVICE);
   }
 
   async withKeytar(): Promise<KeytarModule> {
-    logger.silly("Getting keytar");
-    logger.silly(`disableKeytar: ${this.disableKeytar}`);
-    logger.silly(`keytarCache: ${this._keytarCache}`);
+    logger.silly("Getting keychain reference");
+    logger.silly(`isKeychainEnabled: ${this.options.enabled}`);
+    logger.silly(`KeychainCache: ${this.keytarCache}`);
 
-    if (this._keytarCache) {
-      return this._keytarCache;
+    if (this.keytarCache) {
+      return this.keytarCache;
     }
 
-    if (this.disableKeytar) {
-      logger.silly("Keytar is disabled. Using in-memory credential store instead.");
-      this._keytarCache = new InMemoryCredentialsStore();
-      return this._keytarCache;
+    if (this.options.enabled === false) {
+      logger.silly("keychain is disabled. Using in-memory credential store instead.");
+      this.keytarCache = new InMemoryCredentialsStore();
+      return this.keytarCache;
     }
 
     try {
-      logger.silly("Attempting to load keytar");
-      this._keytarCache = await import("keytar");
+      logger.silly("Attempting to load keychain");
+      this.keytarCache = await import("keytar");
 
       // Try using keytar to see if it throws or not.
-      await this._keytarCache.findCredentials("test-keytar-loads");
-    } catch (e) {
-      throw e;
+      await this.keytarCache.findCredentials("Out of the mountain of despair, a stone of hope");
+    } catch (error) {
+      throw error;
     }
 
-    logger.silly("Got keytar");
-    return this._keytarCache;
+    logger.silly("Got keychain reference");
+    return this.keytarCache;
   }
 }
 
-class InMemoryCredentialsStore implements ICredentialsStore {
+class InMemoryCredentialsStore implements KeytarCredentialsStore {
   private secretVault: any = {};
 
   async getPassword(service: string, account: string): Promise<string | null> {
     return this.secretVault[service]?.[account] ?? null;
   }
 
-  async setPassword(service: string, account: string, password: string): Promise<void> {
+  async setPassword(service: string, account: string, credentials: string): Promise<void> {
     this.secretVault[service] = this.secretVault[service] ?? {};
-    this.secretVault[service]![account] = password;
+    this.secretVault[service]![account] = credentials;
   }
 
   async deletePassword(service: string, account: string): Promise<boolean> {
@@ -236,8 +238,8 @@ class InMemoryCredentialsStore implements ICredentialsStore {
     return JSON.stringify(this.secretVault[service]) ?? null;
   }
 
-  async findCredentials(service: string): Promise<Array<{ account: string; password: string }>> {
-    const credentials: { account: string; password: string }[] = [];
+  async findCredentials(service: string): Promise<Array<KeytarCredentialsAccount>> {
+    const credentials: KeytarCredentialsAccount[] = [];
     for (const account of Object.keys(this.secretVault[service] || {})) {
       credentials.push({ account, password: this.secretVault[service]![account] });
     }

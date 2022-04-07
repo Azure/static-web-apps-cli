@@ -7,22 +7,19 @@ import { configureOptions, logger } from "../../core";
 import { swaCLIEnv } from "../../core/env";
 import { azureLoginWithIdentitySDK, listResourceGroups, listStaticSites, listSubscriptions, listTenants } from "../../core/account";
 import { chooseResourceGroup, chooseStaticSite, chooseSubscription, chooseTenant } from "../../core/prompts";
+import { Environment } from "../../core/swa-cli-persistence-plugin/impl/azure-environment";
 
 export default function registerCommand(program: Command) {
   program
     .command("login")
     .usage("[options]")
     .description("login into Azure Static Web Apps")
-    .option("--persist <perist>", "Enable credentials cache persistence", DEFAULT_CONFIG.persist)
+    .option("--persist <persist>", "Enable credentials cache persistence", DEFAULT_CONFIG.persist)
     .action(async (_options: SWACLIConfig, command: Command) => {
-      const config = await configureOptions(undefined, command.optsWithGlobals(), command);
-      const { subscriptionId, resourceGroupName, staticSiteName } = await login(config.options);
-      logger.log(chalk.green(`✔ Logged in successfully!`));
-      logger.log({
-        subscriptionId,
-        resourceGroupName,
-        staticSiteName,
-      });
+      const config = await configureOptions("./", command.optsWithGlobals(), command);
+      await login(config.options);
+
+      logger.log(chalk.green(`✔ Logged in successfully to ${Environment.AzureCloud.name}!`));
     })
     .addHelpText(
       "after",
@@ -55,11 +52,8 @@ export async function login(options: SWACLIConfig) {
   let clientId: string | undefined = AZURE_CLIENT_ID ?? options.clientId;
   let clientSecret: string | undefined = AZURE_CLIENT_SECRET ?? options.clientSecret;
 
-  logger.silly({ options });
-
   try {
     credentialChain = await azureLoginWithIdentitySDK({ tenantId, clientId, clientSecret }, options.persist);
-    // await loginWithMsal({ tenantId, clientId, clientSecret }, options.persist);
 
     // If the user has not specified a tenantId, we will prompt them to choose one
     if (!tenantId) {
