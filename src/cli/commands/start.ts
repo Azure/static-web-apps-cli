@@ -56,11 +56,6 @@ export default function registerCommand(program: Command) {
       const config = await configureOptions(context, command.optsWithGlobals(), command);
       await start(config.context ?? context, config.options);
     })
-
-    .action(async (context: string = defaultStartContext, _options: SWACLIConfig, command: Command) => {
-      const config = await configureOptions(context, command.optsWithGlobals(), command);
-      await start(config.context ?? context, config.options);
-    })
     .addHelpText(
       "after",
       `
