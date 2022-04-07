@@ -10,58 +10,19 @@ import {
   TokenCredential,
   useIdentityPlugin,
 } from "@azure/identity";
-import { cachePersistencePlugin } from "@azure/identity-cache-persistence";
-import { vsCodePlugin } from "@azure/identity-vscode";
-import { Environment } from "@azure/ms-rest-azure-env";
-import { MsalAuthProvider } from "./login/msal-auth-provider";
-import { checkRedirectServer } from "./login/server";
+import { swaCliPersistencePlugin } from "./swa-cli-persistence-plugin";
 import { logger } from "./utils";
-import { isWSL } from "./utils/platform";
-
-export async function loginWithMsal(details: LoginDetails = {}, _persist = false): Promise<void> {
-  try {
-    const environment: Environment = Environment.AzureCloud;
-
-    // const onlineTask: Promise<void> = waitUntilOnline(environment, 2000);
-    // const timerTask: Promise<boolean | PromiseLike<boolean> | undefined> = delay(2000, true);
-
-    // if (await Promise.race([onlineTask, timerTask])) {
-    //   logger.warn('You appear to be offline. Please check your network connection.');
-    //   await onlineTask;
-    // }
-
-    const authProvider = new MsalAuthProvider(true);
-    const useCodeFlow: boolean = await checkRedirectServer();
-
-    const loginResult = useCodeFlow
-      ? await authProvider.login("aebc6443-996d-45c2-90f0-388ff96faa56", environment, "common")
-      : await authProvider.loginWithDeviceCode(environment, details.tenantId);
-
-    logger.log({ loginResult });
-  } catch (err) {
-    throw err;
-  }
-}
 
 export async function azureLoginWithIdentitySDK(details: LoginDetails = {}, persist = false) {
   let tokenCachePersistenceOptions = {
     enabled: false,
-    name: "identity.cache",
-    // avoid error: Unable to read from the system keyring (libsecret).
-    unsafeAllowUnencryptedStorage: false,
   };
 
   if (persist) {
-    if (isWSL()) {
-      logger.warn("Authentication cache persistence is not currently supported on WSL.");
-    } else {
-      useIdentityPlugin(cachePersistencePlugin);
-      useIdentityPlugin(vsCodePlugin);
-      tokenCachePersistenceOptions.enabled = true;
-    }
+    useIdentityPlugin(swaCliPersistencePlugin);
+    tokenCachePersistenceOptions.enabled = true;
   }
 
-  const environmentCredential = new EnvironmentCredential();
   const browserCredential = new InteractiveBrowserCredential({
     redirectUri: "http://localhost:8888",
     tokenCachePersistenceOptions,
@@ -71,6 +32,8 @@ export async function azureLoginWithIdentitySDK(details: LoginDetails = {}, pers
     tokenCachePersistenceOptions,
     tenantId: details.tenantId,
   });
+
+  const environmentCredential = new EnvironmentCredential();
 
   const credentials = [environmentCredential, browserCredential, deviceCredential];
 
