@@ -5,7 +5,7 @@ import process from "process";
 import { DEFAULT_CONFIG } from "../../config";
 import { configureOptions, logger } from "../../core";
 import { swaCLIEnv } from "../../core/env";
-import { azureLoginWithIdentitySDK, listResourceGroups, listStaticSites, listSubscriptions, listTenants, loginWithMsal } from "../../core/account";
+import { azureLoginWithIdentitySDK, listResourceGroups, listStaticSites, listSubscriptions, listTenants } from "../../core/account";
 import { chooseResourceGroup, chooseStaticSite, chooseSubscription, chooseTenant } from "../../core/prompts";
 
 export default function registerCommand(program: Command) {
@@ -58,8 +58,8 @@ export async function login(options: SWACLIConfig) {
   logger.silly({ options });
 
   try {
-    // credentialChain = await azureLoginWithIdentitySDK({ tenantId, clientId, clientSecret }, options.persist);
-    await loginWithMsal({ tenantId, clientId, clientSecret }, options.persist);
+    credentialChain = await azureLoginWithIdentitySDK({ tenantId, clientId, clientSecret }, options.persist);
+    // await loginWithMsal({ tenantId, clientId, clientSecret }, options.persist);
 
     // If the user has not specified a tenantId, we will prompt them to choose one
     if (!tenantId) {
