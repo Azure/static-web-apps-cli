@@ -67,9 +67,9 @@ describe("getConfigFileOptions()", () => {
     expect(await getConfigFileOptions("app", "swa-cli.config.json")).toStrictEqual(mockConfig1.configurations.app);
   });
 
-  it("Should only return a default config if there is only one config", async () => {
+  it("Should return the default config if there are one or more configs", async () => {
     mockConfig();
-    expect(await getConfigFileOptions(defaultStartContext, "swa-cli.config.json")).toStrictEqual({});
+    expect(await getConfigFileOptions(defaultStartContext, "swa-cli.config.json")).toStrictEqual(mockConfig1.configurations.app);
   });
 
   it("Should return a default config", async () => {
