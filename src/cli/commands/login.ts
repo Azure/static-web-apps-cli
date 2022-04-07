@@ -4,8 +4,8 @@ import { Command } from "commander";
 import process from "process";
 import { DEFAULT_CONFIG } from "../../config";
 import { configureOptions, logger } from "../../core";
-import { azureLogin, listResourceGroups, listStaticSites, listSubscriptions, listTenants } from "../../core/account";
 import { swaCLIEnv } from "../../core/env";
+import { azureLoginWithIdentitySDK, listResourceGroups, listStaticSites, listSubscriptions, listTenants, loginWithMsal } from "../../core/account";
 import { chooseResourceGroup, chooseStaticSite, chooseSubscription, chooseTenant } from "../../core/prompts";
 
 export default function registerCommand(program: Command) {
@@ -13,7 +13,7 @@ export default function registerCommand(program: Command) {
     .command("login")
     .usage("[options]")
     .description("login into Azure Static Web Apps")
-    .option("--persist", "Enable credentials cache persistence", DEFAULT_CONFIG.persist)
+    .option("--persist <perist>", "Enable credentials cache persistence", DEFAULT_CONFIG.persist)
     .action(async (_options: SWACLIConfig, command: Command) => {
       const config = await configureOptions(undefined, command.optsWithGlobals(), command);
       const { subscriptionId, resourceGroupName, staticSiteName } = await login(config.options);
@@ -36,8 +36,8 @@ Examples:
   swa login --tenant 12345678-abcd-0123-4567-abcdef012345
 
   Login using service principal
-  swa login --tenant 12345678-abcd-0123-4567-abcdef012345 \
-            --client-id 00000000-0000-0000-0000-000000000000 \
+  swa login --tenant 12345678-abcd-0123-4567-abcdef012345 \\
+            --client-id 00000000-0000-0000-0000-000000000000 \\
             --client-secret 0000000000000000000000000000000000000000000000000000000000000000
     `
     );
@@ -58,7 +58,8 @@ export async function login(options: SWACLIConfig) {
   logger.silly({ options });
 
   try {
-    credentialChain = await azureLogin({ tenantId, clientId, clientSecret }, options.persist);
+    // credentialChain = await azureLoginWithIdentitySDK({ tenantId, clientId, clientSecret }, options.persist);
+    await loginWithMsal({ tenantId, clientId, clientSecret }, options.persist);
 
     // If the user has not specified a tenantId, we will prompt them to choose one
     if (!tenantId) {
@@ -73,7 +74,7 @@ export async function login(options: SWACLIConfig) {
         tenantId = tenant.tenantId;
         // login again with the new tenant
         // TODO: can we silently authenticate the user with the new tenant?
-        credentialChain = await azureLogin({ tenantId, clientId, clientSecret }, options.persist);
+        credentialChain = await azureLoginWithIdentitySDK({ tenantId, clientId, clientSecret }, options.persist);
       }
     }
 
