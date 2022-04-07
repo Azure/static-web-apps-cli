@@ -1,3 +1,4 @@
+import { Environment } from "@azure/ms-rest-azure-env";
 import chalk from "chalk";
 import net from "net";
 import ora from "ora";
@@ -164,4 +165,28 @@ export function hostnameToIpAdress(hostnameOrIpAddress: string | undefined) {
     return "127.0.0.1";
   }
   return hostnameOrIpAddress;
+}
+
+export async function waitUntilOnline(environment: Environment, interval: number): Promise<void> {
+  const spinner = ora();
+  const url: string = environment.activeDirectoryEndpointUrl;
+  try {
+    spinner.start(`Waiting for ${chalk.green(url)} to be ready`);
+    await waitOn({
+      resources: [url],
+      delay: 1000, // initial delay in ms, default 0
+      interval, // poll interval in ms, default 250ms
+      simultaneous: 1, // limit to 1 connection per resource at a time
+      tcpTimeout: 1000, // tcp timeout in ms, default 300ms
+      window: 1000, // stabilization time in ms, default 750ms
+      strictSSL: false,
+      verbose: false, // force disable verbose logs even if SWA_CLI_DEBUG is enabled
+    });
+    spinner.succeed(`Connected to ${chalk.green(url)} successfully`);
+    spinner.clear();
+  } catch (err) {
+    spinner.fail();
+    logger.error(`Could not connect to "${url}". Is the server up and running?`);
+    process.exit(-1);
+  }
 }

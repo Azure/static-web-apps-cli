@@ -12,10 +12,38 @@ import {
 } from "@azure/identity";
 import { cachePersistencePlugin } from "@azure/identity-cache-persistence";
 import { vsCodePlugin } from "@azure/identity-vscode";
+import { Environment } from "@azure/ms-rest-azure-env";
+import { MsalAuthProvider } from "./login/msal-auth-provider";
+import { checkRedirectServer } from "./login/server";
 import { logger } from "./utils";
 import { isWSL } from "./utils/platform";
 
-export async function azureLogin(details: LoginDetails = {}, persist = false) {
+export async function loginWithMsal(details: LoginDetails = {}, _persist = false): Promise<void> {
+  try {
+    const environment: Environment = Environment.AzureCloud;
+
+    // const onlineTask: Promise<void> = waitUntilOnline(environment, 2000);
+    // const timerTask: Promise<boolean | PromiseLike<boolean> | undefined> = delay(2000, true);
+
+    // if (await Promise.race([onlineTask, timerTask])) {
+    //   logger.warn('You appear to be offline. Please check your network connection.');
+    //   await onlineTask;
+    // }
+
+    const authProvider = new MsalAuthProvider(true);
+    const useCodeFlow: boolean = await checkRedirectServer();
+
+    const loginResult = useCodeFlow
+      ? await authProvider.login("aebc6443-996d-45c2-90f0-388ff96faa56", environment, "common")
+      : await authProvider.loginWithDeviceCode(environment, details.tenantId);
+
+    logger.log({ loginResult });
+  } catch (err) {
+    throw err;
+  }
+}
+
+export async function azureLoginWithIdentitySDK(details: LoginDetails = {}, persist = false) {
   let tokenCachePersistenceOptions = {
     enabled: false,
     name: "identity.cache",
