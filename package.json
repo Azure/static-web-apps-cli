@@ -27,8 +27,6 @@
     "@azure/arm-resources": "^5.0.0",
     "@azure/arm-subscriptions": "^5.0.0",
     "@azure/identity": "^2.0.4",
-    "@azure/ms-rest-azure-env": "^2.0.0",
-    "@azure/ms-rest-js": "^2.6.1",
     "@azure/msal-common": "^6.2.0",
     "@types/globalyzer": "^0.1.1",
     "@types/globrex": "^0.1.1",

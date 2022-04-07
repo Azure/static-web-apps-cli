@@ -1,6 +1,7 @@
-import { Environment } from "@azure/ms-rest-azure-env";
+import { TokenCachePersistenceOptions } from "@azure/identity";
 import { ICachePlugin, TokenCacheContext } from "@azure/msal-common";
 import { logger } from "../utils";
+import { Environment } from "./impl/azure-environment";
 import { CredentialsStore } from "./impl/credentials-store";
 import { EncryptionService } from "./impl/encryption";
 import { getMachineId } from "./impl/machine-identifier";
@@ -8,6 +9,7 @@ import { SecretStorage } from "./impl/secret-storage";
 
 export interface SWACLIPersistenceCacheOptions {
   enableCache: boolean;
+  clearCache: boolean;
 }
 
 /**
@@ -15,7 +17,7 @@ export interface SWACLIPersistenceCacheOptions {
  * macOs, and Linux using Keytar.
  */
 export class SWACLIPersistenceCachePlugin implements ICachePlugin {
-  constructor(private options: SWACLIPersistenceCacheOptions) {}
+  constructor(private options: TokenCachePersistenceOptions) {}
 
   /**
    * Reads from storage and saves an in-memory copy. If persistence has not been updated
@@ -26,34 +28,38 @@ export class SWACLIPersistenceCachePlugin implements ICachePlugin {
    * beforeCacheAccess() and afterCacheAccess().
    */
   public async beforeCacheAccess(cacheContext: TokenCacheContext): Promise<void> {
-    logger.silly(`beforeCacheAccess called`);
+    logger.silly(`Executing before cache access plugin`);
 
     const machineId = await getMachineId();
-    logger.silly(`machineId: ${machineId}`);
+    logger.silly(`Machine ID: ${machineId ? "<hidden>" : "<empty>"}`);
 
-    const secretStorage = new SecretStorage(new CredentialsStore(this.options.enableCache), new EncryptionService(machineId));
+    const secretStorage = new SecretStorage(this.options, new CredentialsStore(this.options), new EncryptionService(machineId));
 
-    const cachedValue: string | undefined = await secretStorage.getSecret(machineId, Environment.AzureCloud.name);
-    logger.silly(`cachedValue: ${cachedValue ? "<hidden>" : "<empty>"}`);
+    const cachedValue: string | undefined = await secretStorage.getCredentials(machineId, Environment.AzureCloud.name);
+    logger.silly(`Credentials: ${cachedValue ? "<hidden>" : "<empty>"}`);
 
     cachedValue && cacheContext.tokenCache.deserialize(cachedValue);
+
+    logger.silly(`Before cache access plugin. Done.`);
   }
 
   /**
    * Writes to storage if MSAL in memory copy of cache has been changed.
    */
   public async afterCacheAccess(cacheContext: TokenCacheContext): Promise<void> {
-    logger.silly(`afterCacheAccess called`);
+    logger.silly(`Executing after cache access plugin`);
 
     const machineId = await getMachineId();
-    logger.silly(`machineId: ${machineId}`);
+    logger.silly(`Machine ID: ${machineId ? "<hidden>" : "<empty>"}`);
 
-    const secretStorage = new SecretStorage(new CredentialsStore(false), new EncryptionService(machineId));
+    const secretStorage = new SecretStorage(this.options, new CredentialsStore(this.options), new EncryptionService(machineId));
 
-    logger.silly(`cacheContext.cacheHasChanged: ${cacheContext.cacheHasChanged}`);
+    logger.silly(`Did TokenCacheContext cache changed: ${cacheContext.cacheHasChanged}`);
 
     if (cacheContext.cacheHasChanged) {
-      await secretStorage.storeSecret(machineId, Environment.AzureCloud.name, cacheContext.tokenCache.serialize());
+      await secretStorage.setCredentials(machineId, Environment.AzureCloud.name, cacheContext.tokenCache.serialize());
     }
+
+    logger.silly(`After cache access plugin. Done.`);
   }
 }

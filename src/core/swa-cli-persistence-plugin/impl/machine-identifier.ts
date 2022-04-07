@@ -1,26 +1,31 @@
-import { generateUuid } from "@azure/ms-rest-js";
 import crypto from "crypto";
 import { networkInterfaces } from "os";
 import { logger } from "../../utils";
 
 let machineId: Promise<string>;
 
+/**
+ * Generate a 32-byte machine id.
+ *
+ * @returns {Promise<string>} A 32-byte machine id.
+ */
 export async function getMachineId(): Promise<string> {
   if (!machineId) {
     machineId = (async () => {
-      const id = await getMacMachineId();
-
-      return id || generateUuid(); // fallback, generate a UUID
+      return (await getMacMachineId()) || crypto.randomBytes(20).toString("hex");
     })();
   }
-
   return machineId;
 }
 
+/**
+ * Get the mac address of the machine and hash it.
+ * @returns {Promise<string>} A 32-byte hash of the mac address.
+ */
 async function getMacMachineId(): Promise<string | undefined> {
   try {
     const macAddress = getMac();
-    return crypto.createHash("sha256").update(macAddress, "utf8").digest("hex");
+    return crypto.createHash("shake256", { outputLength: 16 /* 32 byts */ }).update(macAddress, "utf8").digest("hex");
   } catch (err) {
     logger.error(err as any);
     return undefined;
