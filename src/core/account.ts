@@ -7,20 +7,32 @@ import {
   DeviceCodeCredential,
   EnvironmentCredential,
   InteractiveBrowserCredential,
+  TokenCachePersistenceOptions,
   TokenCredential,
   useIdentityPlugin,
 } from "@azure/identity";
 import { swaCliPersistencePlugin } from "./swa-cli-persistence-plugin";
 import { logger } from "./utils";
 
-export async function azureLoginWithIdentitySDK(details: LoginDetails = {}, persist = false) {
-  let tokenCachePersistenceOptions = {
+export async function azureLoginWithIdentitySDK(details: LoginDetails = {}, persist = true) {
+  logger.silly("Executing azureLoginWithIdentitySDK");
+  logger.silly({ details, persist });
+
+  let tokenCachePersistenceOptions: TokenCachePersistenceOptions = {
     enabled: false,
+    name: "swa-cli-persistence-plugin",
+    unsafeAllowUnencryptedStorage: false,
   };
 
-  if (persist) {
+  if (persist === true) {
+    logger.silly("Persisting token cache is enabled");
+
     useIdentityPlugin(swaCliPersistencePlugin);
     tokenCachePersistenceOptions.enabled = true;
+  } else {
+    logger.silly("Persisting token cache is disabled");
+
+    tokenCachePersistenceOptions.enabled = false;
   }
 
   const browserCredential = new InteractiveBrowserCredential({
@@ -28,6 +40,7 @@ export async function azureLoginWithIdentitySDK(details: LoginDetails = {}, pers
     tokenCachePersistenceOptions,
     tenantId: details.tenantId,
   });
+
   const deviceCredential = new DeviceCodeCredential({
     tokenCachePersistenceOptions,
     tenantId: details.tenantId,

@@ -1,13 +1,13 @@
-import { IdentityPlugin } from "@azure/identity";
+import { IdentityPlugin, TokenCachePersistenceOptions } from "@azure/identity";
 import { ICachePlugin } from "@azure/msal-common";
 import { logger } from "../utils";
-import { SWACLIPersistenceCacheOptions, SWACLIPersistenceCachePlugin } from "./persistence-cache-plugin";
+import { SWACLIPersistenceCachePlugin } from "./persistence-cache-plugin";
 
 /**
  * Plugin context entries for controlling cache plugins.
  */
 export interface SWACLICachePluginControl {
-  setPersistence(persistenceFactory: (options: SWACLIPersistenceCacheOptions) => Promise<ICachePlugin>): void;
+  setPersistence(persistenceFactory: (options: TokenCachePersistenceOptions) => Promise<ICachePlugin>): void;
 }
 
 /**
@@ -18,7 +18,7 @@ export interface AzurePluginContext {
   cachePluginControl: SWACLICachePluginControl;
 }
 
-async function createSWAPersistenceCachePlugin(options: SWACLIPersistenceCacheOptions): Promise<ICachePlugin> {
+async function createSWAPersistenceCachePlugin(options: TokenCachePersistenceOptions): Promise<ICachePlugin> {
   return new SWACLIPersistenceCachePlugin(options);
 }
 
@@ -50,7 +50,7 @@ async function createSWAPersistenceCachePlugin(options: SWACLIPersistenceCacheOp
  */
 
 export const swaCliPersistencePlugin: IdentityPlugin = (context) => {
-  logger.silly("swaCliPersistencePlugin called");
+  logger.silly("Executing swaCliPersistencePlugin");
 
   const { cachePluginControl } = context as AzurePluginContext;
   cachePluginControl.setPersistence(createSWAPersistenceCachePlugin);

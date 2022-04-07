@@ -1,3 +1,4 @@
+import { TokenCachePersistenceOptions } from "@azure/identity";
 import { logger } from "../../utils";
 import { CredentialsStore } from "./credentials-store";
 import { EncryptionService } from "./encryption";
@@ -5,7 +6,11 @@ import { EncryptionService } from "./encryption";
 export class SecretStorage {
   private secretStoragePrefix: Promise<string>;
 
-  constructor(private readonly credentialsService: CredentialsStore, private readonly encryptionService: EncryptionService) {
+  constructor(
+    private options: TokenCachePersistenceOptions,
+    private readonly credentialsService: CredentialsStore,
+    private readonly encryptionService: EncryptionService
+  ) {
     this.secretStoragePrefix = this.credentialsService.getSecretStoragePrefix();
   }
 
@@ -13,62 +18,64 @@ export class SecretStorage {
     return `${await this.secretStoragePrefix}-${machineId}`;
   }
 
-  async getSecret(machineId: string, key: string): Promise<string | undefined> {
-    logger.silly(`getPassword called`);
+  async getCredentials(machineId: string, key: string): Promise<string | undefined> {
+    logger.silly(`Getting credentials from keychain`);
 
     const fullKey = await this.getFullKey(machineId);
-    logger.silly(`fullKey: ${fullKey}`);
 
-    const password = await this.credentialsService.getPassword(fullKey, key);
-    logger.silly(`password: ${password ? "<hidden>" : "<empty>"}`);
+    let credentials = await this.credentialsService.getPassword(fullKey, key);
+    logger.silly(`Credentials: ${credentials ? "<hidden>" : "<empty>"}`);
 
-    const decrypted = password && (await this.encryptionService.decrypt(password));
-    logger.silly(`decrypted: ${decrypted ? "<hidden>" : "<empty>"}`);
+    if (this.options.unsafeAllowUnencryptedStorage === false) {
+      credentials = credentials && (await this.encryptionService.decrypt(credentials));
+      logger.silly(`Decrypted credentials: ${credentials ? "<hidden>" : "<empty>"}`);
+    }
 
-    if (decrypted) {
+    if (credentials) {
       try {
-        const value = JSON.parse(decrypted);
-        logger.silly(`value: ${value.content ? "<hidden>" : "<empty>"}`);
+        const value = JSON.parse(credentials);
+        logger.silly(`Credentials content: ${value.content ? "<hidden>" : "<empty>"}`);
 
         if (value.machineId === machineId) {
           return value.content;
         }
       } catch (_) {
-        throw new Error("Cannot get password");
+        throw new Error("Cannot get credentials");
       }
     }
 
     return undefined;
   }
 
-  async storeSecret(machineId: string, key: string, value: string): Promise<void> {
-    logger.silly(`setPassword called`);
+  async setCredentials(machineId: string, key: string, value: string): Promise<void> {
+    logger.silly(`Setting credentials in keychain`);
 
     const fullKey = await this.getFullKey(machineId);
-    logger.silly(`fullKey: ${fullKey}`);
 
-    const toEncrypt = JSON.stringify({
+    let credentials = JSON.stringify({
       machineId,
       content: value,
     });
 
-    const encrypted = await this.encryptionService.encrypt(toEncrypt);
-    logger.silly(`encrypted: ${encrypted ? "<hidden>" : "<empty>"}`);
+    if (this.options.unsafeAllowUnencryptedStorage === false) {
+      credentials = await this.encryptionService.encrypt(credentials);
+      logger.silly(`Encrypted credentials: ${credentials ? "<hidden>" : "<empty>"}`);
+    }
 
-    return this.credentialsService.setPassword(fullKey, key, encrypted);
+    return this.credentialsService.setPassword(fullKey, key, credentials);
   }
 
-  async deleteSecret(machineId: string, key: string): Promise<void> {
-    logger.silly(`deletePassword called`);
+  async deleteCredentials(machineId: string, key: string): Promise<void> {
+    logger.silly(`deleting credentials from keychain`);
 
     try {
       const fullKey = await this.getFullKey(machineId);
-      logger.silly(`fullKey: ${fullKey}`);
+      logger.silly({ fullKey });
 
       await this.credentialsService.deletePassword(fullKey, key);
-      logger.silly(`Password deleted`);
+      logger.silly(`Credentials deleted`);
     } catch (_) {
-      throw new Error("Cannot delete password");
+      throw new Error("Cannot delete credentials");
     }
   }
 }
