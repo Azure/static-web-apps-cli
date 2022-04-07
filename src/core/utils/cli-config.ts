@@ -26,8 +26,13 @@ export async function getConfigFileOptions(context: string | undefined, configFi
   const configDir = path.dirname(configFilePath);
   process.chdir(configDir);
 
-  const hasOnlyOneConfig = Object.entries(cliConfig.configurations).length === 1;
-  if (hasOnlyOneConfig && context === defaultStartContext) {
+  if (context === defaultStartContext) {
+    const hasMultipleConfig = Object.entries(cliConfig.configurations).length > 1;
+    if (hasMultipleConfig) {
+      logger.log(`Multiple configurations found in "${swaCliConfigFilename}", but none was specified.`);
+      logger.log(`Specify which configuration to use with "swa <command> <configurationName>"\n`);
+    }
+
     const [configName, config] = Object.entries(cliConfig.configurations)[0];
     printConfigMsg(configName, configFilePath);
     return { ...config };
@@ -59,9 +64,9 @@ async function tryParseSwaCliConfig(file: string) {
 }
 
 function printConfigMsg(name: string, file: string) {
-  logger.log(`Using configuration "${name}" from file:`, "swa");
-  logger.log(`\t${file}`, "swa");
-  logger.log("", "swa");
+  logger.log(`Using configuration "${name}" from file:`);
+  logger.log(`\t${file}`);
+  logger.log("");
 }
 
 export async function hasConfigurationNameInConfigFile(configFilePath: string, name: string): Promise<boolean> {
