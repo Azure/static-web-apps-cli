@@ -1,4 +1,4 @@
-import { Command, OptionValues } from "commander";
+import { program, Command, OptionValues } from "commander";
 import { logger } from "./logger";
 import { getConfigFileOptions } from "./cli-config";
 import { DEFAULT_CONFIG } from "../../config";
@@ -9,13 +9,7 @@ export async function configureOptions(
   command: Command
 ): Promise<{ context: string | undefined; options: SWACLIConfig }> {
   const verbose = options.verbose;
-  process.env.SWA_CLI_DEBUG = verbose;
-
-  if (verbose?.includes("silly")) {
-    // When silly level is set,
-    // propagate debugging level to other tools using the DEBUG environment variable
-    process.env.DEBUG = "*";
-  }
+  setLogLevel(verbose);
 
   const userOptions = getUserOptions(command);
   const configFileOptions = await getConfigFileOptions(context, options.config!);
@@ -26,10 +20,13 @@ export async function configureOptions(
     ...userOptions,
   };
 
+  // Re-set log level again after config file has been read,
+  // as it may have changed the log level
+  setLogLevel(options.verbose);
+
   if (options.printConfig) {
-    logger.log("", "swa");
-    logger.log("Options: ", "swa");
-    logger.log({ ...DEFAULT_CONFIG, ...options }, "swa");
+    logger.log("\nOptions: ");
+    logger.log({ ...DEFAULT_CONFIG, ...options });
   }
 
   return {
@@ -38,12 +35,27 @@ export async function configureOptions(
   };
 }
 
+function setLogLevel(verbosity: string | undefined) {
+  process.env.SWA_CLI_DEBUG = verbosity;
+
+  if (verbosity?.includes("silly")) {
+    // When silly level is set,
+    // propagate debugging level to other tools using the DEBUG environment variable
+    process.env.DEBUG = "*";
+  }
+}
+
 function getUserOptions(command: Command) {
   const userOptions: OptionValues = {};
-  const options = command.opts();
+  const options = command.optsWithGlobals();
+
   for (const option in options) {
-    if (command.getOptionValueSource(option) !== "default") {
-      userOptions[option] = options[option];
+    // If the option is not found in the command context, it returns undefined
+    // meaning that we have to find its source in the global context.
+    const source = command.getOptionValueSource(option) || program.getOptionValueSource(option);
+
+    if (source === "cli") {
+      userOptions[option] = options[option as keyof SWACLIConfig];
     }
   }
   return userOptions as SWACLIConfig;
