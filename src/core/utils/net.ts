@@ -9,7 +9,7 @@ import { logger } from "./logger";
  * @param Object host and port of the server to check.
  * @returns True if the given server is accepting TCP connections. False otherwise.
  */
-export function isAcceptingTcpConnections({ host = "127.0.0.1", port }: { host?: string; port: number }) {
+export function isAcceptingTcpConnections({ host = "127.0.0.1", port = 80 }: { host?: string; port?: number }) {
   return new Promise<boolean>((resolve) => {
     const socket = net.createConnection(port, host);
 
@@ -164,4 +164,8 @@ export function hostnameToIpAdress(hostnameOrIpAddress: string | undefined) {
     return "127.0.0.1";
   }
   return hostnameOrIpAddress;
+}
+
+export function isValidIpAddress(ip: string) {
+  return net.isIP(ip);
 }
