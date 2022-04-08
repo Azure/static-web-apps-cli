@@ -112,6 +112,7 @@ declare type SWACLIGlobalOptions = {
   config?: string;
   printConfig?: boolean;
   swaConfigLocation?: string;
+  githubActionWorkflowLocation?: string;
 };
 
 // -- CLI Init options -------------------------------------------------------
@@ -180,8 +181,7 @@ declare type SWACLIContextOptions = {
 
 // -- CLI Login options ------------------------------------------------------
 
-declare type SWACLIConfig =
-  SWACLIOptionsToCleanUp &
+declare type SWACLIConfig = SWACLIOptionsToCleanUp &
   SWACLIGlobalOptions &
   SWACLILoginOptions &
   SWACLIInitOptions &
@@ -189,12 +189,11 @@ declare type SWACLIConfig =
   SWACLIStartOptions &
   SWACLIDeployOptions &
   SWACLIContextOptions & {
-
-  login?: SWACLIGlobalOptions & SWACLILoginOptions & SWACLIContextOptions,
-  init?: SWACLIGlobalOptions & SWACLIInitOptions & SWACLIContextOptions,
-  start?: SWACLIGlobalOptions & SWACLIStartOptions & SWACLIContextOptions,
-  deploy?: SWACLIGlobalOptions & SWACLIDeployOptions & SWACLIContextOptions
-};
+    login?: SWACLIGlobalOptions & SWACLILoginOptions & SWACLIContextOptions;
+    init?: SWACLIGlobalOptions & SWACLIInitOptions & SWACLIContextOptions;
+    start?: SWACLIGlobalOptions & SWACLIStartOptions & SWACLIContextOptions;
+    deploy?: SWACLIGlobalOptions & SWACLIDeployOptions & SWACLIContextOptions;
+  };
 
 declare type ResponseOptions = {
   [key: string]: any;
