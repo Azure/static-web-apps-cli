@@ -1,6 +1,14 @@
 import type http from "http";
+import { logger } from "../../../core";
 import { HEADER_DELETE_KEYWORD } from "../../../core/constants";
 import { getHeadersForRoute, getResponseHeaders, updateResponseHeaders } from "./headers";
+
+jest.spyOn(logger, "error").mockImplementation(jest.fn());
+jest.mock("../../../core/constants", () => {
+  return {
+    CACHE_CONTROL_MAX_AGE: "30",
+  };
+});
 
 describe("getHeadersForRoute()", () => {
   // TODO: for some weird reason, jest.spyOn() does'nt mock getDefaultHeaders()

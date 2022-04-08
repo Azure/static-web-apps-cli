@@ -1,18 +1,15 @@
 import * as path from "path";
 import * as process from "process";
-import { existsSync } from "fs";
-import { readFile, writeFile } from "fs/promises";
-import { logger } from "./logger";
 import { defaultStartContext } from "../../cli";
+import { fileExists, readFileIfExists, writeFileSafe } from "./fs";
+import { logger } from "./logger";
 
 export const swaCliConfigSchemaUrl = "https://aka.ms/azure/static-web-apps-cli/schema";
 export const swaCliConfigFilename = "swa-cli.config.json";
 
-export const configExists = (configFilePath: string) => existsSync(configFilePath);
-
 export async function getConfigFileOptions(context: string | undefined, configFilePath: string): Promise<SWACLIConfig & { context?: string }> {
   configFilePath = path.resolve(configFilePath);
-  if (!configExists(configFilePath)) {
+  if (!fileExists(configFilePath)) {
     return {};
   }
 
@@ -53,7 +50,7 @@ export async function getConfigFileOptions(context: string | undefined, configFi
 
 async function tryParseSwaCliConfig(file: string) {
   try {
-    return JSON.parse((await readFile(file)).toString("utf-8")) as SWACLIConfigFile;
+    return JSON.parse((await readFileIfExists(file)) || "") as SWACLIConfigFile;
   } catch (e) {
     logger.error(`Error parsing swa-cli.config.json file at ${file}`);
     if (e instanceof Error) {
@@ -81,19 +78,17 @@ export async function writeConfigFile(configFilePath: string, projectName: strin
     configurations: {},
   };
 
-  if (configExists(configFilePath)) {
-    try {
-      const configJson = await readFile(configFilePath, "utf-8");
-      configFile = JSON.parse(configJson) as SWACLIConfigFile;
-    } catch (error) {
-      logger.error(`Error parsing ${configFilePath}`);
-      if (error instanceof Error) {
-        logger.error(error);
-      }
-      logger.error("Cannot update existing configuration file.");
-      logger.error("Please fix or remove your swa-cli.config.json file and try again.");
-      return;
+  try {
+    const configJson = await readFileIfExists(configFilePath);
+    configFile = JSON.parse(configJson || "") as SWACLIConfigFile;
+  } catch (error) {
+    logger.error(`Error parsing ${configFilePath}`);
+    if (error instanceof Error) {
+      logger.error(error);
     }
+    logger.error("Cannot update existing configuration file.");
+    logger.error("Please fix or remove your swa-cli.config.json file and try again.");
+    return;
   }
 
   if (configFile.configurations === undefined) {
@@ -102,7 +97,7 @@ export async function writeConfigFile(configFilePath: string, projectName: strin
 
   configFile.configurations[projectName] = config;
   try {
-    await writeFile(configFilePath, JSON.stringify(configFile, null, 2));
+    await writeFileSafe(configFilePath, JSON.stringify(configFile, null, 2));
   } catch (error) {
     logger.error(`Error writing configuration to ${configFilePath}`);
     if (error instanceof Error) {

@@ -1,19 +1,13 @@
-import path from "path";
-// import fs from "fs";
-import process from "process";
-import prompts from "prompts";
+import fs from "fs";
 import chalk from "chalk";
 import { Command } from "commander";
-import {
-  logger,
-  dasherize,
-  hasConfigurationNameInConfigFile,
-  writeConfigFile,
-  swaCliConfigFilename,
-  configExists,
-  configureOptions,
-} from "../../core/utils";
+import path from "path";
+import process from "process";
+import prompts from "prompts";
 import { DEFAULT_CONFIG } from "../../config";
+import { configureOptions, dasherize, hasConfigurationNameInConfigFile, logger, swaCliConfigFilename, writeConfigFile } from "../../core/utils";
+
+export const configExists = (configFilePath: string) => fs.existsSync(configFilePath);
 
 export default function registerCommand(program: Command) {
   program

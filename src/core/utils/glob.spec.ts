@@ -1,5 +1,7 @@
 import { globToRegExp, isBalancedCurlyBrackets, isValidGlobExpression } from "./glob";
 
+jest.mock("../constants", () => {});
+
 describe("globToRegExp()", () => {
   it("glob = <empty>", () => {
     expect(globToRegExp("")).toBe("");

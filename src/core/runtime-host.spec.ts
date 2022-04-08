@@ -3,6 +3,8 @@ import path from "path";
 import { createRuntimeHost } from "./runtime-host";
 import * as detectRuntime from "./runtimes";
 
+jest.mock("../core/constants", () => {});
+
 let spyDetectRuntime: jest.SpyInstance;
 const mockConfig = {
   appPort: 8080,

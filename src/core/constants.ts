@@ -155,6 +155,9 @@ export const MIME_TYPE_LIST: { [key: string]: string } = {
   ".7z": "application/x-7z-compressed",
 };
 
+export const ENV_FILENAME = ".env";
+export const GIT_IGNORE_FILENAME = ".gitignore";
+
 export const DEFAULT_MIME_TYPE = "application/octet-stream";
 export const HEADER_DELETE_KEYWORD = "@@HEADER_DELETE_KEYWORD@@";
 

@@ -1,5 +1,7 @@
 import { swaCLIEnv } from "./env";
 
+jest.mock("../core/constants", () => {});
+
 describe("swaCLIEnv()", () => {
   const OLD_ENV = process.env;
 

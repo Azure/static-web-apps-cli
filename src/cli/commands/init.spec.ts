@@ -1,10 +1,11 @@
 import fs from "fs";
 import mockFs from "mock-fs";
-import { init } from "./init";
 import { DEFAULT_CONFIG } from "../../config";
 import { swaCliConfigFilename } from "../../core/utils";
+import { init } from "./init";
 
 jest.mock("prompts", () => jest.fn());
+jest.mock("../../core/constants", () => {});
 
 const defaultCliConfig = {
   ...DEFAULT_CONFIG,

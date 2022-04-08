@@ -1,5 +1,13 @@
 import type http from "http";
+import { logger } from "../../core";
 import { parseQueryParams } from "./route-processor";
+
+jest.mock("../../core/constants", () => {
+  return {
+    SWA_CLI_APP_PROTOCOL: "http",
+  };
+});
+jest.spyOn(logger, "silly").mockImplementation(jest.fn());
 
 describe("parseQueryParams()", () => {
   const req = {} as http.IncomingMessage;

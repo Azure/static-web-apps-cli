@@ -4,6 +4,8 @@ import { parsePort } from "./net";
 import { swaCliConfigFilename } from "./cli-config";
 import { configureOptions } from "./options";
 
+jest.mock("../../core/constants", () => {});
+
 describe("configureOptions()", () => {
   afterEach(() => {
     mockFs.restore();

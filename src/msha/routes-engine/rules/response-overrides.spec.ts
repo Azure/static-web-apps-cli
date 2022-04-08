@@ -1,6 +1,9 @@
 jest.mock("../../../core/constants", () => {});
 import { DEFAULT_CONFIG } from "../../../config";
+import { logger } from "../../../core";
 import { responseOverrides } from "./response-overrides";
+
+jest.spyOn(logger, "silly").mockImplementation(jest.fn());
 
 describe("responseOverrides()", () => {
   let req: any;

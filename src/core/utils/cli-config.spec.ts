@@ -1,8 +1,9 @@
 import * as path from "path";
 import mockFs from "mock-fs";
 import { defaultStartContext } from "../../cli";
-
 import { getConfigFileOptions } from "./cli-config";
+
+jest.mock("../../core/constants", () => {});
 
 const mockConfig1 = {
   $schema: "../../../schema/swa-cli.config.schema.json",

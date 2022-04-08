@@ -10,8 +10,9 @@ import {
   isCoreToolsVersionCompatible,
 } from "./func-core-tools";
 
+jest.mock("../core/constants", () => {});
 jest.mock("process", () => ({ versions: { node: "16.0.0" } }));
-jest.mock("os", () => ({ platform: () => "linux", homedir: () => "/home/user" }));
+jest.mock("os", () => ({ platform: () => "linux", homedir: () => "/home/user", release: () => "" }));
 jest.mock("child_process", () => ({ exec: jest.fn() }));
 jest.mock("node-fetch", () => jest.fn());
 jest.mock("unzipper", () => ({

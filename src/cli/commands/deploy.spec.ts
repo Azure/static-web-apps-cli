@@ -9,6 +9,8 @@ import * as loginModule from "./login";
 
 const pkg = require(path.join(__dirname, "..", "..", "..", "package.json"));
 
+jest.mock("../../core/constants", () => {});
+
 jest.spyOn(logger, "error").mockImplementation(jest.fn());
 jest.spyOn(logger, "log").mockImplementation(jest.fn());
 jest.spyOn(logger, "warn").mockImplementation(jest.fn());
@@ -21,9 +23,7 @@ jest.spyOn(deployClientModule, "getDeployClientPath").mockImplementation(() => {
   });
 });
 jest.spyOn(deployClientModule, "cleanUp").mockImplementation(() => {});
-
 jest.spyOn(accountModule, "getStaticSiteDeployment").mockImplementation(() => Promise.resolve({}));
-
 jest.spyOn(loginModule, "login").mockImplementation(() => {
   return Promise.resolve({
     credentialChain: {} as any,
