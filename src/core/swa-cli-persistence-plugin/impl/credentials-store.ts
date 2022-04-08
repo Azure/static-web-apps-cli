@@ -1,43 +1,43 @@
 import { TokenCachePersistenceOptions } from "@azure/identity";
 import { logger } from "../../utils";
 
-type KeytarModule = typeof import("keytar");
+type KeychainModule = typeof import("keytar");
 
 interface ChunkedData {
   content: string;
   hasNextChunk: boolean;
 }
 
-interface KeytarCredentialsAccount {
+interface KeychainCredentialsAccount {
   account: string;
   password: string;
 }
 
-interface KeytarCredentialsStore {
+interface KeychainCredentialsStore {
   getPassword(service: string, account: string): Promise<string | null>;
   setPassword(service: string, account: string, credentials: string): Promise<void>;
   deletePassword(service: string, account: string): Promise<boolean>;
   findPassword(service: string): Promise<string | null>;
-  findCredentials(service: string): Promise<Array<KeytarCredentialsAccount>>;
+  findCredentials(service: string): Promise<Array<KeychainCredentialsAccount>>;
   clear(): Promise<void>;
 }
 
-export class CredentialsStore implements KeytarCredentialsStore {
+export class CredentialsStore implements KeychainCredentialsStore {
   constructor(private options: TokenCachePersistenceOptions) {}
 
-  private static readonly KEYTAR_ENTRY_MAX_LENGTH = 2500;
-  private static readonly KEYTAR_ENTRY_CHUNK_SIZE = CredentialsStore.KEYTAR_ENTRY_MAX_LENGTH - 100;
-  private static readonly KEYTAR_SERVICE = "swa-cli";
+  private static readonly KEYCHAIN_ENTRY_MAX_LENGTH = 2500;
+  private static readonly KEYCHAIN_ENTRY_CHUNK_SIZE = CredentialsStore.KEYCHAIN_ENTRY_MAX_LENGTH - 100;
+  private static readonly KEYCHAIN_SERVICE = "swa-cli";
 
-  private keytarCache: KeytarModule | undefined;
+  private keychainCache: KeychainModule | undefined;
 
   async getPassword(service: string, account: string): Promise<string | null> {
     logger.silly("Getting credentials from keychain");
 
-    const keytar = await this.withKeytar();
+    const keychain = await this.requireKeychain();
     logger.silly("Got keychain reference");
 
-    const credentials = await keytar.getPassword(service, account);
+    const credentials = await keychain.getPassword(service, account);
     logger.silly("Got credentials from keychain: " + (credentials ? "<hidden>" : "<empty>"));
 
     if (credentials) {
@@ -54,7 +54,7 @@ export class CredentialsStore implements KeytarCredentialsStore {
 
         let index = 1;
         while (hasNextChunk) {
-          const nextChunk = await keytar.getPassword(service, `${account}-${index}`);
+          const nextChunk = await keychain.getPassword(service, `${account}-${index}`);
           const result: ChunkedData = JSON.parse(nextChunk!);
           content += result.content;
           hasNextChunk = result.hasNextChunk;
@@ -77,7 +77,7 @@ export class CredentialsStore implements KeytarCredentialsStore {
   async setPassword(service: string, account: string, credentials: string): Promise<void> {
     logger.silly("Setting credentials in keychain");
 
-    const keytar = await this.withKeytar();
+    const keychain = await this.requireKeychain();
     logger.silly("Got keychain reference");
 
     const MAX_SET_ATTEMPTS = 3;
@@ -90,7 +90,7 @@ export class CredentialsStore implements KeytarCredentialsStore {
         try {
           logger.silly("Attempting to set credentials");
 
-          await keytar.setPassword(service, account, credentials);
+          await keychain.setPassword(service, account, credentials);
 
           logger.silly("Set credentials successfully");
 
@@ -107,15 +107,15 @@ export class CredentialsStore implements KeytarCredentialsStore {
       throw error;
     };
 
-    if (credentials.length > CredentialsStore.KEYTAR_ENTRY_MAX_LENGTH) {
+    if (credentials.length > CredentialsStore.KEYCHAIN_ENTRY_MAX_LENGTH) {
       logger.silly("Credentials value is too long. Chunking it.");
 
       let index = 0;
       let chunk = 0;
       let hasNextChunk = true;
       while (hasNextChunk) {
-        const credentialsChunk = credentials.substring(index, index + CredentialsStore.KEYTAR_ENTRY_CHUNK_SIZE);
-        index += CredentialsStore.KEYTAR_ENTRY_CHUNK_SIZE;
+        const credentialsChunk = credentials.substring(index, index + CredentialsStore.KEYCHAIN_ENTRY_CHUNK_SIZE);
+        index += CredentialsStore.KEYCHAIN_ENTRY_CHUNK_SIZE;
         hasNextChunk = credentials.length - index > 0;
 
         const content: ChunkedData = {
@@ -135,10 +135,10 @@ export class CredentialsStore implements KeytarCredentialsStore {
   async deletePassword(service: string, account: string): Promise<boolean> {
     logger.silly("Deleting credentials from keychain");
 
-    const keytar = await this.withKeytar();
+    const keychain = await this.requireKeychain();
     logger.silly("Got keychain reference");
 
-    const didDelete = await keytar.deletePassword(service, account);
+    const didDelete = await keychain.deletePassword(service, account);
     logger.silly("Deleted credentials from keychain: " + didDelete);
 
     return didDelete;
@@ -147,28 +147,27 @@ export class CredentialsStore implements KeytarCredentialsStore {
   async findPassword(service: string): Promise<string | null> {
     logger.silly("Find password in keychain");
 
-    const keytar = await this.withKeytar();
+    const keychain = await this.requireKeychain();
     logger.silly("Got keychain reference");
 
-    const credentials = await keytar.findPassword(service);
+    const credentials = await keychain.findPassword(service);
     logger.silly("Got credentials from keychain: " + (credentials ? "<hidden>" : "<empty>"));
 
     return credentials;
   }
 
   async findCredentials(service: string): Promise<Array<{ account: string; password: string }>> {
-    const keytar = await this.withKeytar();
-
-    return keytar.findCredentials(service);
+    const keychain = await this.requireKeychain();
+    return keychain.findCredentials(service);
   }
 
   public clear(): Promise<void> {
     logger.silly("Clear keychain");
 
-    if (this.keytarCache instanceof InMemoryCredentialsStore) {
+    if (this.keychainCache instanceof InMemoryCredentialsStore) {
       logger.silly("Clearing in-memory credentials");
 
-      return this.keytarCache.clear();
+      return this.keychainCache.clear();
     }
 
     // We don't know how to properly clear Keytar because we don't know
@@ -178,40 +177,40 @@ export class CredentialsStore implements KeytarCredentialsStore {
   }
 
   public async getSecretStoragePrefix() {
-    return Promise.resolve(CredentialsStore.KEYTAR_SERVICE);
+    return Promise.resolve(CredentialsStore.KEYCHAIN_SERVICE);
   }
 
-  async withKeytar(): Promise<KeytarModule> {
+  async requireKeychain(): Promise<KeychainModule> {
     logger.silly("Getting keychain reference");
     logger.silly(`isKeychainEnabled: ${this.options.enabled}`);
-    logger.silly(`KeychainCache: ${this.keytarCache}`);
+    logger.silly(`KeychainCache: ${this.keychainCache}`);
 
-    if (this.keytarCache) {
-      return this.keytarCache;
+    if (this.keychainCache) {
+      return this.keychainCache;
     }
 
     if (this.options.enabled === false) {
       logger.silly("keychain is disabled. Using in-memory credential store instead.");
-      this.keytarCache = new InMemoryCredentialsStore();
-      return this.keytarCache;
+      this.keychainCache = new InMemoryCredentialsStore();
+      return this.keychainCache;
     }
 
     try {
       logger.silly("Attempting to load keychain");
-      this.keytarCache = await import("keytar");
+      this.keychainCache = await import("keytar");
 
       // Try using keytar to see if it throws or not.
-      await this.keytarCache.findCredentials("Out of the mountain of despair, a stone of hope");
+      await this.keychainCache.findCredentials("Out of the mountain of despair, a stone of hope");
     } catch (error) {
       throw error;
     }
 
     logger.silly("Got keychain reference");
-    return this.keytarCache;
+    return this.keychainCache;
   }
 }
 
-class InMemoryCredentialsStore implements KeytarCredentialsStore {
+class InMemoryCredentialsStore implements KeychainCredentialsStore {
   private secretVault: any = {};
 
   async getPassword(service: string, account: string): Promise<string | null> {
@@ -238,8 +237,8 @@ class InMemoryCredentialsStore implements KeytarCredentialsStore {
     return JSON.stringify(this.secretVault[service]) ?? null;
   }
 
-  async findCredentials(service: string): Promise<Array<KeytarCredentialsAccount>> {
-    const credentials: KeytarCredentialsAccount[] = [];
+  async findCredentials(service: string): Promise<Array<KeychainCredentialsAccount>> {
+    const credentials: KeychainCredentialsAccount[] = [];
     for (const account of Object.keys(this.secretVault[service] || {})) {
       credentials.push({ account, password: this.secretVault[service]![account] });
     }
