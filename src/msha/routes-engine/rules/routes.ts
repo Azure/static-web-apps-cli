@@ -2,14 +2,9 @@ import chalk from "chalk";
 import fs from "fs";
 import type http from "http";
 import path from "path";
+import { DEFAULT_CONFIG } from "../../../config";
 import { decodeCookie, logger } from "../../../core";
-import {
-  ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT,
-  AUTH_STATUS,
-  IS_APP_DEV_SERVER,
-  SWA_CLI_APP_PROTOCOL,
-  SWA_CLI_OUTPUT_LOCATION,
-} from "../../../core/constants";
+import { ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT, AUTH_STATUS, IS_APP_DEV_SERVER, SWA_CLI_APP_PROTOCOL } from "../../../core/constants";
 import { isAuthRequest } from "../../handlers/auth.handler";
 import { doesRequestPathMatchLegacyRoute, doesRequestPathMatchRoute } from "../route-processor";
 
@@ -29,13 +24,15 @@ export function tryFindFileForRequest(rawRequestPath: string) {
 
   logger.silly(` - requestPath: ${chalk.yellow(requestPath)}`);
 
-  const filePath = path.join(SWA_CLI_OUTPUT_LOCATION, requestPath!);
-  logger.silly(` - filePath: ${chalk.yellow(filePath)}`);
+  if (DEFAULT_CONFIG.outputLocation) {
+    const filePath = path.join(DEFAULT_CONFIG.outputLocation, requestPath!);
+    logger.silly(` - filePath: ${chalk.yellow(filePath)}`);
+    const isFileExists = fs.existsSync(filePath);
+    logger.silly(` - exists: ${chalk.yellow(isFileExists)}`);
+    return isFileExists ? requestPath : null;
+  }
 
-  const isFileExists = fs.existsSync(filePath);
-  logger.silly(` - exists: ${chalk.yellow(isFileExists)}`);
-
-  return isFileExists ? requestPath : null;
+  return null;
 }
 
 export function isRouteRequiringUserRolesCheck(

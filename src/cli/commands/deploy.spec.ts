@@ -9,10 +9,11 @@ import * as loginModule from "./login";
 
 const pkg = require(path.join(__dirname, "..", "..", "..", "package.json"));
 
-jest.spyOn(logger, "error").mockImplementation();
-jest.spyOn(logger, "log").mockImplementation();
+jest.spyOn(logger, "error").mockImplementation(jest.fn());
+jest.spyOn(logger, "log").mockImplementation(jest.fn());
+jest.spyOn(logger, "warn").mockImplementation(jest.fn());
 jest.spyOn(process, "exit").mockImplementation();
-jest.spyOn(child_process, "spawn").mockImplementation();
+jest.spyOn(child_process, "spawn").mockImplementation(jest.fn());
 jest.spyOn(deployClientModule, "getDeployClientPath").mockImplementation(() => {
   return Promise.resolve({
     binary: "mock-binary",
@@ -32,7 +33,7 @@ jest.spyOn(loginModule, "login").mockImplementation(() => {
   });
 });
 
-describe.skip("deploy", () => {
+describe("deploy", () => {
   const OLD_ENV = process.env;
 
   beforeEach(() => {
@@ -61,7 +62,23 @@ describe.skip("deploy", () => {
     expect(deploy("./", {})).toBeInstanceOf(Promise);
   });
 
-  it("should print an error and exit, if --deployment-token is not provided and login failed", async () => {
+  it.skip("should print warning when using dry run mode", async () => {
+    await deploy("./", {
+      dryRun: true,
+    });
+    expect(logger.warn).toHaveBeenNthCalledWith(1, "***********************************************************************");
+    expect(logger.warn).toHaveBeenNthCalledWith(2, "* WARNING: Running in dry run mode. This project will not be deployed *");
+    expect(logger.warn).toHaveBeenNthCalledWith(3, "***********************************************************************");
+  });
+
+  it.skip("should print error and exit when --api-location does not exist", async () => {
+    await deploy("./", {
+      apiLocation: "/does/not/exist",
+    });
+    expect(logger.error).toHaveBeenNthCalledWith(1, `The provided API folder /does/not/exist does not exist. Abort.`, true);
+  });
+
+  it.skip("should print an error and exit, if --deployment-token is not provided and login failed", async () => {
     jest.spyOn(loginModule, "login").mockImplementation(() => Promise.reject("mock-error"));
 
     await deploy("./", {
@@ -85,7 +102,7 @@ describe.skip("deploy", () => {
     expect(child_process.spawn).not.toBeCalled();
   });
 
-  it("should accept a deploymentToken provided via --deployment-token", async () => {
+  it.skip("should accept a deploymentToken provided via --deployment-token", async () => {
     await deploy("./", {
       outputLocation: "./dist",
       apiLocation: "./api",
@@ -112,15 +129,15 @@ describe.skip("deploy", () => {
         VERBOSE: "false",
         SWA_CLI_DEBUG: undefined,
         SWA_CLI_DEPLOY_DRY_RUN: "false",
-        SWA_CLI_ROUTES_LOCATION: undefined,
+        SWA_RUNTIME_CONFIG_LOCATION: undefined,
         SWA_CLI_VERSION: `${pkg.version}`,
-        SWA_WORKFLOW_FILES: undefined,
+        SWA_RUNTIME_WORKFLOW_LOCATION: undefined,
         SWA_CLI_DEPLOY_BINARY: "mock-binary@0.0.0",
       },
     });
   });
 
-  it("should accept a deploymentToken provided via the environment variable SWA_CLI_DEPLOYMENT_TOKEN", async () => {
+  it.skip("should accept a deploymentToken provided via the environment variable SWA_CLI_DEPLOYMENT_TOKEN", async () => {
     process.env.SWA_CLI_DEPLOYMENT_TOKEN = "123";
 
     await deploy("./", {
@@ -150,9 +167,9 @@ describe.skip("deploy", () => {
         SWA_CLI_DEPLOY_BINARY: "mock-binary@0.0.0",
         SWA_CLI_DEBUG: undefined,
         SWA_CLI_DEPLOY_DRY_RUN: "false",
-        SWA_CLI_ROUTES_LOCATION: undefined,
+        SWA_RUNTIME_CONFIG_LOCATION: undefined,
         SWA_CLI_VERSION: `${pkg.version}`,
-        SWA_WORKFLOW_FILES: undefined,
+        SWA_RUNTIME_WORKFLOW_LOCATION: undefined,
       },
     });
   });

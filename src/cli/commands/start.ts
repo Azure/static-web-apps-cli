@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import { Command, Option } from "commander";
 import concurrently from "concurrently";
 import { CommandInfo } from "concurrently/dist/src/command";
@@ -20,6 +21,7 @@ import {
   readWorkflowFile,
 } from "../../core";
 import builder from "../../core/builder";
+import { swaCLIEnv } from "../../core/env";
 let packageInfo = require("../../../package.json");
 
 export const defaultStartContext = `.${path.sep}`;
@@ -41,7 +43,7 @@ export default function registerCommand(program: Command) {
     .option("--ssl", "serve the front-end application and API over HTTPS", DEFAULT_CONFIG.ssl)
     .option("--ssl-cert <sslCertLocation>", "the SSL certificate (.crt) to use when enabling HTTPS", DEFAULT_CONFIG.sslCert)
     .option("--ssl-key <sslKeyLocation>", "the SSL key (.key) to use when enabling HTTPS", DEFAULT_CONFIG.sslKey)
-    .option("--run <startupScript>", "run a custon shell command or file at startup", DEFAULT_CONFIG.run)
+    .option("--run <startupScript>", "run a custom shell command or script file at startup", DEFAULT_CONFIG.run)
     .option<number>(
       "--devserver-timeout <devserverTimeout>",
       "the time to wait (in ms) when connecting to a front-end application's dev server",
@@ -51,10 +53,15 @@ export default function registerCommand(program: Command) {
 
     .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
     .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
+    .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+      console.warn(chalk.yellow("************************************************************************"));
+      console.warn(chalk.yellow("* WARNING: This emulator is currently in preview and may not match the *"));
+      console.warn(chalk.yellow("* cloud environment exactly. Always deploy and test your app in Azure. *"));
+      console.warn(chalk.yellow("************************************************************************"));
+      console.warn();
 
-    .action(async (context: string = defaultStartContext, _options: SWACLIConfig, command: Command) => {
       const config = await configureOptions(context, command.optsWithGlobals(), command);
-      await start(config.context ?? context, config.options);
+      await start(config.context, config.options);
     })
     .addHelpText(
       "after",
@@ -79,7 +86,7 @@ swa start http://localhost:3000 --run "npm start"
     );
 }
 
-export async function start(startContext: string, options: SWACLIConfig) {
+export async function start(startContext: string | undefined, options: SWACLIConfig) {
   // WARNING:
   // environment variables are populated using values provided by the user to the CLI.
   // Code below doesn't have access to these environment variables which are defined later below.
@@ -98,6 +105,11 @@ export async function start(startContext: string, options: SWACLIConfig) {
     useAppDevServer = startContext;
     options.outputLocation = useAppDevServer;
   } else {
+    if (!startContext) {
+      logger.error(`The folder "${startContext}" is not found. Aborting.`, true);
+      return;
+    }
+
     let outputLocationRelative = path.resolve(options.appLocation as string, startContext);
     // start the emulator from a specific artifact folder relative to appLocation, if folder exists
     if (fs.existsSync(outputLocationRelative)) {
@@ -107,12 +119,8 @@ export async function start(startContext: string, options: SWACLIConfig) {
     else if (fs.existsSync(startContext)) {
       options.outputLocation = startContext;
     } else {
-      // prettier-ignore
-      logger.error(
-        `The dist folder "${outputLocationRelative}" is not found.\n` +
-        `Make sure that this folder exists or use the --build option to pre-build the static app.`,
-        true
-      );
+      logger.error(`The folder "${outputLocationRelative}" is not found. Aborting.`, true);
+      return;
     }
   }
 
@@ -214,31 +222,33 @@ export async function start(startContext: string, options: SWACLIConfig) {
   // WARNING: code from above doesn't have access to env vars which are only defined below
 
   // set env vars for current command
-  const envVarsObj = {
-    SWA_CLI_DEBUG: options.verbose,
+  const envVarsObj: SWACLIEnv = {
+    SWA_RUNTIME_CONFIG_LOCATION: options.swaConfigLocation,
+    SWA_RUNTIME_WORKFLOW_LOCATION: `${userWorkflowConfig?.files?.[0]}`,
+    SWA_CLI_DEBUG: options.verbose as DebugFilterLevel,
     SWA_CLI_API_PORT: `${apiPort}`,
     SWA_CLI_APP_LOCATION: userWorkflowConfig?.appLocation as string,
     SWA_CLI_OUTPUT_LOCATION: userWorkflowConfig?.outputLocation as string,
     SWA_CLI_API_LOCATION: userWorkflowConfig?.apiLocation as string,
-    SWA_CLI_ROUTES_LOCATION: options.swaConfigLocation,
-    SWA_CLI_HOST: options.host,
+    SWA_CLI_HOST: `${options.host}`,
     SWA_CLI_PORT: `${options.port}`,
-    SWA_WORKFLOW_FILES: userWorkflowConfig?.files?.join(","),
-    SWA_CLI_APP_SSL: `${options.ssl}`,
+    SWA_CLI_APP_SSL: options.ssl ? "true" : "false",
     SWA_CLI_APP_SSL_CERT: options.sslCert,
     SWA_CLI_APP_SSL_KEY: options.sslKey,
     SWA_CLI_STARTUP_COMMAND: startupCommand as string,
     SWA_CLI_VERSION: packageInfo.version,
     SWA_CLI_DEVSERVER_TIMEOUT: `${devserverTimeout}`,
-    SWA_CLI_OPEN: `${options.open}`,
+    SWA_CLI_OPEN_BROWSER: options.open ? "true" : "false",
   };
 
-  // merge SWA env variables with process.env
-  process.env = { ...process.env, ...envVarsObj };
+  // merge SWA CLI env variables with process.env
+  process.env = {
+    ...swaCLIEnv(envVarsObj),
+  };
 
-  // INFO: from here code may access SWA CLI env vars.
+  // INFO: from here, code may access SWA CLI env vars.
 
-  const { env } = process;
+  const env = swaCLIEnv();
   const concurrentlyCommands: CommandInfo[] = [
     // start the reverse proxy
     { command: `node "${path.join(__dirname, "..", "..", "msha", "server.js")}"`, name: "swa", env, prefixColor: "gray.dim" },

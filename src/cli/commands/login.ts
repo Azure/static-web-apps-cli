@@ -5,6 +5,7 @@ import process from "process";
 import { DEFAULT_CONFIG } from "../../config";
 import { configureOptions, logger } from "../../core";
 import { azureLogin, listResourceGroups, listStaticSites, listSubscriptions, listTenants } from "../../core/account";
+import { swaCLIEnv } from "../../core/env";
 import { chooseResourceGroup, chooseStaticSite, chooseSubscription, chooseTenant } from "../../core/prompts";
 
 export default function registerCommand(program: Command) {
@@ -43,13 +44,16 @@ Examples:
 }
 
 export async function login(options: SWACLIConfig) {
+  const { AZURE_SUBSCRIPTION_ID, AZURE_RESOURCE_GROUP, SWA_CLI_APP_NAME, AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET } = swaCLIEnv();
+
   let credentialChain: TokenCredential | undefined = undefined;
-  let subscriptionId: string | undefined = process.env.AZURE_SUBSCRIPTION_ID ?? options.subscriptionId;
-  let resourceGroupName: string | undefined = process.env.AZURE_RESOURCE_GROUP ?? options.resourceGroupName;
-  let staticSiteName: string | undefined = process.env.SWA_CLI_APP_NAME ?? options.appName;
-  let tenantId: string | undefined = process.env.AZURE_TENANT_ID ?? options.tenantId;
-  let clientId: string | undefined = process.env.AZURE_CLIENT_ID ?? options.clientId;
-  let clientSecret: string | undefined = process.env.AZURE_CLIENT_SECRET ?? options.clientSecret;
+
+  let subscriptionId: string | undefined = AZURE_SUBSCRIPTION_ID ?? options.subscriptionId;
+  let resourceGroupName: string | undefined = AZURE_RESOURCE_GROUP ?? options.resourceGroupName;
+  let staticSiteName: string | undefined = SWA_CLI_APP_NAME ?? options.appName;
+  let tenantId: string | undefined = AZURE_TENANT_ID ?? options.tenantId;
+  let clientId: string | undefined = AZURE_CLIENT_ID ?? options.clientId;
+  let clientSecret: string | undefined = AZURE_CLIENT_SECRET ?? options.clientSecret;
 
   logger.silly({ options });
 
