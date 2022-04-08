@@ -1,14 +1,23 @@
 import path from "path";
 // import fs from "fs";
 import process from "process";
-import prompts from 'prompts';
+import prompts from "prompts";
 import chalk from "chalk";
 import { Command } from "commander";
-import { logger, dasherize, hasConfigurationNameInConfigFile, writeConfigFile, swaCliConfigFilename, configExists, configureOptions } from "../../core/utils";
+import {
+  logger,
+  dasherize,
+  hasConfigurationNameInConfigFile,
+  writeConfigFile,
+  swaCliConfigFilename,
+  configExists,
+  configureOptions,
+} from "../../core/utils";
 import { DEFAULT_CONFIG } from "../../config";
 
 export default function registerCommand(program: Command) {
-  program.command("init [name]")
+  program
+    .command("init [name]")
     .usage("[name] [options]")
     .description("initialize a new static web app project")
     .option("--yes", "Answer yes to all prompts (disable interactive mode)", false)
@@ -22,15 +31,15 @@ export async function init(name: string | undefined, options: SWACLIConfig, show
   const configFilePath = options.config!;
   const disablePrompts = options.yes ?? false;
   const outputFolder = process.cwd();
-  let projectName: string = name?.trim() ?? '';
+  let projectName: string = name?.trim() ?? "";
 
-  if (projectName === '') {
+  if (projectName === "") {
     const response = await promptOrUseDefault(disablePrompts, {
-      type: 'text',
-      name: 'projectName',
-      message: 'Choose a project name:',
+      type: "text",
+      name: "projectName",
+      message: "Choose a project name:",
       initial: dasherize(path.basename(outputFolder)),
-      validate: (value: string) => value.trim() !== '' || 'Project name cannot be empty',
+      validate: (value: string) => value.trim() !== "" || "Project name cannot be empty",
       format: (value: string) => dasherize(value.trim()),
     });
     projectName = response.projectName;
@@ -42,7 +51,7 @@ export async function init(name: string | undefined, options: SWACLIConfig, show
   // }
 
   // TODO: run framework detection
-  let projectConfig: FrameworkConfig = {  
+  let projectConfig: FrameworkConfig = {
     appLocation: DEFAULT_CONFIG.appLocation!,
     outputLocation: DEFAULT_CONFIG.outputLocation!,
     appBuildCommand: DEFAULT_CONFIG.appBuildCommand!,
@@ -66,15 +75,15 @@ export async function init(name: string | undefined, options: SWACLIConfig, show
   // }
 
   // TODO: check for existing config file w/ project name
-  if (configExists(configFilePath) && await hasConfigurationNameInConfigFile(configFilePath, projectName)) {
+  if (configExists(configFilePath) && (await hasConfigurationNameInConfigFile(configFilePath, projectName))) {
     const { confirmOverwrite } = await promptOrUseDefault(disablePrompts, {
-      type: 'confirm',
-      name: 'confirmOverwrite',
+      type: "confirm",
+      name: "confirmOverwrite",
       message: `Configuration with name "${projectName}" already exists, overwrite?`,
-      initial: true
+      initial: true,
     });
     if (!confirmOverwrite) {
-      logger.log('Aborted, configuration not saved.');
+      logger.log("Aborted, configuration not saved.");
       return;
     }
   }
@@ -85,68 +94,68 @@ export async function init(name: string | undefined, options: SWACLIConfig, show
 
   if (showHints) {
     logger.log(chalk.bold(`Get started with the following commands:`));
-    logger.log(`- Use ${chalk.cyan('swa start')} to run your app locally.`);
-    logger.log(`- Use ${chalk.cyan('swa deploy')} to deploy your app to Azure.\n`);
+    logger.log(`- Use ${chalk.cyan("swa start")} to run your app locally.`);
+    logger.log(`- Use ${chalk.cyan("swa deploy")} to deploy your app to Azure.\n`);
   }
 }
 
 async function promptConfigSettings(disablePrompts: boolean, detectedConfig: FrameworkConfig): Promise<FrameworkConfig> {
   const trimValue = (value: string) => {
     value = value.trim();
-    return value === '' ? undefined : value;
+    return value === "" ? undefined : value;
   };
   const response = await promptOrUseDefault(disablePrompts, [
     {
-      type: 'text',
-      name: 'appLocation',
+      type: "text",
+      name: "appLocation",
       message: "What's your app location?",
       initial: detectedConfig.appLocation,
-      validate: (value: string) => value.trim() !== '' || 'App location cannot be empty',
-      format: trimValue
+      validate: (value: string) => value.trim() !== "" || "App location cannot be empty",
+      format: trimValue,
     },
     {
-      type: 'text',
-      name: 'outputLocation',
+      type: "text",
+      name: "outputLocation",
       message: "What's your build output location?",
       hint: "If your app doesn't have a build process, use the same location as your app",
       initial: detectedConfig.outputLocation,
-      validate: (value: string) => value.trim() !== '' || 'Output location cannot be empty',
-      format: trimValue
+      validate: (value: string) => value.trim() !== "" || "Output location cannot be empty",
+      format: trimValue,
     },
     {
-      type: 'text',
-      name: 'apiLocation',
+      type: "text",
+      name: "apiLocation",
       message: "What's your API location? (optional)",
       initial: detectedConfig.apiLocation,
-      format: trimValue
+      format: trimValue,
     },
     {
-      type: 'text',
-      name: 'appBuildCommand',
+      type: "text",
+      name: "appBuildCommand",
       message: "What command do you use to build your app? (optional)",
       initial: detectedConfig.appBuildCommand,
-      format: trimValue
+      format: trimValue,
     },
     {
-      type: 'text',
-      name: 'apiBuildCommand',
+      type: "text",
+      name: "apiBuildCommand",
       message: "What command do you use to build your API? (optional)",
       initial: detectedConfig.apiBuildCommand,
-      format: trimValue
+      format: trimValue,
     },
     {
-      type: 'text',
-      name: 'devServerCommand',
-      message: 'What command do you use to run your app for development? (optional)',
+      type: "text",
+      name: "devServerCommand",
+      message: "What command do you use to run your app for development? (optional)",
       initial: detectedConfig.devServerCommand,
-      format: trimValue
+      format: trimValue,
     },
     {
-      type: 'text',
-      name: 'devServerUrl',
-      message: 'What is your development server url (optional)',
+      type: "text",
+      name: "devServerUrl",
+      message: "What is your development server url (optional)",
       initial: detectedConfig.devServerUrl,
-      format: trimValue
+      format: trimValue,
     },
   ]);
   return response;
@@ -167,7 +176,8 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
 async function promptOrUseDefault<T extends string = string>(
   disablePrompts: boolean,
   questions: prompts.PromptObject<T> | Array<prompts.PromptObject<T>>,
-  options?: prompts.Options): Promise<prompts.Answers<T>> {
+  options?: prompts.Options
+): Promise<prompts.Answers<T>> {
   if (disablePrompts) {
     const response = {} as prompts.Answers<T>;
     questions = Array.isArray(questions) ? questions : [questions];
@@ -181,7 +191,7 @@ async function promptOrUseDefault<T extends string = string>(
 }
 
 function cancelPrompt() {
-  logger.log('Aborted, configuration not saved.');
+  logger.log("Aborted, configuration not saved.");
   process.exit(-1);
 }
 

@@ -49,7 +49,6 @@ context("Authorization", () => {
     });
   }
 
-
   describe("Accessing /.auth/login/aad", () => {
     it("should return 404", () => {
       cy.request({ url: "http://0.0.0.0:1234/.auth/login/aad", failOnStatusCode: false }).then((response) => {
@@ -57,5 +56,4 @@ context("Authorization", () => {
       });
     });
   });
-
 });

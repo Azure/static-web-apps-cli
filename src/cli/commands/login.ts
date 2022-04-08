@@ -47,6 +47,7 @@ export async function login(options: SWACLIConfig) {
   const { AZURE_SUBSCRIPTION_ID, AZURE_RESOURCE_GROUP, SWA_CLI_APP_NAME, AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET } = swaCLIEnv();
 
   let credentialChain: TokenCredential | undefined = undefined;
+
   let subscriptionId: string | undefined = AZURE_SUBSCRIPTION_ID ?? options.subscriptionId;
   let resourceGroupName: string | undefined = AZURE_RESOURCE_GROUP ?? options.resourceGroupName;
   let staticSiteName: string | undefined = SWA_CLI_APP_NAME ?? options.appName;
