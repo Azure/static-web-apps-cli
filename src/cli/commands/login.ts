@@ -39,6 +39,9 @@ Examples:
   Interactive login
   swa login
 
+  Interactive login without storing credentials
+  swa login --persist false
+
   Login into specific tenant
   swa login --tenant 12345678-abcd-0123-4567-abcdef012345
 
