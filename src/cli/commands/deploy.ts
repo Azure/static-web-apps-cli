@@ -100,7 +100,7 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     try {
       const { credentialChain, subscriptionId, resourceGroupName, staticSiteName } = await login({
         ...options,
-        persist: true,
+        useKeychain: true,
       });
 
       const deploymentTokenResponse = await getStaticSiteDeployment(credentialChain, subscriptionId, resourceGroupName, staticSiteName);

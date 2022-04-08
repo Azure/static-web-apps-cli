@@ -170,7 +170,7 @@ declare type SWACLISharedLoginOptions = LoginDetails & {
 };
 
 declare type SWACLILoginOptions = SWACLISharedLoginOptions & {
-  persist?: boolean;
+  useKeychain?: boolean;
 };
 
 // -- CLI Context options ----------------------------------------------------

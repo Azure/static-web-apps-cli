@@ -24,7 +24,7 @@ export default function registerCommand(program: Command) {
     .command("login")
     .usage("[options]")
     .description("login into Azure Static Web Apps")
-    .option("--persist <persist>", "Enable credentials cache persistence", DEFAULT_CONFIG.persist)
+    .option("--use-keychain <keychain>", "Enable credentials cache persistence", DEFAULT_CONFIG.useKeychain)
     .action(async (_options: SWACLIConfig, command: Command) => {
       const config = await configureOptions(undefined, command.optsWithGlobals(), command);
       await login(config.options);
@@ -40,7 +40,7 @@ Examples:
   swa login
 
   Interactive login without storing credentials
-  swa login --persist false
+  swa login --useKeychain false
 
   Login into specific tenant
   swa login --tenant 12345678-abcd-0123-4567-abcdef012345
@@ -67,7 +67,7 @@ export async function login(options: SWACLIConfig) {
   let clientSecret: string | undefined = AZURE_CLIENT_SECRET ?? options.clientSecret;
 
   try {
-    credentialChain = await azureLoginWithIdentitySDK({ tenantId, clientId, clientSecret }, options.persist);
+    credentialChain = await azureLoginWithIdentitySDK({ tenantId, clientId, clientSecret }, options.useKeychain);
 
     // If the user has not specified a tenantId, we will prompt them to choose one
     if (!tenantId) {
@@ -82,7 +82,7 @@ export async function login(options: SWACLIConfig) {
         tenantId = tenant.tenantId;
         // login again with the new tenant
         // TODO: can we silently authenticate the user with the new tenant?
-        credentialChain = await azureLoginWithIdentitySDK({ tenantId, clientId, clientSecret }, options.persist);
+        credentialChain = await azureLoginWithIdentitySDK({ tenantId, clientId, clientSecret }, options.useKeychain);
       }
     }
 

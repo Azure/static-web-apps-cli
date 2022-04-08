@@ -37,7 +37,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   githubActionWorkflowLocation: SWA_RUNTIME_WORKFLOW_LOCATION || undefined,
 
   // swa login options
-  persist: true,
+  useKeychain: true,
   subscriptionId: undefined,
   resourceGroupName: undefined,
   tenantId: undefined,
