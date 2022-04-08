@@ -2,8 +2,8 @@ import { TokenCachePersistenceOptions } from "@azure/identity";
 import { ICachePlugin, TokenCacheContext } from "@azure/msal-common";
 import { logger } from "../utils";
 import { Environment } from "./impl/azure-environment";
-import { CredentialsStore } from "./impl/credentials-store";
-import { EncryptionService } from "./impl/encryption";
+import { NativeCredentialsStore } from "./impl/credentials-store";
+import { CryptoService } from "./impl/crypto";
 import { getMachineId } from "./impl/machine-identifier";
 import { SecretStorage } from "./impl/secret-storage";
 
@@ -33,7 +33,7 @@ export class SWACLIPersistenceCachePlugin implements ICachePlugin {
     const machineId = await getMachineId();
     logger.silly(`Machine ID: ${machineId ? "<hidden>" : "<empty>"}`);
 
-    const secretStorage = new SecretStorage(this.options, new CredentialsStore(this.options), new EncryptionService(machineId));
+    const secretStorage = new SecretStorage(this.options, new NativeCredentialsStore(this.options), new CryptoService(machineId));
 
     const cachedValue: string | undefined = await secretStorage.getCredentials(machineId, Environment.AzureCloud.name);
     logger.silly(`Credentials: ${cachedValue ? "<hidden>" : "<empty>"}`);
@@ -52,7 +52,7 @@ export class SWACLIPersistenceCachePlugin implements ICachePlugin {
     const machineId = await getMachineId();
     logger.silly(`Machine ID: ${machineId ? "<hidden>" : "<empty>"}`);
 
-    const secretStorage = new SecretStorage(this.options, new CredentialsStore(this.options), new EncryptionService(machineId));
+    const secretStorage = new SecretStorage(this.options, new NativeCredentialsStore(this.options), new CryptoService(machineId));
 
     logger.silly(`Did TokenCacheContext cache changed: ${cacheContext.cacheHasChanged}`);
 
