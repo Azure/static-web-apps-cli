@@ -1,7 +1,7 @@
-import { program, Command, OptionValues } from "commander";
-import { logger } from "./logger";
-import { getConfigFileOptions } from "./cli-config";
+import { Command, OptionValues, program } from "commander";
 import { DEFAULT_CONFIG } from "../../config";
+import { getConfigFileOptions } from "./cli-config";
+import { logger } from "./logger";
 
 export async function configureOptions(
   context: string | undefined,
@@ -9,6 +9,7 @@ export async function configureOptions(
   command: Command
 ): Promise<{ context: string | undefined; options: SWACLIConfig }> {
   const verbose = options.verbose;
+
   setLogLevel(verbose);
 
   const userOptions = getUserOptions(command);

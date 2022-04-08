@@ -6,6 +6,7 @@ import ora from "ora";
 import os from "os";
 import path from "path";
 import { PassThrough } from "stream";
+import { swaCLIEnv } from "./env";
 import { logger } from "./utils";
 
 type StaticSiteClientReleaseMetadata = {
@@ -43,7 +44,7 @@ export async function getDeployClientPath(): Promise<{ binary: string; version: 
   }
 
   const localClientMetadata = getLocalClientMetadata() as StaticSiteClientLocalMetadata;
-  const binaryVersion = process.env.SWA_CLI_DEPLOY_BINARY_VERSION || "stable";
+  const binaryVersion = swaCLIEnv().SWA_CLI_DEPLOY_BINARY_VERSION || "stable";
   const remoteClientMetadata = await fetchClientVersionDefinition(binaryVersion);
   if (remoteClientMetadata === undefined) {
     throw new Error(`Could not load ${DEPLOY_BINARY_NAME} metadata from remote. Please check your internet connection.`);

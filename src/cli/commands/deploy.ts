@@ -1,5 +1,3 @@
-require("dotenv").config();
-
 import chalk from "chalk";
 import { spawn } from "child_process";
 import { Command } from "commander";
@@ -10,6 +8,7 @@ import { DEFAULT_CONFIG } from "../../config";
 import { configureOptions, findSWAConfigFile, logger, readWorkflowFile } from "../../core";
 import { getStaticSiteDeployment } from "../../core/account";
 import { cleanUp, getDeployClientPath } from "../../core/deploy-client";
+import { swaCLIEnv } from "../../core/env";
 import { login } from "./login";
 
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "package.json"));
@@ -20,7 +19,7 @@ export default function registerCommand(program: Command) {
     .usage("[context] [options]")
     .description("Deploy the current project to Azure Static Web Apps")
     .option("--api-location <apiLocation>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
-    .option("--deployment-token <secret>", "the secret toekn used to authenticate with the Static Web Apps")
+    .option("--deployment-token <secret>", "the secret token used to authenticate with the Static Web Apps")
     .option("--dry-run", "simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
     .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
       const config = await configureOptions(context, command.optsWithGlobals(), command);
@@ -45,7 +44,7 @@ Examples:
 }
 
 export async function deploy(deployContext: string, options: SWACLIConfig) {
-  const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = process.env;
+  const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
 
   if (options.dryRun) {
@@ -143,17 +142,17 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     );
   }
 
-  const cliEnv = {
-    SWA_CLI_DEBUG: options.verbose,
-    SWA_CLI_ROUTES_LOCATION: options.swaConfigLocation,
-    SWA_WORKFLOW_FILES: userWorkflowConfig?.files?.join(","),
+  const cliEnv: SWACLIEnv = {
+    SWA_CLI_DEBUG: options.verbose as DebugFilterLevel,
+    SWA_RUNTIME_WORKFLOW_LOCATION: `${userWorkflowConfig?.files?.[0]}`,
+    SWA_RUNTIME_CONFIG_LOCATION: options.swaConfigLocation,
     SWA_RUNTIME_CONFIG: options.swaConfigLocation ? (await findSWAConfigFile(options.swaConfigLocation))?.file : undefined,
     SWA_CLI_VERSION: packageInfo.version,
     SWA_CLI_DEPLOY_DRY_RUN: `${options.dryRun}`,
     SWA_CLI_DEPLOY_BINARY: undefined,
   };
 
-  const deployClientEnv = {
+  const deployClientEnv: SWACLIEnv = {
     DEPLOYMENT_ACTION: options.dryRun ? "close" : "upload",
     DEPLOYMENT_PROVIDER: `swa-cli-${packageInfo.version}`,
     REPOSITORY_BASE: deployContext,
@@ -165,12 +164,6 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     API_LOCATION: options.apiLocation,
     VERBOSE: isVerboseEnabled ? "true" : "false",
   };
-
-  // TODO: add support for .env file
-  // TODO: add support for Azure CLI
-  // TODO: add support for Service Principal
-  // TODO: check that platform.apiRuntime in staticwebapp.config.json is provided.
-  //       This is required by the StaticSiteClient!
 
   let spinner: ora.Ora = {} as ora.Ora;
   try {
@@ -184,13 +177,11 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
       logger.silly(`Deploying using the following options:`);
       logger.silly({ env: { ...cliEnv, ...deployClientEnv } });
 
-      spinner.start(`Preparing deployment...`);
+      spinner.start(`Preparing deployment. Please wait...`);
 
       const child = spawn(binary, [], {
         env: {
-          ...process.env,
-          ...cliEnv,
-          ...deployClientEnv,
+          ...swaCLIEnv(cliEnv, deployClientEnv),
         },
       });
 

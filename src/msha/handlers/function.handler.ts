@@ -14,7 +14,7 @@ registerProcessExit(() => {
   process.exit(0);
 });
 
-function injectHeaders(req: http.ClientRequest, host: string) {
+function injectHeaders(req: http.ClientRequest, host: string | undefined) {
   logger.silly(`injecting headers to Functions request:`);
   if (!req.getHeader("x-ms-original-url")) {
     req.setHeader("x-ms-original-url", encodeURI(new URL(req.path!, host).toString()));

@@ -30,7 +30,11 @@ export function isAcceptingTcpConnections({ host = "127.0.0.1", port }: { host?:
  * @param url The URL string to check.
  * @returns True if the URL string is a valid URL. False otherwise.
  */
-export function isHttpUrl(url: string) {
+export function isHttpUrl(url: string | undefined) {
+  if (!url) {
+    return false;
+  }
+
   try {
     const uri = new URL(url);
     return uri.protocol.startsWith("http") || uri.protocol.startsWith("ws");
@@ -45,7 +49,7 @@ export function isHttpUrl(url: string) {
  * @param timeout Maximum time in ms to wait before exiting with failure (1) code,
   default Infinity.
  */
-export async function validateDevServerConfig(context: string, timeout: number) {
+export async function validateDevServerConfig(context: string | undefined, timeout: number | undefined) {
   let { hostname, port } = parseUrl(context);
 
   try {
@@ -74,10 +78,10 @@ export async function validateDevServerConfig(context: string, timeout: number) 
       }
     }
   } catch (err) {
-    if (err.message.includes("EACCES")) {
+    if ((err as any).message.includes("EACCES")) {
       logger.error(`Port "${port}" cannot be used. You might need elevated or admin privileges. Or, use a valid port: 1024 to 49151`);
     } else {
-      logger.error(err.message);
+      logger.error((err as any).message);
     }
     process.exit(-1);
   }
@@ -88,7 +92,11 @@ export async function validateDevServerConfig(context: string, timeout: number) 
  * @param url The URL string to check.
  * @returns Protocol, port, host and hostname extracted from the URL.
  */
-export function parseUrl(url: string) {
+export function parseUrl(url: string | undefined) {
+  if (!url) {
+    throw new Error(`Address: ${url} is malformed!`);
+  }
+
   const { protocol, port, host, hostname } = new URL(url);
   return {
     protocol,
@@ -106,7 +114,7 @@ export function parseUrl(url: string) {
  * @throws {Error} if the URL is malformed.
  * @returns
  */
-export function address(host: string, port: number | string = 80, protocol = `http`) {
+export function address(host: string | undefined, port: number | string = 80, protocol = `http`) {
   if (!host) {
     throw new Error(`Host value is not set`);
   }

@@ -160,32 +160,20 @@ export const HEADER_DELETE_KEYWORD = "@@HEADER_DELETE_KEYWORD@@";
 
 export const CACHE_CONTROL_MAX_AGE = 30;
 
-export const SWA_WORKFLOW_CONFIG_FILE = process.env.SWA_WORKFLOW_CONFIG_FILE as string;
-export const SWA_CLI_HOST = process.env.SWA_CLI_HOST as string;
-export const SWA_CLI_PORT = parseInt((process.env.SWA_CLI_PORT || DEFAULT_CONFIG.port) as string, 10);
-export const SWA_CLI_APP_LOCATION = (process.env.SWA_CLI_APP_LOCATION || DEFAULT_CONFIG.appLocation) as string;
-export const SWA_CLI_ROUTES_LOCATION = (process.env.SWA_CLI_ROUTES_LOCATION || DEFAULT_CONFIG.swaConfigLocation) as string;
-export const SWA_CLI_OUTPUT_LOCATION = (process.env.SWA_CLI_OUTPUT_LOCATION || DEFAULT_CONFIG.outputLocation) as string;
-export const SWA_CLI_API_LOCATION = (process.env.SWA_CLI_API_LOCATION || DEFAULT_CONFIG.apiLocation) as string;
-export const SWA_CLI_APP_SSL = process.env.SWA_CLI_APP_SSL === "true" || DEFAULT_CONFIG.ssl === true;
-export const SWA_CLI_APP_SSL_KEY = process.env.SWA_CLI_APP_SSL_KEY as string;
-export const SWA_CLI_APP_SSL_CERT = process.env.SWA_CLI_APP_SSL_CERT as string;
-export const SWA_CLI_APP_PROTOCOL = SWA_CLI_APP_SSL ? `https` : `http`;
+export const SWA_CLI_APP_PROTOCOL = DEFAULT_CONFIG.ssl ? `https` : `http`;
 export const SWA_PUBLIC_DIR = path.resolve(__dirname, "..", "public"); //SWA_PUBLIC_DIR = "../public"
-export const HAS_API = Boolean(SWA_CLI_API_LOCATION && SWA_CLI_API_URI());
-export const SWA_CLI_DEVSERVER_TIMEOUT = parseInt((process.env.SWA_CLI_DEVSERVER_TIMEOUT || DEFAULT_CONFIG.devserverTimeout) as string, 10);
-export const SWA_CLI_OPEN = (process.env.SWA_CLI_OPEN === "true" || DEFAULT_CONFIG.open) as boolean;
+export const HAS_API = Boolean(DEFAULT_CONFIG.apiLocation && SWA_CLI_API_URI());
 
 // --
 // Note: declare these as functions so that their body gets evaluated at runtime!
 // The reason for this is that these function depend on values set by environment variables which are set
 // during the startup of the CLI (see src/cli/commands/start.ts)
 export function IS_APP_DEV_SERVER() {
-  return isHttpUrl(SWA_CLI_OUTPUT_LOCATION);
+  return isHttpUrl(DEFAULT_CONFIG.outputLocation);
 }
 export function IS_API_DEV_SERVER() {
-  return isHttpUrl(SWA_CLI_API_LOCATION);
+  return isHttpUrl(DEFAULT_CONFIG.apiLocation);
 }
 export function SWA_CLI_API_URI() {
-  return IS_API_DEV_SERVER() ? SWA_CLI_API_LOCATION : address(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
+  return IS_API_DEV_SERVER() ? DEFAULT_CONFIG.apiLocation : address(DEFAULT_CONFIG.host, DEFAULT_CONFIG.apiPort);
 }
