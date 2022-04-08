@@ -1,7 +1,7 @@
 import { TokenCachePersistenceOptions } from "@azure/identity";
 import os from "os";
 import waitOn from "wait-on";
-import { isValidIpAddress, logger } from "../../utils";
+import { isValidIpAddress, isWSL, logger } from "../../utils";
 
 type KeychainModule = typeof import("keytar");
 
@@ -207,7 +207,7 @@ export class NativeCredentialsStore implements KeychainCredentialsStore {
     try {
       logger.silly("Attempting to load native keychain");
 
-      await this.validateEnvironment();
+      await this.validateX11Environment();
       this.keychainCache = await import("keytar");
 
       // Try using keytar to see if it throws or not.
@@ -219,9 +219,15 @@ export class NativeCredentialsStore implements KeychainCredentialsStore {
     logger.silly("Got native keychain reference");
     return this.keychainCache;
   }
-  async validateEnvironment() {
+  async validateX11Environment() {
+    if (!isWSL()) {
+      // we assume that if we're not on WSL, we're on a sane environment
+      // that has a valid X11 environment.
+      return;
+    }
+
     const { DISPLAY, WAYLAND_DISPLAY, MIR_SOCKET, WAYLAND_SOCKET } = process.env;
-    let x11Host = `${DISPLAY || WAYLAND_DISPLAY || MIR_SOCKET || WAYLAND_SOCKET}`;
+    let x11Host = DISPLAY || WAYLAND_DISPLAY || MIR_SOCKET || WAYLAND_SOCKET;
 
     if (!x11Host) {
       logger.error(`Environment variable DISPLAY is not set.`);
@@ -236,8 +242,12 @@ export class NativeCredentialsStore implements KeychainCredentialsStore {
       //   - :D.S is equivalent to host/unix:D.S, where host is the local hostname.
 
       let [x11Hostname, x11Display] = x11Host.split(":");
-      let [display, _screen] = x11Display.split(".");
-      const x11Port = 6000 + parseInt(display, 10);
+
+      let x11Port = 6000;
+      if (x11Display) {
+        let [display, _screen] = x11Display.split(".");
+        x11Port += parseInt(display, 10);
+      }
 
       logger.silly("X11 hostname: " + x11Hostname);
 
