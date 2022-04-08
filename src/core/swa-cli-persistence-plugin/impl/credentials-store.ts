@@ -1,5 +1,7 @@
 import { TokenCachePersistenceOptions } from "@azure/identity";
-import { logger } from "../../utils";
+import os from "os";
+import waitOn from "wait-on";
+import { isValidIpAddress, logger } from "../../utils";
 
 type KeychainModule = typeof import("keytar");
 
@@ -22,26 +24,26 @@ interface KeychainCredentialsStore {
   clear(): Promise<void>;
 }
 
-export class CredentialsStore implements KeychainCredentialsStore {
+export class NativeCredentialsStore implements KeychainCredentialsStore {
   constructor(private options: TokenCachePersistenceOptions) {}
 
   private static readonly KEYCHAIN_ENTRY_MAX_LENGTH = 2500;
-  private static readonly KEYCHAIN_ENTRY_CHUNK_SIZE = CredentialsStore.KEYCHAIN_ENTRY_MAX_LENGTH - 100;
+  private static readonly KEYCHAIN_ENTRY_CHUNK_SIZE = NativeCredentialsStore.KEYCHAIN_ENTRY_MAX_LENGTH - 100;
   private static readonly KEYCHAIN_SERVICE = "swa-cli";
 
-  private keychainCache: KeychainModule | undefined;
+  private keychainCache: KeychainModule | undefined | any;
 
   async getPassword(service: string, account: string): Promise<string | null> {
-    logger.silly("Getting credentials from keychain");
+    logger.silly("Getting credentials from native keychain");
 
     const keychain = await this.requireKeychain();
-    logger.silly("Got keychain reference");
+    logger.silly("Got native keychain reference");
 
     const credentials = await keychain.getPassword(service, account);
-    logger.silly("Got credentials from keychain: " + (credentials ? "<hidden>" : "<empty>"));
+    logger.silly("Got credentials from native keychain: " + (credentials ? "<hidden>" : "<empty>"));
 
     if (credentials) {
-      logger.silly("Credentials found in keychain");
+      logger.silly("Credentials found in native keychain");
 
       try {
         let { content, hasNextChunk }: ChunkedData = JSON.parse(credentials);
@@ -70,15 +72,15 @@ export class CredentialsStore implements KeychainCredentialsStore {
       }
     }
 
-    logger.silly("Credentials not found in keychain");
+    logger.silly("Credentials not found in native keychain");
     return credentials;
   }
 
   async setPassword(service: string, account: string, credentials: string): Promise<void> {
-    logger.silly("Setting credentials in keychain");
+    logger.silly("Setting credentials in native keychain");
 
     const keychain = await this.requireKeychain();
-    logger.silly("Got keychain reference");
+    logger.silly("Got native keychain reference");
 
     const MAX_SET_ATTEMPTS = 3;
 
@@ -107,15 +109,15 @@ export class CredentialsStore implements KeychainCredentialsStore {
       throw error;
     };
 
-    if (credentials.length > CredentialsStore.KEYCHAIN_ENTRY_MAX_LENGTH) {
+    if (credentials.length > NativeCredentialsStore.KEYCHAIN_ENTRY_MAX_LENGTH) {
       logger.silly("Credentials value is too long. Chunking it.");
 
       let index = 0;
       let chunk = 0;
       let hasNextChunk = true;
       while (hasNextChunk) {
-        const credentialsChunk = credentials.substring(index, index + CredentialsStore.KEYCHAIN_ENTRY_CHUNK_SIZE);
-        index += CredentialsStore.KEYCHAIN_ENTRY_CHUNK_SIZE;
+        const credentialsChunk = credentials.substring(index, index + NativeCredentialsStore.KEYCHAIN_ENTRY_CHUNK_SIZE);
+        index += NativeCredentialsStore.KEYCHAIN_ENTRY_CHUNK_SIZE;
         hasNextChunk = credentials.length - index > 0;
 
         const content: ChunkedData = {
@@ -133,39 +135,46 @@ export class CredentialsStore implements KeychainCredentialsStore {
   }
 
   async deletePassword(service: string, account: string): Promise<boolean> {
-    logger.silly("Deleting credentials from keychain");
+    logger.silly("Deleting credentials from native keychain");
 
     const keychain = await this.requireKeychain();
-    logger.silly("Got keychain reference");
+    logger.silly("Got native keychain reference");
 
     const didDelete = await keychain.deletePassword(service, account);
-    logger.silly("Deleted credentials from keychain: " + didDelete);
+    logger.silly("Deleted credentials from native keychain: " + didDelete);
 
     return didDelete;
   }
 
   async findPassword(service: string): Promise<string | null> {
-    logger.silly("Find password in keychain");
+    logger.silly("Finding password in native keychain");
 
     const keychain = await this.requireKeychain();
-    logger.silly("Got keychain reference");
+    logger.silly("Got native keychain reference");
 
     const credentials = await keychain.findPassword(service);
-    logger.silly("Got credentials from keychain: " + (credentials ? "<hidden>" : "<empty>"));
+    logger.silly("Got credentials from native keychain: " + (credentials ? "<hidden>" : "<empty>"));
 
     return credentials;
   }
 
   async findCredentials(service: string): Promise<Array<{ account: string; password: string }>> {
+    logger.silly("Finding credentials in native keychain");
+
     const keychain = await this.requireKeychain();
-    return keychain.findCredentials(service);
+    logger.silly("Got native keychain reference");
+
+    const credentials = await keychain.findCredentials(service);
+    logger.silly("Got credentials from native keychain: " + (credentials ? "<hidden>" : "<empty>"));
+
+    return credentials;
   }
 
   public clear(): Promise<void> {
-    logger.silly("Clear keychain");
+    logger.silly("Clear native keychain");
 
     if (this.keychainCache instanceof InMemoryCredentialsStore) {
-      logger.silly("Clearing in-memory credentials");
+      logger.silly("Clearing credentials from in-memory keychain");
 
       return this.keychainCache.clear();
     }
@@ -177,7 +186,7 @@ export class CredentialsStore implements KeychainCredentialsStore {
   }
 
   public async getSecretStoragePrefix() {
-    return Promise.resolve(CredentialsStore.KEYCHAIN_SERVICE);
+    return Promise.resolve(NativeCredentialsStore.KEYCHAIN_SERVICE);
   }
 
   async requireKeychain(): Promise<KeychainModule> {
@@ -196,7 +205,9 @@ export class CredentialsStore implements KeychainCredentialsStore {
     }
 
     try {
-      logger.silly("Attempting to load keychain");
+      logger.silly("Attempting to load native keychain");
+
+      await this.validateEnvironment();
       this.keychainCache = await import("keytar");
 
       // Try using keytar to see if it throws or not.
@@ -205,8 +216,51 @@ export class CredentialsStore implements KeychainCredentialsStore {
       throw error;
     }
 
-    logger.silly("Got keychain reference");
+    logger.silly("Got native keychain reference");
     return this.keychainCache;
+  }
+  async validateEnvironment() {
+    const { DISPLAY, WAYLAND_DISPLAY, MIR_SOCKET, WAYLAND_SOCKET } = process.env;
+    let x11Host = `${DISPLAY || WAYLAND_DISPLAY || MIR_SOCKET || WAYLAND_SOCKET}`;
+
+    if (!x11Host) {
+      logger.error(`Environment variable DISPLAY is not set.`);
+      logger.error(`An X11 server is required when persistence is enbale. You can disable persistence using --persist false.`, true);
+    } else {
+      logger.silly("X11 is set: " + x11Host);
+
+      // An X11 address can be one of the following:
+      //   - hostname:D.S means screen S on display D of host hostname; the X server for this display is listening at TCP port 6000+D.
+      //   - host/unix:D.S means screen S on display D of host host; the X server for this display is listening at UNIX domain socket /tmp/.X11-unix/XD
+      //     (so it's only reachable from host).
+      //   - :D.S is equivalent to host/unix:D.S, where host is the local hostname.
+
+      let [x11Hostname, x11Display] = x11Host.split(":");
+      let [display, _screen] = x11Display.split(".");
+      const x11Port = 6000 + parseInt(display, 10);
+
+      logger.silly("X11 hostname: " + x11Hostname);
+
+      if (isValidIpAddress(x11Hostname)) {
+        logger.silly("X11 is a hostname");
+      } else {
+        x11Hostname = os.hostname();
+        logger.silly("X11 value is not a valid hostname. Forcing X11 host name to " + x11Hostname);
+      }
+
+      logger.silly(`checking if X11 host ${x11Hostname}:${x11Port} is reachable. This may take a few seconds...`);
+
+      try {
+        await waitOn({
+          resources: ["tcp:" + x11Hostname + ":" + x11Port],
+          delay: 5000, // 5 seconds
+          timeout: 10000, // 10 seconds
+        });
+      } catch (error) {
+        logger.error(`X11 host ${x11Hostname}:${x11Port} is not reachable.`);
+        logger.error(`An X11 server is required when persistence is enbale. You can disable persistence using --persist false.`, true);
+      }
+    }
   }
 }
 
@@ -214,38 +268,56 @@ class InMemoryCredentialsStore implements KeychainCredentialsStore {
   private secretVault: any = {};
 
   async getPassword(service: string, account: string): Promise<string | null> {
+    logger.silly("Getting password from in-memory keychain");
+
     return this.secretVault[service]?.[account] ?? null;
   }
 
   async setPassword(service: string, account: string, credentials: string): Promise<void> {
+    logger.silly("Setting password in in-memory keychain");
+
     this.secretVault[service] = this.secretVault[service] ?? {};
     this.secretVault[service]![account] = credentials;
   }
 
   async deletePassword(service: string, account: string): Promise<boolean> {
+    logger.silly("Deleting password from in-memory keychain");
+
     if (!this.secretVault[service]?.[account]) {
+      logger.silly("Password not found in in-memory keychain");
       return false;
     }
     delete this.secretVault[service]![account];
+
     if (Object.keys(this.secretVault[service]!).length === 0) {
       delete this.secretVault[service];
     }
+
+    logger.silly("Password deleted from in-memory keychain");
     return true;
   }
 
   async findPassword(service: string): Promise<string | null> {
+    logger.silly("Finding password in in-memory keychain");
+
     return JSON.stringify(this.secretVault[service]) ?? null;
   }
 
   async findCredentials(service: string): Promise<Array<KeychainCredentialsAccount>> {
+    logger.silly("Finding credentials in in-memory keychain");
+
     const credentials: KeychainCredentialsAccount[] = [];
     for (const account of Object.keys(this.secretVault[service] || {})) {
       credentials.push({ account, password: this.secretVault[service]![account] });
     }
+
+    logger.silly("Got credentials from native keychain: " + (credentials ? "<hidden>" : "<empty>"));
     return credentials;
   }
 
   async clear(): Promise<void> {
+    logger.silly("Clearing in-memory keychain");
+
     this.secretVault = {};
   }
 }

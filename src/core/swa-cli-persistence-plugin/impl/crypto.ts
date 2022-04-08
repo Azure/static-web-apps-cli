@@ -6,13 +6,13 @@ interface Encryption {
   decrypt(key: string, data: string): Promise<string>;
 }
 
-export class EncryptionService {
+export class CryptoService {
   private static readonly IV_LENGTH = 16; // For AES, this is always 16
   private static readonly ALGORITHM = "aes-256-cbc";
 
   private encryption!: Promise<Encryption>;
   constructor(private machineId: string) {
-    logger.silly(`Invoking encryption service`);
+    logger.silly(`Invoking crypto service`);
   }
 
   private getEncryption(): Promise<Encryption> {
@@ -21,8 +21,8 @@ export class EncryptionService {
         encrypt: (machineId: string, value: string): Promise<string> => {
           return new Promise((resolve, reject) => {
             try {
-              const iv = crypto.randomBytes(EncryptionService.IV_LENGTH);
-              let cipher = crypto.createCipheriv(EncryptionService.ALGORITHM, Buffer.from(machineId), iv);
+              const iv = crypto.randomBytes(CryptoService.IV_LENGTH);
+              let cipher = crypto.createCipheriv(CryptoService.ALGORITHM, Buffer.from(machineId), iv);
               let encrypted = cipher.update(value);
               encrypted = Buffer.concat([encrypted, cipher.final()]);
               const encryptedValue = iv.toString("hex") + ":" + encrypted.toString("hex");
@@ -38,7 +38,7 @@ export class EncryptionService {
               let dataSegments: string[] = data.includes(":") ? data.split(":") : [];
               let iv = Buffer.from(dataSegments.shift() || "", "hex");
               let encryptedText = Buffer.from(dataSegments.join(":"), "hex");
-              let decipher = crypto.createDecipheriv(EncryptionService.ALGORITHM, Buffer.from(machineId), iv);
+              let decipher = crypto.createDecipheriv(CryptoService.ALGORITHM, Buffer.from(machineId), iv);
               let decrypted = decipher.update(encryptedText);
               decrypted = Buffer.concat([decrypted, decipher.final()]);
               resolve(decrypted.toString());

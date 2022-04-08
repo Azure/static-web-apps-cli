@@ -1,15 +1,15 @@
 import { TokenCachePersistenceOptions } from "@azure/identity";
 import { logger } from "../../utils";
-import { CredentialsStore } from "./credentials-store";
-import { EncryptionService } from "./encryption";
+import { NativeCredentialsStore } from "./credentials-store";
+import { CryptoService } from "./crypto";
 
 export class SecretStorage {
   private secretStoragePrefix: Promise<string>;
 
   constructor(
     private options: TokenCachePersistenceOptions,
-    private readonly credentialsService: CredentialsStore,
-    private readonly encryptionService: EncryptionService
+    private readonly credentialsService: NativeCredentialsStore,
+    private readonly encryptionService: CryptoService
   ) {
     this.secretStoragePrefix = this.credentialsService.getSecretStoragePrefix();
   }
@@ -19,7 +19,7 @@ export class SecretStorage {
   }
 
   async getCredentials(machineId: string, key: string): Promise<string | undefined> {
-    logger.silly(`Getting credentials from keychain`);
+    logger.silly(`Getting credentials`);
 
     const fullKey = await this.getFullKey(machineId);
 
