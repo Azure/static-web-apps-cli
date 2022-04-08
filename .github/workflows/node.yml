@@ -10,7 +10,22 @@ on:
     branches: [main]
 
 jobs:
+
+  format:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+
+      - run: npm ci
+      - run: npm run format
+
   test-macos:
+    needs: [format]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -73,6 +88,7 @@ jobs:
           node ../../dist/cli/bin.js deploy ./static --dry-run --verbose=silly --api-location=./api --deployment-token=123
 
   test-windows:
+    needs: [format]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -135,6 +151,7 @@ jobs:
           node ../../dist/cli/bin.js deploy ./static --dry-run --verbose=silly --api-location=./api --deployment-token=123
 
   test-linux:
+    needs: [format]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

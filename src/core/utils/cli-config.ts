@@ -78,8 +78,8 @@ export async function writeConfigFile(configFilePath: string, projectName: strin
   let configFile: SWACLIConfigFile = {
     // TODO: find node_modules/ path and use local schema if found
     $schema: swaCliConfigSchemaUrl,
-    configurations: {}
-  }
+    configurations: {},
+  };
 
   if (configExists(configFilePath)) {
     try {
