@@ -14,7 +14,7 @@ export interface SWACLIPersistenceCacheOptions {
 
 /**
  * SWA CLI cache plugin which enables callers to write the MSAL cache to disk on Windows,
- * macOs, and Linux using Keytar.
+ * macOs, and Linux using native keychain.
  */
 export class SWACLIPersistenceCachePlugin implements ICachePlugin {
   constructor(private options: TokenCachePersistenceOptions) {}
