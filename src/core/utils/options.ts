@@ -1,4 +1,4 @@
-import { Command, OptionValues } from "commander";
+import { Command, OptionValues, program } from "commander";
 import { DEFAULT_CONFIG } from "../../config";
 import { getConfigFileOptions } from "./cli-config";
 import { logger } from "./logger";
