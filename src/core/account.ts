@@ -14,8 +14,8 @@ import {
 import { swaCliPersistencePlugin } from "./swa-cli-persistence-plugin";
 import { logger } from "./utils";
 
-export async function azureLoginWithIdentitySDK(details: LoginDetails = {}, persist = true) {
-  logger.silly("Executing azureLoginWithIdentitySDK");
+export async function authenticateWithAzureIdentity(details: LoginDetails = {}, persist = true) {
+  logger.silly("Executing authenticateWithAzureIdentity");
   logger.silly({ details, persist });
 
   let tokenCachePersistenceOptions: TokenCachePersistenceOptions = {
@@ -77,7 +77,7 @@ export async function listResourceGroups(credentialChain: TokenCredential, subsc
       resourceGroups.push(resource);
     }
   } else {
-    logger.warn("Invalid subscription found. Cannot fetch resource groups");
+    throw new Error("An Azure subscription is required to access your Azure resource groups.");
   }
   return resourceGroups;
 }
@@ -91,43 +91,35 @@ export async function listSubscriptions(credentialChain: TokenCredential) {
   return subscriptions;
 }
 
-export async function listStaticSites(credentialChain: TokenCredential, subscriptionId: string | undefined, resourceGroupName?: string) {
+export async function listStaticSites(credentialChain: TokenCredential, subscriptionId: string | undefined, _resourceGroupName: string) {
   const staticSites = [];
   if (subscriptionId) {
     const websiteClient = new WebSiteManagementClient(credentialChain, subscriptionId);
     for await (let staticSite of websiteClient.staticSites.list()) {
-      if (resourceGroupName) {
-        if (staticSite.id?.includes(`/resourceGroups/${resourceGroupName}/`)) {
-          staticSites.push(staticSite);
-        }
-      } else {
-        staticSites.push(staticSite);
-      }
+      staticSites.push(staticSite);
     }
   } else {
-    logger.warn("Invalid subscription found. Cannot fetch static sites");
+    throw new Error("An Azure subscription is required to access your Azure Static Web Apps applications.");
   }
   return staticSites;
 }
 
 export async function getStaticSiteDeployment(
-  credentialChain: TokenCredential | undefined,
+  credentialChain: TokenCredential,
   subscriptionId: string | undefined,
   resourceGroupName: string | undefined,
   staticSiteName: string | undefined
 ) {
-  if (credentialChain && subscriptionId && resourceGroupName && staticSiteName) {
+  if (subscriptionId && resourceGroupName && staticSiteName) {
     const websiteClient = new WebSiteManagementClient(credentialChain, subscriptionId);
     const deploymentTokenResponse = await websiteClient.staticSites.listStaticSiteSecrets(resourceGroupName, staticSiteName);
     return deploymentTokenResponse;
   } else {
-    logger.warn("Cannot fetch deployment token");
     logger.silly({
       subscriptionId,
       resourceGroupName,
       staticSiteName,
     });
+    throw new Error("An Azure subscription is required to access your deployment token.");
   }
-
-  return undefined;
 }

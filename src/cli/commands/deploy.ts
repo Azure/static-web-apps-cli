@@ -1,3 +1,4 @@
+import { TokenCredential } from "@azure/identity";
 import chalk from "chalk";
 import { spawn } from "child_process";
 import { Command } from "commander";
@@ -5,7 +6,7 @@ import fs from "fs";
 import ora from "ora";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
-import { configureOptions, findSWAConfigFile, logger, readWorkflowFile } from "../../core";
+import { configureOptions, findSWAConfigFile, logger, logGiHubIssueMessageAndExit, readWorkflowFile } from "../../core";
 import { getStaticSiteDeployment } from "../../core/account";
 import { cleanUp, getDeployClientPath } from "../../core/deploy-client";
 import { swaCLIEnv } from "../../core/env";
@@ -103,7 +104,12 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
         useKeychain: true,
       });
 
-      const deploymentTokenResponse = await getStaticSiteDeployment(credentialChain, subscriptionId, resourceGroupName, staticSiteName);
+      const deploymentTokenResponse = await getStaticSiteDeployment(
+        credentialChain as TokenCredential,
+        subscriptionId,
+        resourceGroupName,
+        staticSiteName
+      );
 
       deploymentToken = deploymentTokenResponse?.properties?.apiKey;
 
@@ -237,10 +243,9 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     logger.error("Deployment Failed :(");
     logger.error(`Deployment Failure Reason: ${(error as any).message}`);
     logger.error(
-      `For further information, please visit the Azure Static Web Apps documentation at https://docs.microsoft.com/en-us/azure/static-web-apps/`
+      `For further information, please visit the Azure Static Web Apps documentation at https://docs.microsoft.com/azure/static-web-apps/`
     );
-    logger.error("If you believe this behavior is unexpected, please raise a GitHub issue at https://github.com/azure/static-web-apps-cli/issues/");
-    logger.error("Exiting", true);
+    logGiHubIssueMessageAndExit();
   } finally {
     cleanUp();
   }

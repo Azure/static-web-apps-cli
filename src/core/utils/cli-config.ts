@@ -65,7 +65,7 @@ async function tryParseSwaCliConfig(file: string) {
 
 function printConfigMsg(name: string, file: string) {
   logger.log(`Using configuration "${name}" from file:`);
-  logger.log(`\t${file}`);
+  logger.log(`  ${file}`);
   logger.log("");
 }
 

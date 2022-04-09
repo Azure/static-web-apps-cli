@@ -66,7 +66,7 @@ export const logger = {
       return;
     }
 
-    console.error(chalk.red(data));
+    console.error(chalk.red("✖ " + data));
     if (exit) {
       process.exit(-1);
     }
@@ -132,4 +132,12 @@ export function logRequest(req: http.IncomingMessage, target: string = "", statu
   } else {
     logger.log(chalk.yellow(`${prefix}${req.method} ${target + url} (proxy)`));
   }
+}
+
+export function logGiHubIssueMessageAndExit() {
+  logger.log(``);
+  logger.error(
+    "If you believe this behavior is unexpected, please raise a GitHub issue at:\n  https://github.com/Azure/static-web-apps-cli/issues/new/choose",
+    true
+  );
 }
