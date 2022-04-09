@@ -26,10 +26,10 @@
 | **Runtime settings**          |                                                                                    |            |               |
 | SWA_RUNTIME_CONFIG            | Absolute path to `staticwebapp.config.json`                                        |            |               |
 | SWA_RUNTIME_CONFIG_LOCATION   | Folder containing the file `staticwebapp.config.json`                              |            |               |
-| SWA_RUNTIME_WORKFLOW_LOCATION | Path to `.github/workflows/azure-static-web-apps-xyz.yml`                          | Yes        |               |
+| SWA_RUNTIME_WORKFLOW_LOCATION | Absolute path to `.github/workflows/azure-static-web-apps-xyz.yml`                 | Yes        |               |
 | **Azure Identity**            |                                                                                    |            |               |
 | AZURE_CLIENT_ID               | Azure Active Directory client ID                                                   |            |               |
 | AZURE_CLIENT_SECRET           | Azure Active Directory secret                                                      |            |               |
 | AZURE_TENANT_ID               | Azure Active Directory tenant ID                                                   |            |               |
 | AZURE_SUBSCRIPTION_ID         | Azure subscription ID                                                              |            |               |
-| AZURE_RESOURCE_GROUP          | Azure Resource Group                                                               |            |               |
+| AZURE_RESOURCE_GROUP          | Azure resource group                                                               |            |               |

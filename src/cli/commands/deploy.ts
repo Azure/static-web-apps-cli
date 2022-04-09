@@ -151,7 +151,7 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
 
   const cliEnv: SWACLIEnv = {
     SWA_CLI_DEBUG: options.verbose as DebugFilterLevel,
-    SWA_RUNTIME_WORKFLOW_LOCATION: `${userWorkflowConfig?.files?.[0]}`,
+    SWA_RUNTIME_WORKFLOW_LOCATION: userWorkflowConfig?.files?.[0],
     SWA_RUNTIME_CONFIG_LOCATION: options.swaConfigLocation,
     SWA_RUNTIME_CONFIG: options.swaConfigLocation ? (await findSWAConfigFile(options.swaConfigLocation))?.file : undefined,
     SWA_CLI_VERSION: packageInfo.version,

@@ -105,37 +105,47 @@ export async function start(startContext: string | undefined, options: SWACLICon
     useAppDevServer = startContext;
     options.outputLocation = useAppDevServer;
   } else {
-    if (!startContext) {
+    if (startContext) {
+      // resolve the startup folder to an absolute path
+      startContext = path.resolve(startContext);
+    } else {
       logger.error(`The folder "${startContext}" is not found. Aborting.`, true);
       return;
     }
 
-    let outputLocationRelative = path.resolve(options.appLocation as string, startContext);
-    // start the emulator from a specific artifact folder relative to appLocation, if folder exists
-    if (fs.existsSync(outputLocationRelative)) {
-      options.outputLocation = outputLocationRelative;
+    // resolve the absolute path to the start context and appLocation
+    options.appLocation = path.resolve(options.appLocation!);
+
+    let outputLocationAbsolute = path.resolve(options.appLocation as string, startContext);
+    // if folder exists, start the emulator from a specific build folder (outputLocation), relative to appLocation
+    if (fs.existsSync(outputLocationAbsolute)) {
+      options.outputLocation = outputLocationAbsolute;
     }
-    //check for artifact folder using the absolute location
+    // check for build folder (outputLocation) using the absolute location
     else if (fs.existsSync(startContext)) {
       options.outputLocation = startContext;
     } else {
-      logger.error(`The folder "${outputLocationRelative}" is not found. Aborting.`, true);
+      logger.error(`The folder "${outputLocationAbsolute}" is not found. Aborting.`, true);
       return;
     }
   }
 
   if (options.apiLocation) {
-    if (isHttpUrl(options.apiLocation)) {
+    // resolves to the absolute path of the apiLocation
+    let apiLocationAbsolute = path.resolve(options.appLocation as string, options.apiLocation);
+
+    if (isHttpUrl(apiLocationAbsolute)) {
       useApiDevServer = options.apiLocation;
       options.apiLocation = useApiDevServer;
     }
     // make sure api folder exists
-    else if (fs.existsSync(options.apiLocation) === false) {
-      logger.info(`Skipping API because folder "${options.apiLocation}" is missing`, "swa");
+    else if (fs.existsSync(apiLocationAbsolute)) {
+      options.apiLocation = apiLocationAbsolute;
+    } else {
+      logger.info(`Skipping API because folder "${apiLocationAbsolute}" is missing`, "swa");
     }
   }
 
-  // get the app and api artifact locations
   let [appLocation, outputLocation, apiLocation] = [options.appLocation as string, options.outputLocation as string, options.apiLocation as string];
 
   let apiPort = (options.apiPort || DEFAULT_CONFIG.apiPort) as number;
@@ -219,12 +229,17 @@ export async function start(startContext: string | undefined, options: SWACLICon
     startupCommand = createStartupScriptCommand(options.run, options);
   }
 
+  // resolve the following config to their absolute paths
+  options.swaConfigLocation = options.swaConfigLocation && path.resolve(options.swaConfigLocation);
+  options.sslCert = options.sslCert && path.resolve(options.sslCert);
+  options.sslKey = options.sslKey && path.resolve(options.sslKey);
+
   // WARNING: code from above doesn't have access to env vars which are only defined below
 
   // set env vars for current command
   const envVarsObj: SWACLIEnv = {
     SWA_RUNTIME_CONFIG_LOCATION: options.swaConfigLocation,
-    SWA_RUNTIME_WORKFLOW_LOCATION: `${userWorkflowConfig?.files?.[0]}`,
+    SWA_RUNTIME_WORKFLOW_LOCATION: userWorkflowConfig?.files?.[0] as string,
     SWA_CLI_DEBUG: options.verbose as DebugFilterLevel,
     SWA_CLI_API_PORT: `${apiPort}`,
     SWA_CLI_APP_LOCATION: userWorkflowConfig?.appLocation as string,
