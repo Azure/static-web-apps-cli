@@ -32,6 +32,10 @@ declare interface SWACLIEnv {
   SWA_RUNTIME_CONFIG?: string;
   SWA_CLI_VERSION?: string;
 
+  // swa build
+  SWA_CLI_APP_BUILD_COMMAND?: string;
+  SWA_CLI_API_BUILD_COMMAND?: string;
+
   // StaticSitesClient env vars
   DEPLOYMENT_ACTION?: "close" | "upload";
   DEPLOYMENT_PROVIDER?: string;
@@ -45,6 +49,9 @@ declare interface SWACLIEnv {
   VERBOSE?: "true" | "false";
 
   // swa login
+  SWA_CLI_LOGIN_USE_KEYCHAIN?: "true" | "false";
+
+  // Azure AD
   AZURE_SUBSCRIPTION_ID?: string;
   AZURE_RESOURCE_GROUP?: string;
   SWA_CLI_APP_NAME?: string;
@@ -125,8 +132,10 @@ declare type SWACLIInitOptions = {
 
 declare type SWACLIStartOptions = {
   appLocation?: string;
+  outputLocation?: string;
   apiLocation?: string;
   apiPort?: number;
+  appPort?: number;
   host?: string;
   port?: number;
   ssl?: boolean;
