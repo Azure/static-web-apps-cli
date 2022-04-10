@@ -3,14 +3,17 @@ import * as process from "process";
 import { existsSync } from "fs";
 import { readFile, writeFile } from "fs/promises";
 import { logger } from "./logger";
-import { defaultStartContext } from "../../cli";
+import { DEFAULT_CONFIG } from "../../config";
 
 export const swaCliConfigSchemaUrl = "https://aka.ms/azure/static-web-apps-cli/schema";
 export const swaCliConfigFilename = "swa-cli.config.json";
 
 export const configExists = (configFilePath: string) => existsSync(configFilePath);
 
-export async function getConfigFileOptions(context: string | undefined, configFilePath: string): Promise<SWACLIConfig & { context?: string }> {
+export async function getConfigFileOptions(
+  contextOrConfigEntry: string | undefined,
+  configFilePath: string
+): Promise<SWACLIConfig & { context?: string }> {
   configFilePath = path.resolve(configFilePath);
   if (!configExists(configFilePath)) {
     return {};
@@ -26,11 +29,11 @@ export async function getConfigFileOptions(context: string | undefined, configFi
   const configDir = path.dirname(configFilePath);
   process.chdir(configDir);
 
-  if (context === defaultStartContext) {
+  if ((contextOrConfigEntry && path.resolve(contextOrConfigEntry)) === DEFAULT_CONFIG.outputLocation) {
     const hasMultipleConfig = Object.entries(cliConfig.configurations).length > 1;
     if (hasMultipleConfig) {
-      logger.log(`Multiple configurations found in "${swaCliConfigFilename}", but none was specified.`);
-      logger.log(`Specify which configuration to use with "swa <command> <configurationName>"\n`);
+      logger.warn(`Multiple configurations found in "${swaCliConfigFilename}", but none was specified.`);
+      logger.warn(`Specify which configuration to use with "swa <command> <configurationName>"\n`);
     }
 
     const [configName, config] = Object.entries(cliConfig.configurations)[0];
@@ -38,13 +41,13 @@ export async function getConfigFileOptions(context: string | undefined, configFi
     return { ...config };
   }
 
-  if (context === undefined) {
+  if (contextOrConfigEntry === undefined) {
     return {};
   }
 
-  const config = cliConfig.configurations?.[context];
+  const config = cliConfig.configurations?.[contextOrConfigEntry];
   if (config) {
-    printConfigMsg(context, configFilePath);
+    printConfigMsg(contextOrConfigEntry, configFilePath);
     return { ...config };
   }
 

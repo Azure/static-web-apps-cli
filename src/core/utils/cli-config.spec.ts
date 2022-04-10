@@ -1,8 +1,8 @@
 import * as path from "path";
 import mockFs from "mock-fs";
-import { defaultStartContext } from "../../cli";
 
 import { getConfigFileOptions } from "./cli-config";
+import { DEFAULT_CONFIG } from "../../config";
 
 const mockConfig1 = {
   $schema: "../../../schema/swa-cli.config.schema.json",
@@ -69,16 +69,16 @@ describe("getConfigFileOptions()", () => {
 
   it("Should return the default config if there are one or more configs", async () => {
     mockConfig();
-    expect(await getConfigFileOptions(defaultStartContext, "swa-cli.config.json")).toStrictEqual(mockConfig1.configurations.app);
+    expect(await getConfigFileOptions(DEFAULT_CONFIG.appLocation, "swa-cli.config.json")).toStrictEqual(mockConfig1.configurations.app);
   });
 
   it("Should return a default config", async () => {
     mockConfig(mockConfig2);
-    expect(await getConfigFileOptions(defaultStartContext, "swa-cli.config.json")).toStrictEqual(mockConfig2.configurations.app);
+    expect(await getConfigFileOptions(DEFAULT_CONFIG.appLocation, "swa-cli.config.json")).toStrictEqual(mockConfig2.configurations.app);
   });
 
   it("Should return empty object if config file is not found", async () => {
-    expect(await getConfigFileOptions(defaultStartContext, "swa-cli.config.json")).toStrictEqual({});
+    expect(await getConfigFileOptions(DEFAULT_CONFIG.appLocation, "swa-cli.config.json")).toStrictEqual({});
   });
 
   it("Should return proper config without path specified", async () => {

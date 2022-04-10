@@ -5,6 +5,16 @@ import { DEFAULT_CONFIG } from "../../config";
 import { swaCliConfigFilename } from "../../core/utils";
 
 jest.mock("prompts", () => jest.fn());
+jest.mock("../../config", () => {
+  return {
+    DEFAULT_CONFIG: {
+      appLocation: "/foobar",
+      outputLocation: "/foobar",
+      appBuildCommand: "npm run build --if-present",
+      apiBuildCommand: "npm run build --if-present",
+    },
+  };
+});
 
 const defaultCliConfig = {
   ...DEFAULT_CONFIG,
@@ -41,8 +51,8 @@ describe("swa init", () => {
         \\"$schema\\": \\"https://aka.ms/azure/static-web-apps-cli/schema\\",
         \\"configurations\\": {
           \\"test\\": {
-            \\"appLocation\\": \\"./\\",
-            \\"outputLocation\\": \\"./\\",
+            \\"appLocation\\": \\"/foobar\\",
+            \\"outputLocation\\": \\"/foobar\\",
             \\"appBuildCommand\\": \\"npm run build --if-present\\",
             \\"apiBuildCommand\\": \\"npm run build --if-present\\"
           }
@@ -97,7 +107,7 @@ describe("swa init", () => {
     const configJson = JSON.parse(fs.readFileSync(defaultCliConfig.config, "utf-8"));
     const lastCall = promptsMock.mock.calls.length - 1;
     expect(promptsMock.mock.calls[lastCall][0].name).toEqual("confirmOverwrite");
-    expect(configJson.configurations.test.outputLocation).toEqual("./");
+    expect(configJson.configurations.test.outputLocation).toEqual("/foobar");
   });
 
   it("should ask for overwrite if a config already exists and overwrite it", async () => {

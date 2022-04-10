@@ -4,7 +4,7 @@ import { getConfigFileOptions } from "./cli-config";
 import { logger } from "./logger";
 
 export async function configureOptions(
-  context: string | undefined,
+  contextOrConfigEntry: string | undefined,
   options: SWACLIConfig,
   command: Command
 ): Promise<{ context: string | undefined; options: SWACLIConfig }> {
@@ -13,7 +13,7 @@ export async function configureOptions(
   setLogLevel(verbose);
 
   const userOptions = getUserOptions(command);
-  const configFileOptions = await getConfigFileOptions(context, options.config!);
+  const configFileOptions = await getConfigFileOptions(contextOrConfigEntry, options.config!);
 
   options = {
     ...options,
@@ -31,7 +31,7 @@ export async function configureOptions(
   }
 
   return {
-    context: configFileOptions.context ?? context,
+    context: configFileOptions.context ?? contextOrConfigEntry,
     options,
   };
 }

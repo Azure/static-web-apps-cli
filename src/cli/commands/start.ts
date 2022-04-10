@@ -24,8 +24,6 @@ import builder from "../../core/builder";
 import { swaCLIEnv } from "../../core/env";
 let packageInfo = require("../../../package.json");
 
-export const defaultStartContext = `.${path.sep}`;
-
 export default function registerCommand(program: Command) {
   program
     .command("start [context]")
@@ -101,32 +99,27 @@ export async function start(startContext: string | undefined, options: SWACLICon
     logger.error(`Port ${options.port} is already used. Choose a different port.`, true);
   }
 
-  if (isHttpUrl(startContext)) {
-    useAppDevServer = startContext;
-    options.outputLocation = useAppDevServer;
+  // start context should never be undefined but we'll check anyway!
+  // if the user didn't provide a context, use the current directory
+  if (!startContext) {
+    startContext = DEFAULT_CONFIG.outputLocation;
   } else {
-    if (startContext) {
-      // resolve the startup folder to an absolute path
-      startContext = path.resolve(startContext);
+    if (isHttpUrl(startContext)) {
+      useAppDevServer = startContext;
+      options.outputLocation = useAppDevServer;
     } else {
-      logger.error(`The folder "${startContext}" is not found. Aborting.`, true);
-      return;
-    }
-
-    // resolve the absolute path to the start context and appLocation
-    options.appLocation = path.resolve(options.appLocation!);
-
-    let outputLocationAbsolute = path.resolve(options.appLocation as string, startContext);
-    // if folder exists, start the emulator from a specific build folder (outputLocation), relative to appLocation
-    if (fs.existsSync(outputLocationAbsolute)) {
-      options.outputLocation = outputLocationAbsolute;
-    }
-    // check for build folder (outputLocation) using the absolute location
-    else if (fs.existsSync(startContext)) {
-      options.outputLocation = startContext;
-    } else {
-      logger.error(`The folder "${outputLocationAbsolute}" is not found. Aborting.`, true);
-      return;
+      let outputLocationAbsolute = path.resolve(options.appLocation as string, startContext);
+      // if folder exists, start the emulator from a specific build folder (outputLocation), relative to appLocation
+      if (fs.existsSync(outputLocationAbsolute)) {
+        options.outputLocation = outputLocationAbsolute;
+      }
+      // check for build folder (outputLocation) using the absolute location
+      else if (fs.existsSync(startContext)) {
+        options.outputLocation = startContext;
+      } else {
+        logger.error(`The folder "${outputLocationAbsolute}" is not found. Exit.`, true);
+        return;
+      }
     }
   }
 
@@ -169,8 +162,7 @@ export async function start(startContext: string | undefined, options: SWACLICon
     logger.warn(`Error reading workflow configuration:`);
     logger.warn((err as any).message);
     logger.warn(
-      `See https://docs.microsoft.com/azure/static-web-apps/build-configuration?tabs=github-actions#build-configuration for more information.`,
-      "swa"
+      `See https://docs.microsoft.com/azure/static-web-apps/build-configuration?tabs=github-actions#build-configuration for more information.`
     );
   }
 
@@ -290,6 +282,7 @@ export async function start(startContext: string | undefined, options: SWACLICon
     });
   }
 
+  logger.silly(`Starting the SWA emulator with the following configuration:`);
   logger.silly({
     ssl: [options.ssl, options.sslCert, options.sslKey],
     env: envVarsObj,
