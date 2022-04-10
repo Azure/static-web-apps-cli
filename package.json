@@ -37,6 +37,7 @@
     "cookie": "^0.4.1",
     "dotenv": "^16.0.0",
     "finalhandler": "^1.1.2",
+    "get-port": "^5.1.1",
     "globalyzer": "^0.1.4",
     "globrex": "^0.1.2",
     "http-proxy": "^1.18.1",

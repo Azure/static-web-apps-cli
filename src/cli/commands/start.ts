@@ -94,10 +94,15 @@ export async function start(startContext: string | undefined, options: SWACLICon
   let useApiDevServer: string | undefined | null = undefined;
   let startupCommand: string | undefined | null = undefined;
 
+  const resolvedPortNumber = await isAcceptingTcpConnections({ host: options.host, port: options.port! });
   // make sure the CLI default port is available before proceeding.
-  if (await isAcceptingTcpConnections({ host: options.host, port: options.port! })) {
-    logger.error(`Port ${options.port} is already used. Choose a different port.`, true);
+  if (resolvedPortNumber === 0) {
+    logger.error(`Port ${options.port} is already in use. Use '--port' to specify a different port.`, true);
   }
+
+  // set the new port number in case we picked a new one (see isAcceptingTcpConnections())
+  logger.silly(`Resolved port number: ${resolvedPortNumber}`);
+  options.port = resolvedPortNumber;
 
   // start context should never be undefined but we'll check anyway!
   // if the user didn't provide a context, use the current directory
