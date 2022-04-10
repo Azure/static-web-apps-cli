@@ -128,7 +128,8 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
   // load user custom rules if running in local mode (non-dev server)
   let userConfig: SWAConfigFile | undefined;
   // load user configuration even when using a dev server
-  userConfig = await handleUserConfig(DEFAULT_CONFIG.swaConfigFilename || DEFAULT_CONFIG.appLocation);
+  userConfig = await handleUserConfig(DEFAULT_CONFIG.appLocation);
+
   const createServer = () => {
     if (DEFAULT_CONFIG.ssl && httpsServerOptions !== null) {
       return https.createServer(httpsServerOptions, requestHandler(userConfig));
