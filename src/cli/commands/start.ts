@@ -22,6 +22,7 @@ import {
 } from "../../core";
 import builder from "../../core/builder";
 import { swaCLIEnv } from "../../core/env";
+import { getCertificate } from "../../core/ssl";
 let packageInfo = require("../../../package.json");
 
 export default function registerCommand(program: Command) {
@@ -212,8 +213,22 @@ export async function start(startContext: string | undefined, options: SWACLICon
   }
 
   if (options.ssl) {
-    if (options.sslCert === undefined || options.sslKey === undefined) {
-      logger.error(`SSL Key and SSL Cert are required when using HTTPS`, true);
+    if (options.sslCert === undefined && options.sslKey === undefined) {
+      logger.warn(`WARNING: Using built-in UNSIGNED certificate. DO NOT USE IN PRODUCTION!`);
+      const pemFilepath = await getCertificate({
+        selfSigned: true,
+        days: 365,
+        commonName: DEFAULT_CONFIG.host,
+        organization: `Azure Static Web Apps CLI ${packageInfo.version}`,
+        organizationUnit: "Engineering",
+        emailAddress: `secure@microsoft.com`,
+      });
+      options.sslCert = pemFilepath;
+      options.sslKey = pemFilepath;
+    } else {
+      // user provided cert and key, so we'll use them
+      options.sslCert = options.sslCert && path.resolve(options.sslCert);
+      options.sslKey = options.sslKey && path.resolve(options.sslKey);
     }
   }
 
@@ -223,8 +238,6 @@ export async function start(startContext: string | undefined, options: SWACLICon
 
   // resolve the following config to their absolute paths
   options.swaConfigLocation = options.swaConfigLocation && path.resolve(options.swaConfigLocation);
-  options.sslCert = options.sslCert && path.resolve(options.sslCert);
-  options.sslKey = options.sslKey && path.resolve(options.sslKey);
 
   // WARNING: code from above doesn't have access to env vars which are only defined below
 
