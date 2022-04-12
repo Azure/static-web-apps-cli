@@ -1,18 +1,16 @@
-import dotenv from "dotenv";
-dotenv.config();
-
-export * from "./commands";
-
 import chalk from "chalk";
 import { Option, program } from "commander";
-import path from "path";
+import dotenv from "dotenv";
 import updateNotifier from "update-notifier";
 import { DEFAULT_CONFIG } from "../config";
-import { swaCliConfigFilename } from "../core/utils/cli-config";
 import registerDeploy from "./commands/deploy";
 import registerInit from "./commands/init";
 import registerLogin from "./commands/login";
 import registerStart from "./commands/start";
+dotenv.config();
+
+export * from "./commands";
+
 const pkg = require("../../package.json");
 
 const printWelcomeMessage = () => {
@@ -39,7 +37,7 @@ export async function run(argv?: string[]) {
         .preset(DEFAULT_CONFIG.verbose)
         .default(DEFAULT_CONFIG.verbose)
     )
-    .option("--config <path>", "path to swa-cli.config.json file to use", path.relative(process.cwd(), swaCliConfigFilename))
+    .option("--config <path>", "path to swa-cli.config.json file to use", DEFAULT_CONFIG.swaCliConfigLocation)
     .option("--print-config", "print all resolved options", false)
     .option(
       "--swa-config-location <swaConfigLocation>",
@@ -53,6 +51,8 @@ export async function run(argv?: string[]) {
   registerStart(program);
   registerDeploy(program);
   registerInit(program);
+
+  program.showHelpAfterError();
 
   await program.parseAsync(argv);
 }

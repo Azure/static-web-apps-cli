@@ -160,6 +160,9 @@ export const HEADER_DELETE_KEYWORD = "@@HEADER_DELETE_KEYWORD@@";
 
 export const CACHE_CONTROL_MAX_AGE = 30;
 
+export const ENV_FILENAME = ".env";
+export const GIT_IGNORE_FILENAME = ".gitignore";
+
 export const SWA_CLI_APP_PROTOCOL = DEFAULT_CONFIG.ssl ? `https` : `http`;
 export const SWA_PUBLIC_DIR = path.resolve(__dirname, "..", "public"); //SWA_PUBLIC_DIR = "../public"
 export const HAS_API = Boolean(DEFAULT_CONFIG.apiLocation && SWA_CLI_API_URI());
