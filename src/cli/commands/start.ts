@@ -218,7 +218,7 @@ export async function start(startContext: string | undefined, options: SWACLICon
       const pemFilepath = await getCertificate({
         selfSigned: true,
         days: 365,
-        commonName: DEFAULT_CONFIG.host,
+        commonName: options.host,
         organization: `Azure Static Web Apps CLI ${packageInfo.version}`,
         organizationUnit: "Engineering",
         emailAddress: `secure@microsoft.com`,

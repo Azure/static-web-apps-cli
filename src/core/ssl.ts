@@ -123,7 +123,7 @@ export async function getCertificate(options: PEMOptions): Promise<string> {
   }
 }
 
-function createCertificate(options: PEMOptions): Promise<SSLCertificate> {
+async function createCertificate(options: PEMOptions): Promise<SSLCertificate> {
   return new Promise((resolve, reject) => {
     pem.createCertificate(options, (err: Error, keys: SSLCertificate) => {
       if (err) {
