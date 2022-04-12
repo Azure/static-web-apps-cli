@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { Command, Option } from "commander";
-import concurrently from "concurrently";
+import concurrently, { CloseEvent } from "concurrently";
 import { CommandInfo } from "concurrently/dist/src/command";
 import fs from "fs";
 import path from "path";
@@ -311,10 +311,34 @@ export async function start(startContext: string | undefined, options: SWACLICon
     },
   });
 
-  const { result } = concurrently(concurrentlyCommands, { restartTries: 0 });
+  const { result } = concurrently(concurrentlyCommands, { restartTries: 0, killOthers: ["failure", "success"] });
 
-  await result.then(
-    () => process.exit(),
-    () => process.exit()
-  );
+  await result
+    .then(
+      (code: CloseEvent[]) => {
+        logger.silly(`SWA emulator exited with code ${code.values().next().value}`);
+        process.exit();
+      },
+      (errorEvent: CloseEvent[]) => {
+        const killedCommand = errorEvent.filter((event) => event.killed).pop();
+        const commandName = killedCommand?.command.name;
+        const exitCode = killedCommand?.exitCode;
+        let commandMessage = ``;
+        switch (commandName) {
+          case "swa":
+            commandMessage = `SWA emulator exited with code ${exitCode}`;
+            break;
+          case "api":
+            commandMessage = `API server exited with code ${exitCode}`;
+            break;
+          case "run":
+            commandMessage = `the --run command exited with code ${exitCode}`;
+            break;
+        }
+        logger.error(`SWA emulator stoped because ${commandMessage}.`, true);
+      }
+    )
+    .catch((err) => {
+      logger.error(err.message, true);
+    });
 }
