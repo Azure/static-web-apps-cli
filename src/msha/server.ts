@@ -29,8 +29,8 @@ if (DEFAULT_CONFIG.githubActionWorkflowLocation) {
 const httpsServerOptions: Pick<https.ServerOptions, "cert" | "key"> | null =
   DEFAULT_CONFIG.ssl && DEFAULT_CONFIG.sslCert && DEFAULT_CONFIG.sslKey
     ? {
-        cert: fs.readFileSync(DEFAULT_CONFIG.sslCert, "utf8"),
-        key: fs.readFileSync(DEFAULT_CONFIG.sslKey, "utf8"),
+        cert: DEFAULT_CONFIG.sslCert.startsWith("-----BEGIN") ? DEFAULT_CONFIG.sslCert : fs.readFileSync(DEFAULT_CONFIG.sslCert, "utf8"),
+        key: DEFAULT_CONFIG.sslKey.startsWith("-----BEGIN") ? DEFAULT_CONFIG.sslKey : fs.readFileSync(DEFAULT_CONFIG.sslKey, "utf8"),
       }
     : null;
 
