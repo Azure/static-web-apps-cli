@@ -229,9 +229,15 @@ export class NativeCredentialsStore implements KeychainCredentialsStore {
     const { DISPLAY, WAYLAND_DISPLAY, MIR_SOCKET, WAYLAND_SOCKET } = process.env;
     let x11Host = DISPLAY || WAYLAND_DISPLAY || MIR_SOCKET || WAYLAND_SOCKET;
 
+    const printX11ErrorAndExit = () =>
+      logger.error(
+        `An X11 server is required when keychain is enabled. You can disable keychain using --use-keychain=false or try a different login method.`,
+        true
+      );
+
     if (!x11Host) {
       logger.error(`Environment variable DISPLAY is not set.`);
-      logger.error(`An X11 server is required when keychain is enbale. You can disable keychain using --use-keychain=false.`, true);
+      printX11ErrorAndExit();
     } else {
       logger.silly("X11 is set: " + x11Host);
 
@@ -252,7 +258,7 @@ export class NativeCredentialsStore implements KeychainCredentialsStore {
       logger.silly("X11 hostname: " + x11Hostname);
 
       if (isValidIpAddress(x11Hostname)) {
-        logger.silly("X11 is a hostname");
+        logger.silly("X11 has a valid IP address");
       } else {
         x11Hostname = os.hostname();
         logger.silly("X11 value is not a valid hostname. Forcing X11 host name to " + x11Hostname);
@@ -268,7 +274,7 @@ export class NativeCredentialsStore implements KeychainCredentialsStore {
         });
       } catch (error) {
         logger.error(`X11 host ${x11Hostname}:${x11Port} is not reachable.`);
-        logger.error(`An X11 server is required when keychain is enbale. You can disable keychain using --use-keychain=false.`, true);
+        printX11ErrorAndExit();
       }
     }
   }
