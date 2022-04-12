@@ -23,7 +23,7 @@ if (!isHttpUrl(SWA_CLI_API_URI())) {
 
 // TODO: handle multiple workflow files (see #32)
 if (DEFAULT_CONFIG.githubActionWorkflowLocation) {
-  logger.info(`\nFound workflow file:\n    ${chalk.green(DEFAULT_CONFIG.githubActionWorkflowLocation)}`);
+  logger.log(`\nUsing workflow file:\n    ${chalk.green(DEFAULT_CONFIG.githubActionWorkflowLocation)}`);
 }
 
 const httpsServerOptions: Pick<https.ServerOptions, "cert" | "key"> | null =
