@@ -29,11 +29,12 @@ export async function getConfigFileOptions(
   const configDir = path.dirname(configFilePath);
   process.chdir(configDir);
 
-  if ((contextOrConfigEntry && path.resolve(contextOrConfigEntry)) === DEFAULT_CONFIG.outputLocation) {
+  if (contextOrConfigEntry === DEFAULT_CONFIG.outputLocation) {
     const hasMultipleConfig = Object.entries(cliConfig.configurations).length > 1;
     if (hasMultipleConfig) {
-      logger.warn(`Multiple configurations found in "${swaCliConfigFilename}", but none was specified.`);
-      logger.warn(`Specify which configuration to use with "swa <command> <configurationName>"\n`);
+      // Show as a log not warning because the user may want to use the default config
+      logger.log(`Multiple configurations found in "${swaCliConfigFilename}", but none was specified.`);
+      logger.log(`Specify which configuration to use with "swa <command> <configurationName>"\n`);
     }
 
     const [configName, config] = Object.entries(cliConfig.configurations)[0];
