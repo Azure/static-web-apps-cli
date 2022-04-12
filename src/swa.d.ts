@@ -119,7 +119,6 @@ declare type SWACLIGlobalOptions = {
   config?: string;
   printConfig?: boolean;
   swaConfigLocation?: string;
-  githubActionWorkflowLocation?: string;
 };
 
 // -- CLI Init options -------------------------------------------------------
@@ -132,10 +131,8 @@ declare type SWACLIInitOptions = {
 
 declare type SWACLIStartOptions = {
   appLocation?: string;
-  outputLocation?: string;
   apiLocation?: string;
   apiPort?: number;
-  appPort?: number;
   host?: string;
   port?: number;
   ssl?: boolean;
@@ -145,6 +142,7 @@ declare type SWACLIStartOptions = {
   devserverTimeout?: number;
   open?: boolean;
   funcArgs?: string;
+  githubActionWorkflowLocation?: string;
 };
 
 // -- CLI Build options ------------------------------------------------------
@@ -202,7 +200,7 @@ declare type SWACLIConfig = SWACLIOptionsToCleanUp &
     init?: SWACLIGlobalOptions & SWACLIInitOptions & SWACLIContextOptions;
     start?: SWACLIGlobalOptions & SWACLIStartOptions & SWACLIContextOptions;
     deploy?: SWACLIGlobalOptions & SWACLIDeployOptions & SWACLIContextOptions;
-  };
+};
 
 declare type ResponseOptions = {
   [key: string]: any;

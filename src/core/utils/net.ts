@@ -1,25 +1,45 @@
 import chalk from "chalk";
+import getPort from "get-port";
 import net from "net";
 import ora from "ora";
 import waitOn from "wait-on";
+import { confirmChooseRandomPort } from "../prompts";
 import { logger } from "./logger";
+
+const VALID_PORT_MIN = 1024;
+const VALID_PORT_MAX = 65535;
 
 /**
  * Check if a given remote address and port are accepting TCP connections.
  * @param Object host and port of the server to check.
- * @returns True if the given server is accepting TCP connections. False otherwise.
+ * @returns The resolved port number if the given server is accepting TCP connections. 0 if the port is already taken.
  */
-export function isAcceptingTcpConnections({ host = "127.0.0.1", port = 80 }: { host?: string; port?: number }) {
-  return new Promise<boolean>((resolve) => {
-    const socket = net.createConnection(port, host);
+export async function isAcceptingTcpConnections({ host, port }: { host?: string; port?: number }): Promise<number> {
+  port = Number(port) as number;
+  logger.silly(`Checking if ${host}:${port} is accepting TCP connections...`);
+
+  // Check if current port is beyond the MAX valid port range
+  if (port > VALID_PORT_MAX) {
+    logger.silly(`Port ${port} is beyond the valid port range (${VALID_PORT_MAX}).`);
+    return 0;
+  }
+
+  return new Promise((resolve) => {
+    const socket = net.createConnection(port as number, host);
 
     socket
       .once("error", () => {
-        resolve(false);
         socket.end();
+        logger.silly(`Port ${port} is available. Use it.`);
+        resolve(port as number);
       })
-      .once("connect", () => {
-        resolve(true);
+      .once("connect", async () => {
+        logger.warn(`Port ${port} is already taken!`);
+        const portNumber = await confirmChooseRandomPort();
+
+        if (portNumber) {
+          resolve(getPort());
+        }
         socket.end();
       });
   });
@@ -53,8 +73,8 @@ export async function validateDevServerConfig(context: string | undefined, timeo
   let { hostname, port } = parseUrl(context);
 
   try {
-    const appListening = await isAcceptingTcpConnections({ port, host: hostname });
-    if (appListening === false) {
+    const resolvedPortNumber = await isAcceptingTcpConnections({ port, host: hostname });
+    if (resolvedPortNumber === 0) {
       const spinner = ora();
       try {
         spinner.start(`Waiting for ${chalk.green(context)} to be ready`);
@@ -79,7 +99,9 @@ export async function validateDevServerConfig(context: string | undefined, timeo
     }
   } catch (err) {
     if ((err as any).message.includes("EACCES")) {
-      logger.error(`Port "${port}" cannot be used. You might need elevated or admin privileges. Or, use a valid port: 1024 to 49151`);
+      logger.error(
+        `Port "${port}" cannot be used. You might need elevated or admin privileges. Or, use a valid port from ${VALID_PORT_MIN} to ${VALID_PORT_MAX}.`
+      );
     } else {
       logger.error((err as any).message);
     }
@@ -152,8 +174,8 @@ export function parsePort(port: string) {
   if (isNaN(portNumber)) {
     logger.error(`Port "${port}" is not a number.`, true);
   } else {
-    if (portNumber < 1024 || portNumber > 49151) {
-      logger.error(`Port "${port}" is out of range. Allowed ports are from 1024 to 49151.`, true);
+    if (portNumber < VALID_PORT_MIN || portNumber > VALID_PORT_MAX) {
+      logger.error(`Port "${port}" is out of range. Valid ports are from ${VALID_PORT_MIN} to ${VALID_PORT_MAX}.`, true);
     }
   }
   return portNumber;
