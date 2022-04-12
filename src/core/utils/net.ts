@@ -1,9 +1,8 @@
 import chalk from "chalk";
+import getPort from "get-port";
 import net from "net";
 import ora from "ora";
 import waitOn from "wait-on";
-import getPort from "get-port";
-import { DEFAULT_CONFIG } from "../../config";
 import { confirmChooseRandomPort } from "../prompts";
 import { logger } from "./logger";
 
@@ -15,20 +14,14 @@ const VALID_PORT_MAX = 65535;
  * @param Object host and port of the server to check.
  * @returns The resolved port number if the given server is accepting TCP connections. 0 if the port is already taken.
  */
-export function isAcceptingTcpConnections({
-  host = DEFAULT_CONFIG.host,
-  port = DEFAULT_CONFIG.port,
-}: {
-  host?: string;
-  port?: number;
-}): Promise<number> {
+export async function isAcceptingTcpConnections({ host, port }: { host?: string; port?: number }): Promise<number> {
   port = Number(port) as number;
   logger.silly(`Checking if ${host}:${port} is accepting TCP connections...`);
 
-  // Check if current port is beyonf the MAX valid port range
+  // Check if current port is beyond the MAX valid port range
   if (port > VALID_PORT_MAX) {
     logger.silly(`Port ${port} is beyond the valid port range (${VALID_PORT_MAX}).`);
-    return Promise.resolve(0);
+    return 0;
   }
 
   return new Promise((resolve) => {
@@ -45,7 +38,7 @@ export function isAcceptingTcpConnections({
         const portNumber = await confirmChooseRandomPort();
 
         if (portNumber) {
-          resolve(await getPort());
+          resolve(getPort());
         }
         socket.end();
       });
