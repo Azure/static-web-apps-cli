@@ -33,10 +33,10 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   port: parseInt(SWA_CLI_PORT || "4280", 10),
   host: SWA_CLI_HOST || "localhost",
   apiPort: parseInt(SWA_CLI_API_PORT || "7071", 10),
-  appLocation: path.resolve(SWA_CLI_APP_LOCATION || `.${path.sep}`),
-  apiLocation: SWA_CLI_API_LOCATION ? path.resolve(SWA_CLI_API_LOCATION) : undefined,
-  outputLocation: path.resolve(SWA_CLI_OUTPUT_LOCATION || `.${path.sep}`),
-  swaConfigLocation: path.resolve(SWA_RUNTIME_CONFIG_LOCATION || `.${path.sep}`),
+  appLocation: SWA_CLI_APP_LOCATION || `.${path.sep}`,
+  apiLocation: SWA_CLI_API_LOCATION ? SWA_CLI_API_LOCATION : undefined,
+  outputLocation: SWA_CLI_OUTPUT_LOCATION || `.${path.sep}`,
+  swaConfigLocation: SWA_RUNTIME_CONFIG_LOCATION || `.${path.sep}`,
   ssl: SWA_CLI_APP_SSL === "true" || false,
   sslCert: SWA_CLI_APP_SSL_CERT || undefined,
   sslKey: SWA_CLI_APP_SSL_KEY || undefined,
@@ -46,7 +46,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   verbose: SWA_CLI_DEBUG || "log",
   devserverTimeout: parseInt(SWA_CLI_DEVSERVER_TIMEOUT || "30000", 10),
   open: SWA_CLI_OPEN_BROWSER === "true" || false,
-  githubActionWorkflowLocation: SWA_RUNTIME_WORKFLOW_LOCATION ? path.resolve(SWA_RUNTIME_WORKFLOW_LOCATION) : undefined,
+  githubActionWorkflowLocation: SWA_RUNTIME_WORKFLOW_LOCATION ? SWA_RUNTIME_WORKFLOW_LOCATION : undefined,
 
   // swa login options
   useKeychain: SWA_CLI_LOGIN_USE_KEYCHAIN === "true" ? true : false,
