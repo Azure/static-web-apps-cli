@@ -21,3 +21,30 @@ export function swaCLIEnv(...newEnvs: SWACLIEnv[]): SWACLIEnv {
 
   return env;
 }
+
+export function printEnv() {
+  const env: SWACLIEnv = swaCLIEnv();
+
+  console.log("");
+  console.log("SWA CLI Environment variables:");
+  console.log("");
+
+  const entries = Object.entries(env).sort((a, b) => a[0].localeCompare(b[0]));
+  for (const [key, value] of entries) {
+    if (key.startsWith("SWA_") || key.startsWith("AZURE_")) {
+      console.log(`  ${key}: ${value}`);
+    }
+  }
+}
+
+export function useEnvVarOrUseDefault(env: string | undefined, defaultValue: boolean): boolean {
+  if (env === undefined) {
+    return defaultValue;
+  } else if (env === "true" || env === "1") {
+    return true;
+  } else if (env === "false" || env === "0" || env === "null" || env === "undefined") {
+    return false;
+  }
+
+  return defaultValue;
+}

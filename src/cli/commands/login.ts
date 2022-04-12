@@ -1,16 +1,17 @@
 import { TokenCredential } from "@azure/identity";
 import chalk from "chalk";
 import { Command } from "commander";
+import dotenv from "dotenv";
 import { existsSync } from "fs";
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
 import { configureOptions, logger, logGiHubIssueMessageAndExit } from "../../core";
-import { authenticateWithAzureIdentity, listResourceGroups, listStaticSites, listSubscriptions, listTenants } from "../../core/account";
+import { authenticateWithAzureIdentity, listSubscriptions, listTenants } from "../../core/account";
 import { ENV_FILENAME } from "../../core/constants";
 import { swaCLIEnv } from "../../core/env";
 import { updateGitIgnore } from "../../core/git";
-import { chooseResourceGroup, chooseStaticSite, chooseSubscription, chooseTenant } from "../../core/prompts";
+import { chooseSubscription, chooseTenant } from "../../core/prompts";
 
 export function addSharedLoginOptionsToCommand(command: Command) {
   command
@@ -32,9 +33,9 @@ export default function registerCommand(program: Command) {
       const config = await configureOptions(undefined, command.optsWithGlobals(), command);
 
       try {
-        const { credentialChain, subscriptionId, resourceGroupName, staticSiteName } = await login(config.options);
+        const { credentialChain, subscriptionId } = await login(config.options);
 
-        if (credentialChain && subscriptionId && resourceGroupName && staticSiteName) {
+        if (credentialChain && subscriptionId) {
           logger.log(chalk.green(`✔ Successfully setup project!`));
         } else {
           logger.log(chalk.red(`✘ Failed to setup project!`));
@@ -88,18 +89,16 @@ export async function login(options: SWACLIConfig) {
     logger.log(chalk.green(`✔ Successfully logged into Azure Static Web Apps!`));
   }
 
-  return await setupProjectDetails(options, credentialChain);
+  return await setupProjectCredentials(options, credentialChain);
 }
 
-async function setupProjectDetails(options: SWACLIConfig, credentialChain: TokenCredential) {
+async function setupProjectCredentials(options: SWACLIConfig, credentialChain: TokenCredential) {
   logger.log(``);
   logger.log(`Setting project...`);
 
-  const { AZURE_SUBSCRIPTION_ID, AZURE_RESOURCE_GROUP, SWA_CLI_APP_NAME, AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET } = swaCLIEnv();
+  const { AZURE_SUBSCRIPTION_ID, AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET } = swaCLIEnv();
 
   let subscriptionId: string | undefined = AZURE_SUBSCRIPTION_ID ?? options.subscriptionId;
-  let resourceGroupName: string | undefined = AZURE_RESOURCE_GROUP ?? options.resourceGroupName;
-  let staticSiteName: string | undefined = SWA_CLI_APP_NAME ?? options.appName;
   let tenantId: string | undefined = AZURE_TENANT_ID ?? options.tenantId;
   let clientId: string | undefined = AZURE_CLIENT_ID ?? options.clientId;
   let clientSecret: string | undefined = AZURE_CLIENT_SECRET ?? options.clientSecret;
@@ -143,57 +142,19 @@ async function setupProjectDetails(options: SWACLIConfig, credentialChain: Token
 
   logger.silly(`Selected subscription: ${subscriptionId}`);
 
-  // If the user has not specified a resourceGroup, we will prompt them to choose one
-  if (!resourceGroupName) {
-    const resourceGroups = await listResourceGroups(credentialChain, subscriptionId);
-    if (resourceGroups.length === 0) {
-      // TODO: create a new resource group
-      throw new Error(`No resource groups found in subscription ${subscriptionId}.`);
-    } else if (resourceGroups.length === 1) {
-      logger.silly(`Found 1 resource group: ${resourceGroups[0].name}`);
-      resourceGroupName = resourceGroups[0].name;
-    } else {
-      const resourceGroup = await chooseResourceGroup(resourceGroups, resourceGroupName);
-      resourceGroupName = resourceGroup?.name;
-    }
-  }
+  logger.silly(`Project credentials:`);
+  logger.silly({ subscriptionId, tenantId, clientId, clientSecret });
 
-  logger.silly(`Selected resource group: ${resourceGroupName}`);
-
-  // If the user has not specified a staticSite, we will prompt them to choose one
-  if (resourceGroupName && !staticSiteName) {
-    const staticSites = await listStaticSites(credentialChain, subscriptionId, resourceGroupName);
-    if (staticSites.length === 0) {
-      // TODO: create a new static site
-      throw new Error(`No Static Web App found in resource group ${resourceGroupName}`);
-    } else if (staticSites.length === 1) {
-      logger.silly(`Found 1 Static Web App: ${staticSites[0].name}`);
-      staticSiteName = staticSites[0].name;
-    } else {
-      const staticSite = await chooseStaticSite(staticSites, staticSiteName);
-      staticSiteName = staticSite?.name;
-    }
-  }
-
-  logger.silly(`Selected static site: ${staticSiteName}`);
-
-  logger.silly(`Project information:`);
-  logger.silly({ subscriptionId, resourceGroupName, staticSiteName });
-
-  await storeProjectDetailsInEnvFile(subscriptionId, resourceGroupName, staticSiteName, tenantId, clientId, clientSecret);
+  await storeProjectCredentialsInEnvFile(subscriptionId, tenantId, clientId, clientSecret);
 
   return {
     credentialChain,
     subscriptionId,
-    resourceGroupName,
-    staticSiteName,
   };
 }
 
-async function storeProjectDetailsInEnvFile(
+async function storeProjectCredentialsInEnvFile(
   subscriptionId: string | undefined,
-  resourceGroupName: string | undefined,
-  staticSiteName: string | undefined,
   tenantId: string | undefined,
   clientId: string | undefined,
   clientSecret: string | undefined
@@ -201,49 +162,39 @@ async function storeProjectDetailsInEnvFile(
   const envFile = path.join(process.cwd(), ENV_FILENAME);
   const envFileExists = existsSync(envFile);
   const envFileContent = envFileExists ? await readFile(envFile, "utf8") : "";
-  const envFileLines = envFileContent.length ? envFileContent.split("\n") : [];
-  const envFileLinesBeforeUpdate = envFileLines.length;
+  const buf = Buffer.from(envFileContent);
 
-  envFileLines.push(`# Automatically by Azure Static Web Apps CLI on ${new Date().toISOString()}`);
+  // in case the .env file format changes in the future, we can use the following to parse the file
+  const config = dotenv.parse(buf);
+  const oldEnvFileLines = Object.keys(config).map((key) => `${key}=${config[key]}`);
+  const newEnvFileLines = [];
 
   let entry = `AZURE_SUBSCRIPTION_ID=${subscriptionId}`;
   if (subscriptionId && !envFileContent.includes(entry)) {
-    envFileLines.push(entry);
-  }
-
-  entry = `AZURE_RESOURCE_GROUP=${resourceGroupName}`;
-  if (resourceGroupName && !envFileContent.includes(entry)) {
-    envFileLines.push(entry);
-  }
-
-  entry = `SWA_CLI_APP_NAME=${staticSiteName}`;
-  if (staticSiteName && !envFileContent.includes(entry)) {
-    envFileLines.push(entry);
+    newEnvFileLines.push(entry);
   }
 
   entry = `AZURE_TENANT_ID=${tenantId}`;
   if (tenantId && !envFileContent.includes(entry)) {
-    envFileLines.push(entry);
+    newEnvFileLines.push(entry);
   }
 
   entry = `AZURE_CLIENT_ID=${clientId}`;
   if (clientId && !envFileContent.includes(entry)) {
-    envFileLines.push(entry);
+    newEnvFileLines.push(entry);
   }
 
   entry = `AZURE_CLIENT_SECRET=${clientSecret}`;
   if (clientSecret && !envFileContent.includes(entry)) {
-    envFileLines.push(entry);
+    newEnvFileLines.push(entry);
   }
 
-  // write file if we have at least one new line (we exclude the first line which is the comment)
-  if (envFileLines.length > 1) {
-    const envFileContentWithProjectDetails = envFileLines.join("\n");
+  // write file if we have at least one new env line
+  if (newEnvFileLines.length > 0) {
+    const envFileContentWithProjectDetails = [...oldEnvFileLines, ...newEnvFileLines].join("\n");
     await writeFile(envFile, envFileContentWithProjectDetails);
 
-    if (envFileLinesBeforeUpdate < envFileLines.length) {
-      logger.log(chalk.green(`✔ Successfully stored project details in ${ENV_FILENAME} file.`));
-    }
+    logger.log(chalk.green(`✔ Successfully project credentials in ${ENV_FILENAME} file.`));
 
     await updateGitIgnore(ENV_FILENAME);
   }

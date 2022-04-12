@@ -18,12 +18,12 @@ declare interface SWACLIEnv {
   SWA_CLI_API_LOCATION?: string;
   SWA_CLI_HOST?: string;
   SWA_CLI_PORT?: string;
-  SWA_CLI_APP_SSL?: "true" | "false";
+  SWA_CLI_APP_SSL?: string;
   SWA_CLI_APP_SSL_CERT?: string;
   SWA_CLI_APP_SSL_KEY?: string;
   SWA_CLI_STARTUP_COMMAND?: string;
   SWA_CLI_DEVSERVER_TIMEOUT?: string;
-  SWA_CLI_OPEN_BROWSER?: "true" | "false";
+  SWA_CLI_OPEN_BROWSER?: string;
 
   // swa deploy
   SWA_CLI_DEPLOY_DRY_RUN?: string;
@@ -47,10 +47,10 @@ declare interface SWACLIEnv {
   APP_LOCATION?: string;
   OUTPUT_LOCATION?: string;
   API_LOCATION?: string;
-  VERBOSE?: "true" | "false";
+  VERBOSE?: string;
 
   // swa login
-  SWA_CLI_LOGIN_USE_KEYCHAIN?: "true" | "false";
+  SWA_CLI_LOGIN_USE_KEYCHAIN?: string;
 
   // Azure AD
   AZURE_SUBSCRIPTION_ID?: string;
