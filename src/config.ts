@@ -14,6 +14,7 @@ const {
   SWA_CLI_API_PORT,
   SWA_CLI_DEBUG,
   SWA_RUNTIME_CONFIG_LOCATION,
+  SWA_CLI_CONFIG_LOCATION,
   SWA_RUNTIME_WORKFLOW_LOCATION,
   SWA_CLI_STARTUP_COMMAND,
   SWA_CLI_APP_BUILD_COMMAND,
@@ -49,7 +50,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   githubActionWorkflowLocation: SWA_RUNTIME_WORKFLOW_LOCATION ? SWA_RUNTIME_WORKFLOW_LOCATION : undefined,
 
   // swa login options
-  useKeychain: SWA_CLI_LOGIN_USE_KEYCHAIN === "true" ? true : false,
+  useKeychain: SWA_CLI_LOGIN_USE_KEYCHAIN === "true" || true,
   subscriptionId: AZURE_SUBSCRIPTION_ID || undefined,
   resourceGroupName: AZURE_RESOURCE_GROUP || undefined,
   tenantId: AZURE_TENANT_ID || undefined,

@@ -7,14 +7,16 @@ import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
 import { configureOptions, logger, logGiHubIssueMessageAndExit } from "../../core";
 import { authenticateWithAzureIdentity, listResourceGroups, listStaticSites, listSubscriptions, listTenants } from "../../core/account";
+import { ENV_FILENAME } from "../../core/constants";
 import { swaCLIEnv } from "../../core/env";
+import { updateGitIgnore } from "../../core/git";
 import { chooseResourceGroup, chooseStaticSite, chooseSubscription, chooseTenant } from "../../core/prompts";
 
 export function addSharedLoginOptionsToCommand(command: Command) {
   command
     .option("--subscription [subscriptionId]", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
     .option("--resource-group [resourceGroupName]", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroupName)
-    .option("--tenant [tenantId]", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
+    .option("--tenant-id [tenantId]", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
     .option("--client-id [clientId]", "Azure client ID", DEFAULT_CONFIG.clientId)
     .option("--client-secret [clientSecret]", "Azure client secret", DEFAULT_CONFIG.clientSecret)
     .option("--app-name [appName]", "Azure Static Web App application name", DEFAULT_CONFIG.appName);
@@ -25,7 +27,7 @@ export default function registerCommand(program: Command) {
     .command("login")
     .usage("[options]")
     .description("login into Azure Static Web Apps")
-    .option("--use-keychain <keychain>", "Enable credentials cache persistence", DEFAULT_CONFIG.useKeychain)
+    .option("--use-keychain", "Enable to use the operating system native keychain", DEFAULT_CONFIG.useKeychain)
     .action(async (_options: SWACLIConfig, command: Command) => {
       const config = await configureOptions(undefined, command.optsWithGlobals(), command);
 
@@ -55,7 +57,7 @@ Examples:
   swa login --useKeychain false
 
   Log in into specific tenant
-  swa login --tenant 00000000-0000-0000-0000-000000000000
+  swa login --tenant-id 00000000-0000-0000-0000-000000000000
 
   Log in using a specific subscription, resource group or an application
   swa login --subscription my-subscription \\
@@ -63,7 +65,7 @@ Examples:
             --app-name my-static-site
 
   Login using service principal
-  swa login --tenant 00000000-0000-0000-0000-000000000000 \\
+  swa login --tenant-id 00000000-0000-0000-0000-000000000000 \\
             --client-id 00000000-0000-0000-0000-000000000000 \\
             --client-secret 0000000000000000000000000000000000000000000000000000000000000000
     `
@@ -76,11 +78,9 @@ export async function login(options: SWACLIConfig) {
 
   logger.log(`Checking Azure session...`);
 
-  const { AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET } = swaCLIEnv();
-
-  let tenantId: string | undefined = AZURE_TENANT_ID ?? options.tenantId;
-  let clientId: string | undefined = AZURE_CLIENT_ID ?? options.clientId;
-  let clientSecret: string | undefined = AZURE_CLIENT_SECRET ?? options.clientSecret;
+  let tenantId: string | undefined = DEFAULT_CONFIG.tenantId;
+  let clientId: string | undefined = DEFAULT_CONFIG.clientId;
+  let clientSecret: string | undefined = DEFAULT_CONFIG.clientSecret;
 
   credentialChain = await authenticateWithAzureIdentity({ tenantId, clientId, clientSecret }, options.useKeychain);
 
@@ -180,7 +180,7 @@ async function setupProjectDetails(options: SWACLIConfig, credentialChain: Token
   logger.silly(`Project information:`);
   logger.silly({ subscriptionId, resourceGroupName, staticSiteName });
 
-  storeProjectDetailsInEnvFile(subscriptionId, resourceGroupName, staticSiteName, tenantId, clientId, clientSecret);
+  await storeProjectDetailsInEnvFile(subscriptionId, resourceGroupName, staticSiteName, tenantId, clientId, clientSecret);
 
   return {
     credentialChain,
@@ -198,11 +198,13 @@ async function storeProjectDetailsInEnvFile(
   clientId: string | undefined,
   clientSecret: string | undefined
 ) {
-  const envFile = path.join(process.cwd(), ".env");
+  const envFile = path.join(process.cwd(), ENV_FILENAME);
   const envFileExists = existsSync(envFile);
   const envFileContent = envFileExists ? await readFile(envFile, "utf8") : "";
   const envFileLines = envFileContent.length ? envFileContent.split("\n") : [];
   const envFileLinesBeforeUpdate = envFileLines.length;
+
+  envFileLines.push(`# Automatically by Azure Static Web Apps CLI on ${new Date().toISOString()}`);
 
   let entry = `AZURE_SUBSCRIPTION_ID=${subscriptionId}`;
   if (subscriptionId && !envFileContent.includes(entry)) {
@@ -234,10 +236,15 @@ async function storeProjectDetailsInEnvFile(
     envFileLines.push(entry);
   }
 
-  const envFileContentWithProjectDetails = envFileLines.join("\n");
-  await writeFile(envFile, envFileContentWithProjectDetails);
+  // write file if we have at least one new line (we exclude the first line which is the comment)
+  if (envFileLines.length > 1) {
+    const envFileContentWithProjectDetails = envFileLines.join("\n");
+    await writeFile(envFile, envFileContentWithProjectDetails);
 
-  if (envFileLinesBeforeUpdate < envFileLines.length) {
-    logger.log(chalk.green(`✔ Successfully stored project details in .env file.`));
+    if (envFileLinesBeforeUpdate < envFileLines.length) {
+      logger.log(chalk.green(`✔ Successfully stored project details in ${ENV_FILENAME} file.`));
+    }
+
+    await updateGitIgnore(ENV_FILENAME);
   }
 }

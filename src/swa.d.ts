@@ -8,6 +8,7 @@ declare interface SWACLIEnv {
   DEBUG?: string; // general purpose debug variable
   SWA_CLI_DEBUG?: typeof DebugFilterLevel;
   SWA_RUNTIME_CONFIG_LOCATION?: string;
+  SWA_CLI_CONFIG_LOCATION?: string;
   SWA_RUNTIME_WORKFLOW_LOCATION?: string;
 
   // swa start

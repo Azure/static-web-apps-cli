@@ -231,7 +231,7 @@ export class NativeCredentialsStore implements KeychainCredentialsStore {
 
     if (!x11Host) {
       logger.error(`Environment variable DISPLAY is not set.`);
-      logger.error(`An X11 server is required when persistence is enbale. You can disable persistence using --persist false.`, true);
+      logger.error(`An X11 server is required when keychain is enbale. You can disable keychain using --use-keychain=false.`, true);
     } else {
       logger.silly("X11 is set: " + x11Host);
 
@@ -268,7 +268,7 @@ export class NativeCredentialsStore implements KeychainCredentialsStore {
         });
       } catch (error) {
         logger.error(`X11 host ${x11Hostname}:${x11Port} is not reachable.`);
-        logger.error(`An X11 server is required when persistence is enbale. You can disable persistence using --persist false.`, true);
+        logger.error(`An X11 server is required when keychain is enbale. You can disable keychain using --use-keychain=false.`, true);
       }
     }
   }

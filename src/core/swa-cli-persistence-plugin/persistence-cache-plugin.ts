@@ -20,7 +20,7 @@ export class SWACLIPersistenceCachePlugin implements ICachePlugin {
   constructor(private options: TokenCachePersistenceOptions) {}
 
   /**
-   * Reads from storage and saves an in-memory copy. If persistence has not been updated
+   * Reads from storage and saves an in-memory copy. If keychain has not been updated
    * since last time data was read, in memory copy is used.
    *
    * If cacheContext.cacheHasChanged === true, then file lock is created and not deleted until
