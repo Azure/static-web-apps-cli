@@ -1,6 +1,8 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import chalk from "chalk";
 import { Option, program } from "commander";
-import dotenv from "dotenv";
 import path from "path";
 import updateNotifier from "update-notifier";
 import { DEFAULT_CONFIG } from "../config";
@@ -9,7 +11,6 @@ import registerDeploy from "./commands/deploy";
 import registerInit from "./commands/init";
 import registerLogin from "./commands/login";
 import registerStart from "./commands/start";
-dotenv.config();
 
 export * from "./commands";
 
@@ -20,6 +21,9 @@ const printWelcomeMessage = () => {
   console.log(``);
   console.log(`Welcome to Azure Static Web Apps CLI (${chalk.green(pkg.version)})`);
   console.log(``);
+
+  console.log(`Default config:`);
+  console.table(DEFAULT_CONFIG);
 };
 
 export async function run(argv?: string[]) {

@@ -9,13 +9,12 @@ import { DEFAULT_CONFIG } from "../../config";
 import { configureOptions, logger, logGiHubIssueMessageAndExit } from "../../core";
 import { authenticateWithAzureIdentity, listSubscriptions, listTenants } from "../../core/account";
 import { ENV_FILENAME } from "../../core/constants";
-import { swaCLIEnv } from "../../core/env";
 import { updateGitIgnore } from "../../core/git";
 import { chooseSubscription, chooseTenant } from "../../core/prompts";
 
 export function addSharedLoginOptionsToCommand(command: Command) {
   command
-    .option("--subscription [subscriptionId]", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
+    .option("--subscription-id [subscriptionId]", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
     .option("--resource-group [resourceGroupName]", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroupName)
     .option("--tenant-id [tenantId]", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
     .option("--client-id [clientId]", "Azure client ID", DEFAULT_CONFIG.clientId)
@@ -79,9 +78,9 @@ export async function login(options: SWACLIConfig) {
 
   logger.log(`Checking Azure session...`);
 
-  let tenantId: string | undefined = DEFAULT_CONFIG.tenantId;
-  let clientId: string | undefined = DEFAULT_CONFIG.clientId;
-  let clientSecret: string | undefined = DEFAULT_CONFIG.clientSecret;
+  let tenantId: string | undefined = options.tenantId;
+  let clientId: string | undefined = options.clientId;
+  let clientSecret: string | undefined = options.clientSecret;
 
   credentialChain = await authenticateWithAzureIdentity({ tenantId, clientId, clientSecret }, options.useKeychain);
 
@@ -94,14 +93,9 @@ export async function login(options: SWACLIConfig) {
 
 async function setupProjectCredentials(options: SWACLIConfig, credentialChain: TokenCredential) {
   logger.log(``);
-  logger.log(`Setting project...`);
+  logger.log(`Checking project settings...`);
 
-  const { AZURE_SUBSCRIPTION_ID, AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET } = swaCLIEnv();
-
-  let subscriptionId: string | undefined = AZURE_SUBSCRIPTION_ID ?? options.subscriptionId;
-  let tenantId: string | undefined = AZURE_TENANT_ID ?? options.tenantId;
-  let clientId: string | undefined = AZURE_CLIENT_ID ?? options.clientId;
-  let clientSecret: string | undefined = AZURE_CLIENT_SECRET ?? options.clientSecret;
+  let { subscriptionId, tenantId, clientId, clientSecret } = options;
 
   // If the user has not specified a tenantId, we will prompt them to choose one
   if (!tenantId) {
@@ -149,7 +143,7 @@ async function setupProjectCredentials(options: SWACLIConfig, credentialChain: T
 
   return {
     credentialChain,
-    subscriptionId,
+    subscriptionId: subscriptionId as string,
   };
 }
 
