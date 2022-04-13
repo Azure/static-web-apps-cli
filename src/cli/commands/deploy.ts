@@ -1,4 +1,3 @@
-import { TokenCredential } from "@azure/identity";
 import chalk from "chalk";
 import { spawn } from "child_process";
 import { Command } from "commander";
@@ -7,10 +6,10 @@ import ora from "ora";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
 import { configureOptions, findSWAConfigFile, logger, logGiHubIssueMessageAndExit, readWorkflowFile } from "../../core";
-import { getStaticSiteDeployment } from "../../core/account";
+import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../core/account";
 import { cleanUp, getDeployClientPath } from "../../core/deploy-client";
-import { swaCLIEnv } from "../../core/env";
-import { login, addSharedLoginOptionsToCommand } from "./login";
+import { getSwaEnvList, swaCLIEnv } from "../../core/env";
+import { addSharedLoginOptionsToCommand, login } from "./login";
 
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "package.json"));
 
@@ -96,20 +95,29 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     logger.log("Deployment token found in Environment Variables:");
     logger.log({ [chalk.green(`SWA_CLI_DEPLOYMENT_TOKEN`)]: SWA_CLI_DEPLOYMENT_TOKEN });
   } else if (options.dryRun === false) {
-    logger.warn(`No deployment token found. Trying interactive login...`);
+    logger.silly(`No deployment token found. Trying interactive login...`);
 
     try {
-      const { credentialChain, subscriptionId, resourceGroupName, staticSiteName } = await login({
+      logger.silly(options);
+      logger.silly(getSwaEnvList());
+
+      const { credentialChain, subscriptionId } = await login({
         ...options,
         useKeychain: true,
       });
 
-      const deploymentTokenResponse = await getStaticSiteDeployment(
-        credentialChain as TokenCredential,
-        subscriptionId,
+      logger.silly(`Login successful`);
+
+      const { resourceGroupName, staticSiteName } = await chooseOrCreateProjectDetails(options, credentialChain, subscriptionId);
+
+      logger.silly(`Project settings were set:`);
+      logger.silly({
         resourceGroupName,
-        staticSiteName
-      );
+        staticSiteName,
+        subscriptionId,
+      });
+
+      const deploymentTokenResponse = await getStaticSiteDeployment(credentialChain, subscriptionId, resourceGroupName, staticSiteName);
 
       deploymentToken = deploymentTokenResponse?.properties?.apiKey;
 
@@ -119,7 +127,8 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
 
       logger.log("Deployment token provided via remote config");
       logger.log({ [chalk.green(`deploymentToken`)]: deploymentToken });
-    } catch {
+    } catch (error: any) {
+      logger.error(error.message);
       logger.error("A deployment token is required to deploy to Azure Static Web Apps");
       logger.error("Provide a deployment token using the --deployment-token option or SWA_CLI_DEPLOYMENT_TOKEN environment variable", true);
       return;

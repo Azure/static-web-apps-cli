@@ -1,19 +1,19 @@
+import chalk from "chalk";
+import { Command } from "commander";
 import path from "path";
 // import fs from "fs";
 import process from "process";
-import prompts from "prompts";
-import chalk from "chalk";
-import { Command } from "commander";
+import { DEFAULT_CONFIG } from "../../config";
+import { promptOrUseDefault } from "../../core/prompts";
 import {
-  logger,
-  dasherize,
-  hasConfigurationNameInConfigFile,
-  writeConfigFile,
-  swaCliConfigFilename,
   configExists,
   configureOptions,
+  dasherize,
+  hasConfigurationNameInConfigFile,
+  logger,
+  swaCliConfigFilename,
+  writeConfigFile,
 } from "../../core/utils";
-import { DEFAULT_CONFIG } from "../../config";
 
 export default function registerCommand(program: Command) {
   program
@@ -74,7 +74,7 @@ export async function init(name: string | undefined, options: SWACLIConfig, show
   //   projectConfig = await promptConfigSettings(disablePrompts, projectConfig);
   // }
 
-  if (configExists(configFilePath) && await hasConfigurationNameInConfigFile(configFilePath, projectName)) {
+  if (configExists(configFilePath) && (await hasConfigurationNameInConfigFile(configFilePath, projectName))) {
     const { confirmOverwrite } = await promptOrUseDefault(disablePrompts, {
       type: "confirm",
       name: "confirmOverwrite",
@@ -111,7 +111,7 @@ function convertToCliConfig(config: FrameworkConfig): SWACLIConfig {
     },
     deploy: {
       context: config.outputLocation,
-    }
+    },
   };
 }
 
@@ -188,28 +188,6 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
 //   logger.log(`- Dev command: ${chalk.green(config.devServerCommand ?? '')}`);
 //   logger.log(`- Dev server URL: ${chalk.green(config.devServerUrl ?? '')}\n`);
 // }
-
-async function promptOrUseDefault<T extends string = string>(
-  disablePrompts: boolean,
-  questions: prompts.PromptObject<T> | Array<prompts.PromptObject<T>>,
-  options?: prompts.Options
-): Promise<prompts.Answers<T>> {
-  if (disablePrompts) {
-    const response = {} as prompts.Answers<T>;
-    questions = Array.isArray(questions) ? questions : [questions];
-    for (const question of questions) {
-      response[question.name as T] = question.initial;
-    }
-    return response;
-  }
-
-  return prompts(questions, { ...options, onCancel: cancelPrompt });
-}
-
-function cancelPrompt() {
-  logger.log("Aborted, configuration not saved.");
-  process.exit(-1);
-}
 
 // function isEmptyFolder(path: string) {
 //   const files = fs.readdirSync(path);

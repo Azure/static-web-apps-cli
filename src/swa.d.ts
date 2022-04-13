@@ -32,6 +32,7 @@ declare interface SWACLIEnv {
   SWA_CLI_DEPLOYMENT_TOKEN?: string;
   SWA_RUNTIME_CONFIG?: string;
   SWA_CLI_VERSION?: string;
+  AZURE_REGION_LOCATION?: string;
 
   // swa build
   SWA_CLI_APP_BUILD_COMMAND?: string;
@@ -201,7 +202,7 @@ declare type SWACLIConfig = SWACLIOptionsToCleanUp &
     init?: SWACLIGlobalOptions & SWACLIInitOptions & SWACLIContextOptions;
     start?: SWACLIGlobalOptions & SWACLIStartOptions & SWACLIContextOptions;
     deploy?: SWACLIGlobalOptions & SWACLIDeployOptions & SWACLIContextOptions;
-};
+  };
 
 // Information about the loaded config
 declare type SWACLIConfigInfo ={

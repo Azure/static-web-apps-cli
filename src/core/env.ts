@@ -22,19 +22,13 @@ export function swaCLIEnv(...newEnvs: SWACLIEnv[]): SWACLIEnv {
   return env;
 }
 
-export function printEnv() {
+export function getSwaEnvList() {
   const env: SWACLIEnv = swaCLIEnv();
+  const entries = Object.entries(env)
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .filter(([key, _value]) => key.startsWith("SWA_") || key.startsWith("AZURE_"));
 
-  console.log("");
-  console.log("SWA CLI Environment variables:");
-  console.log("");
-
-  const entries = Object.entries(env).sort((a, b) => a[0].localeCompare(b[0]));
-  for (const [key, value] of entries) {
-    if (key.startsWith("SWA_") || key.startsWith("AZURE_")) {
-      console.log(`  ${key}: ${value}`);
-    }
-  }
+  return entries;
 }
 
 export function useEnvVarOrUseDefault(env: string | undefined, defaultValue: boolean): boolean {
