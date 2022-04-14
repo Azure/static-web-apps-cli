@@ -1,8 +1,7 @@
 import { StaticSiteARMResource } from "@azure/arm-appservice";
-import { GenericResourceExpanded } from "@azure/arm-resources";
 import { Subscription, TenantIdDescription } from "@azure/arm-subscriptions";
 import chalk from "chalk";
-import prompts from "prompts";
+import prompts, { Answers, PromptObject } from "prompts";
 import { dasherize, logger } from "./utils";
 
 export async function promptOrUseDefault<T extends string = string>(
@@ -19,19 +18,19 @@ export async function promptOrUseDefault<T extends string = string>(
     return response;
   }
 
-  return prompts(questions, { ...options, onCancel: cancelPrompt });
+  return prompts(questions, { ...options, onCancel: onCancelPrompt });
 }
 
-function cancelPrompt() {
-  logger.log("Aborted, configuration not saved.");
-  process.exit(-1);
+function onCancelPrompt() {
+  logger.error("Operation canceled. Exit.\n", true);
 }
 
 export async function wouldYouLikeToCreateStaticSite(): Promise<boolean> {
-  const response = await prompts({
+  const response = await promptOrUseDefault(false, {
     type: "confirm",
     name: "value",
     message: "Would you like to create a new Azure Static Web Apps project?",
+    initial: true,
   });
 
   return response.value;
@@ -47,7 +46,7 @@ export async function chooseProjectName(initial: string, maxLength: number): Pro
       if (value.trim() === "") {
         return "Project name cannot be empty";
       } else if (value.trim().length > maxLength) {
-        return "Project name cannot be longer than 60 characters";
+        return `Project name cannot be longer than ${maxLength} characters!`;
       }
 
       return true;
@@ -57,55 +56,18 @@ export async function chooseProjectName(initial: string, maxLength: number): Pro
   return response.projectName;
 }
 
-export async function chooseResourceGroup(resourceGroups: GenericResourceExpanded[], initial?: string): Promise<GenericResourceExpanded | undefined> {
-  const choices = resourceGroups.map((resourceGroup) => ({
-    title: resourceGroup.name as string,
-    value: resourceGroup,
-  }));
-  const onCancel = () => {
-    logger.silly("Selection cancelled!");
-    return false;
-  };
-  prompts.override({
-    title: initial,
-    value: initial,
-  });
-  const response = await prompts(
-    {
-      type: "select",
-      name: "ResourceGroup",
-      message: "Choose your resource group",
-      initial,
-      choices,
-    },
-    { onCancel }
-  );
-  return response.ResourceGroup as GenericResourceExpanded;
-}
-
 export async function chooseTenant(tenants: TenantIdDescription[], initial?: string): Promise<TenantIdDescription | undefined> {
   const choices = tenants.map((tenant) => ({
     title: tenant.tenantId as string,
     value: tenant,
   }));
-  const onCancel = () => {
-    logger.silly("Selection cancelled!");
-    return false;
-  };
-  prompts.override({
-    title: initial,
-    value: initial,
+  const response = await promptOrUseDefault(false, {
+    type: "select",
+    name: "Tenant",
+    message: "Choose your tenant",
+    initial,
+    choices,
   });
-  const response = await prompts(
-    {
-      type: "select",
-      name: "Tenant",
-      message: "Choose your tenant",
-      initial,
-      choices,
-    },
-    { onCancel }
-  );
   return response.Tenant as TenantIdDescription;
 }
 
@@ -114,35 +76,29 @@ export async function chooseSubscription(subscriptions: Subscription[], initial?
     title: subscription.displayName as string,
     value: subscription,
   }));
-  const onCancel = () => {
-    logger.silly("Selection cancelled!");
-    return false;
-  };
-  prompts.override({
-    title: initial,
-    value: initial,
+  const response = await promptOrUseDefault(false, {
+    type: "select",
+    name: "Subscription",
+    message: "Choose your subscription",
+    choices,
+    initial,
   });
-  const response = await prompts(
-    {
-      type: "select",
-      name: "Subscription",
-      message: "Choose your subscription",
-      choices,
-    },
-    { onCancel }
-  );
   return response.Subscription as Subscription;
 }
 
-export async function chooseStaticSite(staticSites: StaticSiteARMResource[], initial?: string): Promise<StaticSiteARMResource | "NEW" | undefined> {
+export async function chooseStaticSite(staticSites: StaticSiteARMResource[], initial?: string): Promise<string | "NEW" | undefined> {
+  logger.silly(`choose static site with initial: ${initial}`);
+
   let choices: Array<{
     title: string;
-    value: StaticSiteARMResource | "NEW";
+    value: string | "NEW";
   }> = staticSites.map((staticSite) => ({
-    title: staticSite.name as string,
-    value: staticSite,
+    // format as "resource-group/app-name"
+    title: `${chalk.gray(staticSite.id?.split("/")[4] + "/")}${staticSite.name}`,
+    value: staticSite.name as string,
   }));
 
+  // allow users to create a new static site
   choices = [
     {
       title: chalk.green(">> Create a new application"),
@@ -151,43 +107,25 @@ export async function chooseStaticSite(staticSites: StaticSiteARMResource[], ini
     ...choices,
   ];
 
-  const onCancel = () => {
-    logger.silly("Selection cancelled!");
-    return false;
-  };
-  prompts.override({
-    title: initial,
-    value: initial,
-  });
-  const response = await prompts(
-    {
-      type: "select",
-      name: "staticSite",
-      message: "Choose your Static Web App",
-      initial,
-      choices,
+  const response = await promptOrUseDefault(false, {
+    type: "select",
+    name: "staticSite",
+    message: "Choose your Static Web App",
+    initial: (_a: any, _b: Answers<"staticSite">, _c: PromptObject<string>) => {
+      // Note: in case of a select prompt, initial is always an index
+      return choices.findIndex((choice) => choice.value === initial);
     },
-    { onCancel }
-  );
-  return response.staticSite as StaticSiteARMResource | "NEW";
+    choices,
+  });
+  return response.staticSite as string | "NEW";
 }
 
 export async function confirmChooseRandomPort(initial?: string): Promise<boolean> {
-  const onCancel = () => {
-    logger.silly("Selection cancelled!");
-    return false;
-  };
-  prompts.override({
-    title: initial,
-    value: initial,
+  const response = await promptOrUseDefault(false, {
+    type: "confirm",
+    name: "confirm",
+    message: "Would you like to start the emulator on a different port?",
+    initial,
   });
-  const response = await prompts(
-    {
-      type: "confirm",
-      name: "confirm",
-      message: "Would you like to start the emulator on a different port?",
-    },
-    { onCancel }
-  );
   return response.confirm as boolean;
 }

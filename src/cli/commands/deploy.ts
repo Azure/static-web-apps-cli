@@ -78,9 +78,8 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     if (fs.existsSync(defaultApiFolder)) {
       logger.warn(
         `An API folder was found at ".${
-          path.sep + DEFAULT_CONFIG.apiPrefix!
-        }" but the --api-location option was not provided. API will not be deployed!`,
-        "swa"
+          path.sep + path.basename(defaultApiFolder)
+        }" but the --api-location option was not provided. The API will not be deployed.\n`
       );
     }
   }
@@ -103,7 +102,6 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
 
       const { credentialChain, subscriptionId } = await login({
         ...options,
-        useKeychain: true,
       });
 
       logger.silly(`Login successful`);
@@ -117,7 +115,12 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
         subscriptionId,
       });
 
-      const deploymentTokenResponse = await getStaticSiteDeployment(credentialChain, subscriptionId, resourceGroupName, staticSiteName);
+      const deploymentTokenResponse = await getStaticSiteDeployment(
+        credentialChain,
+        subscriptionId,
+        resourceGroupName as string,
+        staticSiteName as string
+      );
 
       deploymentToken = deploymentTokenResponse?.properties?.apiKey;
 
@@ -125,7 +128,7 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
         throw new Error("Cannot find a deployment token. Aborting.");
       }
 
-      logger.log("Deployment token provided via remote config");
+      logger.log("\nDeployment token provided via remote configuration");
       logger.log({ [chalk.green(`deploymentToken`)]: deploymentToken });
     } catch (error: any) {
       logger.error(error.message);
@@ -243,7 +246,8 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
         cleanUp();
 
         if (code === 0) {
-          spinner.succeed(chalk.green(`Deployed to ${projectUrl}`));
+          spinner.succeed(chalk.green(`Deployed to ${chalk.underline(projectUrl)} 🚀`));
+          logger.log(``);
         }
       });
     }
