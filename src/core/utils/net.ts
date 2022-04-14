@@ -94,7 +94,7 @@ export async function validateDevServerConfig(context: string | undefined, timeo
       } catch (err) {
         spinner.fail();
         logger.error(`Could not connect to "${context}". Is the server up and running?`);
-        process.exit(-1);
+        process.exit(1);
       }
     }
   } catch (err) {
@@ -105,7 +105,7 @@ export async function validateDevServerConfig(context: string | undefined, timeo
     } else {
       logger.error((err as any).message);
     }
-    process.exit(-1);
+    process.exit(1);
   }
 }
 

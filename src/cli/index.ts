@@ -21,9 +21,6 @@ const printWelcomeMessage = () => {
   console.log(``);
   console.log(`Welcome to Azure Static Web Apps CLI (${chalk.green(pkg.version)})`);
   console.log(``);
-
-  console.log(`Default config:`);
-  console.table(DEFAULT_CONFIG);
 };
 
 export async function run(argv?: string[]) {

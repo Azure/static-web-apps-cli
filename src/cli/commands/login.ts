@@ -19,7 +19,11 @@ export function addSharedLoginOptionsToCommand(command: Command) {
     .option("--tenant-id [tenantId]", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
     .option("--client-id [clientId]", "Azure client ID", DEFAULT_CONFIG.clientId)
     .option("--client-secret [clientSecret]", "Azure client secret", DEFAULT_CONFIG.clientSecret)
-    .option("--app-name [appName]", "Azure Static Web App application name", DEFAULT_CONFIG.appName);
+    .option("--app-name [appName]", "Azure Static Web App application name", DEFAULT_CONFIG.appName)
+    .option("--use-keychain", "Enable using the operating system native keychain", DEFAULT_CONFIG.useKeychain)
+
+    // Note: Commander does not automatically recognize the --no-* option, so we have to explicitly use --no-use-keychain- instead
+    .option("--no-use-keychain", "Disable using the operating system native keychain", !DEFAULT_CONFIG.useKeychain);
 }
 
 export default function registerCommand(program: Command) {
@@ -27,7 +31,6 @@ export default function registerCommand(program: Command) {
     .command("login")
     .usage("[options]")
     .description("login into Azure Static Web Apps")
-    .option("--use-keychain", "Enable to use the operating system native keychain", DEFAULT_CONFIG.useKeychain)
     .action(async (_options: SWACLIConfig, command: Command) => {
       const config = await configureOptions(undefined, command.optsWithGlobals(), command);
 
@@ -54,7 +57,7 @@ Examples:
   swa login
 
   Interactive login without using the native keychain
-  swa login --useKeychain false
+  swa login --no-use-keychain
 
   Log in into specific tenant
   swa login --tenant-id 00000000-0000-0000-0000-000000000000
@@ -188,7 +191,7 @@ async function storeProjectCredentialsInEnvFile(
     const envFileContentWithProjectDetails = [...oldEnvFileLines, ...newEnvFileLines].join("\n");
     await writeFile(envFile, envFileContentWithProjectDetails);
 
-    logger.log(chalk.green(`✔ Successfully project credentials in ${ENV_FILENAME} file.`));
+    logger.log(chalk.green(`✔ Saved project credentials in ${ENV_FILENAME} file.`));
 
     await updateGitIgnore(ENV_FILENAME);
   }

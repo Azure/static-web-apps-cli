@@ -11,6 +11,7 @@ import {
   TokenCredential,
   useIdentityPlugin,
 } from "@azure/identity";
+import chalk from "chalk";
 import ora from "ora";
 import path from "path";
 import { swaCLIEnv } from "./env";
@@ -96,78 +97,96 @@ async function createResourceGroup(resourcGroupeName: string, credentialChain: T
   return result as GenericResourceExpanded;
 }
 
-async function createStaticSite(credentialChain: TokenCredential, subscriptionId: string): Promise<StaticSiteARMResource> {
-  const maxProjectNameLength = 60; // azure convention
-  const defaultStaticSiteName = dasherize(path.basename(process.cwd())).substring(0, maxProjectNameLength);
-  const staticSiteName = await chooseProjectName(defaultStaticSiteName, maxProjectNameLength);
-  const resourceGroupName = `${staticSiteName}-rg`;
+async function createStaticSite(
+  credentialChain: TokenCredential,
+  subscriptionId: string,
+  staticSiteName: string | undefined,
+  resourceGroupName: string | undefined
+): Promise<StaticSiteARMResource> {
+  const maxProjectNameLength = 63; // azure convention is 64 characters (zero-indexed)
+  const defaultStaticSiteName = staticSiteName || dasherize(path.basename(process.cwd())).substring(0, maxProjectNameLength);
+
+  staticSiteName = await chooseProjectName(defaultStaticSiteName, maxProjectNameLength);
+  resourceGroupName = resourceGroupName || `${staticSiteName}-rg`;
 
   let spinner = ora("Creating a new project...").start();
 
-  if (await isResourceGroupExists(resourceGroupName, subscriptionId, credentialChain)) {
-    // the same resource group already exists, just assume we can reuse it
-    logger.silly(`Resource group "${resourceGroupName}" already exists. Reusing it.`);
-  } else {
-    // resource group doesn't exist, so create it
-    try {
-      await createResourceGroup(resourceGroupName, credentialChain, subscriptionId);
-    } catch (error) {
-      spinner.fail("Project creation failed. Try again.");
-      process.exit(1);
+  // if the resource group does not exist, create it
+  if ((await isResourceGroupExists(resourceGroupName, subscriptionId, credentialChain)) === false) {
+    logger.silly(`Resource group "${resourceGroupName}" does not exist. Creating one...`);
+    // create the resource group
+    await createResourceGroup(resourceGroupName, credentialChain, subscriptionId);
+  }
+
+  // create the static web app instance
+  try {
+    const websiteClient = new WebSiteManagementClient(credentialChain, subscriptionId);
+
+    const { AZURE_REGION_LOCATION } = swaCLIEnv();
+
+    const staticSiteEnvelope: StaticSiteARMResource = {
+      location: AZURE_REGION_LOCATION || DEFAULT_AZURE_LOCATION,
+      sku: { name: "Free", tier: "Free" },
+
+      // these are mandatory, otherwise the static site will not be created
+      buildProperties: {
+        appLocation: "",
+        outputLocation: "",
+        apiLocation: "",
+      },
+    };
+
+    logger.silly(`Creating static site "${staticSiteName}" in resource group "${resourceGroupName}"...`);
+
+    const result = await websiteClient.staticSites.beginCreateOrUpdateStaticSiteAndWait(resourceGroupName, staticSiteName, staticSiteEnvelope);
+
+    logger.silly(`Static site "${staticSiteName}" created successfully.`);
+    logger.silly(result as any);
+
+    if (result.id) {
+      spinner.succeed(chalk.green("Project created successfully!"));
     }
+
+    return result as StaticSiteARMResource;
+  } catch (error: any) {
+    spinner.fail(chalk.red("Project creation failed."));
+    logger.error(error.message, true);
+    return undefined as any;
   }
-
-  const websiteClient = new WebSiteManagementClient(credentialChain, subscriptionId);
-
-  const { AZURE_REGION_LOCATION } = swaCLIEnv();
-
-  const staticSiteEnvelope: StaticSiteARMResource = {
-    location: AZURE_REGION_LOCATION || DEFAULT_AZURE_LOCATION,
-    sku: { name: "Free" },
-  };
-
-  logger.silly({
-    resourceGroupName,
-    name: staticSiteName,
-  });
-  const result = await websiteClient.staticSites.beginCreateOrUpdateStaticSiteAndWait(resourceGroupName, staticSiteName, staticSiteEnvelope);
-
-  if (result.id) {
-    spinner.succeed("Project created successfully.");
-  }
-
-  logger.silly(result as any);
-
-  return result as StaticSiteARMResource;
 }
 
 async function chooseOrCreateStaticSite(
   options: SWACLIConfig,
   credentialChain: TokenCredential,
   subscriptionId: string
-): Promise<StaticSiteARMResource> {
+): Promise<string | StaticSiteARMResource> {
   const staticSites = await listStaticSites(credentialChain, subscriptionId);
   if (staticSites.length === 0) {
     const confirm = await wouldYouLikeToCreateStaticSite?.();
 
     if (confirm) {
-      return await createStaticSite(credentialChain, subscriptionId);
+      return (await createStaticSite(credentialChain, subscriptionId, options.appName, options.resourceGroupName)) as StaticSiteARMResource;
     } else {
-      logger.error("No projects found. Create a new prroject and try again.", true);
+      logger.error("No projects found. Create a new project and try again.", true);
     }
   } else if (staticSites.length === 1) {
-    logger.silly("Only one project found", "swa");
-    return staticSites[0];
+    logger.silly("Only one project found. Using it.");
+    return staticSites[0].name as string;
   }
 
-  const staticSiteName = options.appName;
-  const staticSite = await chooseStaticSite(staticSites, staticSiteName);
+  const staticSite = await chooseStaticSite(staticSites, options.appName);
 
   if (staticSite === "NEW") {
-    return await createStaticSite(credentialChain, subscriptionId);
+    const confirm = await wouldYouLikeToCreateStaticSite?.();
+
+    if (confirm) {
+      return (await createStaticSite(credentialChain, subscriptionId, options.appName, options.resourceGroupName)) as StaticSiteARMResource;
+    } else {
+      logger.error("No project will be create. Operation canceled. Exit..", true);
+    }
   }
 
-  return staticSite as StaticSiteARMResource;
+  return staticSite as string;
 }
 
 export async function chooseOrCreateProjectDetails(options: SWACLIConfig, credentialChain: TokenCredential, subscriptionId: string) {
@@ -177,11 +196,15 @@ export async function chooseOrCreateProjectDetails(options: SWACLIConfig, creden
   // if the user has provided a static site name, we will use it
   let staticSiteName = options.appName;
 
-  const staticSite = await chooseOrCreateStaticSite(options, credentialChain, subscriptionId);
+  const staticSite = (await chooseOrCreateStaticSite(options, credentialChain, subscriptionId)) as StaticSiteARMResource;
 
   if (staticSite && staticSite.id) {
     logger.silly(staticSite.id);
-    resourceGroupName = staticSite.id.split("/")[3];
+
+    // get resource group name from static site id:
+    //   /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/swa-resource-groupe-name/providers/Microsoft.Web/sites/swa-static-site
+    // 0 /      1      /                   2                /        3     /             4
+    resourceGroupName = staticSite.id.split("/")[4];
     staticSiteName = staticSite.name;
   }
 
@@ -230,7 +253,7 @@ export async function listStaticSites(credentialChain: TokenCredential, subscrip
   for await (let staticSite of staticSiteList) {
     staticSites.push(staticSite);
   }
-  return staticSites;
+  return staticSites.sort((a, b) => a.name?.localeCompare(b.name!)!);
 }
 
 export async function getStaticSiteDeployment(
@@ -248,12 +271,6 @@ export async function getStaticSiteDeployment(
   if (!staticSiteName) {
     logger.error("A static site name is required to access your deployment token.", true);
   }
-
-  logger.silly({
-    subscriptionId,
-    resourceGroupName,
-    staticSiteName,
-  });
 
   const websiteClient = new WebSiteManagementClient(credentialChain, subscriptionId);
   const deploymentTokenResponse = await websiteClient.staticSites.listStaticSiteSecrets(resourceGroupName, staticSiteName);
