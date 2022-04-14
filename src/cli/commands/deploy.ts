@@ -87,12 +87,12 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
   let deploymentToken: string | undefined = undefined;
   if (options.deploymentToken) {
     deploymentToken = options.deploymentToken;
-    logger.log("Deployment token provide via flag");
-    logger.log({ [chalk.green(`--deployment-token`)]: options.deploymentToken });
+    logger.silly("Deployment token provide via flag");
+    logger.silly({ [chalk.green(`--deployment-token`)]: options.deploymentToken });
   } else if (SWA_CLI_DEPLOYMENT_TOKEN) {
     deploymentToken = SWA_CLI_DEPLOYMENT_TOKEN;
-    logger.log("Deployment token found in Environment Variables:");
-    logger.log({ [chalk.green(`SWA_CLI_DEPLOYMENT_TOKEN`)]: SWA_CLI_DEPLOYMENT_TOKEN });
+    logger.silly("Deployment token found in Environment Variables:");
+    logger.silly({ [chalk.green(`SWA_CLI_DEPLOYMENT_TOKEN`)]: SWA_CLI_DEPLOYMENT_TOKEN });
   } else if (options.dryRun === false) {
     logger.silly(`No deployment token found. Trying interactive login...`);
 
@@ -106,9 +106,18 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
 
       logger.silly(`Login successful`);
 
-      const { resourceGroupName, staticSiteName } = await chooseOrCreateProjectDetails(options, credentialChain, subscriptionId);
+      if (options.appName) {
+        logger.log(`\nChecking project "${options.appName}" settings...`);
+      } else {
+        logger.log(`\nChecking project settings...`);
+      }
 
-      logger.silly(`Project settings were set:`);
+      const { resourceGroupName, staticSiteName } = (await chooseOrCreateProjectDetails(options, credentialChain, subscriptionId)) as {
+        resourceGroupName: string;
+        staticSiteName: string;
+      };
+
+      logger.silly(`Project settings:`);
       logger.silly({
         resourceGroupName,
         staticSiteName,
@@ -125,15 +134,15 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
       deploymentToken = deploymentTokenResponse?.properties?.apiKey;
 
       if (!deploymentToken) {
-        throw new Error("Cannot find a deployment token. Aborting.");
-      }
+        logger.error("Cannot find a deployment token. Aborting.", true);
+      } else {
+        logger.log(chalk.green(`✔ Successfully setup project!`));
 
-      logger.log("\nDeployment token provided via remote configuration");
-      logger.log({ [chalk.green(`deploymentToken`)]: deploymentToken });
+        logger.silly("\nDeployment token provided via remote configuration");
+        logger.silly({ [chalk.green(`deploymentToken`)]: deploymentToken });
+      }
     } catch (error: any) {
       logger.error(error.message);
-      logger.error("A deployment token is required to deploy to Azure Static Web Apps");
-      logger.error("Provide a deployment token using the --deployment-token option or SWA_CLI_DEPLOYMENT_TOKEN environment variable", true);
       return;
     }
   }
@@ -183,6 +192,8 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     API_LOCATION: options.apiLocation,
     VERBOSE: isVerboseEnabled ? "true" : "false",
   };
+
+  logger.log(`Deploying project to Azure Static Web Apps...`);
 
   let spinner: ora.Ora = {} as ora.Ora;
   try {
@@ -246,7 +257,7 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
         cleanUp();
 
         if (code === 0) {
-          spinner.succeed(chalk.green(`Deployed to ${chalk.underline(projectUrl)} 🚀`));
+          spinner.succeed(chalk.green(`Project deployed to ${chalk.underline(projectUrl)} 🚀`));
           logger.log(``);
         }
       });
