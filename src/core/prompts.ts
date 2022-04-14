@@ -36,6 +36,24 @@ export async function wouldYouLikeToCreateStaticSite(): Promise<boolean> {
   return response.value;
 }
 
+export async function wouldYouLikeToOverrideStaticSite(appNameToOverride: string): Promise<boolean> {
+  const response = await promptOrUseDefault(false, {
+    type: "text",
+    name: "value",
+    message: `Project already exist! Enter project name to override:`,
+    warn: `Previous deployment in project "${appNameToOverride}" will be overwritten.`,
+    initial: "Press CTRL+L to cancel and exit",
+    validate: (value: string) => {
+      if (value === appNameToOverride) {
+        return true;
+      }
+      return `Confirmation doesn't match project name!`;
+    },
+  });
+
+  return response.value;
+}
+
 export async function chooseProjectName(initial: string, maxLength: number): Promise<string> {
   const response = await promptOrUseDefault(false, {
     type: "text",
@@ -113,7 +131,8 @@ export async function chooseStaticSite(staticSites: StaticSiteARMResource[], ini
     message: "Choose your Static Web App",
     initial: (_a: any, _b: Answers<"staticSite">, _c: PromptObject<string>) => {
       // Note: in case of a select prompt, initial is always an index
-      return choices.findIndex((choice) => choice.value === initial);
+      const index = choices.findIndex((choice) => choice.value === initial);
+      return index === -1 ? 0 : index;
     },
     choices,
   });

@@ -15,7 +15,7 @@ import chalk from "chalk";
 import ora from "ora";
 import path from "path";
 import { swaCLIEnv } from "./env";
-import { chooseProjectName, chooseStaticSite, wouldYouLikeToCreateStaticSite } from "./prompts";
+import { chooseProjectName, chooseStaticSite, wouldYouLikeToCreateStaticSite, wouldYouLikeToOverrideStaticSite } from "./prompts";
 import { swaCliPersistencePlugin } from "./swa-cli-persistence-plugin";
 import { dasherize, logger } from "./utils";
 
@@ -97,17 +97,14 @@ async function createResourceGroup(resourcGroupeName: string, credentialChain: T
   return result as GenericResourceExpanded;
 }
 
-async function createStaticSite(
-  credentialChain: TokenCredential,
-  subscriptionId: string,
-  staticSiteName: string | undefined,
-  resourceGroupName: string | undefined
-): Promise<StaticSiteARMResource> {
-  const maxProjectNameLength = 63; // azure convention is 64 characters (zero-indexed)
-  const defaultStaticSiteName = staticSiteName || dasherize(path.basename(process.cwd())).substring(0, maxProjectNameLength);
+async function createStaticSite(options: SWACLIConfig, credentialChain: TokenCredential, subscriptionId: string): Promise<StaticSiteARMResource> {
+  let { appName, resourceGroupName } = options;
 
-  staticSiteName = await chooseProjectName(defaultStaticSiteName, maxProjectNameLength);
-  resourceGroupName = resourceGroupName || `${staticSiteName}-rg`;
+  const maxProjectNameLength = 63; // azure convention is 64 characters (zero-indexed)
+  const defaultStaticSiteName = appName || dasherize(path.basename(process.cwd())).substring(0, maxProjectNameLength);
+
+  appName = await chooseProjectName(defaultStaticSiteName, maxProjectNameLength);
+  resourceGroupName = resourceGroupName || `${appName}-rg`;
 
   let spinner = ora("Creating a new project...").start();
 
@@ -136,15 +133,37 @@ async function createStaticSite(
       },
     };
 
-    logger.silly(`Creating static site "${staticSiteName}" in resource group "${resourceGroupName}"...`);
+    logger.silly(`Checking if project "${appName}" already exists...`);
 
-    const result = await websiteClient.staticSites.beginCreateOrUpdateStaticSiteAndWait(resourceGroupName, staticSiteName, staticSiteEnvelope);
+    // check if the static site already exists
+    const project = await websiteClient.staticSites.getStaticSite(resourceGroupName, appName);
+    const projectExists = project.id !== undefined;
 
-    logger.silly(`Static site "${staticSiteName}" created successfully.`);
+    if (projectExists) {
+      spinner.stop();
+
+      const confirm = await wouldYouLikeToOverrideStaticSite?.(appName);
+      if (confirm === false) {
+        return (await chooseOrCreateStaticSite(options, credentialChain, subscriptionId)) as StaticSiteARMResource;
+      }
+    }
+
+    if (projectExists) {
+      spinner.start(`Updating project "${appName}"...`);
+    }
+
+    logger.silly(`Creating static site "${appName}" in resource group "${resourceGroupName}"...`);
+    const result = await websiteClient.staticSites.beginCreateOrUpdateStaticSiteAndWait(resourceGroupName, appName, staticSiteEnvelope);
+
+    logger.silly(`Static site "${appName}" created successfully.`);
     logger.silly(result as any);
 
     if (result.id) {
-      spinner.succeed(chalk.green("Project created successfully!"));
+      if (projectExists) {
+        spinner.succeed(`Project "${appName}" updated successfully.`);
+      } else {
+        spinner.succeed(chalk.green("Project created successfully!"));
+      }
     }
 
     return result as StaticSiteARMResource;
@@ -161,57 +180,82 @@ async function chooseOrCreateStaticSite(
   subscriptionId: string
 ): Promise<string | StaticSiteARMResource> {
   const staticSites = await listStaticSites(credentialChain, subscriptionId);
+
+  // 1- when there are no static sites
   if (staticSites.length === 0) {
-    const confirm = await wouldYouLikeToCreateStaticSite?.();
+    const confirm = await wouldYouLikeToCreateStaticSite();
 
     if (confirm) {
-      return (await createStaticSite(credentialChain, subscriptionId, options.appName, options.resourceGroupName)) as StaticSiteARMResource;
+      return (await createStaticSite(options, credentialChain, subscriptionId)) as StaticSiteARMResource;
     } else {
       logger.error("No projects found. Create a new project and try again.", true);
     }
-  } else if (staticSites.length === 1) {
-    logger.silly("Only one project found. Using it.");
-    return staticSites[0].name as string;
   }
 
-  const staticSite = await chooseStaticSite(staticSites, options.appName);
+  // 2- when there is only one static site
+  else if (staticSites.length === 1) {
+    logger.silly("Only one project found. Trying to use it if the name matches...");
 
-  if (staticSite === "NEW") {
-    const confirm = await wouldYouLikeToCreateStaticSite?.();
-
-    if (confirm) {
-      return (await createStaticSite(credentialChain, subscriptionId, options.appName, options.resourceGroupName)) as StaticSiteARMResource;
+    const staticSite = staticSites[0];
+    if (options.appName === staticSite.name) {
+      return staticSite;
     } else {
-      logger.error("No project will be create. Operation canceled. Exit..", true);
+      // if the name doesn't match, ask the user if they want to create a new project
+      const confirm = await wouldYouLikeToCreateStaticSite();
+
+      if (confirm) {
+        return (await createStaticSite(options, credentialChain, subscriptionId)) as StaticSiteARMResource;
+      } else {
+        logger.error(`The provided project name "${options.appName}" was not found.`, true);
+      }
     }
   }
 
-  return staticSite as string;
+  // 3- when there are multiple static sites
+
+  if (options.appName) {
+    // if the user provided a project name, try to find it and use it
+    logger.silly(`Looking for project "${options.appName}"...`);
+    const staticSite = staticSites.find((s) => s.name === options.appName);
+    if (staticSite) {
+      return staticSite;
+    }
+  }
+
+  // otherwise, ask the user to choose one
+  const staticSite = await chooseStaticSite(staticSites, options.appName);
+
+  if (staticSite === "NEW") {
+    // if the user chose to create a new project, switch to the create project flow
+    return (await createStaticSite(options, credentialChain, subscriptionId)) as StaticSiteARMResource;
+  }
+
+  return staticSites.find((s) => s.name === staticSite) as StaticSiteARMResource;
 }
 
 export async function chooseOrCreateProjectDetails(options: SWACLIConfig, credentialChain: TokenCredential, subscriptionId: string) {
-  // if the user has provided a resource group name, we will use it
-  let resourceGroupName = options.resourceGroupName;
-
-  // if the user has provided a static site name, we will use it
-  let staticSiteName = options.appName;
-
   const staticSite = (await chooseOrCreateStaticSite(options, credentialChain, subscriptionId)) as StaticSiteARMResource;
 
+  logger.silly({ staticSite });
+
+  // in case we have a static site, we will use its resource group and name
   if (staticSite && staticSite.id) {
     logger.silly(staticSite.id);
 
     // get resource group name from static site id:
     //   /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/swa-resource-groupe-name/providers/Microsoft.Web/sites/swa-static-site
     // 0 /      1      /                   2                /        3     /             4
-    resourceGroupName = staticSite.id.split("/")[4];
-    staticSiteName = staticSite.name;
+    const resourceGroupName = staticSite.id.split("/")[4];
+    const staticSiteName = staticSite.name;
+    return {
+      resourceGroupName,
+      staticSiteName,
+    };
+  } else {
+    logger.error("No project found. Create a new project and try again.", true);
   }
 
-  return {
-    resourceGroupName,
-    staticSiteName,
-  };
+  return;
 }
 
 export async function listTenants(credentialChain: TokenCredential) {

@@ -95,9 +95,6 @@ export async function login(options: SWACLIConfig) {
 }
 
 async function setupProjectCredentials(options: SWACLIConfig, credentialChain: TokenCredential) {
-  logger.log(``);
-  logger.log(`Checking project settings...`);
-
   let { subscriptionId, tenantId, clientId, clientSecret } = options;
 
   // If the user has not specified a tenantId, we will prompt them to choose one
