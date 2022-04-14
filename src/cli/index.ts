@@ -1,18 +1,18 @@
-import dotenv from "dotenv";
-dotenv.config();
-
-export * from "./commands";
-
 import chalk from "chalk";
 import { Option, program } from "commander";
+import dotenv from "dotenv";
 import path from "path";
 import updateNotifier from "update-notifier";
 import { DEFAULT_CONFIG } from "../config";
-import { swaCliConfigFilename } from "../core/utils/cli-config";
+import { swaCliConfigFilename } from "../core";
 import registerDeploy from "./commands/deploy";
 import registerInit from "./commands/init";
 import registerLogin from "./commands/login";
 import registerStart from "./commands/start";
+dotenv.config();
+
+export * from "./commands";
+
 const pkg = require("../../package.json");
 
 const printWelcomeMessage = () => {
@@ -46,18 +46,15 @@ export async function run(argv?: string[]) {
       "the directory where the staticwebapp.config.json file is located",
       DEFAULT_CONFIG.swaConfigLocation
     )
-    .option("--subscription [subscriptionId]", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
-    .option("--resource-group-name [resourceGroupName]", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroupName)
-    .option("--tenant [tenantId]", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
-    .option("--client-id [clientId]", "Azure client ID", DEFAULT_CONFIG.clientId)
-    .option("--client-secret [clientSecret]", "Azure client secret", DEFAULT_CONFIG.clientSecret)
-    .option("--app-name [appName]", "Azure Static Web App application name", DEFAULT_CONFIG.appName);
+    .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development\n");
 
   // Register commands
   registerLogin(program);
   registerStart(program);
   registerDeploy(program);
   registerInit(program);
+
+  program.showHelpAfterError();
 
   await program.parseAsync(argv);
 }

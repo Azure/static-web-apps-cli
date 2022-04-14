@@ -106,3 +106,23 @@ export async function chooseStaticSite(staticSites: StaticSiteARMResource[], ini
   );
   return response.staticSite as StaticSiteARMResource;
 }
+
+export async function confirmChooseRandomPort(initial?: string): Promise<boolean> {
+  const onCancel = () => {
+    logger.silly("Selection cancelled!");
+    return false;
+  };
+  prompts.override({
+    title: initial,
+    value: initial,
+  });
+  const response = await prompts(
+    {
+      type: "confirm",
+      name: "confirm",
+      message: "Would you like to start the emulator on a different port?",
+    },
+    { onCancel }
+  );
+  return response.confirm as boolean;
+}

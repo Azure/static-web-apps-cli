@@ -20,7 +20,7 @@ export default function registerCommand(program: Command) {
     .command("init [name]")
     .usage("[name] [options]")
     .description("initialize a new static web app project")
-    .option("--yes", "Answer yes to all prompts (disable interactive mode)", false)
+    .option("--yes", "answer yes to all prompts (disable interactive mode)", false)
     .action(async (name: string, _options: SWACLIConfig, command: Command) => {
       const config = await configureOptions(undefined, command.optsWithGlobals(), command);
       await init(name, config.options);
@@ -74,8 +74,7 @@ export async function init(name: string | undefined, options: SWACLIConfig, show
   //   projectConfig = await promptConfigSettings(disablePrompts, projectConfig);
   // }
 
-  // TODO: check for existing config file w/ project name
-  if (configExists(configFilePath) && (await hasConfigurationNameInConfigFile(configFilePath, projectName))) {
+  if (configExists(configFilePath) && await hasConfigurationNameInConfigFile(configFilePath, projectName)) {
     const { confirmOverwrite } = await promptOrUseDefault(disablePrompts, {
       type: "confirm",
       name: "confirmOverwrite",
@@ -88,8 +87,8 @@ export async function init(name: string | undefined, options: SWACLIConfig, show
     }
   }
 
-  // TODO: convert project config to config file format
-  await writeConfigFile(configFilePath, projectName, projectConfig);
+  const cliConfig = convertToCliConfig(projectConfig);
+  await writeConfigFile(configFilePath, projectName, cliConfig);
   logger.log(chalk.green(`\nConfiguration successfully saved to ${swaCliConfigFilename}.\n`));
 
   if (showHints) {
@@ -97,6 +96,23 @@ export async function init(name: string | undefined, options: SWACLIConfig, show
     logger.log(`- Use ${chalk.cyan("swa start")} to run your app locally.`);
     logger.log(`- Use ${chalk.cyan("swa deploy")} to deploy your app to Azure.\n`);
   }
+}
+
+function convertToCliConfig(config: FrameworkConfig): SWACLIConfig {
+  return {
+    appLocation: config.appLocation,
+    apiLocation: config.apiLocation,
+    outputLocation: config.outputLocation,
+    appBuildCommand: config.appBuildCommand,
+    apiBuildCommand: config.apiBuildCommand,
+    run: config.devServerCommand,
+    start: {
+      context: config.devServerUrl || config.appLocation,
+    },
+    deploy: {
+      context: config.outputLocation,
+    }
+  };
 }
 
 async function promptConfigSettings(disablePrompts: boolean, detectedConfig: FrameworkConfig): Promise<FrameworkConfig> {

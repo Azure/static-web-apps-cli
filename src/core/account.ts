@@ -14,9 +14,9 @@ import {
 import { swaCliPersistencePlugin } from "./swa-cli-persistence-plugin";
 import { logger } from "./utils";
 
-export async function authenticateWithAzureIdentity(details: LoginDetails = {}, persist = true) {
+export async function authenticateWithAzureIdentity(details: LoginDetails = {}, useKeychain = true) {
   logger.silly("Executing authenticateWithAzureIdentity");
-  logger.silly({ details, persist });
+  logger.silly({ details, useKeychain });
 
   let tokenCachePersistenceOptions: TokenCachePersistenceOptions = {
     enabled: false,
@@ -24,19 +24,19 @@ export async function authenticateWithAzureIdentity(details: LoginDetails = {}, 
     unsafeAllowUnencryptedStorage: false,
   };
 
-  if (persist === true) {
-    logger.silly("Persisting token cache is enabled");
+  if (useKeychain === true) {
+    logger.silly("Keychain is enabled");
 
     useIdentityPlugin(swaCliPersistencePlugin);
     tokenCachePersistenceOptions.enabled = true;
   } else {
-    logger.silly("Persisting token cache is disabled");
+    logger.silly("Keychain is disabled");
 
     tokenCachePersistenceOptions.enabled = false;
   }
 
   const browserCredential = new InteractiveBrowserCredential({
-    redirectUri: "http://localhost:8888",
+    redirectUri: `http://localhost:31337`,
     tokenCachePersistenceOptions,
     tenantId: details.tenantId,
   });

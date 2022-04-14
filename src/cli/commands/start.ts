@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { Command, Option } from "commander";
-import concurrently from "concurrently";
+import concurrently, { CloseEvent } from "concurrently";
 import { CommandInfo } from "concurrently/dist/src/command";
 import fs from "fs";
 import path from "path";
@@ -22,6 +22,7 @@ import {
 } from "../../core";
 import builder from "../../core/builder";
 import { swaCLIEnv } from "../../core/env";
+import { getCertificate } from "../../core/ssl";
 let packageInfo = require("../../../package.json");
 
 export default function registerCommand(program: Command) {
@@ -94,10 +95,15 @@ export async function start(startContext: string | undefined, options: SWACLICon
   let useApiDevServer: string | undefined | null = undefined;
   let startupCommand: string | undefined | null = undefined;
 
+  const resolvedPortNumber = await isAcceptingTcpConnections({ host: options.host, port: options.port! });
   // make sure the CLI default port is available before proceeding.
-  if (await isAcceptingTcpConnections({ host: options.host, port: options.port! })) {
-    logger.error(`Port ${options.port} is already used. Choose a different port.`, true);
+  if (resolvedPortNumber === 0) {
+    logger.error(`Port ${options.port} is already in use. Use '--port' to specify a different port.`, true);
   }
+
+  // set the new port number in case we picked a new one (see isAcceptingTcpConnections())
+  logger.silly(`Resolved port number: ${resolvedPortNumber}`);
+  options.port = resolvedPortNumber;
 
   // start context should never be undefined but we'll check anyway!
   // if the user didn't provide a context, use the current directory
@@ -212,8 +218,22 @@ export async function start(startContext: string | undefined, options: SWACLICon
   }
 
   if (options.ssl) {
-    if (options.sslCert === undefined || options.sslKey === undefined) {
-      logger.error(`SSL Key and SSL Cert are required when using HTTPS`, true);
+    if (options.sslCert === undefined && options.sslKey === undefined) {
+      logger.warn(`WARNING: Using built-in UNSIGNED certificate. DO NOT USE IN PRODUCTION!`);
+      const pemFilepath = await getCertificate({
+        selfSigned: true,
+        days: 365,
+        commonName: options.host,
+        organization: `Azure Static Web Apps CLI ${packageInfo.version}`,
+        organizationUnit: "Engineering",
+        emailAddress: `secure@microsoft.com`,
+      });
+      options.sslCert = pemFilepath;
+      options.sslKey = pemFilepath;
+    } else {
+      // user provided cert and key, so we'll use them
+      options.sslCert = options.sslCert && path.resolve(options.sslCert);
+      options.sslKey = options.sslKey && path.resolve(options.sslKey);
     }
   }
 
@@ -223,8 +243,6 @@ export async function start(startContext: string | undefined, options: SWACLICon
 
   // resolve the following config to their absolute paths
   options.swaConfigLocation = options.swaConfigLocation && path.resolve(options.swaConfigLocation);
-  options.sslCert = options.sslCert && path.resolve(options.sslCert);
-  options.sslKey = options.sslKey && path.resolve(options.sslKey);
 
   // WARNING: code from above doesn't have access to env vars which are only defined below
 
@@ -293,10 +311,34 @@ export async function start(startContext: string | undefined, options: SWACLICon
     },
   });
 
-  const { result } = concurrently(concurrentlyCommands, { restartTries: 0 });
+  const { result } = concurrently(concurrentlyCommands, { restartTries: 0, killOthers: ["failure", "success"] });
 
-  await result.then(
-    () => process.exit(),
-    () => process.exit()
-  );
+  await result
+    .then(
+      (code: CloseEvent[]) => {
+        logger.silly(`SWA emulator exited with code ${code.values().next().value}`);
+        process.exit();
+      },
+      (errorEvent: CloseEvent[]) => {
+        const killedCommand = errorEvent.filter((event) => event.killed).pop();
+        const commandName = killedCommand?.command.name;
+        const exitCode = killedCommand?.exitCode;
+        let commandMessage = ``;
+        switch (commandName) {
+          case "swa":
+            commandMessage = `SWA emulator exited with code ${exitCode}`;
+            break;
+          case "api":
+            commandMessage = `API server exited with code ${exitCode}`;
+            break;
+          case "run":
+            commandMessage = `the --run command exited with code ${exitCode}`;
+            break;
+        }
+        logger.error(`SWA emulator stoped because ${commandMessage}.`, true);
+      }
+    )
+    .catch((err) => {
+      logger.error(err.message, true);
+    });
 }

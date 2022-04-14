@@ -9,8 +9,11 @@ import open from "open";
 import { DEFAULT_CONFIG } from "../config";
 import { address, hostnameToIpAdress, isHttpUrl, logger, logRequest, registerProcessExit, validateDevServerConfig } from "../core";
 import { HAS_API, IS_API_DEV_SERVER, IS_APP_DEV_SERVER, SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../core/constants";
+import { swaCLIEnv } from "../core/env";
 import { validateFunctionTriggers } from "./handlers/function.handler";
 import { handleUserConfig, onConnectionLost, requestMiddleware } from "./middlewares/request.middleware";
+
+const { SWA_CLI_PORT } = swaCLIEnv();
 
 const proxyApp = httpProxy.createProxyServer({ autoRewrite: true });
 
@@ -20,14 +23,14 @@ if (!isHttpUrl(SWA_CLI_API_URI())) {
 
 // TODO: handle multiple workflow files (see #32)
 if (DEFAULT_CONFIG.githubActionWorkflowLocation) {
-  logger.info(`\nFound workflow file:\n    ${chalk.green(DEFAULT_CONFIG.githubActionWorkflowLocation)}`);
+  logger.log(`\nUsing workflow file:\n    ${chalk.green(DEFAULT_CONFIG.githubActionWorkflowLocation)}`);
 }
 
 const httpsServerOptions: Pick<https.ServerOptions, "cert" | "key"> | null =
   DEFAULT_CONFIG.ssl && DEFAULT_CONFIG.sslCert && DEFAULT_CONFIG.sslKey
     ? {
-        cert: fs.readFileSync(DEFAULT_CONFIG.sslCert, "utf8"),
-        key: fs.readFileSync(DEFAULT_CONFIG.sslKey, "utf8"),
+        cert: DEFAULT_CONFIG.sslCert.startsWith("-----BEGIN") ? DEFAULT_CONFIG.sslCert : fs.readFileSync(DEFAULT_CONFIG.sslCert, "utf8"),
+        key: DEFAULT_CONFIG.sslKey.startsWith("-----BEGIN") ? DEFAULT_CONFIG.sslKey : fs.readFileSync(DEFAULT_CONFIG.sslKey, "utf8"),
       }
     : null;
 
@@ -98,7 +101,7 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
     // note: this string must not change. It is used by the VS Code extension.
     // see: https://github.com/Azure/static-web-apps-cli/issues/124
     //--------------------------------------------------------------------------------
-    const serverAddress = address(DEFAULT_CONFIG.host, DEFAULT_CONFIG.port, SWA_CLI_APP_PROTOCOL);
+    const serverAddress = address(DEFAULT_CONFIG.host, Number(SWA_CLI_PORT), SWA_CLI_APP_PROTOCOL);
     let logMessage = `\nAzure Static Web Apps emulator started at ${chalk.green(serverAddress)}. Press CTRL+C to exit.\n\n`;
     //--------------------------------------------------------------------------------
 
@@ -147,6 +150,6 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
   }
 
   const server = createServer();
-  server.listen(DEFAULT_CONFIG.port, hostnameToIpAdress(DEFAULT_CONFIG.host), onServerStart(server, socketConnection));
-  server.listen(DEFAULT_CONFIG.port, localIpAdress);
+  server.listen(Number(SWA_CLI_PORT), hostnameToIpAdress(DEFAULT_CONFIG.host), onServerStart(server, socketConnection));
+  server.listen(Number(SWA_CLI_PORT), localIpAdress);
 })();
