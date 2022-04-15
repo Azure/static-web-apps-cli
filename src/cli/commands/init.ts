@@ -6,11 +6,11 @@ import process from "process";
 import { DEFAULT_CONFIG } from "../../config";
 import { promptOrUseDefault } from "../../core/prompts";
 import {
-  configExists,
   configureOptions,
   dasherize,
   hasConfigurationNameInConfigFile,
   logger,
+  swaCliConfigFileExists,
   swaCliConfigFilename,
   writeConfigFile,
 } from "../../core/utils";
@@ -74,7 +74,7 @@ export async function init(name: string | undefined, options: SWACLIConfig, show
   //   projectConfig = await promptConfigSettings(disablePrompts, projectConfig);
   // }
 
-  if (configExists(configFilePath) && (await hasConfigurationNameInConfigFile(configFilePath, projectName))) {
+  if (swaCliConfigFileExists(configFilePath) && (await hasConfigurationNameInConfigFile(configFilePath, projectName))) {
     const { confirmOverwrite } = await promptOrUseDefault(disablePrompts, {
       type: "confirm",
       name: "confirmOverwrite",

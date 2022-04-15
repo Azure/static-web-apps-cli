@@ -5,7 +5,15 @@ import fs from "fs";
 import ora from "ora";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
-import { configureOptions, findSWAConfigFile, logger, logGiHubIssueMessageAndExit, readWorkflowFile } from "../../core";
+import {
+  configureOptions,
+  findSWAConfigFile,
+  getCurrentSwaCliConfigFromFile,
+  logger,
+  logGiHubIssueMessageAndExit,
+  readWorkflowFile,
+  updateSwaCliConfigFile,
+} from "../../core";
 import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../core/account";
 import { cleanUp, getDeployClientPath } from "../../core/deploy-client";
 import { getSwaEnvList, swaCLIEnv } from "../../core/env";
@@ -137,6 +145,21 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
         logger.error("Cannot find a deployment token. Aborting.", true);
       } else {
         logger.log(chalk.green(`✔ Successfully setup project!`));
+
+        // store project settings in swa-cli.config.json (if available)
+        if (options.dryRun === false) {
+          const currentSwaCliConfig = getCurrentSwaCliConfigFromFile();
+          if (currentSwaCliConfig?.config) {
+            logger.silly(`Saving project settings to swa-cli.config.json...`);
+
+            const newConfig = { ...currentSwaCliConfig?.config };
+            newConfig.appName = staticSiteName;
+            newConfig.resourceGroupName = resourceGroupName;
+            updateSwaCliConfigFile(newConfig);
+          } else {
+            logger.silly(`No swa-cli.config.json file found. Skipping saving project settings.`);
+          }
+        }
 
         logger.silly("\nDeployment token provided via remote configuration");
         logger.silly({ [chalk.green(`deploymentToken`)]: deploymentToken });

@@ -262,7 +262,6 @@ export async function chooseOrCreateProjectDetails(options: SWACLIConfig, creden
     logger.error("No project found. Create a new project and try again.", true);
   }
 
-  process.exit(1);
   return;
 }
 
