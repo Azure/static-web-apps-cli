@@ -19,9 +19,9 @@ export const getCurrentSwaCliConfigFromFile = () => currentSwaCliConfigFromFile;
 export const swaCliConfigFileExists = (configFilePath: string) => existsSync(configFilePath);
 
 export async function getConfigFileOptions(
-  contextOrConfigEntry: string | undefined,
+  outputLocationOrConfigEntry: string | undefined,
   configFilePath: string
-): Promise<SWACLIConfig & { context?: string }> {
+): Promise<SWACLIConfig & { outputLocation?: string }> {
   logger.silly(`Getting config file options from ${configFilePath}...`);
 
   configFilePath = path.resolve(configFilePath);
@@ -36,13 +36,13 @@ export async function getConfigFileOptions(
     return {};
   }
 
-  // Use configuration root path as the directory context
+  // Use configuration root path as the outputLocation
   const configDir = path.dirname(configFilePath);
   process.chdir(configDir);
 
   logger.silly(`Changed directory to ${configDir}`);
 
-  if (contextOrConfigEntry === DEFAULT_CONFIG.outputLocation) {
+  if (outputLocationOrConfigEntry === DEFAULT_CONFIG.outputLocation) {
     const hasMultipleConfig = Object.entries(cliConfig.configurations).length > 1;
     if (hasMultipleConfig) {
       // Show as a log not warning because the user may want to use the default config
@@ -59,19 +59,19 @@ export async function getConfigFileOptions(
     };
     return { ...config };
   } else {
-    logger.silly(`Configuration="${contextOrConfigEntry}" does't match outputLocation="${DEFAULT_CONFIG.outputLocation}"`);
+    logger.silly(`Configuration="${outputLocationOrConfigEntry}" does't match outputLocation="${DEFAULT_CONFIG.outputLocation}"`);
   }
 
-  if (contextOrConfigEntry === undefined) {
+  if (outputLocationOrConfigEntry === undefined) {
     logger.warn(`No configuration specified. Ignoring "${swaCliConfigFilename}"`);
     return {};
   }
 
-  const config = cliConfig.configurations?.[contextOrConfigEntry];
+  const config = cliConfig.configurations?.[outputLocationOrConfigEntry];
   if (config) {
-    logger.silly(`Found configuration "${contextOrConfigEntry}" in "${swaCliConfigFilename}"`);
+    logger.silly(`Found configuration "${outputLocationOrConfigEntry}" in "${swaCliConfigFilename}"`);
 
-    printConfigMsg(contextOrConfigEntry, configFilePath);
+    printConfigMsg(outputLocationOrConfigEntry, configFilePath);
     return { ...config };
   }
 

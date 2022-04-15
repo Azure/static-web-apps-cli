@@ -137,6 +137,7 @@ declare type SWACLIInitOptions = {
 
 declare type SWACLIStartOptions = {
   appLocation?: string;
+  outputLocation?: string;
   apiLocation?: string;
   apiPort?: number;
   host?: string;
@@ -188,12 +189,6 @@ declare type SWACLILoginOptions = SWACLISharedLoginOptions & {
   useKeychain?: boolean;
 };
 
-// -- CLI Context options ----------------------------------------------------
-
-declare type SWACLIContextOptions = {
-  context?: string;
-};
-
 // -- CLI Login options ------------------------------------------------------
 
 declare type SWACLIConfig = SWACLIOptionsToCleanUp &
@@ -202,12 +197,11 @@ declare type SWACLIConfig = SWACLIOptionsToCleanUp &
   SWACLIInitOptions &
   SWACLIBuildOptions &
   SWACLIStartOptions &
-  SWACLIDeployOptions &
-  SWACLIContextOptions & {
-    login?: SWACLIGlobalOptions & SWACLILoginOptions & SWACLIContextOptions;
-    init?: SWACLIGlobalOptions & SWACLIInitOptions & SWACLIContextOptions;
-    start?: SWACLIGlobalOptions & SWACLIStartOptions & SWACLIContextOptions;
-    deploy?: SWACLIGlobalOptions & SWACLIDeployOptions & SWACLIContextOptions;
+  SWACLIDeployOptions & {
+    login?: SWACLIGlobalOptions & SWACLILoginOptions;
+    init?: SWACLIGlobalOptions & SWACLIInitOptions;
+    start?: SWACLIGlobalOptions & SWACLIStartOptions;
+    deploy?: SWACLIGlobalOptions & SWACLIDeployOptions;
   };
 
 // Information about the loaded config

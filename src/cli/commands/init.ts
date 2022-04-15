@@ -108,10 +108,10 @@ function convertToCliConfig(config: FrameworkConfig): SWACLIConfig {
     apiBuildCommand: config.apiBuildCommand,
     run: config.devServerCommand,
     start: {
-      context: config.devServerUrl || config.outputLocation,
+      outputLocation: config.devServerUrl || config.outputLocation,
     },
     deploy: {
-      context: config.outputLocation,
+      outputLocation: config.outputLocation,
     },
   };
 }

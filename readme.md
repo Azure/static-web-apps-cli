@@ -255,10 +255,10 @@ If you are using a [`swa-cli.config.json`](#swa-cli.config.json) configuration f
       "apiLocation": "api",
       "outputLocation": "frontend",
       "start": {
-        "context": "frontend"
+        "outputLocation": "frontend"
       },
       "deploy": {
-        "context": "frontend"
+        "outputLocation": "frontend"
       }
     }
   }
@@ -370,7 +370,7 @@ The CLI can also load options from a `swa-cli.config.json` file:
 {
   "configurations": {
     "app": {
-      "context": "http://localhost:3000",
+      "outputLocation": "http://localhost:3000",
       "apiLocation": "api",
       "run": "npm run start",
       "swaConfigLocation": "./my-app-source"
@@ -397,11 +397,11 @@ swa start http://localhost:3000 --swa-config-location ./my-app-source
 {
   "configurations": {
     "static": {
-      "context": "./my-dist",
+      "outputLocation": "./my-dist",
       "swaConfigLocation": "./my-app-source"
     },
     "devserver": {
-      "context": "http://localhost:3000",
+      "outputLocation": "http://localhost:3000",
       "swaConfigLocation": "./my-app-source"
     }
   }

@@ -49,16 +49,24 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
     .filter((file) => file.includes("azure-static-web-apps") && file.endsWith(".yml"))
     .pop();
 
-  // does the config file exist?
-  if (!githubActionFile || fs.existsSync(githubActionFile) === false) {
-    logger.silly(`No workflow config file found at ${githubActionFile}`);
+  if (!githubActionFile) {
+    logger.silly(`No SWA workflow config entry found under ${githubActionFolder}. Skipping`);
 
     // no SWA workflow file found
     return userWorkflowConfig && validateUserWorkflowConfig(userWorkflowConfig);
   }
 
-  githubActionFile = path.resolve(githubActionFolder, githubActionFile);
+  githubActionFile = path.resolve(githubActionFolder, githubActionFile!);
 
+  // does the config file exist?
+  if (fs.existsSync(githubActionFile!) === false) {
+    logger.silly(`No workflow config file found at ${path.resolve(githubActionFile!)}. Skipping`);
+
+    // no SWA workflow file found
+    return userWorkflowConfig && validateUserWorkflowConfig(userWorkflowConfig);
+  }
+
+  logger.silly(`Found a SWA workflow file: ${githubActionFile}`);
   let githubActionContent = fs.readFileSync(githubActionFile, "utf8");
 
   if (typeof githubActionContent !== "string") {

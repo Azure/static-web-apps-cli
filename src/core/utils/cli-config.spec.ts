@@ -8,14 +8,14 @@ const mockConfig1 = {
   $schema: "../../../schema/swa-cli.config.schema.json",
   configurations: {
     app: {
-      context: "./cypress/fixtures/static",
+      outputLocation: "./cypress/fixtures/static",
       apiLocation: "./cypress/fixtures/api",
       port: 1111,
       devServerTimeout: 10000,
       verbose: "silly",
     },
     app2: {
-      context: "./cypress/fixtures/static",
+      outputLocation: "./cypress/fixtures/static",
       apiLocation: "./cypress/fixtures/api",
       port: 2222,
       devServerTimeout: 10000,
@@ -28,7 +28,7 @@ const mockConfig2 = {
   $schema: "../../../schema/swa-cli.config.schema.json",
   configurations: {
     app: {
-      context: "./cypress/fixtures/static",
+      outputLocation: "./cypress/fixtures/static",
       apiLocation: "./cypress/fixtures/api",
       port: 3333,
       devServerTimeout: 10000,
