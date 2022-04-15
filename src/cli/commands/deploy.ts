@@ -16,7 +16,7 @@ import {
 } from "../../core";
 import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../core/account";
 import { cleanUp, getDeployClientPath } from "../../core/deploy-client";
-import { getSwaEnvList, swaCLIEnv } from "../../core/env";
+import { swaCLIEnv } from "../../core/env";
 import { addSharedLoginOptionsToCommand, login } from "./login";
 
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "package.json"));
@@ -60,9 +60,11 @@ Examples:
   addSharedLoginOptionsToCommand(deployCommand);
 }
 
-export async function deploy(deployContext: string, options: SWACLIConfig) {
+export async function deploy(_deployContext: string | undefined, options: SWACLIConfig) {
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
+
+  // TODO: get rid of _deployContext
 
   if (options.dryRun) {
     logger.warn("***********************************************************************");
@@ -71,14 +73,34 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     logger.warn("");
   }
 
-  const frontendFolder = path.resolve(process.cwd(), deployContext);
+  // make sure outputLocation is set
+  if (options.outputLocation) {
+    options.outputLocation = path.resolve(options.outputLocation);
+  }
+
+  // make sure appLocation is set
+  if (!options.appLocation) {
+    options.appLocation = path.resolve(process.cwd());
+  }
+
+  // make sure outputLocation is set
+  if (!options.outputLocation) {
+    options.outputLocation = path.resolve(process.cwd());
+  }
+
+  // if folder exists, deploy from a specific build folder (outputLocation), relative to appLocation
+  if (!fs.existsSync(options.outputLocation)) {
+    logger.error(`The folder "${options.outputLocation}" is not found. Exit.`, true);
+    return;
+  }
+
   logger.log(`Deploying front-end files from folder:`);
-  logger.log(`  ${chalk.green(frontendFolder)}`);
+  logger.log(`  ${chalk.green(options.outputLocation)}`);
   logger.log(``);
 
   // if --api-location is provided, use it as the api folder
   if (options.apiLocation) {
-    const userApiFolder = path.resolve(process.cwd(), options.apiLocation!);
+    const userApiFolder = path.resolve(options.appLocation as string, options.apiLocation!);
     if (!fs.existsSync(userApiFolder)) {
       logger.error(`The provided API folder ${userApiFolder} does not exist. Abort.`, true);
       return;
@@ -94,6 +116,7 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     if (fs.existsSync(defaultApiFolder)) {
       logger.warn(
         `An API folder was found at ".${
+          // TODO: should handle ./Api and ./api
           path.sep + path.basename(defaultApiFolder)
         }" but the --api-location option was not provided. The API will not be deployed.\n`
       );
@@ -113,9 +136,6 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     logger.silly(`No deployment token found. Trying interactive login...`);
 
     try {
-      logger.silly(options);
-      logger.silly(getSwaEnvList());
-
       const { credentialChain, subscriptionId } = await login({
         ...options,
       });
@@ -220,11 +240,11 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
   const deployClientEnv: StaticSiteClientEnv = {
     DEPLOYMENT_ACTION: options.dryRun ? "close" : "upload",
     DEPLOYMENT_PROVIDER: `swa-cli-${packageInfo.version}`,
-    REPOSITORY_BASE: deployContext,
+    REPOSITORY_BASE: options.appLocation,
     SKIP_APP_BUILD: "true",
     SKIP_API_BUILD: "true",
     DEPLOYMENT_TOKEN: deploymentToken,
-    APP_LOCATION: deployContext,
+    APP_LOCATION: options.appLocation,
     OUTPUT_LOCATION: options.outputLocation,
     API_LOCATION: options.apiLocation,
     VERBOSE: isVerboseEnabled ? "true" : "false",

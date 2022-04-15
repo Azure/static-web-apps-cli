@@ -105,16 +105,19 @@ export async function start(startContext: string | undefined, options: SWACLICon
   logger.silly(`Resolved port number: ${resolvedPortNumber}`);
   options.port = resolvedPortNumber;
 
-  // start context should never be undefined but we'll check anyway!
+  logger.silly(`Resolving outputLocation...`);
+
+  // start context should never be undefined (will default to ./) but we'll check anyway!
   // if the user didn't provide a context, use the current directory
   if (!startContext) {
-    startContext = DEFAULT_CONFIG.outputLocation;
+    startContext = options.outputLocation;
   } else {
     if (isHttpUrl(startContext)) {
       useAppDevServer = startContext;
       options.outputLocation = useAppDevServer;
     } else {
-      let outputLocationAbsolute = path.resolve(options.appLocation as string, startContext);
+      let outputLocationAbsolute = path.resolve(options.appLocation as string, (options.outputLocation as string) || startContext);
+
       // if folder exists, start the emulator from a specific build folder (outputLocation), relative to appLocation
       if (fs.existsSync(outputLocationAbsolute)) {
         options.outputLocation = outputLocationAbsolute;
@@ -128,6 +131,9 @@ export async function start(startContext: string | undefined, options: SWACLICon
       }
     }
   }
+
+  logger.silly(`Resolved outputLocation:`);
+  logger.silly(`  ${options.outputLocation}`);
 
   if (options.apiLocation) {
     // resolves to the absolute path of the apiLocation
@@ -163,6 +169,9 @@ export async function start(startContext: string | undefined, options: SWACLICon
     userWorkflowConfig = readWorkflowFile({
       userWorkflowConfig,
     });
+
+    logger.silly(`User workflow config:`);
+    logger.silly(userWorkflowConfig!);
   } catch (err) {
     logger.warn(``);
     logger.warn(`Error reading workflow configuration:`);
@@ -225,7 +234,7 @@ export async function start(startContext: string | undefined, options: SWACLICon
         days: 365,
         commonName: options.host,
         organization: `Azure Static Web Apps CLI ${packageInfo.version}`,
-        organizationUnit: "Engineering",
+        organizationUnit: "Azure Engineering",
         emailAddress: `secure@microsoft.com`,
       });
       options.sslCert = pemFilepath;
@@ -315,8 +324,10 @@ export async function start(startContext: string | undefined, options: SWACLICon
 
   await result
     .then(
-      (code: CloseEvent[]) => {
-        logger.silly(`SWA emulator exited with code ${code.values().next().value}`);
+      (errorEvent: CloseEvent[]) => {
+        const killedCommand = errorEvent.filter((event) => event.killed).pop();
+        const exitCode = killedCommand?.exitCode;
+        logger.silly(`SWA emulator exited with code ${exitCode}`);
         process.exit();
       },
       (errorEvent: CloseEvent[]) => {

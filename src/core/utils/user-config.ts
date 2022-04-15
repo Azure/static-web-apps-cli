@@ -93,8 +93,11 @@ export function validateUserWorkflowConfig(userWorkflowConfig: Partial<GithubAct
   let apiLocation = undefined;
   let outputLocation = undefined;
 
+  logger.silly(`Validating user workflow config (BEFORE):`);
+  logger.silly(userWorkflowConfig!);
+
   if (userWorkflowConfig?.appLocation) {
-    appLocation = path.normalize(path.join(process.cwd(), userWorkflowConfig.appLocation || `.${path.sep}`));
+    appLocation = path.resolve(userWorkflowConfig.appLocation);
     if (path.isAbsolute(userWorkflowConfig.appLocation)) {
       appLocation = userWorkflowConfig.appLocation;
     }
@@ -105,7 +108,7 @@ export function validateUserWorkflowConfig(userWorkflowConfig: Partial<GithubAct
       apiLocation = userWorkflowConfig.apiLocation;
     } else {
       // use the user's config and construct an absolute path
-      apiLocation = path.normalize(path.join(process.cwd(), userWorkflowConfig.apiLocation));
+      apiLocation = path.resolve(userWorkflowConfig.apiLocation);
     }
 
     if (path.isAbsolute(userWorkflowConfig.apiLocation)) {
@@ -118,12 +121,19 @@ export function validateUserWorkflowConfig(userWorkflowConfig: Partial<GithubAct
     if (isHttpUrl(userWorkflowConfig.outputLocation)) {
       outputLocation = userWorkflowConfig.outputLocation;
     } else {
-      outputLocation = path.normalize(path.join(process.cwd(), userWorkflowConfig.outputLocation || `.${path.sep}`));
+      outputLocation = path.resolve(userWorkflowConfig.outputLocation);
       if (path.isAbsolute(userWorkflowConfig.outputLocation)) {
         outputLocation = userWorkflowConfig.outputLocation;
       }
     }
   }
+
+  logger.silly(`Validating user workflow config (AFTER):`);
+  logger.silly({
+    appLocation,
+    apiLocation,
+    outputLocation,
+  });
 
   return {
     appLocation,

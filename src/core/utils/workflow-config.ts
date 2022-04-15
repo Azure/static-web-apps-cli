@@ -17,12 +17,18 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
   | undefined {
   let isAppDevServer = false;
   let isApiDevServer = false;
+
+  logger.silly(`Trying to read workflow config with values:`);
+  logger.silly(userWorkflowConfig!);
+
   if (userWorkflowConfig) {
     // is dev servers? Skip reading workflow file
     isAppDevServer = isHttpUrl(userWorkflowConfig?.outputLocation!);
     isApiDevServer = isHttpUrl(userWorkflowConfig?.apiLocation!);
     if (isAppDevServer && isApiDevServer) {
-      return userWorkflowConfig && validateUserWorkflowConfig(userWorkflowConfig);
+      logger.silly(`Detected dev server configuration`);
+
+      return userWorkflowConfig;
     }
   }
 
@@ -30,6 +36,8 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
 
   // does the config folder exist?
   if (fs.existsSync(githubActionFolder) === false) {
+    logger.silly(`No workflow config folder found at ${githubActionFolder}`);
+
     // no github actions folder found
     return userWorkflowConfig && validateUserWorkflowConfig(userWorkflowConfig);
   }
@@ -42,7 +50,9 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
     .pop();
 
   // does the config file exist?
-  if (!githubActionFile || fs.existsSync(githubActionFile)) {
+  if (!githubActionFile || fs.existsSync(githubActionFile) === false) {
+    logger.silly(`No workflow config file found at ${githubActionFile}`);
+
     // no SWA workflow file found
     return userWorkflowConfig && validateUserWorkflowConfig(userWorkflowConfig);
   }
@@ -88,12 +98,20 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
 
   // extract the user's config and set defaults
   let {
-    app_build_command = DEFAULT_CONFIG.appBuildCommand,
-    api_build_command = DEFAULT_CONFIG.apiBuildCommand,
-    app_location = DEFAULT_CONFIG.appLocation,
-    output_location = DEFAULT_CONFIG.outputLocation,
-    api_location = DEFAULT_CONFIG.apiLocation,
+    app_build_command = userWorkflowConfig?.appBuildCommand || DEFAULT_CONFIG.appBuildCommand,
+    api_build_command = userWorkflowConfig?.apiBuildCommand || DEFAULT_CONFIG.apiBuildCommand,
+    app_location = userWorkflowConfig?.appLocation || DEFAULT_CONFIG.appLocation,
+    output_location = userWorkflowConfig?.outputLocation || DEFAULT_CONFIG.outputLocation,
+    api_location = userWorkflowConfig?.apiLocation || DEFAULT_CONFIG.apiLocation,
   } = swaBuildConfig.with;
+
+  logger.silly({
+    app_build_command,
+    api_build_command,
+    app_location,
+    output_location,
+    api_location,
+  });
 
   // the following locations (extracted from the config) should be under the user's project folder:
   // - app_location
