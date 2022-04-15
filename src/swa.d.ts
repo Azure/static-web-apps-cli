@@ -162,6 +162,7 @@ declare type SWACLIDeployOptions = SWACLISharedLoginOptions & {
   outputLocation?: string;
   deploymentToken?: string;
   dryRun?: boolean;
+  printToken?: boolean;
 };
 
 // -- CLI Login options ------------------------------------------------------
@@ -205,11 +206,11 @@ declare type SWACLIConfig = SWACLIOptionsToCleanUp &
   };
 
 // Information about the loaded config
-declare type SWACLIConfigInfo ={
+declare type SWACLIConfigInfo = {
   filePath: string;
   name: string;
-  config: SWACLIConfig
-}
+  config: SWACLIConfig;
+};
 
 declare type ResponseOptions = {
   [key: string]: any;

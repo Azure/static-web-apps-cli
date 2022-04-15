@@ -29,6 +29,7 @@ export default function registerCommand(program: Command) {
     .option("--api-location <apiLocation>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("--deployment-token <secret>", "the secret token used to authenticate with the Static Web Apps")
     .option("--dry-run", "simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
+    .option("--print-token", "print the deployment token", false)
     .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
       const config = await configureOptions(context, command.optsWithGlobals(), command);
       await deploy(config.context ?? context, config.options);
@@ -47,6 +48,9 @@ Examples:
   Deploy using swa-cli.config.json file
   swa deploy
   swa deploy myconfig
+
+  Just print the deployment token
+  swa deploy --print-token
     `
     );
   addSharedLoginOptionsToCommand(deployCommand);
@@ -170,6 +174,12 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     }
   }
   logger.log(``);
+
+  if (options.printToken) {
+    logger.log(`Deployment token:`);
+    logger.log(chalk.green(deploymentToken));
+    process.exit(0);
+  }
 
   let userWorkflowConfig: Partial<GithubActionWorkflow> | undefined = {
     appLocation: options.appLocation,
