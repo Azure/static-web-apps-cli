@@ -61,6 +61,7 @@ export async function authenticateWithAzureIdentity(details: LoginDetails = {}, 
     const clientSecretCredential = new ClientSecretCredential(details.tenantId, details.clientId, details.clientSecret, {
       tokenCachePersistenceOptions,
     });
+    // insert at the beginning of the array to ensure that it is tried first
     credentials.unshift(clientSecretCredential);
   }
 
@@ -236,12 +237,18 @@ async function chooseOrCreateStaticSite(
 export async function chooseOrCreateProjectDetails(options: SWACLIConfig, credentialChain: TokenCredential, subscriptionId: string) {
   const staticSite = (await chooseOrCreateStaticSite(options, credentialChain, subscriptionId)) as StaticSiteARMResource;
 
+  logger.silly("Static site found!");
   logger.silly({ staticSite });
 
-  // in case we have a static site, we will use its resource group and name
   if (staticSite && staticSite.id) {
-    logger.silly(staticSite.id);
+    if (staticSite.provider !== "Custom") {
+      // TODO: add a temporary warning message until we ship `swa link/unlink`
+      logger.error(`The project "${staticSite.name}" is linked to "${staticSite.provider}"!`);
+      logger.error(`Unlink the project from the "${staticSite.provider}" provider and try again.`, true);
+      return;
+    }
 
+    // in case we have a static site, we will use its resource group and name
     // get resource group name from static site id:
     //   /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/swa-resource-groupe-name/providers/Microsoft.Web/sites/swa-static-site
     // 0 /      1      /                   2                /        3     /             4
@@ -255,6 +262,7 @@ export async function chooseOrCreateProjectDetails(options: SWACLIConfig, creden
     logger.error("No project found. Create a new project and try again.", true);
   }
 
+  process.exit(1);
   return;
 }
 
