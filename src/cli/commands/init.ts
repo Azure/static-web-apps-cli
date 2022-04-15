@@ -59,6 +59,7 @@ export async function init(name: string | undefined, options: SWACLIConfig, show
   };
 
   projectConfig = await promptConfigSettings(disablePrompts, projectConfig);
+  logger.silly(projectConfig);
 
   // printFrameworkConfig(projectConfig);
 
@@ -107,7 +108,7 @@ function convertToCliConfig(config: FrameworkConfig): SWACLIConfig {
     apiBuildCommand: config.apiBuildCommand,
     run: config.devServerCommand,
     start: {
-      context: config.devServerUrl || config.appLocation,
+      context: config.devServerUrl || config.outputLocation,
     },
     deploy: {
       context: config.outputLocation,
