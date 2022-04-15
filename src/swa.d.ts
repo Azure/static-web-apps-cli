@@ -203,6 +203,13 @@ declare type SWACLIConfig = SWACLIOptionsToCleanUp &
     deploy?: SWACLIGlobalOptions & SWACLIDeployOptions & SWACLIContextOptions;
 };
 
+// Information about the loaded config
+declare type SWACLIConfigInfo ={
+  filePath: string;
+  name: string;
+  config: SWACLIConfig
+}
+
 declare type ResponseOptions = {
   [key: string]: any;
 };

@@ -8,6 +8,8 @@ export const swaCliConfigSchemaUrl = "https://aka.ms/azure/static-web-apps-cli/s
 export const swaCliConfigFilename = "swa-cli.config.json";
 const { readFile, writeFile } = fsPromises;
 
+export let currentConfig: SWACLIConfigInfo | undefined;
+
 export const configExists = (configFilePath: string) => existsSync(configFilePath);
 
 export async function getConfigFileOptions(
@@ -39,6 +41,11 @@ export async function getConfigFileOptions(
 
     const [configName, config] = Object.entries(cliConfig.configurations)[0];
     printConfigMsg(configName, configFilePath);
+    currentConfig = {
+      name: configName,
+      filePath: configFilePath,
+      config
+    }
     return { ...config };
   }
 
@@ -78,7 +85,14 @@ export async function hasConfigurationNameInConfigFile(configFilePath: string, n
   return configJson.configurations?.[name] !== undefined;
 }
 
-export async function writeConfigFile(configFilePath: string, projectName: string, config: SWACLIConfig) {
+export async function updateCurrentConfigFile(config: SWACLIConfig) {
+  if (currentConfig === undefined) {
+    throw new Error("No configuration file currently loaded");
+  }
+  await writeConfigFile(currentConfig.filePath, currentConfig.name, config);
+}
+
+export async function writeConfigFile(configFilePath: string, configName: string, config: SWACLIConfig) {
   let configFile: SWACLIConfigFile = {
     // TODO: find node_modules/ path and use local schema if found
     $schema: swaCliConfigSchemaUrl,
@@ -104,7 +118,7 @@ export async function writeConfigFile(configFilePath: string, projectName: strin
     configFile.configurations = {};
   }
 
-  configFile.configurations[projectName] = config;
+  configFile.configurations[configName] = config;
   try {
     await writeFile(configFilePath, JSON.stringify(configFile, null, 2));
   } catch (error) {
