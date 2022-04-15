@@ -93,9 +93,9 @@ export function isFunctionRequest(req: http.IncomingMessage, rewritePath?: strin
   return Boolean(path?.startsWith(`/${DEFAULT_CONFIG.apiPrefix}`));
 }
 
-export async function validateFunctionTriggers() {
+export async function validateFunctionTriggers(url: string) {
   try {
-    const functionsResponse = await fetch(`${SWA_CLI_API_URI()}/admin/functions`);
+    const functionsResponse = await fetch(`${url}/admin/functions`);
     const functions = await functionsResponse.json();
     const triggers = functions.map((f: any) => f.config.bindings.find((b: any) => /trigger$/i.test(b.type))).map((b: any) => b.type);
 
@@ -104,9 +104,8 @@ export async function validateFunctionTriggers() {
         "\nFunction app contains non-HTTP triggered functions. Azure Static Web Apps managed functions only support HTTP functions. To use this function app with Static Web Apps, see 'Bring your own function app'.\n"
       );
     }
-  } catch (e) {
-    console.error(e);
-
-    logger.log("Unable to query functions trigger types.");
+  } catch (error) {
+    logger.warn("Unable to query functions trigger types from local function app. Skipping.");
+    logger.warn(`Note: Only Http trigger functions are supported. See https://docs.microsoft.com/azure/static-web-apps/apis`);
   }
 }

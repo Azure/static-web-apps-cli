@@ -23,8 +23,8 @@ const packageInfo = require(path.join(__dirname, "..", "..", "..", "package.json
 
 export default function registerCommand(program: Command) {
   const deployCommand = program
-    .command("deploy [context]")
-    .usage("[context] [options]")
+    .command("deploy [outputLocation]")
+    .usage("[outputLocation] [options]")
     .description("Deploy the current project to Azure Static Web Apps")
     .option("--api-location <apiLocation>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("--deployment-token <secret>", "the secret token used to authenticate with the Static Web Apps")
@@ -33,7 +33,7 @@ export default function registerCommand(program: Command) {
     .option("--env [environment]", "the type of deployment environment where to deploy the project", DEFAULT_CONFIG.env)
     .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
       const config = await configureOptions(context, command.optsWithGlobals(), command);
-      await deploy(config.context ?? context, config.options);
+      await deploy(config.options);
     })
     .addHelpText(
       "after",
@@ -60,13 +60,13 @@ Examples:
   addSharedLoginOptionsToCommand(deployCommand);
 }
 
-export async function deploy(_deployContext: string | undefined, options: SWACLIConfig) {
+export async function deploy(options: SWACLIConfig) {
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
 
-  // TODO: get rid of _deployContext
+  let { appLocation, outputLocation, apiLocation, dryRun, deploymentToken, printToken, appName, swaConfigLocation, verbose } = options;
 
-  if (options.dryRun) {
+  if (dryRun) {
     logger.warn("***********************************************************************");
     logger.warn("* WARNING: Running in dry run mode. This project will not be deployed *");
     logger.warn("***********************************************************************");
@@ -74,33 +74,24 @@ export async function deploy(_deployContext: string | undefined, options: SWACLI
   }
 
   // make sure outputLocation is set
-  if (options.outputLocation) {
-    options.outputLocation = path.resolve(options.outputLocation);
-  }
+  outputLocation = path.resolve(outputLocation || process.cwd());
 
   // make sure appLocation is set
-  if (!options.appLocation) {
-    options.appLocation = path.resolve(process.cwd());
-  }
-
-  // make sure outputLocation is set
-  if (!options.outputLocation) {
-    options.outputLocation = path.resolve(process.cwd());
-  }
+  appLocation = path.resolve(appLocation || process.cwd());
 
   // if folder exists, deploy from a specific build folder (outputLocation), relative to appLocation
-  if (!fs.existsSync(options.outputLocation)) {
-    logger.error(`The folder "${options.outputLocation}" is not found. Exit.`, true);
+  if (!fs.existsSync(outputLocation)) {
+    logger.error(`The folder "${outputLocation}" is not found. Exit.`, true);
     return;
   }
 
   logger.log(`Deploying front-end files from folder:`);
-  logger.log(`  ${chalk.green(options.outputLocation)}`);
+  logger.log(`  ${chalk.green(outputLocation)}`);
   logger.log(``);
 
   // if --api-location is provided, use it as the api folder
-  if (options.apiLocation) {
-    const userApiFolder = path.resolve(options.appLocation as string, options.apiLocation!);
+  if (apiLocation) {
+    const userApiFolder = path.resolve(path.join(appLocation!, apiLocation!));
     if (!fs.existsSync(userApiFolder)) {
       logger.error(`The provided API folder ${userApiFolder} does not exist. Abort.`, true);
       return;
@@ -112,7 +103,7 @@ export async function deploy(_deployContext: string | undefined, options: SWACLI
   }
   // otherwise, check if the default api folder exists and print a warning
   else {
-    const defaultApiFolder = path.resolve(process.cwd(), DEFAULT_CONFIG.apiPrefix!);
+    const defaultApiFolder = path.normalize(path.join(appLocation, DEFAULT_CONFIG.apiPrefix!));
     if (fs.existsSync(defaultApiFolder)) {
       logger.warn(
         `An API folder was found at ".${
@@ -123,16 +114,16 @@ export async function deploy(_deployContext: string | undefined, options: SWACLI
     }
   }
 
-  let deploymentToken: string | undefined = undefined;
-  if (options.deploymentToken) {
-    deploymentToken = options.deploymentToken;
+  // resolve the deployment token
+  if (deploymentToken) {
+    deploymentToken = deploymentToken;
     logger.silly("Deployment token provide via flag");
-    logger.silly({ [chalk.green(`--deployment-token`)]: options.deploymentToken });
+    logger.silly({ [chalk.green(`--deployment-token`)]: deploymentToken });
   } else if (SWA_CLI_DEPLOYMENT_TOKEN) {
     deploymentToken = SWA_CLI_DEPLOYMENT_TOKEN;
     logger.silly("Deployment token found in Environment Variables:");
     logger.silly({ [chalk.green(`SWA_CLI_DEPLOYMENT_TOKEN`)]: SWA_CLI_DEPLOYMENT_TOKEN });
-  } else if (options.dryRun === false) {
+  } else if (dryRun === false) {
     logger.silly(`No deployment token found. Trying interactive login...`);
 
     try {
@@ -142,8 +133,8 @@ export async function deploy(_deployContext: string | undefined, options: SWACLI
 
       logger.silly(`Login successful`);
 
-      if (options.appName) {
-        logger.log(`\nChecking project "${options.appName}" settings...`);
+      if (appName) {
+        logger.log(`\nChecking project "${appName}" settings...`);
       } else {
         logger.log(`\nChecking project settings...`);
       }
@@ -175,7 +166,7 @@ export async function deploy(_deployContext: string | undefined, options: SWACLI
         logger.log(chalk.green(`✔ Successfully setup project!`));
 
         // store project settings in swa-cli.config.json (if available)
-        if (options.dryRun === false) {
+        if (dryRun === false) {
           const currentSwaCliConfig = getCurrentSwaCliConfigFromFile();
           if (currentSwaCliConfig?.config) {
             logger.silly(`Saving project settings to swa-cli.config.json...`);
@@ -199,21 +190,20 @@ export async function deploy(_deployContext: string | undefined, options: SWACLI
   }
   logger.log(`Deploying to environment: ${chalk.green(options.env)}\n`);
 
-  if (options.printToken) {
+  if (printToken) {
     logger.log(`Deployment token:`);
     logger.log(chalk.green(deploymentToken));
     process.exit(0);
   }
 
-  let userWorkflowConfig: Partial<GithubActionWorkflow> | undefined = {
-    appLocation: options.appLocation,
-    outputLocation: options.outputLocation,
-    apiLocation: options.apiLocation,
-  };
-
   // mix CLI args with the project's build workflow configuration (if any)
   // use any specific workflow config that the user might provide undef ".github/workflows/"
   // Note: CLI args will take precedence over workflow config
+  let userWorkflowConfig: Partial<GithubActionWorkflow> | undefined = {
+    appLocation,
+    outputLocation,
+    apiLocation,
+  };
   try {
     userWorkflowConfig = readWorkflowFile({
       userWorkflowConfig,
@@ -228,25 +218,25 @@ export async function deploy(_deployContext: string | undefined, options: SWACLI
   }
 
   const cliEnv: SWACLIEnv = {
-    SWA_CLI_DEBUG: options.verbose as DebugFilterLevel,
+    SWA_CLI_DEBUG: verbose as DebugFilterLevel,
     SWA_RUNTIME_WORKFLOW_LOCATION: userWorkflowConfig?.files?.[0],
-    SWA_RUNTIME_CONFIG_LOCATION: options.swaConfigLocation,
-    SWA_RUNTIME_CONFIG: options.swaConfigLocation ? (await findSWAConfigFile(options.swaConfigLocation))?.file : undefined,
+    SWA_RUNTIME_CONFIG_LOCATION: swaConfigLocation,
+    SWA_RUNTIME_CONFIG: swaConfigLocation ? (await findSWAConfigFile(swaConfigLocation))?.file : undefined,
     SWA_CLI_VERSION: packageInfo.version,
-    SWA_CLI_DEPLOY_DRY_RUN: `${options.dryRun}`,
+    SWA_CLI_DEPLOY_DRY_RUN: `${dryRun}`,
     SWA_CLI_DEPLOY_BINARY: undefined,
   };
 
   const deployClientEnv: StaticSiteClientEnv = {
     DEPLOYMENT_ACTION: options.dryRun ? "close" : "upload",
     DEPLOYMENT_PROVIDER: `swa-cli-${packageInfo.version}`,
-    REPOSITORY_BASE: options.appLocation,
+    REPOSITORY_BASE: appLocation,
     SKIP_APP_BUILD: "true",
     SKIP_API_BUILD: "true",
     DEPLOYMENT_TOKEN: deploymentToken,
-    APP_LOCATION: options.appLocation,
-    OUTPUT_LOCATION: options.outputLocation,
-    API_LOCATION: options.apiLocation,
+    APP_LOCATION: appLocation,
+    OUTPUT_LOCATION: outputLocation,
+    API_LOCATION: apiLocation,
     VERBOSE: isVerboseEnabled ? "true" : "false",
   };
 
@@ -303,7 +293,7 @@ export async function deploy(_deployContext: string | undefined, options: SWACLI
 
               spinner.fail(chalk.red(line));
             } else {
-              if (isVerboseEnabled || options.dryRun) {
+              if (isVerboseEnabled || dryRun) {
                 spinner.info(line.trim());
               } else {
                 spinner.text = line.trim();

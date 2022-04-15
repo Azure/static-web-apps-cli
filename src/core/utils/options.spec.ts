@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import mockFs from "mock-fs";
-import { parsePort } from "./net";
 import { swaCliConfigFilename } from "./cli-config";
+import { parsePort } from "./net";
 import { configureOptions } from "./options";
 
 describe("configureOptions()", () => {
@@ -9,11 +9,10 @@ describe("configureOptions()", () => {
     mockFs.restore();
   });
 
-  it("should return configuration options and context", async () => {
+  it("should return configuration options", async () => {
     const command = await new Command().parseAsync([]);
 
     expect(await configureOptions("test", { config: swaCliConfigFilename, port: 1234 }, command)).toStrictEqual({
-      context: "test",
       options: {
         config: swaCliConfigFilename,
         port: 1234,
@@ -32,7 +31,6 @@ describe("configureOptions()", () => {
     });
 
     expect(await configureOptions("test", { config: swaCliConfigFilename }, command)).toStrictEqual({
-      context: "test",
       options: {
         config: swaCliConfigFilename,
         port: 1234,
@@ -52,7 +50,6 @@ describe("configureOptions()", () => {
     });
 
     expect(await configureOptions("test", { config: swaCliConfigFilename, port: 4444 }, command)).toStrictEqual({
-      context: "test",
       options: {
         config: swaCliConfigFilename,
         port: 1234,
@@ -75,7 +72,6 @@ describe("configureOptions()", () => {
     });
 
     expect(await configureOptions("test", { config: swaCliConfigFilename, port: 4567 }, command)).toStrictEqual({
-      context: "test",
       options: {
         config: swaCliConfigFilename,
         port: 4567,

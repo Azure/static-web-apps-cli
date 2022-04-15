@@ -56,10 +56,10 @@ describe("swa init", () => {
             \\"appBuildCommand\\": \\"npm run build --if-present\\",
             \\"apiBuildCommand\\": \\"npm run build --if-present\\",
             \\"start\\": {
-              \\"context\\": \\"/foobar\\"
+              \\"outputLocation\\": \\"/foobar\\"
             },
             \\"deploy\\": {
-              \\"context\\": \\"/foobar\\"
+              \\"outputLocation\\": \\"/foobar\\"
             }
           }
         }

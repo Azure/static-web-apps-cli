@@ -65,19 +65,25 @@ export function isHttpUrl(url: string | undefined) {
 
 /**
  * Checks if a given server is up and accepting connection.
- * @param context An HTTP URL.
+ * @param url An HTTP URL.
  * @param timeout Maximum time in ms to wait before exiting with failure (1) code,
   default Infinity.
  */
-export async function validateDevServerConfig(context: string | undefined, timeout: number | undefined) {
-  let { hostname, port } = parseUrl(context);
+export async function validateDevServerConfig(url: string | undefined, timeout: number | undefined) {
+  logger.silly(`Validating dev server config:`);
+  logger.silly({
+    url,
+    timeout,
+  });
+
+  let { hostname, port } = parseUrl(url);
 
   try {
     const resolvedPortNumber = await isAcceptingTcpConnections({ port, host: hostname });
     if (resolvedPortNumber === 0) {
       const spinner = ora();
       try {
-        spinner.start(`Waiting for ${chalk.green(context)} to be ready`);
+        spinner.start(`Waiting for ${chalk.green(url)} to be ready`);
         await waitOn({
           resources: [`tcp:${hostname}:${port}`],
           delay: 1000, // initial delay in ms, default 0
@@ -89,23 +95,23 @@ export async function validateDevServerConfig(context: string | undefined, timeo
           strictSSL: false,
           verbose: false, // force disable verbose logs even if SWA_CLI_DEBUG is enabled
         });
-        spinner.succeed(`Connected to ${chalk.green(context)} successfully`);
+        spinner.succeed(`Connected to ${chalk.green(url)} successfully`);
         spinner.clear();
       } catch (err) {
         spinner.fail();
-        logger.error(`Could not connect to "${context}". Is the server up and running?`);
+        logger.error(`Could not connect to "${url}". Is the server up and running?`);
         process.exit(1);
       }
     }
   } catch (err) {
     if ((err as any).message.includes("EACCES")) {
       logger.error(
-        `Port "${port}" cannot be used. You might need elevated or admin privileges. Or, use a valid port from ${VALID_PORT_MIN} to ${VALID_PORT_MAX}.`
+        `Port "${port}" cannot be used. You might need elevated or admin privileges. Or, use a valid port from ${VALID_PORT_MIN} to ${VALID_PORT_MAX}.`,
+        true
       );
     } else {
-      logger.error((err as any).message);
+      logger.error((err as any).message, true);
     }
-    process.exit(1);
   }
 }
 

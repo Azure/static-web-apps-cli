@@ -9,7 +9,7 @@ import open from "open";
 import { DEFAULT_CONFIG } from "../config";
 import { address, hostnameToIpAdress, isHttpUrl, logger, logRequest, registerProcessExit, validateDevServerConfig } from "../core";
 import { HAS_API, IS_API_DEV_SERVER, IS_APP_DEV_SERVER, SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../core/constants";
-import { getSwaEnvList, swaCLIEnv } from "../core/env";
+import { swaCLIEnv } from "../core/env";
 import { validateFunctionTriggers } from "./handlers/function.handler";
 import { handleUserConfig, onConnectionLost, requestMiddleware } from "./middlewares/request.middleware";
 
@@ -125,8 +125,6 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
 
 // start SWA proxy server
 (async () => {
-  logger.silly(getSwaEnvList());
-
   let socketConnection: net.Socket | undefined;
   const localIpAdress = await internalIp.v4();
 
@@ -147,8 +145,8 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
   }
 
   if (HAS_API) {
-    await validateDevServerConfig(SWA_CLI_API_URI(), DEFAULT_CONFIG.devserverTimeout);
-    await validateFunctionTriggers();
+    await validateDevServerConfig(SWA_CLI_API_URI() as string, DEFAULT_CONFIG.devserverTimeout);
+    await validateFunctionTriggers(SWA_CLI_API_URI() as string);
   }
 
   const server = createServer();
