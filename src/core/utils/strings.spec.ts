@@ -1,4 +1,4 @@
-import { dasherize } from "./strings";
+import { dasherize, stripJsonComments } from "./strings";
 
 describe("dasherize()", () => {
   it("should convert to dash case", () => {
@@ -9,5 +9,29 @@ describe("dasherize()", () => {
     expect(dasherize("hello__world")).toBe("hello-world");
     expect(dasherize("helloWORLD")).toBe("hello-world");
     expect(dasherize("hello123World")).toBe("hello123-world");
+  });
+});
+
+describe("stripJsonComments()", () => {
+  it("should leave valid JSON untouched", () => {
+    expect(stripJsonComments(`{
+      "hello": "world"
+    }`)).toBe(`{
+      "hello": "world"
+    }`);
+  });
+
+  it("should strip JSON comments", () => {
+    expect(stripJsonComments(`{
+      // this is a /* tricky comment
+      "hello": "world",
+      /* and this should be removed too // */
+      "but": "not // this or /* this */ or /* this"
+    }`)).toBe(`{
+      
+      "hello": "world",
+      
+      "but": "not // this or /* this */ or /* this"
+    }`);
   });
 });
