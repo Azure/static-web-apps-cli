@@ -30,6 +30,7 @@ export default function registerCommand(program: Command) {
     .option("--deployment-token <secret>", "the secret token used to authenticate with the Static Web Apps")
     .option("--dry-run", "simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
     .option("--print-token", "print the deployment token", false)
+    .option("--env [environment]", "the type of deployment environment where to deploy the project", DEFAULT_CONFIG.env)
     .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
       const config = await configureOptions(context, command.optsWithGlobals(), command);
       await deploy(config.context ?? context, config.options);
@@ -49,8 +50,11 @@ Examples:
   swa deploy
   swa deploy myconfig
 
-  Just print the deployment token
+  Print the deployment token
   swa deploy --print-token
+
+  Deploy to a specific environment
+  swa deploy --env production
     `
     );
   addSharedLoginOptionsToCommand(deployCommand);
@@ -173,7 +177,7 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
       return;
     }
   }
-  logger.log(``);
+  logger.log(`Deploying to environment: ${chalk.green(options.env)}\n`);
 
   if (options.printToken) {
     logger.log(`Deployment token:`);
@@ -213,7 +217,7 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     SWA_CLI_DEPLOY_BINARY: undefined,
   };
 
-  const deployClientEnv: SWACLIEnv = {
+  const deployClientEnv: StaticSiteClientEnv = {
     DEPLOYMENT_ACTION: options.dryRun ? "close" : "upload",
     DEPLOYMENT_PROVIDER: `swa-cli-${packageInfo.version}`,
     REPOSITORY_BASE: deployContext,
@@ -226,15 +230,21 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
     VERBOSE: isVerboseEnabled ? "true" : "false",
   };
 
+  // set the DEPLOYMENT_ENVIRONMENT env variable only when the user has provided
+  // a deployment environment which is not "production".
+  if (options.env !== "production" && options.env !== "prod") {
+    deployClientEnv.DEPLOYMENT_ENVIRONMENT = options.env;
+  }
+
   logger.log(`Deploying project to Azure Static Web Apps...`);
 
   let spinner: ora.Ora = {} as ora.Ora;
   try {
-    const { binary, version } = await getDeployClientPath();
+    const { binary, buildId } = await getDeployClientPath();
 
     if (binary) {
       spinner = ora();
-      (cliEnv as any).SWA_CLI_DEPLOY_BINARY = `${binary}@${version}`;
+      (cliEnv as any).SWA_CLI_DEPLOY_BINARY = `${binary}@${buildId}`;
       spinner.text = `Deploying using ${cliEnv.SWA_CLI_DEPLOY_BINARY}`;
 
       logger.silly(`Deploying using the following options:`);

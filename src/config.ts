@@ -26,6 +26,7 @@ const {
   AZURE_CLIENT_SECRET,
   SWA_CLI_APP_NAME,
   SWA_CLI_DEPLOY_DRY_RUN,
+  SWA_CLI_DEPLOY_ENV,
 } = swaCLIEnv();
 
 export const DEFAULT_CONFIG: SWACLIConfig = {
@@ -47,6 +48,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   devserverTimeout: parseInt(SWA_CLI_DEVSERVER_TIMEOUT || "30000", 10),
   open: useEnvVarOrUseDefault(SWA_CLI_OPEN_BROWSER, false),
   githubActionWorkflowLocation: SWA_RUNTIME_WORKFLOW_LOCATION ? SWA_RUNTIME_WORKFLOW_LOCATION : undefined,
+  env: SWA_CLI_DEPLOY_ENV || "preview",
 
   // swa login options
   useKeychain: useEnvVarOrUseDefault(SWA_CLI_LOGIN_USE_KEYCHAIN, true),
