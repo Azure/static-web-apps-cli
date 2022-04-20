@@ -25,15 +25,15 @@ function getMockedLocalClientMetadata({ version, isWindows }: { version: string;
       files: {
         "linux-x64": {
           url: "https://swalocaldeploy.azureedge.net/downloads/latest/linux/StaticSitesClient",
-          sha256: "C3E935B26A074B4F342FBF03CA6665777A1B11AF4B35D76BF5A196398E3A95F3",
+          sha: "C3E935B26A074B4F342FBF03CA6665777A1B11AF4B35D76BF5A196398E3A95F3",
         },
         "win-x64": {
           url: "https://swalocaldeploy.azureedge.net/downloads/latest/windows/StaticSitesClient.exe",
-          sha256: "0151190D520B47332CF2D3E5340D8B8F144B0F4DF15D5E54C8DE80D374A2A201",
+          sha: "0151190D520B47332CF2D3E5340D8B8F144B0F4DF15D5E54C8DE80D374A2A201",
         },
         "osx-x64": {
           url: "https://swalocaldeploy.azureedge.net/downloads/latest/darwin/StaticSitesClient",
-          sha256: "E9E97E82EB0F50FDB40639A5DFF46E78DB4251C9036EE9A82E73931234CEF5CF",
+          sha: "E9E97E82EB0F50FDB40639A5DFF46E78DB4251C9036EE9A82E73931234CEF5CF",
         },
       },
     },
@@ -250,15 +250,15 @@ describe("getLocalClientMetadata()", () => {
     expect(result?.metadata.publishDate).toBe("2022-03-05");
 
     expect(result?.metadata.files["linux-x64"]).toBeDefined();
-    expect(result?.metadata.files["linux-x64"].sha256).toBeDefined();
+    expect(result?.metadata.files["linux-x64"].sha).toBeDefined();
     expect(result?.metadata.files["linux-x64"].url).toBeDefined();
 
     expect(result?.metadata.files["osx-x64"]).toBeDefined();
-    expect(result?.metadata.files["osx-x64"].sha256).toBeDefined();
+    expect(result?.metadata.files["osx-x64"].sha).toBeDefined();
     expect(result?.metadata.files["osx-x64"].url).toBeDefined();
 
     expect(result?.metadata.files["win-x64"]).toBeDefined();
-    expect(result?.metadata.files["win-x64"].sha256).toBeDefined();
+    expect(result?.metadata.files["win-x64"].sha).toBeDefined();
     expect(result?.metadata.files["win-x64"].url).toBeDefined();
   });
 });

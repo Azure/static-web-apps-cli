@@ -11,19 +11,20 @@ import { logger } from "./utils";
 
 type StaticSiteClientReleaseMetadata = {
   version: "stable" | "latest";
+  buildId: string;
   publishDate: string;
   files: {
     ["linux-x64"]: {
       url: string;
-      sha256: string;
+      sha: string;
     };
     ["win-x64"]: {
       url: string;
-      sha256: string;
+      sha: string;
     };
     ["osx-x64"]: {
       url: string;
-      sha256: string;
+      sha: string;
     };
   };
 };
@@ -56,7 +57,7 @@ export async function getDeployClientPath(): Promise<{ binary: string; version: 
       logger.warn(`Local client metadata is invalid!`);
     } else {
       const localChecksum = localClientMetadata.checksum;
-      const releaseChecksum = remoteClientMetadata.files[platform].sha256.toLowerCase();
+      const releaseChecksum = remoteClientMetadata.files[platform].sha.toLowerCase();
       const remotePublishDate = remoteClientMetadata.publishDate;
       const localPublishDate = localClientMetadata.metadata.publishDate;
 
@@ -148,7 +149,11 @@ export async function fetchClientVersionDefinition(releaseVersion: string): Prom
     "https://swalocaldeploy.azureedge.net/downloads/versions.json"
   ).then((res) => res.json());
   if (Array.isArray(remoteVersionDefinitions) && remoteVersionDefinitions.length) {
-    return remoteVersionDefinitions.find((versionDefinition) => versionDefinition?.version === releaseVersion);
+    const releaseMetadata = remoteVersionDefinitions.find((versionDefinition) => versionDefinition?.version === releaseVersion);
+
+    logger.silly(releaseMetadata!);
+
+    return releaseMetadata;
   }
   return undefined;
 }
@@ -188,7 +193,7 @@ async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadat
 
     writableStream.on("finish", () => {
       const computedHash = computeChecksumfromFile(outputFile).toLowerCase();
-      const releaseChecksum = release.files[platform].sha256.toLocaleLowerCase();
+      const releaseChecksum = release.files[platform].sha.toLocaleLowerCase();
       if (computedHash !== releaseChecksum) {
         try {
           // in case of a failure, we remove the file
@@ -211,12 +216,12 @@ async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadat
   });
 }
 
-function saveMetadata(release: StaticSiteClientReleaseMetadata, binaryFilename: string, sha256: string) {
+function saveMetadata(release: StaticSiteClientReleaseMetadata, binaryFilename: string, sha: string) {
   const metatdaFilename = path.join(DEPLOY_FOLDER, `${DEPLOY_BINARY_NAME}.json`);
   const metdata: StaticSiteClientLocalMetadata = {
     metadata: release,
     binary: binaryFilename,
-    checksum: sha256,
+    checksum: sha,
   };
   fs.writeFileSync(metatdaFilename, JSON.stringify(metdata));
   logger.silly(`Saved metadata to ${metatdaFilename}`);
