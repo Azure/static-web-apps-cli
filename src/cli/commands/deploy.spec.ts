@@ -17,7 +17,7 @@ jest.spyOn(child_process, "spawn").mockImplementation(jest.fn());
 jest.spyOn(deployClientModule, "getDeployClientPath").mockImplementation(() => {
   return Promise.resolve({
     binary: "mock-binary",
-    version: "0.0.0",
+    buildId: "0.0.0",
   });
 });
 jest.spyOn(deployClientModule, "cleanUp").mockImplementation(() => {});
