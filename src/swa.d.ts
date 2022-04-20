@@ -4,7 +4,22 @@ declare global {
   }
 }
 
-declare interface SWACLIEnv {
+declare interface StaticSiteClientEnv {
+  // StaticSitesClient env vars
+  DEPLOYMENT_ACTION?: "close" | "upload";
+  DEPLOYMENT_PROVIDER?: string;
+  REPOSITORY_BASE?: string;
+  SKIP_APP_BUILD?: "true";
+  SKIP_API_BUILD?: "true";
+  DEPLOYMENT_TOKEN?: string;
+  APP_LOCATION?: string;
+  OUTPUT_LOCATION?: string;
+  API_LOCATION?: string;
+  VERBOSE?: string;
+  DEPLOYMENT_ENVIRONMENT?: string;
+}
+
+declare interface SWACLIEnv extends StaticSiteClientEnv {
   DEBUG?: string; // general purpose debug variable
   SWA_CLI_DEBUG?: typeof DebugFilterLevel;
   SWA_RUNTIME_CONFIG_LOCATION?: string;
@@ -29,6 +44,7 @@ declare interface SWACLIEnv {
   SWA_CLI_DEPLOY_DRY_RUN?: string;
   SWA_CLI_DEPLOY_BINARY?: string;
   SWA_CLI_DEPLOY_BINARY_VERSION?: string;
+  SWA_CLI_DEPLOY_ENV?: string;
   SWA_CLI_DEPLOYMENT_TOKEN?: string;
   SWA_RUNTIME_CONFIG?: string;
   SWA_CLI_VERSION?: string;
@@ -37,18 +53,6 @@ declare interface SWACLIEnv {
   // swa build
   SWA_CLI_APP_BUILD_COMMAND?: string;
   SWA_CLI_API_BUILD_COMMAND?: string;
-
-  // StaticSitesClient env vars
-  DEPLOYMENT_ACTION?: "close" | "upload";
-  DEPLOYMENT_PROVIDER?: string;
-  REPOSITORY_BASE?: string;
-  SKIP_APP_BUILD?: "true";
-  SKIP_API_BUILD?: "true";
-  DEPLOYMENT_TOKEN?: string;
-  APP_LOCATION?: string;
-  OUTPUT_LOCATION?: string;
-  API_LOCATION?: string;
-  VERBOSE?: string;
 
   // swa login
   SWA_CLI_LOGIN_USE_KEYCHAIN?: string;
@@ -163,6 +167,7 @@ declare type SWACLIDeployOptions = SWACLISharedLoginOptions & {
   deploymentToken?: string;
   dryRun?: boolean;
   printToken?: boolean;
+  env?: string;
 };
 
 // -- CLI Login options ------------------------------------------------------

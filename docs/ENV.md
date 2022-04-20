@@ -23,6 +23,7 @@
 | SWA_CLI_DEPLOY_DRY_RUN        | Simulate a deploy process without actually running it (`true` or `false`)          |            | `false`       |
 | SWA_CLI_DEPLOY_BINARY_VERSION | Deployment binary version to use                                                   |            | `stable`      |
 | SWA_CLI_DEPLOY_BINARY         | Absoluate path to the deploy binary                                                | Yes        |               |
+| SWA_CLI_DEPLOY_ENV            | the type of deployment environment where to deploy the project                     |            | `preview`     |
 | AZURE_REGION_LOCATION         | Azure region where to deploy the project                                           |            | `West US 2`   |
 | AZURE_RESOURCE_GROUP          | Azure resource group                                                               |            |               |
 | AZURE_SUBSCRIPTION_ID         | Azure subscription ID                                                              |            |               |
