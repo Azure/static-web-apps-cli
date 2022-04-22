@@ -65,7 +65,9 @@ export async function getConfigFileOptions(
 
   logger.silly(`Changed directory to ${configDir}`);
 
-  if (contextOrConfigEntry === DEFAULT_CONFIG.outputLocation) {
+  // TODO: comparison here should be a constant, used also as the default context
+  // for all commands taking a context argument
+  if (contextOrConfigEntry === `.${path.sep}`) {
     const hasMultipleConfig = Object.entries(cliConfig.configurations).length > 1;
     if (hasMultipleConfig) {
       // Show as a log not warning because the user may want to use the default config
@@ -81,8 +83,10 @@ export async function getConfigFileOptions(
       config,
     };
     return { ...config };
-  } else {
-    logger.silly(`Configuration="${contextOrConfigEntry}" does't match outputLocation="${DEFAULT_CONFIG.outputLocation}"`);
+  }
+
+  if (contextOrConfigEntry === undefined) {
+    return {};
   }
 
   const config = cliConfig.configurations?.[contextOrConfigEntry];
