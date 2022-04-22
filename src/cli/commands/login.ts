@@ -32,7 +32,7 @@ export default function registerCommand(program: Command) {
     .usage("[options]")
     .description("login into Azure Static Web Apps")
     .action(async (_options: SWACLIConfig, command: Command) => {
-      const config = await configureOptions(undefined, command.optsWithGlobals(), command);
+      const config = await configureOptions(undefined, command.optsWithGlobals(), command, "login");
 
       try {
         const { credentialChain, subscriptionId } = await login(config.options);
@@ -76,7 +76,7 @@ Examples:
   addSharedLoginOptionsToCommand(loginCommand);
 }
 
-export async function login(options: SWACLIConfig) {
+export async function login(options: SWACLIConfig): Promise<any> {
   let credentialChain: TokenCredential | undefined = undefined;
 
   logger.log(`Checking Azure session...`);

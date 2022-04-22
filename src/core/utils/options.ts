@@ -1,12 +1,14 @@
 import { Command, OptionValues, program } from "commander";
 import { DEFAULT_CONFIG } from "../../config";
+import { SWACommand, SWA_COMMANDS } from "../constants";
 import { getConfigFileOptions } from "./cli-config";
 import { logger } from "./logger";
 
 export async function configureOptions(
   outputLocationOrConfigEntry: string | undefined,
   options: SWACLIConfig,
-  command: Command
+  command: Command,
+  commandName: SWACommand
 ): Promise<{ options: SWACLIConfig }> {
   const verbose = options.verbose;
 
@@ -14,10 +16,16 @@ export async function configureOptions(
 
   const userOptions = getUserOptions(command);
   const configFileOptions = await getConfigFileOptions(outputLocationOrConfigEntry, options.config!);
+  const configFileCommandSpecificOptions = commandName ? configFileOptions[commandName] || {} : {};
+
+  // Clean up subcommands overrides before merging
+  // to avoid confusing the user when printing options
+  SWA_COMMANDS.forEach((command) => { delete configFileOptions[command]; });
 
   options = {
     ...options,
     ...configFileOptions,
+    ...configFileCommandSpecificOptions,
     ...userOptions,
   };
 
