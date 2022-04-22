@@ -178,6 +178,18 @@ export const appFrameworks: FrameworkDefinition[] = [
     }
   },
   {
+    id: "vitepress",
+    name: "vitepress",
+    preempt: ["vue"],
+    packages: ["vitepress"],
+    config: {
+      appBuildCommand: "npm run docs:build",
+      devServerCommand: "npm run docs:dev",
+      devServerUrl: "http://localhost:3000",
+      outputLocation: "docs/.vitepress/dist",
+    }
+  },
+  {
     id: "svelte",
     name: "Svelte",
     packages: ["svelte"],
@@ -186,6 +198,30 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "npm run dev",
       devServerUrl: "http://localhost:8080",
       outputLocation: "public"
+    }
+  },
+  {
+    id: "svelte-kit",
+    name: "SvelteKit",
+    preempt: ["svelte"],
+    packages: ["@sveltejs/kit"],
+    config: {
+      appBuildCommand: "npm run build",
+      devServerCommand: "npm run dev",
+      devServerUrl: "http://localhost:8080",
+      outputLocation: "build"
+    }
+  },
+  {
+    id: "sapper",
+    name: "Sapper",
+    preempt: ["svelte"],
+    packages: ["sapper"],
+    config: {
+      appBuildCommand: "npm run export",
+      devServerCommand: "npm run dev",
+      devServerUrl: "http://localhost:3000",
+      outputLocation: "__sapper__/export"
     }
   },
   {
@@ -380,6 +416,84 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "dotnet watch run",
       devServerUrl: "http://localhost:8000",
       outputLocation: "output",
+    }
+  },
+  {
+    id: "gridsome",
+    name: "Gridsome",
+    packages: ["gridsome"],
+    config: {
+      appBuildCommand: "npm run build",
+      devServerCommand: "npm run develop",
+      devServerUrl: "http://localhost:8080",
+      outputLocation: "dist",
+    }
+  },
+  {
+    id: "solid",
+    name: "Solid",
+    packages: ["solid-js"],
+    config: {
+      appBuildCommand: "npm run build",
+      devServerCommand: "npm run dev",
+      devServerUrl: "http://localhost:3000",
+      outputLocation: "dist",
+    }
+  },
+  {
+    id: "remix",
+    name: "Remix",
+    preempt: ["react"],
+    packages: ["@remix-run/node", "@remix-run/serve"],
+    config: {
+      appBuildCommand: "npm run build",
+      devServerCommand: "npm run dev",
+      devServerUrl: "http://localhost:3000",
+      outputLocation: "public/build",
+    }
+  },
+  {
+    id: "metalsmith",
+    name: "Metalsmith",
+    packages: ["metalsmith"],
+    config: {
+      appBuildCommand: "npm start",
+      devServerCommand: "npm run serve",
+      devServerUrl: "http://localhost:3000",
+      outputLocation: "build",
+    }
+  },
+  {
+    id: "brunch",
+    name: "Brunch",
+    packages: ["brunch"],
+    config: {
+      appBuildCommand: "npm run build",
+      devServerCommand: "npm start",
+      devServerUrl: "http://localhost:3333",
+      outputLocation: "public",
+    }
+  },
+  {
+    id: "wintersmith",
+    name: "Wintersmith",
+    files: ["config.json", "contents"],
+    config: {
+      appBuildCommand: "wintersmith build",
+      devServerCommand: "wintersmith preview",
+      devServerUrl: "http://localhost:8080",
+      outputLocation: "build",
+    }
+  },
+  {
+    id: "middleman",
+    name: "middleman",
+    files: ["config.rb", "Gemfile", "source"],
+    config: {
+      appBuildCommand: "bundle exec middleman build",
+      devServerCommand: "bundle exec middleman server",
+      devServerUrl: "http://localhost:4567",
+      outputLocation: "build",
     }
   },
 ];
