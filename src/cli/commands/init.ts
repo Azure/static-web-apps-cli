@@ -16,13 +16,13 @@ import { detectProjectFolders, generateConfiguration, isDescendantPath } from ".
 
 export default function registerCommand(program: Command) {
   program
-    .command("init [name]")
-    .usage("[name] [options]")
+    .command("init [configurationName]")
+    .usage("[configurationName] [options]")
     .description("initialize a new static web app project")
     .option("--yes", "answer yes to all prompts (disable interactive mode)", false)
-    .action(async (name: string, _options: SWACLIConfig, command: Command) => {
+    .action(async (configurationName: string, _options: SWACLIConfig, command: Command) => {
       const config = await configureOptions(undefined, command.optsWithGlobals(), command, "init");
-      await init(name, config.options);
+      await init(configurationName, config.options);
     });
 }
 
