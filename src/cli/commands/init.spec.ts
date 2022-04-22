@@ -75,7 +75,7 @@ describe("swa init", () => {
     expect(promptsMock).not.toHaveBeenCalled();
   });
 
-  it("should ask project name if it's not specified as an argument", async () => {
+  it("should ask config name if it's not specified as an argument", async () => {
     mockFs();
     const promptsMock = jest.requireMock("prompts");
     promptsMock.mockResolvedValue(defautResolvedPrompts);
@@ -83,12 +83,12 @@ describe("swa init", () => {
     await init(undefined, { ...defaultCliConfig });
     const configJson = JSON.parse(fs.readFileSync(defaultCliConfig.config, "utf-8"));
 
-    // check that the first prompt ask for projectName property
-    expect(promptsMock.mock.calls[0][0].name).toEqual("projectName");
+    // check that the first prompt ask for configName property
+    expect(promptsMock.mock.calls[0][0].name).toEqual("configName");
     expect(configJson.configurations["test-project"]).toBeDefined();
   });
 
-  it("should not ask project name if it's not specified as an argument", async () => {
+  it("should not ask config name if it's not specified as an argument", async () => {
     mockFs();
     const promptsMock = jest.requireMock("prompts");
     promptsMock.mockResolvedValue(defautResolvedPrompts);
@@ -96,8 +96,8 @@ describe("swa init", () => {
     await init("my-app", { ...defaultCliConfig });
     const configJson = JSON.parse(fs.readFileSync(defaultCliConfig.config, "utf-8"));
 
-    // check that the first prompt ask for projectName property
-    expect(promptsMock.mock.calls[0][0].name).not.toEqual("projectName");
+    // check that the first prompt ask for configName property
+    expect(promptsMock.mock.calls[0][0].name).not.toEqual("configName");
     expect(configJson.configurations["my-app"]).toBeDefined();
   });
 
@@ -109,7 +109,6 @@ describe("swa init", () => {
     await init("test", { ...defaultCliConfig, yes: true });
     await init("test", { ...defaultCliConfig });
 
-    // check that the first prompt ask for projectName property
     const configJson = JSON.parse(fs.readFileSync(defaultCliConfig.config, "utf-8"));
     const lastCall = promptsMock.mock.calls.length - 1;
     expect(promptsMock.mock.calls[lastCall][0].name).toEqual("confirmOverwrite");
@@ -124,7 +123,6 @@ describe("swa init", () => {
     await init("test", { ...defaultCliConfig, yes: true });
     await init("test", { ...defaultCliConfig });
 
-    // check that the first prompt ask for projectName property
     const configJson = JSON.parse(fs.readFileSync(defaultCliConfig.config, "utf-8"));
     const lastCall = promptsMock.mock.calls.length - 1;
     expect(promptsMock.mock.calls[lastCall][0].name).toEqual("confirmOverwrite");
