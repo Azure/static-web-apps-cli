@@ -267,8 +267,10 @@ function orderFrameworksByParent(detectedFolders: DetectedFolder[]): void {
         // Whoops, parent must be placed before this framework!
         const parentIndex = frameworks.findIndex(f => f.id === framework.parent);
         if (parentIndex === -1) {
-          // Should never happen
-          throw new Error(`Framework ${framework.id} has parent ${framework.parent} but it's not detected`);
+          // Lonely childs should not be a thing
+          logger.silly(`Framework ${framework.id} has parent ${framework.parent} but it's not detected`);
+          frameworks.splice(currentIndex, 1);
+          continue;
         }
         // Put the parent before this framework
         frameworks.splice(currentIndex, 0, frameworks.splice(parentIndex, 1)[0]);
