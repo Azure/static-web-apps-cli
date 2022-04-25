@@ -185,12 +185,20 @@ export async function writeConfigFile(configFilePath: string, configName: string
     }
   }
 
+  if (typeof configFile !== "object" || configFile.constructor !== Object) {
+    logger.error(`Error parsing ${configFilePath}`);
+    logger.error("Invalid configuration content found.");
+    logger.error("Please fix or delete your swa-cli.config.json file and try again.");
+    return;
+  }
+
   if (configFile.configurations === undefined) {
     logger.silly(`Creating "configurations" property in swa-cli.config.json file at ${configFilePath}`);
     configFile.configurations = {};
   }
 
   configFile.configurations[configName] = config;
+
   try {
     logger.silly(`Writing configuration "${configName}" to swa-cli.config.json`);
     logger.silly(config);
