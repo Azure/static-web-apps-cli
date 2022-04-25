@@ -61,6 +61,7 @@ async function computePath(basePath: string, additionalPath?: string): Promise<s
     return path.join(basePath, additionalPath);
   }
   
+  // Matches {<filename>#<expression>}, the first group is the filename, the second the expression
   const match = additionalPath.match(/^\{(.*?)#(.*?)\}$/);
   const [, filename, expression] = match || [];
   if (!filename || !expression) {
