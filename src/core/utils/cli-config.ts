@@ -14,12 +14,30 @@ export const swaCliConfigFilename = "swa-cli.config.json";
  */
 let currentSwaCliConfigFromFile: SWACLIConfigInfo | undefined;
 
+/**
+ * Get the current configuration of the CLI stored in `{@link currentSwaCliConfigFromFile}`.
+ *
+ * @returns The current configuration of the CLI loaded from the `swa-cli.config.json` file.
+ */
 export const getCurrentSwaCliConfigFromFile = () => currentSwaCliConfigFromFile;
 
+/**
+ * Checks if the given configuration file exists.
+ *
+ * @param configFilePath The path to the config file.
+ * @returns True if the config file exists. False otherwise.
+ */
 export const swaCliConfigFileExists = (configFilePath: string) => existsSync(configFilePath);
 
+/**
+ * Loads the configuration from the `swa-cli.config.json` file (if available).
+ *
+ * @param contextOrConfigEntry This can be either the outputLocation, a devserverUrl or a config entry.
+ * @param configFilePath The path to the `swa-cli.config.json` file.
+ * @returns An object with the `{@link SWACLIOptions}` config or an empty object if the config file, or the config entry were not found.
+ */
 export async function getConfigFileOptions(
-  outputLocationOrConfigEntry: string | undefined,
+  contextOrConfigEntry: string | undefined,
   configFilePath: string
 ): Promise<SWACLIConfig & { outputLocation?: string }> {
   logger.silly(`Getting config file options from ${configFilePath}...`);
@@ -36,13 +54,18 @@ export async function getConfigFileOptions(
     return {};
   }
 
+  if (contextOrConfigEntry === undefined) {
+    logger.warn(`No configuration specified. Ignoring "${swaCliConfigFilename}"`);
+    return {};
+  }
+
   // Use configuration root path as the outputLocation
   const configDir = path.dirname(configFilePath);
   process.chdir(configDir);
 
   logger.silly(`Changed directory to ${configDir}`);
 
-  if (outputLocationOrConfigEntry === DEFAULT_CONFIG.outputLocation) {
+  if (contextOrConfigEntry === DEFAULT_CONFIG.outputLocation) {
     const hasMultipleConfig = Object.entries(cliConfig.configurations).length > 1;
     if (hasMultipleConfig) {
       // Show as a log not warning because the user may want to use the default config
@@ -59,30 +82,32 @@ export async function getConfigFileOptions(
     };
     return { ...config };
   } else {
-    logger.silly(`Configuration="${outputLocationOrConfigEntry}" does't match outputLocation="${DEFAULT_CONFIG.outputLocation}"`);
+    logger.silly(`Configuration="${contextOrConfigEntry}" does't match outputLocation="${DEFAULT_CONFIG.outputLocation}"`);
   }
 
-  if (outputLocationOrConfigEntry === undefined) {
-    logger.warn(`No configuration specified. Ignoring "${swaCliConfigFilename}"`);
-    return {};
-  }
-
-  const config = cliConfig.configurations?.[outputLocationOrConfigEntry];
+  const config = cliConfig.configurations?.[contextOrConfigEntry];
   if (config) {
-    logger.silly(`Found configuration "${outputLocationOrConfigEntry}" in "${swaCliConfigFilename}"`);
+    logger.silly(`Found configuration "${contextOrConfigEntry}" in "${swaCliConfigFilename}"`);
 
-    printConfigMsg(outputLocationOrConfigEntry, configFilePath);
+    printConfigMsg(contextOrConfigEntry, configFilePath);
     return { ...config };
   }
 
   return {};
 }
 
-async function tryParseSwaCliConfig(file: string) {
+/**
+ * Parse the `swa-cli.config.json` file and return the parsed object.
+ *
+ * @param configFilePath The path to the `swa-cli.config.json` file.
+ * @returns The parsed `swa-cli.config.json` file.
+ * @throws If the file cannot be parsed.
+ */
+async function tryParseSwaCliConfig(configFilePath: string) {
   try {
-    return JSON.parse((await readFile(file)).toString("utf-8")) as SWACLIConfigFile;
+    return JSON.parse((await readFile(configFilePath)).toString("utf-8")) as SWACLIConfigFile;
   } catch (e) {
-    logger.error(`Error parsing swa-cli.config.json file at ${file}`);
+    logger.error(`Error parsing swa-cli.config.json file at ${configFilePath}`);
     if (e instanceof Error) {
       logger.error(e);
     }
@@ -90,18 +115,36 @@ async function tryParseSwaCliConfig(file: string) {
   }
 }
 
-function printConfigMsg(name: string, file: string) {
+/**
+ * Prints a message to the console indicating which configuration was used.
+ *
+ * @param name The name of the configuration.
+ * @param configFilePath The path to the `swa-cli.config.json` file.
+ */
+function printConfigMsg(name: string, configFilePath: string) {
   logger.log(`Using configuration "${name}" from file:`);
-  logger.log(chalk.green(`  ${file}`));
+  logger.log(chalk.green(`  ${configFilePath}`));
   logger.log("");
 }
 
+/**
+ * Checks if the config file contains a configuration entry with the given name.
+ * @param configFilePath The path to the `swa-cli.config.json` file.
+ * @param name The name of the configuration entry.
+ * @returns True if the config file contains a configuration entry with the given name. False otherwise.
+ */
 export async function hasConfigurationNameInConfigFile(configFilePath: string, name: string): Promise<boolean> {
   const configJson = await tryParseSwaCliConfig(configFilePath);
   return configJson.configurations?.[name] !== undefined;
 }
 
+/**
+ * Writes the current configuration ({@link currentSwaCliConfigFromFile}) to the `swa-cli.config.json` file.
+ *
+ * @param config The configuration object to save.
+ */
 export async function updateSwaCliConfigFile(config: SWACLIConfig) {
+  const currentSwaCliConfigFromFile = getCurrentSwaCliConfigFromFile();
   if (currentSwaCliConfigFromFile === undefined) {
     logger.error("No configuration file currently loaded", true);
   } else {
@@ -111,6 +154,13 @@ export async function updateSwaCliConfigFile(config: SWACLIConfig) {
   }
 }
 
+/**
+ * Appends or update the given configuration entry to the `swa-cli.config.json` file.
+ *
+ * @param configFilePath The path to the `swa-cli.config.json` file.
+ * @param configName The name of the configuration entry to be added or updated.
+ * @param config The configuration object to save.
+ */
 export async function writeConfigFile(configFilePath: string, configName: string, config: SWACLIConfig) {
   let configFile: SWACLIConfigFile = {
     // TODO: find node_modules/ path and use local schema if found
