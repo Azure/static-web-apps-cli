@@ -53,8 +53,6 @@ describe("swa init", () => {
           \\"test\\": {
             \\"appLocation\\": \\"/foobar\\",
             \\"outputLocation\\": \\"/foobar\\",
-            \\"appBuildCommand\\": \\"npm run build --if-present\\",
-            \\"apiBuildCommand\\": \\"npm run build --if-present\\",
             \\"start\\": {
               \\"outputLocation\\": \\"/foobar\\"
             },
@@ -81,11 +79,9 @@ describe("swa init", () => {
     promptsMock.mockResolvedValue(defautResolvedPrompts);
 
     await init(undefined, { ...defaultCliConfig });
-    const configJson = JSON.parse(fs.readFileSync(defaultCliConfig.config, "utf-8"));
 
     // check that the first prompt ask for configName property
     expect(promptsMock.mock.calls[0][0].name).toEqual("configName");
-    expect(configJson.configurations["test-project"]).toBeDefined();
   });
 
   it("should not ask config name if it's not specified as an argument", async () => {
