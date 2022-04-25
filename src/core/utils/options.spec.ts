@@ -2,7 +2,8 @@ import { Command } from "commander";
 import mockFs from "mock-fs";
 import { swaCliConfigFilename } from "./cli-config";
 import { parsePort } from "./net";
-import { configureOptions } from "./options";
+import { configureOptions, getUserOptions } from "./options";
+import { DEFAULT_CONFIG } from "../../config";
 
 describe("configureOptions()", () => {
   afterEach(() => {
@@ -88,6 +89,25 @@ describe("configureOptions()", () => {
     expect(await configureOptions("test", { config: swaCliConfigFilename, port: 4444 }, command, "init")).toStrictEqual({
       config: swaCliConfigFilename,
       port: 4567,
+    });
+  });
+});
+
+describe("Testing aliases for each of the commands and their options", () => {
+  it("should return appropriate user cli options for the alias commands for global options", async () => {
+    const command = await new Command()
+      .name("swa")
+      .option("-V, --verbose [prefix]", "", DEFAULT_CONFIG.verbose)
+      .option("-c, --config <path>", "")
+      .option("-g, --print-config", "", false)
+      .option("-w, --swa-config-location <swaConfigLocation>", "")
+      .parseAsync(["node", "swa", "-V", "log", "-c", `../${swaCliConfigFilename}`, "-g", "-w", `${DEFAULT_CONFIG.swaConfigLocation}`]);
+
+    expect(getUserOptions(command)).toStrictEqual({
+      verbose: "log",
+      config: `../${swaCliConfigFilename}`,
+      printConfig: true,
+      swaConfigLocation: DEFAULT_CONFIG.swaConfigLocation,
     });
   });
 });

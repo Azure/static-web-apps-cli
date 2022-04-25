@@ -59,7 +59,7 @@ export async function run(argv?: string[]) {
 
     // SWA CLI common configuration options
     .addOption(
-      new Option("--verbose [prefix]", "enable verbose output. Values are: silly,info,log,silent")
+      new Option("-V, --verbose [prefix]", "enable verbose output. Values are: silly,info,log,silent")
         .preset(DEFAULT_CONFIG.verbose)
         .default(DEFAULT_CONFIG.verbose)
     )
@@ -74,7 +74,7 @@ export async function run(argv?: string[]) {
       "after",
       `
   Type "swa" to get started and deploy your project.
-  
+
   Documentation:
     https://aka.ms/swa/cli-local-development
   `
