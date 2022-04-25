@@ -1,8 +1,8 @@
-import * as path from "path";
 import mockFs from "mock-fs";
-
-import { getConfigFileOptions } from "./cli-config";
+import * as path from "path";
 import { DEFAULT_CONFIG } from "../../config";
+import * as cliConfigModule from "./cli-config";
+import { getConfigFileOptions, updateSwaCliConfigFile } from "./cli-config";
 
 const mockConfig1 = {
   $schema: "../../../schema/swa-cli.config.schema.json",
@@ -37,16 +37,16 @@ const mockConfig2 = {
   },
 };
 
+const mockConfig = (config: any = mockConfig1) => {
+  mockFs({
+    "swa-cli.config.json": JSON.stringify(config),
+  });
+};
+
 describe("getConfigFileOptions()", () => {
   afterEach(() => {
     mockFs.restore();
   });
-
-  const mockConfig = (config: any = mockConfig1) => {
-    mockFs({
-      "swa-cli.config.json": JSON.stringify(config),
-    });
-  };
 
   mockFs({
     "swa-cli.config.json": ``,
@@ -55,6 +55,11 @@ describe("getConfigFileOptions()", () => {
   it("Should return empty object if not found", async () => {
     mockConfig();
     expect(await getConfigFileOptions("app", "")).toStrictEqual({});
+  });
+
+  it("Should return empty object if contex is undefined", async () => {
+    mockConfig();
+    expect(await getConfigFileOptions(undefined, "")).toStrictEqual({});
   });
 
   it("Should return empty object if config name is not found", async () => {
@@ -98,5 +103,37 @@ describe("getConfigFileOptions()", () => {
     mockFs({ "../../swa-cli.config.json": JSON.stringify(mockConfig1) });
     expect(await getConfigFileOptions("app", "swa-cli.config.json")).toEqual({});
     expect(process.cwd()).toBe(currentDir);
+  });
+});
+
+describe("updateSwaCliConfigFile()", () => {
+  afterAll(() => {
+    mockFs.restore();
+  });
+
+  it("Should update the config file", async () => {
+    const config: SWACLIConfig = {
+      outputLocation: "./",
+      apiLocation: "./",
+    };
+
+    jest.spyOn(global.console, "error");
+    const spyGetCurrentSwaCliConfigFromFile = jest.spyOn(cliConfigModule, "getCurrentSwaCliConfigFromFile").mockReturnValue(undefined);
+    const spyWriteConfigFile = jest.spyOn(cliConfigModule, "writeConfigFile");
+    const spyProcessExit = jest.spyOn(process, "exit").mockImplementation();
+
+    mockConfig({
+      configurations: {
+        app: {
+          outputLocation: "./",
+        },
+      },
+    });
+
+    // await updateSwaCliConfigFile(config);
+
+    expect(spyGetCurrentSwaCliConfigFromFile).toHaveBeenCalled();
+    expect(spyProcessExit).toHaveBeenCalled();
+    expect(spyWriteConfigFile).not.toHaveBeenCalled();
   });
 });
