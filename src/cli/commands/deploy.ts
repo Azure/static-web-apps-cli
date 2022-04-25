@@ -31,9 +31,9 @@ export default function registerCommand(program: Command) {
     .option("--dry-run", "simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
     .option("--print-token", "print the deployment token", false)
     .option("--env [environment]", "the type of deployment environment where to deploy the project", DEFAULT_CONFIG.env)
-    .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
-      const config = await configureOptions(context, command.optsWithGlobals(), command);
-      await deploy(config.options);
+    .action(async (outputLocation: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+      const config = await configureOptions(outputLocation, command.optsWithGlobals(), command);
+      await deploy(outputLocation, config.options);
     })
     .addHelpText(
       "after",
@@ -60,11 +60,12 @@ Examples:
   addSharedLoginOptionsToCommand(deployCommand);
 }
 
-export async function deploy(options: SWACLIConfig) {
+export async function deploy(outputLocationOrConfigName: string, options: SWACLIConfig) {
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
 
-  let { appLocation, outputLocation, apiLocation, dryRun, deploymentToken, printToken, appName, swaConfigLocation, verbose } = options;
+  let { appLocation, apiLocation, dryRun, deploymentToken, printToken, appName, swaConfigLocation, verbose } = options;
+  let outputLocation = outputLocationOrConfigName;
 
   if (dryRun) {
     logger.warn("***********************************************************************");
@@ -73,11 +74,11 @@ export async function deploy(options: SWACLIConfig) {
     logger.warn("");
   }
 
-  // make sure outputLocation is set
-  outputLocation = path.resolve(outputLocation || process.cwd());
-
   // make sure appLocation is set
   appLocation = path.resolve(appLocation || process.cwd());
+
+  // make sure outputLocation is set
+  outputLocation = path.resolve(appLocation, outputLocation || process.cwd());
 
   // if folder exists, deploy from a specific build folder (outputLocation), relative to appLocation
   if (!fs.existsSync(outputLocation)) {

@@ -96,7 +96,6 @@ export async function start(outputLocationOtHttpUrl: string, options: SWACLIConf
 
   let {
     appLocation,
-    outputLocation,
     apiLocation,
     apiPort,
     devserverTimeout,
@@ -129,14 +128,17 @@ export async function start(outputLocationOtHttpUrl: string, options: SWACLIConf
   // resolve the absolute path to the appLocation
   appLocation = path.resolve(appLocation as string);
 
-  logger.silly(`Resolving outputLocation=${outputLocationOtHttpUrl} full path...`);
+  // let's find out if outputLocation is a URL or a folder
+  let outputLocation = outputLocationOtHttpUrl;
 
-  if (isHttpUrl(outputLocationOtHttpUrl)) {
+  logger.silly(`Resolving outputLocation=${outputLocation} full path...`);
+
+  if (isHttpUrl(outputLocation)) {
     // if the outputLocation is an http url, we will connect to the dev server at that url
     logger.silly(`outputLocation is a URL, we will try connect to dev server at ${outputLocation}`);
-    outputLocation = outputLocationOtHttpUrl;
+    outputLocation = outputLocation;
   } else {
-    let resolvedOutputLocation = path.resolve(appLocation as string, outputLocationOtHttpUrl as string);
+    let resolvedOutputLocation = path.resolve(appLocation as string, outputLocation as string);
 
     // if folder exists, start the emulator from a specific build folder (outputLocation), relative to appLocation
     if (fs.existsSync(resolvedOutputLocation)) {
