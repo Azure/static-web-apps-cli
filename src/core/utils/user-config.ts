@@ -2,7 +2,7 @@ import chalk from "chalk";
 import fs, { promises as fsPromises } from "fs";
 import type http from "http";
 import path from "path";
-import Ajv from "ajv";
+import Ajv4 from "ajv-draft-04";
 import { DEFAULT_CONFIG } from "../../config";
 import { logger } from "./logger";
 import { isHttpUrl } from "./net";
@@ -52,17 +52,14 @@ export async function findSWAConfigFile(folder: string) {
       const content = (await readFile(filepath)).toString("utf-8");
       const config = JSON.parse(content);
 
-      console.log({ content });
-
       // make sure we are using the right SWA config file.
-      // Note: some JS frameworks (eg. Nuxt, Scully) use routes.json as part of their config. We need to ignore those
-      const isValidSWAConfigFile =
-        validate(content) || config.globalHeaders || config.mimeTypes || config.navigationFallback || config.responseOverrides || config.routes;
+      const isValidSWAConfigFile = validate(config);
       if (isValidSWAConfigFile) {
         const isLegacyConfigFile = filename === DEFAULT_CONFIG.swaConfigFilenameLegacy;
         configFiles.set(filename, { filepath, isLegacyConfigFile, content });
       } else {
-        logger.info(`    ${chalk.yellow(`WARNING: invalid ${filename} file detected`)}\n`);
+        logger.warn(`WARNING: invalid ${filename} file detected`);
+        logger.warn((validate as any).errors);
       }
     }
   }
@@ -92,15 +89,11 @@ async function loadSchema() {
   return require(path.join(__dirname, "../../schema/staticwebapp.config.schema.json"));
 }
 
-// @ts-ignore
 async function getSWAConfigSchemaValidator() {
-  const ajv = new Ajv({
-    meta: false, // optional, to prevent adding draft-06 meta-schema,
+  const ajv = new Ajv4({
     strict: false,
   });
-  const schema = await loadSchema();
-  // patchDraftV4Schema(ajv);
-  const validate = ajv.compile(schema);
+  const validate = ajv.compile(await loadSchema());
 
   // memoise so we avoid recompiling the schema on each call
   return (data: string) => validate(data);
