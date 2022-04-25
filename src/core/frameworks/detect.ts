@@ -38,7 +38,6 @@ export async function generateConfiguration(app?: DetectedFolder, api?: Detected
       
       // TODO: would be better to lowest common root folder instead
       config.appLocation = '.';
-      console.log(config.outputLocation);
 
       logger.silly(`Api folder is not under app folder, using common root: ${config.appLocation}`);
 
