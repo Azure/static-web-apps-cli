@@ -1,4 +1,4 @@
-import { dasherize, stripJsonComments, safeReadJson } from "./strings";
+import { dasherize, stripJsonComments, safeReadJson, safeReadFile } from "./strings";
 import mockFs from "mock-fs";
 
 describe("dasherize()", () => {
@@ -56,5 +56,21 @@ describe("safeReadJson()", () => {
     }`});
     const json = await safeReadJson("test.json");
     expect(json && json.hello).toBe("world");
+  });
+});
+
+describe("safeReadFile()", () => {
+  afterEach(() => {
+    mockFs.restore();
+  });
+
+  it("should return undefined when trying to read a file that doesn't exist", async () => {
+    mockFs();
+    expect(await safeReadFile("test.txt")).toBe(undefined);
+  });
+
+  it("should return file contents", async () => {
+    mockFs({ "test.txt": "hello" });
+    expect(await safeReadFile("test.txt")).toBe("hello");
   });
 });
