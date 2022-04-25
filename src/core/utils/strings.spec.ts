@@ -1,4 +1,5 @@
-import { dasherize, stripJsonComments } from "./strings";
+import { dasherize, stripJsonComments, safeReadJson } from "./strings";
+import mockFs from "mock-fs";
 
 describe("dasherize()", () => {
   it("should convert to dash case", () => {
@@ -33,5 +34,27 @@ describe("stripJsonComments()", () => {
       
       "but": "not // this or /* this */ or /* this"
     }`);
+  });
+});
+
+describe("safeReadJson()", () => {
+  afterEach(() => {
+    mockFs.restore();
+  });
+
+  it("should return undefined when trying to read an invalid JSON file", async () => {
+    mockFs({ "test.json": "{ invalid json" });
+    expect(await safeReadJson("test.json")).toBe(undefined);
+  });
+
+  it("should ignore JSON comments and parse JSON anyway", async () => {
+    mockFs({ "test.json": `{
+      // this is a /* tricky comment
+      "hello": "world",
+      /* and this should be removed too // */
+      "but": "not // this or /* this */ or /* this"
+    }`});
+    const json = await safeReadJson("test.json");
+    expect(json && json.hello).toBe("world");
   });
 });

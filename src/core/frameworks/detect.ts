@@ -2,7 +2,7 @@ import { promises as fs } from "fs";
 import globrex from "globrex";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
-import { logger, stripJsonComments } from "../utils";
+import { logger, safeReadJson } from "../utils";
 import { apiFrameworks, appFrameworks } from "./frameworks";
 
 const packageJsonFile = "package.json";
@@ -314,17 +314,6 @@ async function getFiles(rootPath: string): Promise<string[]> {
     return entry.isDirectory() ? [entryPath, ...(await getFiles(entryPath))] : [entryPath];
   }));
   return files.flat();
-}
-
-async function safeReadJson(path: string): Promise<JsonData | undefined> {
-  try {
-    let contents = await fs.readFile(path, 'utf8');
-    contents = stripJsonComments(contents);
-    return JSON.parse(contents) as JsonData;
-  } catch (error) {
-    logger.warn(`Failed to read JSON file at: ${path}`);
-    return undefined;
-  }
 }
 
 async function asyncFilter<T>(array: T[], predicate: (item: T) => Promise<boolean>): Promise<T[]> {
