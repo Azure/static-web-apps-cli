@@ -127,7 +127,7 @@ describe("findSWAConfigFile()", () => {
     });
 
     const config = await findSWAConfigFile(".");
-    expect(config?.file).toContain("staticwebapp.config.json");
+    expect(config?.filepath).toContain("staticwebapp.config.json");
   });
 
   it("should find staticwebapp.config.json (recursively)", async () => {
@@ -142,7 +142,7 @@ describe("findSWAConfigFile()", () => {
     });
 
     const config = await findSWAConfigFile(".");
-    expect(config?.file).toContain("staticwebapp.config.json");
+    expect(config?.filepath).toContain("staticwebapp.config.json");
   });
 
   it("should find routes.json (at the root)", async () => {
@@ -151,7 +151,7 @@ describe("findSWAConfigFile()", () => {
     });
 
     const config = await findSWAConfigFile(".");
-    expect(config?.file).toContain("routes.json");
+    expect(config?.filepath).toContain("routes.json");
   });
 
   it("should find routes.json (recursively)", async () => {
@@ -166,7 +166,7 @@ describe("findSWAConfigFile()", () => {
     });
 
     const config = await findSWAConfigFile(".");
-    expect(config?.file).toContain("routes.json");
+    expect(config?.filepath).toContain("routes.json");
   });
 
   it("should ignore routes.json if a staticwebapp.config.json exists", async () => {
@@ -182,6 +182,6 @@ describe("findSWAConfigFile()", () => {
     });
 
     const config = await findSWAConfigFile(".");
-    expect(config?.file).toContain("staticwebapp.config.json");
+    expect(config?.filepath).toContain("staticwebapp.config.json");
   });
 });
