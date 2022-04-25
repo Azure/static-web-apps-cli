@@ -409,8 +409,9 @@ export const appFrameworks: FrameworkDefinition[] = [
     id: "blazor-wasm",
     name: "Blazor WASM",
     files: ["*.csproj", "App.razor", "wwwroot", "Program.cs"],
-    // TODO: add a way to detect if program.cs is specifically blazor wasm
-    // (uses BlazorApp.Client), otherwise any ASP.net project will be detected as blazor
+    contains: {
+      "Program.cs": "WebAssemblyHostBuilder.CreateDefault"
+    },
     config: {
       appBuildCommand: "dotnet build",
       devServerCommand: "dotnet watch run",
@@ -444,7 +445,7 @@ export const appFrameworks: FrameworkDefinition[] = [
     id: "remix",
     name: "Remix",
     preempt: ["react"],
-    packages: ["@remix-run/node", "@remix-run/serve"],
+    packages: ["@remix-run/node", "@remix-run/server-runtime"],
     config: {
       appBuildCommand: "npm run build",
       devServerCommand: "npm run dev",
@@ -487,7 +488,7 @@ export const appFrameworks: FrameworkDefinition[] = [
   },
   {
     id: "middleman",
-    name: "middleman",
+    name: "Middleman",
     files: ["config.rb", "Gemfile", "source"],
     config: {
       appBuildCommand: "bundle exec middleman build",

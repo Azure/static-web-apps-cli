@@ -2,7 +2,7 @@ import { promises as fs } from "fs";
 import globrex from "globrex";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
-import { logger, safeReadJson } from "../utils";
+import { logger, safeReadFile, safeReadJson } from "../utils";
 import { apiFrameworks, appFrameworks } from "./frameworks";
 
 const packageJsonFile = "package.json";
@@ -34,13 +34,11 @@ export async function generateConfiguration(app?: DetectedFolder, api?: Detected
 
     // If api is not under app folder, we must find a common root folder
     if (app && !isDescendantPath(api.rootPath, config.appLocation!)) {
-      const movePath = path.relative(config.appLocation!, app.rootPath);
-      
-      // TODO: would be better to lowest common root folder instead
-      config.appLocation = '.';
-
       logger.silly(`Api folder is not under app folder, using common root: ${config.appLocation}`);
 
+      const movePath = path.relative(config.appLocation!, app.rootPath);
+      // TODO: would be better to lowest common root folder instead
+      config.appLocation = '.';
       config.outputLocation = path.normalize(path.join(movePath, config.outputLocation!));
     }
 
@@ -115,16 +113,18 @@ export async function detectFrameworks(projectFiles: string[], frameworks: Frame
   //    - If a framework has a parent, all parent's files must be matched
   // 2. Filter frameworks by keeping only the ones that match packages
   //    - If any packages in the list is found in dependencies or devDependencies, it's a match
-  // 3. Aggregate detection results by root path
+  // 3. Filter frameworks by keeping only the ones that pass their "contains" test
+  //    - All files specified in "contains" must be present and contain the specified string
+  // 4. Aggregate detection results by root path
   //    - Build a list of potential app root paths, with the list of frameworks found for each
-  // 4. Filter out all root paths that are descendant of other root paths
+  // 5. Filter out all root paths that are descendant of other root paths
   //    - Eliminate false-positives due to output/build artifacts or frameworks including example projects
   //      as part of their theming or docs, within the app folder
-  // 5. Filter out frameworks in each root path based on preempt config
+  // 6. Filter out frameworks in each root path based on preempt config
   //    - Clean up the list of frameworks, as some completely redefine the configuration and allow mix & match
   //      of multiple other frameworks under a specific build tool (Astro, for example)
   //    - Note that "static" framework will automatically be preempted by any other framework.
-  // 6. Order frameworks in each root path based on parent-child relationships
+  // 7. Order frameworks in each root path based on parent-child relationships
   //    - As child frameworks may extend or override their parent's configuration, we need to make sure the
   //      parent's configuration is applied first
 
@@ -152,7 +152,10 @@ export async function detectFrameworks(projectFiles: string[], frameworks: Frame
     }
   }
 
-  detectedFrameworks = await asyncFilter(detectedFrameworks, framework => matchPackages(framework));
+  detectedFrameworks = await asyncFilter(
+    detectedFrameworks,
+    async framework => await matchPackages(framework) && await matchContains(framework, projectFiles)
+  );
   let detectedFolders = await aggregateFolders(detectedFrameworks);
   detectedFolders = filterDescendantFolders(detectedFolders);
   filterPreemptedFrameworks(detectedFolders);
@@ -206,11 +209,33 @@ async function matchPackages(framework: DetectedFramework): Promise<boolean> {
   
     const dependencies = Object.keys(packageJson.dependencies ?? {});
     const devDependencies = Object.keys(packageJson.devDependencies ?? {});
-  
+
     return framework.packages!.some(packageName =>
       dependencies.includes(packageName) ||
       devDependencies.includes(packageName)
     );
+  });
+
+  framework.rootPaths = rootPathsMatches;
+  return rootPathsMatches.length > 0;
+}
+
+async function matchContains(framework: DetectedFramework, files: string[]): Promise<boolean> {
+  if (!framework.contains) {
+    return true;
+  }
+
+  const rootPathsMatches: string[] | undefined = await asyncFilter(framework.rootPaths, async rootPath => {
+    const currentFiles = filesFromRootPath(rootPath, files);
+    return asyncEvery(Object.entries(framework.contains!), async ([filename, stringToFind]) => {
+      const file = findFile(filename, currentFiles);
+      const content = await safeReadFile(file);
+
+      if (!content) {
+        return false;
+      }
+      return content.includes(stringToFind);
+    });
   });
 
   framework.rootPaths = rootPathsMatches;
@@ -300,6 +325,10 @@ function findFile(fileglob: string, files: string[]): string | undefined {
   return findAllFiles(fileglob, files)[0];
 }
 
+function filesFromRootPath(rootPath: string, files: string[]): string[] {
+  return files.filter(file => file.startsWith(rootPath));
+}
+
 function findRootPathsForFiles(fileglobs: string[], files: string[]): string[] | undefined {
   const foundFiles = fileglobs.map(fileglob => findAllFiles(fileglob, files));
 
@@ -331,6 +360,11 @@ async function getFiles(rootPath: string): Promise<string[]> {
 async function asyncFilter<T>(array: T[], predicate: (item: T) => Promise<boolean>): Promise<T[]> {
   const results = await Promise.all(array.map(predicate));
   return array.filter((_, index) => results[index]);
+}
+
+async function asyncEvery<T>(array: T[], predicate: (item: T) => Promise<boolean>): Promise<boolean> {
+  const results = await Promise.all(array.map(predicate));
+  return array.every((_, index) => results[index]);
 }
 
 export function printSupportedFrameworks(showList = false) {

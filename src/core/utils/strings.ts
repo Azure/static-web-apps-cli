@@ -31,3 +31,16 @@ export async function safeReadJson(path: string): Promise<JsonData | undefined> 
     return undefined;
   }
 }
+
+export async function safeReadFile(path?: string): Promise<string | undefined> {
+  if (!path) {
+    return undefined;
+  }
+
+  try {
+    return fs.readFile(path, 'utf8');
+  } catch (error) {
+    logger.warn(`Failed to read file at: ${path}`);
+    return undefined;
+  }
+}

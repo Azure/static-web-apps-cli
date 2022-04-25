@@ -15,20 +15,22 @@ declare interface DetectedFramework extends FrameworkDefinition {
 declare interface FrameworkDefinition {
   id: string;
   name: string;
-  // all config paths (ie appLocation, apiLocation, outputLocation)
+  // All config paths (ie appLocation, apiLocation, outputLocation)
   // can either be a path or an expression for looking into JSON files,
   // in the form: {<filename>#<expression>}
   // <expression> can use the "data" object to perform transforms & lookups
-  // example: {package.json#data.version} will return the version in package.json file.
+  // Example: {package.json#data.version} will return the version in package.json file.
   config: FrameworkConfig;
-  // should this framework preempt (ie remove) other framework ids?
+  // Should this framework preempt (ie remove) other framework ids in same root path?
   preempt?: string[];
-  // is this framework a variation of another framework id?
+  // Is this framework a variation of another framework id?
   parent?: string;
-  // all files are mandatory, use globs if you need options
+  // All files are mandatory, use globs if you need options
   files?: string[];
-  // search package.json for any dependencies or devDependencies
+  // Search package.json for any dependencies or devDependencies
   packages?: string[];
+  // For each filename specified as key, test if file contains specified string
+  contains?: Record<string, string>;
 }
 
 declare type JsonData = Record<string, any>;
