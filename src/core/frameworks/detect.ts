@@ -110,12 +110,23 @@ export async function detectProjectFolders(projectPath: string = '.'): Promise<D
 export async function detectFrameworks(projectFiles: string[], frameworks: FrameworkDefinition[]): Promise<DetectedFolder[]> {
   // Here's how the detection heuristic works:
   // 1. Find possible roots for all frameworks based on files
+  //    - All specified files must be matched
+  //    - If a framework has a "packages" property, file "package.json" must be present
+  //    - If a framework has a parent, all parent's files must be matched
   // 2. Filter frameworks by keeping only the ones that match packages
+  //    - If any packages in the list is found in dependencies or devDependencies, it's a match
   // 3. Aggregate detection results by root path
+  //    - Build a list of potential app root paths, with the list of frameworks found for each
   // 4. Filter out all root paths that are descendant of other root paths
-  // 5. Filter out frameworks in each root path based on preempt config.
-  //    Note that "static" framework will automatically be preempted by any other framework.
+  //    - Eliminate false-positives due to output/build artifacts or frameworks including example projects
+  //      as part of their theming or docs, within the app folder
+  // 5. Filter out frameworks in each root path based on preempt config
+  //    - Clean up the list of frameworks, as some completely redefine the configuration and allow mix & match
+  //      of multiple other frameworks under a specific build tool (Astro, for example)
+  //    - Note that "static" framework will automatically be preempted by any other framework.
   // 6. Order frameworks in each root path based on parent-child relationships
+  //    - As child frameworks may extend or override their parent's configuration, we need to make sure the
+  //      parent's configuration is applied first
 
   const frameworksById: Record<string, DetectedFramework> = frameworks.reduce((acc, f) => ({ ...acc, [f.id]: f }), {});
   let detectedFrameworks: DetectedFramework[] = [];

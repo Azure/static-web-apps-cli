@@ -21,7 +21,7 @@ declare interface FrameworkDefinition {
   // <expression> can use the "data" object to perform transforms & lookups
   // example: {package.json#data.version} will return the version in package.json file.
   config: FrameworkConfig;
-  // should this framework preempt other framework ids?
+  // should this framework preempt (ie remove) other framework ids?
   preempt?: string[];
   // is this framework a variation of another framework id?
   parent?: string;
