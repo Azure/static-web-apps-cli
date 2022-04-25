@@ -60,7 +60,7 @@ export default function registerCommand(program: Command) {
       console.warn();
 
       const config = await configureOptions(outputLocation, command.optsWithGlobals(), command);
-      await start(config.options);
+      await start(outputLocation, config.options);
     })
     .addHelpText(
       "after",
@@ -88,7 +88,7 @@ swa start http://localhost:3000 --api-location http://localhost:7071
     );
 }
 
-export async function start(options: SWACLIConfig) {
+export async function start(outputLocationOtHttpUrl: string, options: SWACLIConfig) {
   // WARNING:
   // environment variables are populated using values provided by the user to the CLI.
   // Code below doesn't have access to these environment variables which are defined later below.
@@ -129,21 +129,28 @@ export async function start(options: SWACLIConfig) {
   // resolve the absolute path to the appLocation
   appLocation = path.resolve(appLocation as string);
 
-  logger.silly(`Resolving outputLocation...`);
-  let outputLocationNormalized = path.resolve(appLocation as string, outputLocation as string);
+  logger.silly(`Resolving outputLocation=${outputLocationOtHttpUrl} full path...`);
 
-  // if folder exists, start the emulator from a specific build folder (outputLocation), relative to appLocation
-  if (fs.existsSync(outputLocationNormalized)) {
-    outputLocation = outputLocationNormalized;
-  }
-  // check for build folder (outputLocation) using the absolute location
-  else if (!fs.existsSync(outputLocation!)) {
-    logger.error(`The folder "${outputLocationNormalized}" is not found. Exit.`, true);
-    return;
-  }
+  if (isHttpUrl(outputLocationOtHttpUrl)) {
+    // if the outputLocation is an http url, we will connect to the dev server at that url
+    logger.silly(`outputLocation is a URL, we will try connect to dev server at ${outputLocation}`);
+    outputLocation = outputLocationOtHttpUrl;
+  } else {
+    let resolvedOutputLocation = path.resolve(appLocation as string, outputLocationOtHttpUrl as string);
 
-  logger.silly(`Resolved outputLocation:`);
-  logger.silly(`  ${outputLocation}`);
+    // if folder exists, start the emulator from a specific build folder (outputLocation), relative to appLocation
+    if (fs.existsSync(resolvedOutputLocation)) {
+      outputLocation = resolvedOutputLocation;
+    }
+    // check for build folder (outputLocation) using the absolute location
+    else if (!fs.existsSync(outputLocation!)) {
+      logger.error(`The folder "${resolvedOutputLocation}" is not found. Exit.`, true);
+      return;
+    }
+
+    logger.silly(`Resolved outputLocation:`);
+    logger.silly(`  ${outputLocation}`);
+  }
 
   if (apiLocation) {
     // resolves to the absolute path of the apiLocation
