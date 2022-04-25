@@ -35,7 +35,6 @@ export async function generateConfiguration(app?: DetectedFolder, api?: Detected
     // If api is not under app folder, we must find a common root folder
     if (app && !isDescendantPath(api.rootPath, config.appLocation!)) {
       const movePath = path.relative(config.appLocation!, app.rootPath);
-      console.log({ movePath });
       
       // TODO: would be better to lowest common root folder instead
       config.appLocation = '.';
