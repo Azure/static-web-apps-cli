@@ -51,23 +51,12 @@ export async function handleUserConfig(appLocation: string | undefined): Promise
     return;
   }
 
-  const configFile = await findSWAConfigFile(appLocation);
-  if (!configFile) {
+  const runtimeConfigContent = await findSWAConfigFile(appLocation);
+  if (!runtimeConfigContent) {
     return;
   }
 
-  let configJson: SWAConfigFile | undefined;
-  try {
-    configJson = require(configFile.filepath) as SWAConfigFile;
-    logger.info(`\nFound configuration file:\n    ${chalk.green(configFile.filepath)}`);
-
-    return configJson;
-  } catch (error) {
-    logger.silly(`${chalk.red("configuration file is invalid!")}`);
-    logger.silly(`${chalk.red((error as any).toString())}`);
-  }
-
-  return configJson;
+  return runtimeConfigContent.content;
 }
 
 /**
