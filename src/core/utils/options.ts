@@ -9,7 +9,7 @@ export async function configureOptions(
   options: SWACLIConfig,
   command: Command,
   commandName: SWACommand
-): Promise<{ options: SWACLIConfig }> {
+): Promise<SWACLIConfig> {
   const verbose = options.verbose;
 
   setLogLevel(verbose);
@@ -38,9 +38,7 @@ export async function configureOptions(
     logger.log({ ...DEFAULT_CONFIG, ...options });
   }
 
-  return {
-    options,
-  };
+  return options;
 }
 
 function setLogLevel(verbosity: string | undefined) {

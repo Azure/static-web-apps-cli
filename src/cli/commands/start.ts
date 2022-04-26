@@ -59,8 +59,8 @@ export default function registerCommand(program: Command) {
       console.warn(chalk.yellow("************************************************************************"));
       console.warn();
 
-      const config = await configureOptions(outputLocation, command.optsWithGlobals(), command, "start");
-      await start(config.outputLocation ?? outputLocation, config.options);
+      const options = await configureOptions(outputLocation, command.optsWithGlobals(), command, "start");
+      await start(options.outputLocation ?? outputLocation, options);
     })
     .addHelpText(
       "after",

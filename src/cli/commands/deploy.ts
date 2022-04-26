@@ -32,8 +32,8 @@ export default function registerCommand(program: Command) {
     .option("--print-token", "print the deployment token", false)
     .option("--env [environment]", "the type of deployment environment where to deploy the project", DEFAULT_CONFIG.env)
     .action(async (outputLocation: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
-      const config = await configureOptions(outputLocation, command.optsWithGlobals(), command, "deploy");
-      await deploy(config.outputLocation ?? outputLocation, config.options);
+      const options = await configureOptions(outputLocation, command.optsWithGlobals(), command, "deploy");
+      await deploy(options.outputLocation ?? outputLocation, options);
     })
     .addHelpText(
       "after",

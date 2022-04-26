@@ -21,8 +21,8 @@ export default function registerCommand(program: Command) {
     .description("initialize a new static web app project")
     .option("--yes", "answer yes to all prompts (disable interactive mode)", false)
     .action(async (configurationName: string, _options: SWACLIConfig, command: Command) => {
-      const config = await configureOptions(undefined, command.optsWithGlobals(), command, "init");
-      await init(configurationName, config.options);
+      const options = await configureOptions(undefined, command.optsWithGlobals(), command, "init");
+      await init(configurationName, options);
     });
 }
 
