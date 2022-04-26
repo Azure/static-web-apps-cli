@@ -5,16 +5,6 @@ import { DEFAULT_CONFIG } from "../../config";
 import { swaCliConfigFilename } from "../../core/utils";
 
 jest.mock("prompts", () => jest.fn());
-jest.mock("../../config", () => {
-  return {
-    DEFAULT_CONFIG: {
-      appLocation: "/foobar",
-      outputLocation: "/foobar",
-      appBuildCommand: "npm run build --if-present",
-      apiBuildCommand: "npm run build --if-present",
-    },
-  };
-});
 
 const defaultCliConfig = {
   ...DEFAULT_CONFIG,
@@ -51,13 +41,13 @@ describe("swa init", () => {
         \\"$schema\\": \\"https://aka.ms/azure/static-web-apps-cli/schema\\",
         \\"configurations\\": {
           \\"test\\": {
-            \\"appLocation\\": \\"/foobar\\",
-            \\"outputLocation\\": \\"/foobar\\",
+            \\"appLocation\\": \\"./\\",
+            \\"outputLocation\\": \\"./\\",
             \\"start\\": {
-              \\"outputLocation\\": \\"/foobar\\"
+              \\"context\\": \\"./\\"
             },
             \\"deploy\\": {
-              \\"outputLocation\\": \\"/foobar\\"
+              \\"context\\": \\"./\\"
             }
           }
         }
@@ -108,7 +98,7 @@ describe("swa init", () => {
     const configJson = JSON.parse(fs.readFileSync(defaultCliConfig.config, "utf-8"));
     const lastCall = promptsMock.mock.calls.length - 1;
     expect(promptsMock.mock.calls[lastCall][0].name).toEqual("confirmOverwrite");
-    expect(configJson.configurations.test.outputLocation).toEqual("/foobar");
+    expect(configJson.configurations.test.outputLocation).toEqual("./");
   });
 
   it("should ask for overwrite if a config already exists and overwrite it", async () => {
@@ -123,5 +113,32 @@ describe("swa init", () => {
     const lastCall = promptsMock.mock.calls.length - 1;
     expect(promptsMock.mock.calls[lastCall][0].name).toEqual("confirmOverwrite");
     expect(configJson.configurations.test.outputLocation).toEqual("./dist");
+  });
+
+  it("should detect frameworks and create a config file", async () => {
+    mockFs({ src: mockFs.load("e2e/fixtures/static-node-ts") });
+
+    await init("test", { ...defaultCliConfig, yes: true });
+    const configFile = fs.readFileSync(defaultCliConfig.config, "utf-8");
+
+    expect(configFile).toMatchInlineSnapshot(`
+      "{
+        \\"$schema\\": \\"https://aka.ms/azure/static-web-apps-cli/schema\\",
+        \\"configurations\\": {
+          \\"test\\": {
+            \\"appLocation\\": \\"src/\\",
+            \\"apiLocation\\": \\"node-ts/dist\\",
+            \\"outputLocation\\": \\"src/\\",
+            \\"apiBuildCommand\\": \\"npm run build --if-present\\",
+            \\"start\\": {
+              \\"context\\": \\"src/\\"
+            },
+            \\"deploy\\": {
+              \\"context\\": \\"src/\\"
+            }
+          }
+        }
+      }"
+    `);
   });
 });
