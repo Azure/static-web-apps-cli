@@ -307,7 +307,10 @@ export const appFrameworks: FrameworkDefinition[] = [
   {
     id: "hugo",
     name: "Hugo",
-    files: ["content", "config.toml"],
+    files: ["config.toml", "content", "static"],
+    contains: {
+      "config.toml": "baseURL =",
+    },
     config: {
       appBuildCommand: "hugo -D",
       devServerCommand: "hugo server -D",
@@ -340,6 +343,7 @@ export const appFrameworks: FrameworkDefinition[] = [
   {
     id: "slate",
     name: "Slate",
+    preempt: ["middleman"],
     files: ["slate.sh", "Gemfile"],
     config: {
       appBuildCommand: "./slate.sh build",
@@ -495,6 +499,42 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "bundle exec middleman server",
       devServerUrl: "http://localhost:4567",
       outputLocation: "build",
+    }
+  },
+  {
+    id: "mdbook",
+    name: "mdBook",
+    files: ["book.toml"],
+    config: {
+      appBuildCommand: "mdbook build",
+      devServerCommand: "mdbook serve",
+      devServerUrl: "http://localhost:3000",
+      outputLocation: "book",
+    }
+  },
+  {
+    id: "zola",
+    name: "Zola",
+    files: ["config.toml", "content", "static"],
+    contains: {
+      "config.toml": "base_url =",
+    },
+    config: {
+      appBuildCommand: "zola build",
+      devServerCommand: "zola serve",
+      devServerUrl: "http://localhost:1111",
+      outputLocation: "public",
+    }
+  },
+  {
+    id: "lektor",
+    name: "Lektor",
+    files: ["*.lektorproject"],
+    config: {
+      appBuildCommand: "lektor build --output-path dist",
+      devServerCommand: "lektor server",
+      devServerUrl: "http://localhost:5000",
+      outputLocation: "dist",
     }
   },
 ];
