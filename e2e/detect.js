@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // ---------------------------------------------------------------------------
-// Usage: node detect.js [<folder_depth_to_analyze>]
+// Usage: node detect.js [path] [<folder_depth_to_analyze>]
 // Small utility to test framework detection against a folder structure.
 // ---------------------------------------------------------------------------
 
@@ -30,17 +30,19 @@ async function detect(rootPath, depth) {
   }
   let out = '';
   const folders = await detectProjectFolders(rootPath);
-  folders.api.sort();
-  folders.app.sort();
-  out += formatDetectedFolders(folders.api, 'api');
+  const alphaCompare = (a, b) => a.rootPath.localeCompare(b.rootPath);
+  folders.api.sort(alphaCompare);
+  folders.app.sort(alphaCompare);
+  out += formatDetectedFolders(folders.api, 'api') + '\n';
   out += formatDetectedFolders(folders.app, 'app');
 
+  console.log(depth);
   if (depth > 0) {
     let undetectedFolders = await getFolders(rootPath, depth);
     undetectedFolders = undetectedFolders.filter(
       f => !folders.api.some(api => api.rootPath.startsWith(f)) && !folders.app.some(app => app.rootPath.startsWith(f))
     );
-    out += `Undetected folders (${undetectedFolders.length}):\n`;
+    out += `\nUndetected folders (${undetectedFolders.length}):\n`;
     out += undetectedFolders.length ? `- ${undetectedFolders.join("\n- ")}` : '';
   }
   if (invoked) {
@@ -52,7 +54,21 @@ async function detect(rootPath, depth) {
 
 // Launch detection when invoked directly
 if (invoked) {
-  detect('.', process.argv[2] ? parseInt(process.argv[2]) : undefined);
+  const args = process.argv.slice(2);
+  let dir = '.';
+  let depth = -1;
+  if (args.length === 1) {
+    const value = Number(args[0]);
+    if (Number.isNaN(value)) {
+      dir = args[0];
+    } else {
+      depth = value;
+    }
+  } else {
+    dir = args[0];
+    depth = Number(args[1]);
+  }
+  detect(dir, depth);
 }
 
 module.exports = detect;
