@@ -32,10 +32,10 @@ export default function registerCommand(program: Command) {
     .usage("[options]")
     .description("login into Azure Static Web Apps")
     .action(async (_options: SWACLIConfig, command: Command) => {
-      const config = await configureOptions(undefined, command.optsWithGlobals(), command, "login");
+      const options = await configureOptions(undefined, command.optsWithGlobals(), command, "login");
 
       try {
-        const { credentialChain, subscriptionId } = await login(config.options);
+        const { credentialChain, subscriptionId } = await login(options);
 
         if (credentialChain && subscriptionId) {
           logger.log(chalk.green(`✔ Successfully setup project!`));

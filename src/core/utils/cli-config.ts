@@ -2,7 +2,6 @@ import chalk from "chalk";
 import { existsSync, promises as fsPromises } from "fs";
 import * as path from "path";
 import * as process from "process";
-import { DEFAULT_CONFIG } from "../../config";
 import { logger } from "./logger";
 const { readFile, writeFile } = fsPromises;
 
@@ -39,7 +38,7 @@ export const swaCliConfigFileExists = (configFilePath: string) => existsSync(con
 export async function getConfigFileOptions(
   contextOrConfigEntry: string | undefined,
   configFilePath: string
-): Promise<SWACLIConfig & { outputLocation?: string }> {
+): Promise<SWACLIConfig> {
   logger.silly(`Getting config file options from ${configFilePath}...`);
 
   configFilePath = path.resolve(configFilePath);
@@ -83,10 +82,6 @@ export async function getConfigFileOptions(
       config,
     };
     return { ...config };
-  }
-
-  if (contextOrConfigEntry === undefined) {
-    return {};
   }
 
   const config = cliConfig.configurations?.[contextOrConfigEntry];

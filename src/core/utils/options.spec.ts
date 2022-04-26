@@ -13,11 +13,8 @@ describe("configureOptions()", () => {
     const command = await new Command().parseAsync([]);
 
     expect(await configureOptions("test", { config: swaCliConfigFilename, port: 1234 }, command, "init")).toStrictEqual({
-      outputLocation: "test",
-      options: {
-        config: swaCliConfigFilename,
-        port: 1234,
-      },
+      config: swaCliConfigFilename,
+      port: 1234,
     });
   });
 
@@ -32,11 +29,8 @@ describe("configureOptions()", () => {
     });
 
     expect(await configureOptions("test", { config: swaCliConfigFilename }, command, "init")).toStrictEqual({
-      outputLocation: "test",
-      options: {
-        config: swaCliConfigFilename,
-        port: 1234,
-      },
+      config: swaCliConfigFilename,
+      port: 1234,
     });
   });
 
@@ -52,11 +46,8 @@ describe("configureOptions()", () => {
     });
 
     expect(await configureOptions("test", { config: swaCliConfigFilename, port: 4444 }, command, "init")).toStrictEqual({
-      outputLocation: "test",
-      options: {
-        config: swaCliConfigFilename,
-        port: 1234,
-      },
+      config: swaCliConfigFilename,
+      port: 1234,
     });
   });
 
@@ -75,11 +66,8 @@ describe("configureOptions()", () => {
     });
 
     expect(await configureOptions("test", { config: swaCliConfigFilename, port: 4567 }, command, "init")).toStrictEqual({
-      outputLocation: "test",
-      options: {
-        config: swaCliConfigFilename,
-        port: 4567,
-      },
+      config: swaCliConfigFilename,
+      port: 4567,
     });
   });
 
@@ -98,11 +86,8 @@ describe("configureOptions()", () => {
     });
 
     expect(await configureOptions("test", { config: swaCliConfigFilename, port: 4444 }, command, "init")).toStrictEqual({
-      outputLocation: "test",
-      options: {
-        config: swaCliConfigFilename,
-        port: 4567,
-      },
+      config: swaCliConfigFilename,
+      port: 4567,
     });
   });
 });
