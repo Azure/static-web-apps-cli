@@ -179,7 +179,7 @@ export const appFrameworks: FrameworkDefinition[] = [
   },
   {
     id: "vitepress",
-    name: "vitepress",
+    name: "VitePress",
     preempt: ["vue"],
     packages: ["vitepress"],
     config: {
@@ -307,7 +307,7 @@ export const appFrameworks: FrameworkDefinition[] = [
   {
     id: "hugo",
     name: "Hugo",
-    files: ["config.toml", "content", "static"],
+    files: ["config.toml", "content"],
     contains: {
       "config.toml": "baseURL =",
     },
@@ -515,7 +515,7 @@ export const appFrameworks: FrameworkDefinition[] = [
   {
     id: "zola",
     name: "Zola",
-    files: ["config.toml", "content", "static"],
+    files: ["config.toml", "content"],
     contains: {
       "config.toml": "base_url =",
     },
