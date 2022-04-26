@@ -166,18 +166,14 @@ export async function detectFrameworks(projectFiles: string[], frameworks: Frame
 
 async function detectApiFrameworks(projectFiles: string[]): Promise<DetectedFolder[]> {
   const detectedApiFolders: DetectedFolder[] = await detectFrameworks(projectFiles, apiFrameworks);
-
-  logger.silly(`Detected api folders (${detectedApiFolders.length}):`);
-  logger.silly(`- ${detectedApiFolders.map(f => `${f.rootPath} (${f.frameworks.map(fr => fr.name).join(', ')})`).join("\n- ")}`);
+  logger.silly(formatDetectedFolders(detectedApiFolders, 'api'));
 
   return detectedApiFolders;
 }
 
 async function detectAppFrameworks(projectFiles: string[]): Promise<DetectedFolder[]> {
   const detectedAppFolders: DetectedFolder[] = await detectFrameworks(projectFiles, appFrameworks);
-
-  logger.silly(`Detected app folders (${detectedAppFolders.length}):`);
-  logger.silly(`- ${detectedAppFolders.map(f => `${f.rootPath} (${f.frameworks.map(fr => fr.name).join(', ')})`).join("\n- ")}`);
+  logger.silly(formatDetectedFolders(detectedAppFolders, 'app'));
 
   return detectedAppFolders;
 }
@@ -367,7 +363,7 @@ async function asyncEvery<T>(array: T[], predicate: (item: T) => Promise<boolean
   return array.every((_, index) => results[index]);
 }
 
-export function printSupportedFrameworks(showList = false) {
+export function printSupportedFrameworks(showList = false): void {
   if (showList) {
     logger.info(`Supported api frameworks: ${apiFrameworks.length}`);
     logger.info(`- ${apiFrameworks.map(f => f.name).join("- \n")}`);
@@ -378,4 +374,9 @@ export function printSupportedFrameworks(showList = false) {
     logger.info(`- api: ${apiFrameworks.length}`);
     logger.info(`- app: ${appFrameworks.length}`);
   }
+}
+
+export function formatDetectedFolders(folders: DetectedFolder[], type: string): string {
+  return `Detected ${type} folder(s) (${folders.length}):` +
+    `- ${folders.map(f => `${f.rootPath} (${f.frameworks.map(fr => fr.name).join(', ')})`).join("\n- ")}`;
 }
