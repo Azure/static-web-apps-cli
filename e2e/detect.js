@@ -36,7 +36,6 @@ async function detect(rootPath, depth) {
   out += formatDetectedFolders(folders.api, 'api') + '\n';
   out += formatDetectedFolders(folders.app, 'app');
 
-  console.log(depth);
   if (depth > 0) {
     let undetectedFolders = await getFolders(rootPath, depth);
     undetectedFolders = undetectedFolders.filter(
