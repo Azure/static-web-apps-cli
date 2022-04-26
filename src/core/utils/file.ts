@@ -19,7 +19,7 @@ export async function safeReadFile(path?: string): Promise<string | undefined> {
   }
 
   try {
-    return fs.readFile(path, 'utf8');
+    return await fs.readFile(path, 'utf8');
   } catch (error) {
     logger.warn(`Failed to read file at: ${path}`);
     return undefined;
