@@ -1,0 +1,72 @@
+- Issues:
+  * Login no context!!
+
+
+
+
+
+
+  // => static
+  // {
+  //   id: "django",
+  //   name: "Django",
+  //   "outputLocation": "api",
+  //   files: ["manage.py", "wsgi.py", "app.py"]
+  // },
+  // => angular
+  // {
+  //   id: "angular-universal",
+  //   name: "Angular Universal",
+  //   "package": { "dependencies": ["@angular/platform-server"] },
+  //   "outputLocation": "{angular.json#values(projects)[0].architect.build.options.outputPath}",
+  //   files: ["angular.json", "tsconfig.server.json"]
+  // },
+  // => angular
+  // {
+  //   id: "ionic-angular",
+  //   name: "Ionic for Angular",
+  //   "package": { "dependencies": ["@ionic/angular"] },
+  //   "outputLocation": "{angular.json#values(projects)[0].architect.build.options.outputPath}",
+  //   files: ["ionic.config.json", "angular.json"]
+  // },
+  // => react
+  // { id: "ionic-react", name: "Ionic for React", "package": { "dependencies": ["@ionic/react"] }, "outputLocation": "build" },
+  // 
+  // => just UI components on top of ember
+  // { id: "glimmer", name: "Glimmer.js", "package": { "dependencies": ["@glimmer/core"] }, "outputLocation": "dist" },
+  // => no official starter, just a js lib/plain html
+  // { id: "knockoutjs", name: "Knockout.js", "package": { "dependencies": ["knockout"] }, "outputLocation": "dist" },
+  // => no official starter/tooling, just a js lib
+  // { id: "mithril", name: "Mithril.js", "package": { "dependencies": ["mithril"] }, "outputLocation": "dist" },
+  // => SSR
+  // {
+  //   id: "marko",
+  //   name: "Marko.js",
+  //   packages: ["marko"],
+  //   config: {
+  //     appBuildCommand: "npm run build",
+  //     devServerCommand: "npm run dev",
+  //     devServerUrl: "http://localhost:8081",
+  //     outputLocation: "public"
+  //   }
+  // },
+  // => SSR
+  // {
+  //   id: "meteor",
+  //   name: "Meteor",
+  //   packages: ["meteor-node-stubs"],
+  //   config: {
+  //     appBuildCommand: "meteor build ../output",
+  //     devServerCommand: "meteor",
+  //     devServerUrl: "http://localhost:3000",
+  //     outputLocation: "../output/bundle",
+  //   }
+  // },
+  // => not needed, would confuse with other projects
+  // {
+  //   id: "typescript",
+  //   name: "TypeScript",
+  //   "package": { "dependencies": ["typescript"] },
+  //   "outputLocation": "{tsconfig.json#compilerOptions.outDir}",
+  //   files: ["tsconfig.json"]
+  // }

@@ -44,10 +44,10 @@ describe("swa init", () => {
             \\"appLocation\\": \\"./\\",
             \\"outputLocation\\": \\"./\\",
             \\"start\\": {
-              \\"context\\": \\"./\\"
+              \\"outputLocation\\": \\"./\\"
             },
             \\"deploy\\": {
-              \\"context\\": \\"./\\"
+              \\"outputLocation\\": \\"./\\"
             }
           }
         }
@@ -131,10 +131,10 @@ describe("swa init", () => {
             \\"outputLocation\\": \\"src/\\",
             \\"apiBuildCommand\\": \\"npm run build --if-present\\",
             \\"start\\": {
-              \\"context\\": \\"src/\\"
+              \\"outputLocation\\": \\"src/\\"
             },
             \\"deploy\\": {
-              \\"context\\": \\"src/\\"
+              \\"outputLocation\\": \\"src/\\"
             }
           }
         }
