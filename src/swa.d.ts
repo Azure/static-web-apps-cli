@@ -4,6 +4,8 @@ declare global {
   }
 }
 
+declare module "json-source-map";
+
 declare interface StaticSiteClientEnv {
   // StaticSitesClient env vars
   DEPLOYMENT_ACTION?: "close" | "upload";

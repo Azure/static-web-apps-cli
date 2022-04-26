@@ -45,6 +45,7 @@
     "globrex": "^0.1.2",
     "http-proxy": "^1.18.1",
     "internal-ip": "^6.2.0",
+    "json-source-map": "^0.6.1",
     "keytar": "^7.9.0",
     "ms-rest-azure": "^3.0.1",
     "node-fetch": "^2.6.6",

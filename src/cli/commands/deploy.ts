@@ -222,7 +222,7 @@ export async function deploy(outputLocationOrConfigName: string, options: SWACLI
     SWA_CLI_DEBUG: verbose as DebugFilterLevel,
     SWA_RUNTIME_WORKFLOW_LOCATION: userWorkflowConfig?.files?.[0],
     SWA_RUNTIME_CONFIG_LOCATION: swaConfigLocation,
-    SWA_RUNTIME_CONFIG: swaConfigLocation ? (await findSWAConfigFile(swaConfigLocation))?.file : undefined,
+    SWA_RUNTIME_CONFIG: swaConfigLocation ? (await findSWAConfigFile(swaConfigLocation))?.filepath : undefined,
     SWA_CLI_VERSION: packageInfo.version,
     SWA_CLI_DEPLOY_DRY_RUN: `${dryRun}`,
     SWA_CLI_DEPLOY_BINARY: undefined,
