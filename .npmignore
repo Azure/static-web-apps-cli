@@ -14,3 +14,4 @@ scripts
 cypress*
 *.spec.*
 /docs
+/e2e
