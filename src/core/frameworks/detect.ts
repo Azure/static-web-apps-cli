@@ -42,8 +42,8 @@ export async function generateConfiguration(app?: DetectedFolder, api?: Detected
       config.outputLocation = path.normalize(path.join(movePath, config.outputLocation!));
     }
 
-    const apiRootPath = path.normalize(path.relative(config.appLocation!, api.rootPath));
-    config.apiLocation = await computePath(apiRootPath, config.apiLocation);
+    config.apiLocation = await computePath(api.rootPath, config.apiLocation);
+    config.apiLocation = path.normalize(path.relative(config.appLocation!, config.apiLocation));
   }
 
   config.name = name;
@@ -377,6 +377,6 @@ export function printSupportedFrameworks(showList = false): void {
 }
 
 export function formatDetectedFolders(folders: DetectedFolder[], type: string): string {
-  return `Detected ${type} folder(s) (${folders.length}):` +
+  return `Detected ${type} folders (${folders.length}):\n` +
     `- ${folders.map(f => `${f.rootPath} (${f.frameworks.map(fr => fr.name).join(', ')})`).join("\n- ")}`;
 }
