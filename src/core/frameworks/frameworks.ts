@@ -261,7 +261,7 @@ export const appFrameworks: FrameworkDefinition[] = [
   {
     id: "ember",
     name: "Ember.js",
-    packages: ["ember-cli"],
+    packages: ["ember-cli", "ember-load-initializers", "ember-resolver"],
     config: {
       appBuildCommand: "npm run build",
       devServerCommand: "npm start",

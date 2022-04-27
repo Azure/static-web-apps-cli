@@ -99,6 +99,7 @@ export async function init(name: string | undefined, options: SWACLIConfig, show
   try {
     projectConfig = await generateConfiguration(app, api);
   } catch (error) {
+    logger.error(`Cannot generate your project configuration:`);
     logger.error(error as Error, true);
     return;
   }
