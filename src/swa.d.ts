@@ -114,7 +114,7 @@ declare type GithubActionWorkflow = {
 declare type SWACLIOptionsToCleanUp = {
   // TODO: cleanup
   // app?: string;
-  build?: boolean;
+  // build?: boolean;
   customUrlScheme?: string;
   overridableErrorCode?: number[];
   swaConfigFilename?: "staticwebapp.config.json";
@@ -156,10 +156,12 @@ declare type SWACLIStartOptions = {
 
 // -- CLI Build options ------------------------------------------------------
 
-// Note: build command does not exist at the moment
 declare type SWACLIBuildOptions = {
+  appLocation?: string;
+  apiLocation?: string;
   appBuildCommand?: string;
   apiBuildCommand?: string;
+  auto?: boolean;
 };
 
 // -- CLI Deploy options -----------------------------------------------------
@@ -191,7 +193,7 @@ declare type SWACLILoginOptions = SWACLISharedLoginOptions & {
   useKeychain?: boolean;
 };
 
-// -- CLI Login options ------------------------------------------------------
+// -- CLI Config options -----------------------------------------------------
 
 declare type SWACLIConfig = SWACLIOptionsToCleanUp &
   SWACLIGlobalOptions &
@@ -199,11 +201,13 @@ declare type SWACLIConfig = SWACLIOptionsToCleanUp &
   SWACLIInitOptions &
   SWACLIBuildOptions &
   SWACLIStartOptions &
-  SWACLIDeployOptions & {
+  SWACLIDeployOptions &
+  SWACLIBuildOptions & {
     login?: SWACLIGlobalOptions & SWACLILoginOptions;
     init?: SWACLIGlobalOptions & SWACLIInitOptions;
     start?: SWACLIGlobalOptions & SWACLIStartOptions;
     deploy?: SWACLIGlobalOptions & SWACLIDeployOptions;
+    build?: SWACLIGlobalOptions & SWACLIBuildOptions;
   };
 
 // Information about the loaded config

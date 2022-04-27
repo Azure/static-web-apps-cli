@@ -23,6 +23,9 @@
             "$ref": "#/$defs/deployCommandParameters"
           },
           {
+            "$ref": "#/$defs/buildCommandParameters"
+          },
+          {
             "properties": {
               "login": {
                 "allOf": [
@@ -79,6 +82,20 @@
                   },
                   {
                     "$ref": "#/$defs/deployCommandParameters"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "init": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/globalParameters"
+                  },
+                  {
+                    "$ref": "#/$defs/buildCommandParameters"
                   }
                 ]
               }
@@ -232,6 +249,31 @@
       "properties": {
         "yes": {
           "description": "Answer yes to all prompts (disable interactive mode)",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "buildCommandParameters": {
+      "properties": {
+        "appLocation": {
+          "description": "The folder containing the source code of the front-end application",
+          "type": "string"
+        },
+        "apiLocation": {
+          "description": "The folder containing the source code of the API application",
+          "type": "string"
+        },
+        "appBuildCommand": {
+          "description": "The command used to build your app",
+          "type": "string"
+        },
+        "apiBuildCommand": {
+          "description": "The command used to build your api",
+          "type": "string"
+        },
+        "auto": {
+          "description": "Automatically detect how to build your app and api",
           "type": "boolean"
         }
       },
