@@ -2,7 +2,7 @@
     <h2 align="center">Azure Static Web Apps CLI (preview) <img src="https://github.com/azure/static-web-apps-cli/workflows/CI/badge.svg" height="15"> </h2>
 </p>
 <p align="center">
-    <img align="center" src="docs/swa-emu-icon.png" width="300">
+    <img align="center" src="docs/swa-cli-logo.svg" width="300">
 </p>
 
 The Static Web Apps CLI, also known as SWA CLI, serves as a local development tool for [Azure Static Web Apps](https://docs.microsoft.com/azure/static-web-apps). It can:
