@@ -120,10 +120,10 @@ export async function detectFrameworks(projectFiles: string[], frameworks: Frame
   // 5. Filter out all root paths that are descendant of other root paths
   //    - Eliminate false-positives due to output/build artifacts or frameworks including example projects
   //      as part of their theming or docs, within the app folder
-  // 6. Filter out frameworks in each root path based on preempt config
+  // 6. Filter out frameworks in each root path based on overrides config
   //    - Clean up the list of frameworks, as some completely redefine the configuration and allow mix & match
   //      of multiple other frameworks under a specific build tool (Astro, for example)
-  //    - Note that "static" framework will automatically be preempted by any other framework.
+  //    - Note that "static" framework will automatically be overriden by any other framework.
   // 7. Order frameworks in each root path based on parent-child relationships
   //    - As child frameworks may extend or override their parent's configuration, we need to make sure the
   //      parent's configuration is applied first
@@ -263,26 +263,26 @@ function filterDescendantFolders(folders: DetectedFolder[]): DetectedFolder[] {
 
 function filterPreemptedFrameworks(detectedFolders: DetectedFolder[]): void {
   for (const folder of detectedFolders) {
-    const preemptedFrameworkIds: Set<string> = new Set();
+    const overridenFrameworkIds: Set<string> = new Set();
     folder.frameworks.forEach(f => {
-      if (f.preempt) {
-        f.preempt.forEach(id => preemptedFrameworkIds.add(id));
+      if (f.overrides) {
+        f.overrides.forEach(id => overridenFrameworkIds.add(id));
       }
     });
 
     // Static is special: if any other app framework is detected in a folder,
-    // then static is automatically preempted
+    // then static is automatically overriden
     if (folder.frameworks.length > 1) {
-      preemptedFrameworkIds.add("static");
+      overridenFrameworkIds.add("static");
     }
   
-    if (preemptedFrameworkIds.size === 0) {
+    if (overridenFrameworkIds.size === 0) {
       continue;
     }
   
-    logger.silly(`Found preempted frameworks in path ${folder.rootPath}: ${Array.from(preemptedFrameworkIds).join(",")}`);
+    logger.silly(`Found frameworks to override in path ${folder.rootPath}: ${Array.from(overridenFrameworkIds).join(",")}`);
   
-    folder.frameworks = folder.frameworks.filter(f => !preemptedFrameworkIds.has(f.id));
+    folder.frameworks = folder.frameworks.filter(f => !overridenFrameworkIds.has(f.id));
   }
 }
 

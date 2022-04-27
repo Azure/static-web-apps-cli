@@ -168,7 +168,7 @@ export const appFrameworks: FrameworkDefinition[] = [
   {
     id: "vuepress",
     name: "VuePress",
-    preempt: ["vue"],
+    overrides: ["vue"],
     packages: ["vuepress"],
     config: {
       appBuildCommand: "npm run build",
@@ -180,7 +180,7 @@ export const appFrameworks: FrameworkDefinition[] = [
   {
     id: "vitepress",
     name: "VitePress",
-    preempt: ["vue"],
+    overrides: ["vue"],
     packages: ["vitepress"],
     config: {
       appBuildCommand: "npm run docs:build",
@@ -203,7 +203,7 @@ export const appFrameworks: FrameworkDefinition[] = [
   {
     id: "svelte-kit",
     name: "SvelteKit",
-    preempt: ["svelte"],
+    overrides: ["svelte"],
     packages: ["@sveltejs/kit"],
     config: {
       appBuildCommand: "npm run build",
@@ -215,7 +215,7 @@ export const appFrameworks: FrameworkDefinition[] = [
   {
     id: "sapper",
     name: "Sapper",
-    preempt: ["svelte"],
+    overrides: ["svelte"],
     packages: ["sapper"],
     config: {
       appBuildCommand: "npm run export",
@@ -343,7 +343,7 @@ export const appFrameworks: FrameworkDefinition[] = [
   {
     id: "slate",
     name: "Slate",
-    preempt: ["middleman"],
+    overrides: ["middleman"],
     files: ["slate.sh", "Gemfile"],
     config: {
       appBuildCommand: "./slate.sh build",
@@ -377,7 +377,7 @@ export const appFrameworks: FrameworkDefinition[] = [
   {
     id: "astro",
     name: "Astro",
-    preempt: ["alpine", "lit", "react", "preact", "solid", "svelte", "vue"],
+    overrides: ["alpine", "lit", "react", "preact", "solid", "svelte", "vue"],
     files: ["astro.config.mjs"],
     packages: ["astro"],
     config: {
@@ -448,7 +448,7 @@ export const appFrameworks: FrameworkDefinition[] = [
   {
     id: "remix",
     name: "Remix",
-    preempt: ["react"],
+    overrides: ["react"],
     packages: ["@remix-run/node", "@remix-run/server-runtime"],
     config: {
       appBuildCommand: "npm run build",
