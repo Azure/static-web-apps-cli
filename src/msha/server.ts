@@ -145,8 +145,8 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
   }
 
   if (HAS_API) {
-    await validateDevServerConfig(SWA_CLI_API_URI(), DEFAULT_CONFIG.devserverTimeout);
-    await validateFunctionTriggers();
+    await validateDevServerConfig(SWA_CLI_API_URI() as string, DEFAULT_CONFIG.devserverTimeout);
+    await validateFunctionTriggers(SWA_CLI_API_URI() as string);
   }
 
   const server = createServer();

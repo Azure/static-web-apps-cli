@@ -6,24 +6,26 @@ import ora from "ora";
 import os from "os";
 import path from "path";
 import { PassThrough } from "stream";
+import { STATIC_SITE_CLIENT_RELEASE_METADATA_URL } from "./constants";
 import { swaCLIEnv } from "./env";
 import { logger } from "./utils";
 
 type StaticSiteClientReleaseMetadata = {
   version: "stable" | "latest";
+  buildId: string;
   publishDate: string;
   files: {
     ["linux-x64"]: {
       url: string;
-      sha256: string;
+      sha: string;
     };
     ["win-x64"]: {
       url: string;
-      sha256: string;
+      sha: string;
     };
     ["osx-x64"]: {
       url: string;
-      sha256: string;
+      sha: string;
     };
   };
 };
@@ -37,7 +39,7 @@ type StaticSiteClientLocalMetadata = {
 export const DEPLOY_BINARY_NAME = "StaticSitesClient";
 export const DEPLOY_FOLDER = path.join(os.homedir(), ".swa", "deploy");
 
-export async function getDeployClientPath(): Promise<{ binary: string; version: string }> {
+export async function getDeployClientPath(): Promise<{ binary: string; buildId: string }> {
   const platform = getPlatform();
   if (!platform) {
     throw new Error(`Unsupported platform: ${os.platform()}`);
@@ -56,16 +58,16 @@ export async function getDeployClientPath(): Promise<{ binary: string; version: 
       logger.warn(`Local client metadata is invalid!`);
     } else {
       const localChecksum = localClientMetadata.checksum;
-      const releaseChecksum = remoteClientMetadata.files[platform].sha256.toLowerCase();
-      const remotePublishDate = remoteClientMetadata.publishDate;
-      const localPublishDate = localClientMetadata.metadata.publishDate;
+      const releaseChecksum = remoteClientMetadata.files[platform].sha.toLowerCase();
+      const remoteBuildId = remoteClientMetadata.buildId;
+      const localBuildId = localClientMetadata.metadata.buildId;
 
-      if (remotePublishDate === localPublishDate) {
+      if (remoteBuildId === localBuildId) {
         if (localChecksum === releaseChecksum) {
           logger.silly(`Local client binary is up to date. Skipping download.`);
           return {
             binary: localClientMetadata.binary,
-            version: localPublishDate,
+            buildId: localBuildId,
           };
         } else {
           logger.warn(`Local metatada contains invalid checksum hash!`);
@@ -73,14 +75,14 @@ export async function getDeployClientPath(): Promise<{ binary: string; version: 
           logger.warn(`  Received ${localChecksum}`);
         }
       } else {
-        logger.warn(`${DEPLOY_BINARY_NAME} is outdated! Expected ${remotePublishDate}, got ${localPublishDate}`);
+        logger.warn(`${DEPLOY_BINARY_NAME} is outdated! Expected ${remoteBuildId}, got ${localBuildId}`);
       }
     }
   }
 
   return {
     binary: await downloadAndValidateBinary(remoteClientMetadata, platform),
-    version: remoteClientMetadata.publishDate,
+    buildId: remoteClientMetadata.buildId,
   };
 }
 
@@ -144,11 +146,13 @@ export function getPlatform(): "win-x64" | "osx-x64" | "linux-x64" | null {
 export async function fetchClientVersionDefinition(releaseVersion: string): Promise<StaticSiteClientReleaseMetadata | undefined> {
   logger.silly(`Fetching release metadata for version: ${releaseVersion}. Please wait...`);
 
-  const remoteVersionDefinitions: StaticSiteClientReleaseMetadata[] = await fetch(
-    "https://swalocaldeploy.azureedge.net/downloads/versions.json"
-  ).then((res) => res.json());
+  const remoteVersionDefinitions: StaticSiteClientReleaseMetadata[] = await fetch(STATIC_SITE_CLIENT_RELEASE_METADATA_URL).then((res) => res.json());
   if (Array.isArray(remoteVersionDefinitions) && remoteVersionDefinitions.length) {
-    return remoteVersionDefinitions.find((versionDefinition) => versionDefinition?.version === releaseVersion);
+    const releaseMetadata = remoteVersionDefinitions.find((versionDefinition) => versionDefinition?.version === releaseVersion);
+
+    logger.silly(releaseMetadata!);
+
+    return releaseMetadata;
   }
   return undefined;
 }
@@ -158,11 +162,11 @@ async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadat
   const downloadFilename = path.basename(downloadUrl);
 
   const url = release.files[platform].url;
-  const version = release.version;
+  const buildId = release.buildId;
 
   const spinner = ora({ prefixText: chalk.dim.gray(`[swa]`) });
 
-  spinner.start(`Downloading ${url}@${version}`);
+  spinner.start(`Downloading ${url}@${buildId}`);
 
   const response = await fetch(url);
 
@@ -173,11 +177,11 @@ async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadat
 
   const bodyStream = response.body.pipe(new PassThrough());
 
-  createDeployDirectoryIfNotExists(version);
+  createDeployDirectoryIfNotExists(buildId);
 
   return await new Promise<string>((resolve, reject) => {
     const isPosix = platform === "linux-x64" || platform === "osx-x64";
-    let outputFile = path.join(DEPLOY_FOLDER, version, downloadFilename);
+    let outputFile = path.join(DEPLOY_FOLDER, buildId, downloadFilename);
 
     const writableStream = fs.createWriteStream(outputFile, { mode: isPosix ? 0o755 : undefined });
     bodyStream.pipe(writableStream);
@@ -188,7 +192,7 @@ async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadat
 
     writableStream.on("finish", () => {
       const computedHash = computeChecksumfromFile(outputFile).toLowerCase();
-      const releaseChecksum = release.files[platform].sha256.toLocaleLowerCase();
+      const releaseChecksum = release.files[platform].sha.toLocaleLowerCase();
       if (computedHash !== releaseChecksum) {
         try {
           // in case of a failure, we remove the file
@@ -211,12 +215,12 @@ async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadat
   });
 }
 
-function saveMetadata(release: StaticSiteClientReleaseMetadata, binaryFilename: string, sha256: string) {
+function saveMetadata(release: StaticSiteClientReleaseMetadata, binaryFilename: string, sha: string) {
   const metatdaFilename = path.join(DEPLOY_FOLDER, `${DEPLOY_BINARY_NAME}.json`);
   const metdata: StaticSiteClientLocalMetadata = {
     metadata: release,
     binary: binaryFilename,
-    checksum: sha256,
+    checksum: sha,
   };
   fs.writeFileSync(metatdaFilename, JSON.stringify(metdata));
   logger.silly(`Saved metadata to ${metatdaFilename}`);

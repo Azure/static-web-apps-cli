@@ -68,7 +68,7 @@ export const logger = {
 
     console.error(chalk.red("✖ " + data));
     if (exit) {
-      process.exit(-1);
+      process.exit(1);
     }
   },
 

@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import mockFs from "mock-fs";
-import { parsePort } from "./net";
 import { swaCliConfigFilename } from "./cli-config";
+import { parsePort } from "./net";
 import { configureOptions } from "./options";
 
 describe("configureOptions()", () => {
@@ -9,15 +9,12 @@ describe("configureOptions()", () => {
     mockFs.restore();
   });
 
-  it("should return configuration options and context", async () => {
+  it("should return configuration options", async () => {
     const command = await new Command().parseAsync([]);
 
-    expect(await configureOptions("test", { config: swaCliConfigFilename, port: 1234 }, command)).toStrictEqual({
-      context: "test",
-      options: {
-        config: swaCliConfigFilename,
-        port: 1234,
-      },
+    expect(await configureOptions("test", { config: swaCliConfigFilename, port: 1234 }, command, "init")).toStrictEqual({
+      config: swaCliConfigFilename,
+      port: 1234,
     });
   });
 
@@ -31,12 +28,9 @@ describe("configureOptions()", () => {
       }),
     });
 
-    expect(await configureOptions("test", { config: swaCliConfigFilename }, command)).toStrictEqual({
-      context: "test",
-      options: {
-        config: swaCliConfigFilename,
-        port: 1234,
-      },
+    expect(await configureOptions("test", { config: swaCliConfigFilename }, command, "init")).toStrictEqual({
+      config: swaCliConfigFilename,
+      port: 1234,
     });
   });
 
@@ -51,12 +45,9 @@ describe("configureOptions()", () => {
       }),
     });
 
-    expect(await configureOptions("test", { config: swaCliConfigFilename, port: 4444 }, command)).toStrictEqual({
-      context: "test",
-      options: {
-        config: swaCliConfigFilename,
-        port: 1234,
-      },
+    expect(await configureOptions("test", { config: swaCliConfigFilename, port: 4444 }, command, "init")).toStrictEqual({
+      config: swaCliConfigFilename,
+      port: 1234,
     });
   });
 
@@ -74,12 +65,29 @@ describe("configureOptions()", () => {
       }),
     });
 
-    expect(await configureOptions("test", { config: swaCliConfigFilename, port: 4567 }, command)).toStrictEqual({
-      context: "test",
-      options: {
-        config: swaCliConfigFilename,
-        port: 4567,
-      },
+    expect(await configureOptions("test", { config: swaCliConfigFilename, port: 4567 }, command, "init")).toStrictEqual({
+      config: swaCliConfigFilename,
+      port: 4567,
+    });
+  });
+
+  it("should return merged configuration with command specific options overriding global options", async () => {
+    const command = await new Command().option<number>("--port <port>", "", parsePort, 4444).parseAsync([]);
+
+    mockFs({
+      "swa-cli.config.json": JSON.stringify({
+        configurations: {
+          test: {
+            port: 1234,
+            init: { port: 4567 },
+          },
+        },
+      }),
+    });
+
+    expect(await configureOptions("test", { config: swaCliConfigFilename, port: 4444 }, command, "init")).toStrictEqual({
+      config: swaCliConfigFilename,
+      port: 4567,
     });
   });
 });

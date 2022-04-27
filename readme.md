@@ -160,9 +160,7 @@ A **Deployment Token** is required in order to make a deployment! Read the steps
 
 ### Deployment token
 
-Before deploying your application to Azure Static Web Apps, you need to create a new application instance. This is done by following the instructions in the [Azure Static Web Apps documentation](https://docs.microsoft.com/en-us/azure/static-web-apps/get-started-portal).
-
-Once your application instance is ready, you can get a deployment token from:
+The CLI supports Deployment token. This is usually useful when deploying from a CI/CD environment. You can get a deployment token either from:
 
 - The [Azure portal](https://portal.azure.com/): **Home → Static Web App → Your Instance → Overview → Manage deployment token**
 
@@ -172,7 +170,13 @@ Once your application instance is ready, you can get a deployment token from:
 az staticwebapp secrets list --name <application-name> --query "properties.apiKey"
 ```
 
-You can then use that value with the `--deployment-token <token>`, or you can create an environment variable called `SWA_CLI_DEPLOYMENT_TOKEN` and set it to the deployment token. Read the next section for more details.
+- If you are using the [Azure Static Web Apps CLI (this project)](aka.ms/swa/cli-local-development), you can get the deployment token of your project using the following command:
+
+```bash
+swa deploy --print-token
+```
+
+You can then use that value with the `--deployment-token <token>` (e.g. from a CI/CD environment), or you can create an environment variable called `SWA_CLI_DEPLOYMENT_TOKEN` and set it to the deployment token. Read the next section for more details.
 
 **IMPORTANT:** Don't store the deployment token in a public repository. It should be kept secret!
 
@@ -185,10 +189,11 @@ You can deploy a front-end application (without an API) to Azure Static Web Apps
 **Option 1:** From build folder you would like to deploy, run the deploy command:
 
 ```bash
-swa deploy --deployment-token <token>
+cd build/
+swa deploy
 ```
 
-> Note: the current folder must contain the static content of your app to be deployed!
+> Note: the "build" folder must contain the static content of your app to be deployed!
 
 **Option 2:** You can also deploy a specific folder:
 
@@ -197,7 +202,7 @@ swa deploy --deployment-token <token>
 2. Deploy your app:
 
 ```bash
-swa deploy ./my-dist --deployment-token <token>
+swa deploy ./my-dist
 ```
 
 ### Deploy a front-end app with an API
@@ -219,7 +224,7 @@ To deploy both the front-end app and an API to Azure Static Web Apps, use the fo
 3. Deploy your app:
 
 ```bash
-swa deploy ./my-dist --api-location ./api --deployment-token <token>
+swa deploy ./my-dist --api-location ./api
 ```
 
 ### Deploy a Blazor app
@@ -235,41 +240,26 @@ dotnet publish -c Release
 2. From the root of your project, run the deploy command:
 
 ```bash
-swa deploy ./Client/bin/Release/net6.0/publish/wwwroot --api-location ./Api --deployment-token <token>
+swa deploy ./Client/bin/Release/net6.0/publish/wwwroot --api-location ./Api
 ```
 
-3.a (Optional) create a `swa-cli.config.json` file at the root of your project with the following content:
-
-```json
-{
-  "configurations": {
-    "deploy": {
-      "context": "./",
-      "apiLocation": "./Api",
-      "outputLocation": "Client/bin/Release/net6.0/publish/wwwroot"
-    }
-  }
-}
-```
-
-3.b Deploy your app using the configuration file:
-
-```bash
-swa deploy --deployment-token <token>
-```
-
-### Deploy using the swa-cli.config.json
+### Deploy using the `swa-cli.config.json`
 
 If you are using a [`swa-cli.config.json`](#swa-cli.config.json) configuration file in your project and have a single configuration entry, for example:
 
 ```json
 {
   "configurations": {
-    "app": {
+    "my-app": {
       "appLocation": "./",
-      "context": "./",
-      "outputLocation": "./front-end",
-      "apiLocation": "./api"
+      "apiLocation": "api",
+      "outputLocation": "frontend",
+      "start": {
+        "outputLocation": "frontend"
+      },
+      "deploy": {
+        "outputLocation": "frontend"
+      }
     }
   }
 }
@@ -288,7 +278,7 @@ swa deploy
 If you have multiple configuration entries, you can provide the entry ID to specify which one to use:
 
 ```bash
-swa deploy otherapp
+swa deploy my-otherapp
 ```
 
 ## Use a runtime configuration file (staticwebapp.config.json)
@@ -332,6 +322,10 @@ If you need to override the default values for the `swa` command, you can provid
 | `--print-config`        | Print all resolved options                                         | `false`                 | `--print-config` or `--print-config=true` |
 | `--swa-config-location` | The directory where the `staticwebapp.config.json` file is located | `./`                    | `--swa-config-location=./app`             |
 
+### Subcommand `swa login` options
+
+TODO
+
 ### Subcommand `swa start` options
 
 If you need to override the default values for the `swa start` subcommand, you can provide the following options:
@@ -355,11 +349,16 @@ If you need to override the default values for the `swa start` subcommand, you c
 
 If you need to override the default values for the `swa deploy` subcommand, you can provide the following options:
 
-| Option               | Description                                                    | Default | Example                         |
-| -------------------- | -------------------------------------------------------------- | ------- | ------------------------------- |
-| `--api-location`     | The folder containing the source code of the API application   | `./api` | `--api-location="./api"`        |
-| `--deployment-token` | The secret toekn used to authenticate with the Static Web Apps |         | `--deployment-token="123"`      |
-| `--dry-run`          | Simulate a deploy process without actually running it          | `false` | `--dry-run` or `--dry-run=true` |
+| Option               | Description                                                                                                                               | Default   | Example                                   |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | --------- | ----------------------------------------- |
+| `--api-location`     | The folder containing the source code of the API application                                                                              | `./api`   | `--api-location="./api"`                  |
+| `--deployment-token` | The secret toekn used to authenticate with the Static Web Apps                                                                            |           | `--deployment-token="123"`                |
+| `--dry-run`          | Simulate a deploy process without actually running it                                                                                     | `false`   | `--dry-run`                               |
+| `--print-token`      | print the deployment token                                                                                                                | `false`   | `--print-token`                           |
+| `--env`              | the type of deployment environment where to deploy the project                                                                            | `preview` | `--env="production"` or `--env="preview"` |
+| `--print-token`      | Print the deployment token. Usefull when using `--deployment-token` on CI/CD <br> Note: this command does not run the deployment process. | `false`   | `--print-token`                           |
+
+The deploy command does also support the same options as the `swa login` command.
 
 <a id="swa-cli.config.json"></a>
 
@@ -371,7 +370,7 @@ The CLI can also load options from a `swa-cli.config.json` file:
 {
   "configurations": {
     "app": {
-      "context": "http://localhost:3000",
+      "outputLocation": "http://localhost:3000",
       "apiLocation": "api",
       "run": "npm run start",
       "swaConfigLocation": "./my-app-source"
@@ -398,11 +397,11 @@ swa start http://localhost:3000 --swa-config-location ./my-app-source
 {
   "configurations": {
     "static": {
-      "context": "./my-dist",
+      "outputLocation": "./my-dist",
       "swaConfigLocation": "./my-app-source"
     },
     "devserver": {
-      "context": "http://localhost:3000",
+      "outputLocation": "http://localhost:3000",
       "swaConfigLocation": "./my-app-source"
     }
   }

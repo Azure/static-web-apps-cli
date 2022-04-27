@@ -1,6 +1,7 @@
 import { logger } from "./logger";
 
 jest.spyOn(logger, "silly").mockImplementation();
+jest.spyOn(logger, "warn").mockImplementation();
 
 import mockFs from "mock-fs";
 import path from "path";
@@ -127,7 +128,7 @@ describe("findSWAConfigFile()", () => {
     });
 
     const config = await findSWAConfigFile(".");
-    expect(config?.file).toContain("staticwebapp.config.json");
+    expect(config?.filepath).toContain("staticwebapp.config.json");
   });
 
   it("should find staticwebapp.config.json (recursively)", async () => {
@@ -142,19 +143,23 @@ describe("findSWAConfigFile()", () => {
     });
 
     const config = await findSWAConfigFile(".");
-    expect(config?.file).toContain("staticwebapp.config.json");
+    expect(config?.filepath).toContain("staticwebapp.config.json");
   });
 
-  it("should find routes.json (at the root)", async () => {
+  it("should warn if routes.json is found (root project)", async () => {
     mockFs({
       "routes.json": `{ "routes": []}`,
     });
 
     const config = await findSWAConfigFile(".");
-    expect(config?.file).toContain("routes.json");
+    expect(config).toBeNull();
+    expect(logger.warn).toHaveBeenLastCalledWith(
+      `   WARNING: Functionality defined in the routes.json file is now deprecated. File will be ignored!\n` +
+        `   Read more: https://docs.microsoft.com/azure/static-web-apps/configuration#routes`
+    );
   });
 
-  it("should find routes.json (recursively)", async () => {
+  it("should warn if routes.json is found (recursively)", async () => {
     mockFs({
       s: {
         w: {
@@ -166,7 +171,11 @@ describe("findSWAConfigFile()", () => {
     });
 
     const config = await findSWAConfigFile(".");
-    expect(config?.file).toContain("routes.json");
+    expect(config).toBeNull();
+    expect(logger.warn).toHaveBeenLastCalledWith(
+      `   WARNING: Functionality defined in the routes.json file is now deprecated. File will be ignored!\n` +
+        `   Read more: https://docs.microsoft.com/azure/static-web-apps/configuration#routes`
+    );
   });
 
   it("should ignore routes.json if a staticwebapp.config.json exists", async () => {
@@ -182,6 +191,6 @@ describe("findSWAConfigFile()", () => {
     });
 
     const config = await findSWAConfigFile(".");
-    expect(config?.file).toContain("staticwebapp.config.json");
+    expect(config?.filepath).toContain("staticwebapp.config.json");
   });
 });

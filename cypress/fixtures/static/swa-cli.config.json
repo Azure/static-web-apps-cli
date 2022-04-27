@@ -1,14 +1,18 @@
 {
   "$schema": "../../../schema/swa-cli.config.schema.json",
   "configurations": {
-    "app": {
+    "static": {
       "appLocation": "./",
-      "context": "./app",
-      "apiLocation": "./api",
-      "port": 1234,
-      "host": "0.0.0.0",
-      "devserverTimeout": 10000,
-      "verbose": "silly"
+      "apiLocation": "api",
+      "outputLocation": "app",
+      "appBuildCommand": "npm run build --if-present",
+      "apiBuildCommand": "npm run build --if-present",
+      "start": {
+        "outputLocation": "app"
+      },
+      "deploy": {
+        "outputLocation": "app"
+      }
     }
   }
 }

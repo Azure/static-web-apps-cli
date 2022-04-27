@@ -1,29 +1,28 @@
-import path from "path";
-// import fs from "fs";
-import process from "process";
-import prompts from "prompts";
 import chalk from "chalk";
 import { Command } from "commander";
+import path from "path";
+import process from "process";
+import { promptOrUseDefault } from "../../core/prompts";
 import {
-  logger,
+  configureOptions,
   dasherize,
   hasConfigurationNameInConfigFile,
-  writeConfigFile,
+  logger,
+  swaCliConfigFileExists,
   swaCliConfigFilename,
-  configExists,
-  configureOptions,
+  writeConfigFile,
 } from "../../core/utils";
-import { DEFAULT_CONFIG } from "../../config";
+import { detectProjectFolders, generateConfiguration, isDescendantPath } from "../../core/frameworks";
 
 export default function registerCommand(program: Command) {
   program
-    .command("init [name]")
-    .usage("[name] [options]")
+    .command("init [configurationName]")
+    .usage("[configurationName] [options]")
     .description("initialize a new static web app project")
     .option("--yes", "answer yes to all prompts (disable interactive mode)", false)
-    .action(async (name: string, _options: SWACLIConfig, command: Command) => {
-      const config = await configureOptions(undefined, command.optsWithGlobals(), command);
-      await init(name, config.options);
+    .action(async (configurationName: string, _options: SWACLIConfig, command: Command) => {
+      const options = await configureOptions(undefined, command.optsWithGlobals(), command, "init");
+      await init(configurationName, options);
     });
 }
 
@@ -31,18 +30,18 @@ export async function init(name: string | undefined, options: SWACLIConfig, show
   const configFilePath = options.config!;
   const disablePrompts = options.yes ?? false;
   const outputFolder = process.cwd();
-  let projectName: string = name?.trim() ?? "";
+  let configName: string = name?.trim() ?? "";
 
-  if (projectName === "") {
+  if (configName === "") {
     const response = await promptOrUseDefault(disablePrompts, {
       type: "text",
-      name: "projectName",
-      message: "Choose a project name:",
+      name: "configName",
+      message: "Choose a configuration name:",
       initial: dasherize(path.basename(outputFolder)),
-      validate: (value: string) => value.trim() !== "" || "Project name cannot be empty",
+      validate: (value: string) => value.trim() !== "" || "Configuration name cannot be empty",
       format: (value: string) => dasherize(value.trim()),
     });
-    projectName = response.projectName;
+    configName = response.configName;
   }
 
   // TODO: start from template
@@ -50,35 +49,79 @@ export async function init(name: string | undefined, options: SWACLIConfig, show
   //   // Do you want to create a new project from a template?
   // }
 
-  // TODO: run framework detection
-  let projectConfig: FrameworkConfig = {
-    appLocation: DEFAULT_CONFIG.appLocation!,
-    outputLocation: DEFAULT_CONFIG.outputLocation!,
-    appBuildCommand: DEFAULT_CONFIG.appBuildCommand!,
-    apiBuildCommand: DEFAULT_CONFIG.apiBuildCommand!,
-  };
+  const detectedFolders = await detectProjectFolders();
+  let app: DetectedFolder | undefined = detectedFolders.app[0];
+  let api: DetectedFolder | undefined = detectedFolders.api[0];
 
-  projectConfig = await promptConfigSettings(disablePrompts, projectConfig);
+  if (detectedFolders.app.length > 1) {
+    logger.silly(`More than one (${detectedFolders.app.length}) app folders found`);
 
-  // printFrameworkConfig(projectConfig);
+    const response = await promptOrUseDefault(disablePrompts, {
+      type: "select",
+      name: "app",
+      message: "Which app folder do you want to use?",
+      choices: detectedFolders.app.map((folder) => ({ title: folder.rootPath, value: folder })),
+      initial: 0
+    });
 
-  // TODO: confirm settings
-  // const { confirmSettings } = await promptOrUseDefault(disablePrompts, {
-  //   type: 'confirm',
-  //   name: 'confirmSettings',
-  //   message: 'Are these settings correct?',
-  //   initial: true
-  // });
-  // if (!confirmSettings) {
-  //   // Ask for each settings
-  //   projectConfig = await promptConfigSettings(disablePrompts, projectConfig);
-  // }
+    // Workaround for bug https://github.com/terkelg/prompts/issues/205
+    app = typeof response.app === 'number' ? detectedFolders.app[response.app] : response.app
+  }
 
-  if (configExists(configFilePath) && await hasConfigurationNameInConfigFile(configFilePath, projectName)) {
+  // Check if we can find api folders under selected app folder, and filter selection if we found some
+  if (app !== undefined) {
+    const childApiFolders = detectedFolders.api.filter(folder => isDescendantPath(folder.rootPath, app!.rootPath));
+    if (childApiFolders.length > 0) {
+      logger.silly(`Found (${childApiFolders.length}) api folders under the app folder`);
+      logger.silly(`- ${childApiFolders.map(f => `${f.rootPath} (${f.frameworks.map(fr => fr.name).join(', ')})`).join("\n- ")}`);
+      detectedFolders.api = childApiFolders;
+    }
+  }
+
+  if (detectedFolders.api.length > 1) {
+    logger.silly(`More than one (${detectedFolders.api.length}) api folders found`);
+
+    const response = await promptOrUseDefault(disablePrompts, {
+      type: "select",
+      name: "api",
+      message: "Which app folder do you want to use?",
+      choices: detectedFolders.api.map((folder) => ({ title: folder.rootPath, value: folder })),
+      initial: 0
+    });
+
+    // Workaround for bug https://github.com/terkelg/prompts/issues/205
+    api = typeof response.api === 'number' ? detectedFolders.api[response.api] : response.api
+  } else {
+    api = detectedFolders.api[0];
+  }
+
+  let projectConfig;
+  try {
+    projectConfig = await generateConfiguration(app, api);
+  } catch (error) {
+    logger.error(`Cannot generate your project configuration:`);
+    logger.error(error as Error, true);
+    return;
+  }
+
+  printFrameworkConfig(projectConfig);
+
+  const { confirmSettings } = await promptOrUseDefault(disablePrompts, {
+    type: 'confirm',
+    name: 'confirmSettings',
+    message: 'Are these settings correct?',
+    initial: true
+  });
+  if (!confirmSettings) {
+    // Ask for each settings
+    projectConfig = await promptConfigSettings(disablePrompts, projectConfig);
+  }
+
+  if (swaCliConfigFileExists(configFilePath) && (await hasConfigurationNameInConfigFile(configFilePath, configName))) {
     const { confirmOverwrite } = await promptOrUseDefault(disablePrompts, {
       type: "confirm",
       name: "confirmOverwrite",
-      message: `Configuration with name "${projectName}" already exists, overwrite?`,
+      message: `Configuration with name "${configName}" already exists, overwrite?`,
       initial: true,
     });
     if (!confirmOverwrite) {
@@ -88,7 +131,7 @@ export async function init(name: string | undefined, options: SWACLIConfig, show
   }
 
   const cliConfig = convertToCliConfig(projectConfig);
-  await writeConfigFile(configFilePath, projectName, cliConfig);
+  await writeConfigFile(configFilePath, configName, cliConfig);
   logger.log(chalk.green(`\nConfiguration successfully saved to ${swaCliConfigFilename}.\n`));
 
   if (showHints) {
@@ -107,11 +150,11 @@ function convertToCliConfig(config: FrameworkConfig): SWACLIConfig {
     apiBuildCommand: config.apiBuildCommand,
     run: config.devServerCommand,
     start: {
-      context: config.devServerUrl || config.appLocation,
+      outputLocation: config.devServerUrl || config.outputLocation,
     },
     deploy: {
-      context: config.outputLocation,
-    }
+      outputLocation: config.outputLocation,
+    },
   };
 }
 
@@ -177,38 +220,16 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
   return response;
 }
 
-// function printFrameworkConfig(config: FrameworkConfig) {
-//   logger.log(chalk.bold('\nDetected configuration for your app:'));
-//   logger.log(`- Framework: ${chalk.green(config.name ?? 'none')}`);
-//   logger.log(`- App location: ${chalk.green(config.appLocation)}`);
-//   logger.log(`- Output location: ${chalk.green(config.outputLocation)}`);
-//   logger.log(`- API location: ${chalk.green(config.apiLocation ?? '')}`);
-//   logger.log(`- App build command: ${chalk.green(config.appBuildCommand ?? '')}`);
-//   logger.log(`- API build command: ${chalk.green(config.apiBuildCommand ?? '')}`);
-//   logger.log(`- Dev command: ${chalk.green(config.devServerCommand ?? '')}`);
-//   logger.log(`- Dev server URL: ${chalk.green(config.devServerUrl ?? '')}\n`);
-// }
-
-async function promptOrUseDefault<T extends string = string>(
-  disablePrompts: boolean,
-  questions: prompts.PromptObject<T> | Array<prompts.PromptObject<T>>,
-  options?: prompts.Options
-): Promise<prompts.Answers<T>> {
-  if (disablePrompts) {
-    const response = {} as prompts.Answers<T>;
-    questions = Array.isArray(questions) ? questions : [questions];
-    for (const question of questions) {
-      response[question.name as T] = question.initial;
-    }
-    return response;
-  }
-
-  return prompts(questions, { ...options, onCancel: cancelPrompt });
-}
-
-function cancelPrompt() {
-  logger.log("Aborted, configuration not saved.");
-  process.exit(-1);
+function printFrameworkConfig(config: FrameworkConfig) {
+  logger.log(chalk.bold('\nDetected configuration for your app:'));
+  logger.log(`- Framework(s): ${chalk.green(config.name ?? 'none')}`);
+  logger.log(`- App location: ${chalk.green(config.appLocation)}`);
+  logger.log(`- Output location: ${chalk.green(config.outputLocation)}`);
+  logger.log(`- API location: ${chalk.green(config.apiLocation ?? '')}`);
+  logger.log(`- App build command: ${chalk.green(config.appBuildCommand ?? '')}`);
+  logger.log(`- API build command: ${chalk.green(config.apiBuildCommand ?? '')}`);
+  logger.log(`- Dev command: ${chalk.green(config.devServerCommand ?? '')}`);
+  logger.log(`- Dev server URL: ${chalk.green(config.devServerUrl ?? '')}\n`);
 }
 
 // function isEmptyFolder(path: string) {

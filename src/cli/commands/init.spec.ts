@@ -5,16 +5,6 @@ import { DEFAULT_CONFIG } from "../../config";
 import { swaCliConfigFilename } from "../../core/utils";
 
 jest.mock("prompts", () => jest.fn());
-jest.mock("../../config", () => {
-  return {
-    DEFAULT_CONFIG: {
-      appLocation: "/foobar",
-      outputLocation: "/foobar",
-      appBuildCommand: "npm run build --if-present",
-      apiBuildCommand: "npm run build --if-present",
-    },
-  };
-});
 
 const defaultCliConfig = {
   ...DEFAULT_CONFIG,
@@ -51,15 +41,13 @@ describe("swa init", () => {
         \\"$schema\\": \\"https://aka.ms/azure/static-web-apps-cli/schema\\",
         \\"configurations\\": {
           \\"test\\": {
-            \\"appLocation\\": \\"/foobar\\",
-            \\"outputLocation\\": \\"/foobar\\",
-            \\"appBuildCommand\\": \\"npm run build --if-present\\",
-            \\"apiBuildCommand\\": \\"npm run build --if-present\\",
+            \\"appLocation\\": \\"./\\",
+            \\"outputLocation\\": \\"./\\",
             \\"start\\": {
-              \\"context\\": \\"/foobar\\"
+              \\"outputLocation\\": \\"./\\"
             },
             \\"deploy\\": {
-              \\"context\\": \\"/foobar\\"
+              \\"outputLocation\\": \\"./\\"
             }
           }
         }
@@ -75,20 +63,18 @@ describe("swa init", () => {
     expect(promptsMock).not.toHaveBeenCalled();
   });
 
-  it("should ask project name if it's not specified as an argument", async () => {
+  it("should ask config name if it's not specified as an argument", async () => {
     mockFs();
     const promptsMock = jest.requireMock("prompts");
     promptsMock.mockResolvedValue(defautResolvedPrompts);
 
     await init(undefined, { ...defaultCliConfig });
-    const configJson = JSON.parse(fs.readFileSync(defaultCliConfig.config, "utf-8"));
 
-    // check that the first prompt ask for projectName property
-    expect(promptsMock.mock.calls[0][0].name).toEqual("projectName");
-    expect(configJson.configurations["test-project"]).toBeDefined();
+    // check that the first prompt ask for configName property
+    expect(promptsMock.mock.calls[0][0].name).toEqual("configName");
   });
 
-  it("should not ask project name if it's not specified as an argument", async () => {
+  it("should not ask config name if it's not specified as an argument", async () => {
     mockFs();
     const promptsMock = jest.requireMock("prompts");
     promptsMock.mockResolvedValue(defautResolvedPrompts);
@@ -96,8 +82,8 @@ describe("swa init", () => {
     await init("my-app", { ...defaultCliConfig });
     const configJson = JSON.parse(fs.readFileSync(defaultCliConfig.config, "utf-8"));
 
-    // check that the first prompt ask for projectName property
-    expect(promptsMock.mock.calls[0][0].name).not.toEqual("projectName");
+    // check that the first prompt ask for configName property
+    expect(promptsMock.mock.calls[0][0].name).not.toEqual("configName");
     expect(configJson.configurations["my-app"]).toBeDefined();
   });
 
@@ -109,11 +95,10 @@ describe("swa init", () => {
     await init("test", { ...defaultCliConfig, yes: true });
     await init("test", { ...defaultCliConfig });
 
-    // check that the first prompt ask for projectName property
     const configJson = JSON.parse(fs.readFileSync(defaultCliConfig.config, "utf-8"));
     const lastCall = promptsMock.mock.calls.length - 1;
     expect(promptsMock.mock.calls[lastCall][0].name).toEqual("confirmOverwrite");
-    expect(configJson.configurations.test.outputLocation).toEqual("/foobar");
+    expect(configJson.configurations.test.outputLocation).toEqual("./");
   });
 
   it("should ask for overwrite if a config already exists and overwrite it", async () => {
@@ -124,10 +109,36 @@ describe("swa init", () => {
     await init("test", { ...defaultCliConfig, yes: true });
     await init("test", { ...defaultCliConfig });
 
-    // check that the first prompt ask for projectName property
     const configJson = JSON.parse(fs.readFileSync(defaultCliConfig.config, "utf-8"));
     const lastCall = promptsMock.mock.calls.length - 1;
     expect(promptsMock.mock.calls[lastCall][0].name).toEqual("confirmOverwrite");
     expect(configJson.configurations.test.outputLocation).toEqual("./dist");
+  });
+
+  it("should detect frameworks and create a config file", async () => {
+    mockFs({ src: mockFs.load("e2e/fixtures/static-node-ts") });
+
+    await init("test", { ...defaultCliConfig, yes: true });
+    const configFile = fs.readFileSync(defaultCliConfig.config, "utf-8");
+
+    expect(configFile).toMatchInlineSnapshot(`
+      "{
+        \\"$schema\\": \\"https://aka.ms/azure/static-web-apps-cli/schema\\",
+        \\"configurations\\": {
+          \\"test\\": {
+            \\"appLocation\\": \\"src/\\",
+            \\"apiLocation\\": \\"node-ts/dist\\",
+            \\"outputLocation\\": \\"src/\\",
+            \\"apiBuildCommand\\": \\"npm run build --if-present\\",
+            \\"start\\": {
+              \\"outputLocation\\": \\"src/\\"
+            },
+            \\"deploy\\": {
+              \\"outputLocation\\": \\"src/\\"
+            }
+          }
+        }
+      }"
+    `);
   });
 });

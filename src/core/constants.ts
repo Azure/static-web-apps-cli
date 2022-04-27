@@ -2,6 +2,13 @@ import path from "path";
 import { DEFAULT_CONFIG } from "../config";
 import { address, isHttpUrl } from "./utils/net";
 
+export const STATIC_SITE_CLIENT_RELEASE_METADATA_URL = "https://swalocaldeploy.azureedge.net/downloads/versions.json";
+export const SWA_COMMANDS = ['login', 'init', 'start', 'deploy'] as const;
+// Type cannot be in swa.d.ts as it's inferred from SWA_COMMANDS
+export type SWACommand = (typeof SWA_COMMANDS)[number];
+
+export const SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB = 20; // 20kb
+
 export const SWA_AUTH_COOKIE = `StaticWebAppsAuthCookie`;
 export const ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT = ["GET", "HEAD", "OPTIONS"];
 

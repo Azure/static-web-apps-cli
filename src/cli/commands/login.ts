@@ -9,18 +9,21 @@ import { DEFAULT_CONFIG } from "../../config";
 import { configureOptions, logger, logGiHubIssueMessageAndExit } from "../../core";
 import { authenticateWithAzureIdentity, listSubscriptions, listTenants } from "../../core/account";
 import { ENV_FILENAME } from "../../core/constants";
-import { swaCLIEnv } from "../../core/env";
 import { updateGitIgnore } from "../../core/git";
 import { chooseSubscription, chooseTenant } from "../../core/prompts";
 
 export function addSharedLoginOptionsToCommand(command: Command) {
   command
-    .option("--subscription [subscriptionId]", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
+    .option("--subscription-id [subscriptionId]", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
     .option("--resource-group [resourceGroupName]", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroupName)
     .option("--tenant-id [tenantId]", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
     .option("--client-id [clientId]", "Azure client ID", DEFAULT_CONFIG.clientId)
     .option("--client-secret [clientSecret]", "Azure client secret", DEFAULT_CONFIG.clientSecret)
-    .option("--app-name [appName]", "Azure Static Web App application name", DEFAULT_CONFIG.appName);
+    .option("--app-name [appName]", "Azure Static Web App application name", DEFAULT_CONFIG.appName)
+    .option("--use-keychain", "Enable using the operating system native keychain", DEFAULT_CONFIG.useKeychain)
+
+    // Note: Commander does not automatically recognize the --no-* option, so we have to explicitly use --no-use-keychain- instead
+    .option("--no-use-keychain", "Disable using the operating system native keychain", !DEFAULT_CONFIG.useKeychain);
 }
 
 export default function registerCommand(program: Command) {
@@ -28,12 +31,11 @@ export default function registerCommand(program: Command) {
     .command("login")
     .usage("[options]")
     .description("login into Azure Static Web Apps")
-    .option("--use-keychain", "Enable to use the operating system native keychain", DEFAULT_CONFIG.useKeychain)
     .action(async (_options: SWACLIConfig, command: Command) => {
-      const config = await configureOptions(undefined, command.optsWithGlobals(), command);
+      const options = await configureOptions(undefined, command.optsWithGlobals(), command, "login");
 
       try {
-        const { credentialChain, subscriptionId } = await login(config.options);
+        const { credentialChain, subscriptionId } = await login(options);
 
         if (credentialChain && subscriptionId) {
           logger.log(chalk.green(`✔ Successfully setup project!`));
@@ -55,7 +57,7 @@ Examples:
   swa login
 
   Interactive login without using the native keychain
-  swa login --useKeychain false
+  swa login --no-use-keychain
 
   Log in into specific tenant
   swa login --tenant-id 00000000-0000-0000-0000-000000000000
@@ -74,14 +76,14 @@ Examples:
   addSharedLoginOptionsToCommand(loginCommand);
 }
 
-export async function login(options: SWACLIConfig) {
+export async function login(options: SWACLIConfig): Promise<any> {
   let credentialChain: TokenCredential | undefined = undefined;
 
   logger.log(`Checking Azure session...`);
 
-  let tenantId: string | undefined = DEFAULT_CONFIG.tenantId;
-  let clientId: string | undefined = DEFAULT_CONFIG.clientId;
-  let clientSecret: string | undefined = DEFAULT_CONFIG.clientSecret;
+  let tenantId: string | undefined = options.tenantId;
+  let clientId: string | undefined = options.clientId;
+  let clientSecret: string | undefined = options.clientSecret;
 
   credentialChain = await authenticateWithAzureIdentity({ tenantId, clientId, clientSecret }, options.useKeychain);
 
@@ -93,15 +95,7 @@ export async function login(options: SWACLIConfig) {
 }
 
 async function setupProjectCredentials(options: SWACLIConfig, credentialChain: TokenCredential) {
-  logger.log(``);
-  logger.log(`Setting project...`);
-
-  const { AZURE_SUBSCRIPTION_ID, AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET } = swaCLIEnv();
-
-  let subscriptionId: string | undefined = AZURE_SUBSCRIPTION_ID ?? options.subscriptionId;
-  let tenantId: string | undefined = AZURE_TENANT_ID ?? options.tenantId;
-  let clientId: string | undefined = AZURE_CLIENT_ID ?? options.clientId;
-  let clientSecret: string | undefined = AZURE_CLIENT_SECRET ?? options.clientSecret;
+  let { subscriptionId, tenantId, clientId, clientSecret } = options;
 
   // If the user has not specified a tenantId, we will prompt them to choose one
   if (!tenantId) {
@@ -149,7 +143,7 @@ async function setupProjectCredentials(options: SWACLIConfig, credentialChain: T
 
   return {
     credentialChain,
-    subscriptionId,
+    subscriptionId: subscriptionId as string,
   };
 }
 
@@ -194,7 +188,7 @@ async function storeProjectCredentialsInEnvFile(
     const envFileContentWithProjectDetails = [...oldEnvFileLines, ...newEnvFileLines].join("\n");
     await writeFile(envFile, envFileContentWithProjectDetails);
 
-    logger.log(chalk.green(`✔ Successfully project credentials in ${ENV_FILENAME} file.`));
+    logger.log(chalk.green(`✔ Saved project credentials in ${ENV_FILENAME} file.`));
 
     await updateGitIgnore(ENV_FILENAME);
   }

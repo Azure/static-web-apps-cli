@@ -23,9 +23,6 @@
             "$ref": "#/$defs/deployCommandParameters"
           },
           {
-            "$ref": "#/$defs/contextParameters"
-          },
-          {
             "properties": {
               "login": {
                 "allOf": [
@@ -37,9 +34,6 @@
                   },
                   {
                     "$ref": "#/$defs/loginSharedCommandParameters"
-                  },
-                  {
-                    "$ref": "#/$defs/contextParameters"
                   }
                 ]
               }
@@ -54,9 +48,6 @@
                   },
                   {
                     "$ref": "#/$defs/startCommandParameters"
-                  },
-                  {
-                    "$ref": "#/$defs/contextParameters"
                   }
                 ]
               }
@@ -71,9 +62,6 @@
                   },
                   {
                     "$ref": "#/$defs/initCommandParameters"
-                  },
-                  {
-                    "$ref": "#/$defs/contextParameters"
                   }
                 ]
               }
@@ -91,9 +79,6 @@
                   },
                   {
                     "$ref": "#/$defs/deployCommandParameters"
-                  },
-                  {
-                    "$ref": "#/$defs/contextParameters"
                   }
                 ]
               }
@@ -105,14 +90,6 @@
     }
   },
   "$defs": {
-    "contextParameters": {
-      "properties": {
-        "context": {
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
     "globalParameters": {
       "properties": {
         "verbose": {
@@ -139,6 +116,10 @@
       "properties": {
         "appLocation": {
           "description": "The folder containing the source code of the front-end application",
+          "type": "string"
+        },
+        "outputLocation": {
+          "description": "The folder containing the built source of the front-end application",
           "type": "string"
         },
         "apiLocation": {

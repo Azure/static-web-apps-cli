@@ -19,10 +19,12 @@ try {
     path.join("src", "public", "404.html"),
     path.join("src", "public", "403.html"),
     path.join("src", "cli", "bin.js"),
+    path.join("schema", "staticwebapp.config.schema.json"),
+    path.join("schema", "swa-cli.config.schema.json"),
   ];
 
   files.forEach((file) => {
-    let distFile = file.replace("src", "dist");
+    let distFile = path.join("dist", file.replace("src", ""));
 
     if (!fs.existsSync(path.dirname(distFile))) {
       fs.mkdirSync(path.dirname(distFile), { recursive: true });
@@ -33,5 +35,7 @@ try {
     let content = fs.readFileSync(distFile).toString("utf-8");
     content = content.replace(/#STAMP#/, build);
     fs.writeFileSync(distFile, content);
+
+    console.log(`Copied ${file} to ${distFile}`);
   });
 })();

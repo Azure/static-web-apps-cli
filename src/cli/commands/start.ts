@@ -27,8 +27,8 @@ let packageInfo = require("../../../package.json");
 
 export default function registerCommand(program: Command) {
   program
-    .command("start [context]")
-    .usage("[context] [options]")
+    .command("start [outputLocation]")
+    .usage("[outputLocation] [options]")
     .description("Start the emulator from a directory or bind to a dev server")
     .option("--app-location <appLocation>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
     .option("--api-location <apiLocation>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
@@ -52,15 +52,15 @@ export default function registerCommand(program: Command) {
 
     .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
     .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
-    .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+    .action(async (outputLocation: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
       console.warn(chalk.yellow("************************************************************************"));
       console.warn(chalk.yellow("* WARNING: This emulator is currently in preview and may not match the *"));
       console.warn(chalk.yellow("* cloud environment exactly. Always deploy and test your app in Azure. *"));
       console.warn(chalk.yellow("************************************************************************"));
       console.warn();
 
-      const config = await configureOptions(context, command.optsWithGlobals(), command);
-      await start(config.context, config.options);
+      const options = await configureOptions(outputLocation, command.optsWithGlobals(), command, "start");
+      await start(options.outputLocation ?? outputLocation, options);
     })
     .addHelpText(
       "after",
@@ -70,85 +70,105 @@ Examples:
 Serve static content from a specific folder
 swa start ./output-folder
 
-Use an already running framework development server
+Connect to an already running framework development server
 swa start http://localhost:3000
 
-Use staticwebapp.config.json file in a specific location
+Use staticwebapp.config.json file from a specific location
 swa start http://localhost:3000 --swa-config-location ./app-source
 
-Serve static content and run an API from another folder
+Serve static content from a folder and run an API from another folder
 swa start ./output-folder --api-location ./api
 
 Use a custom command to run framework development server at startup
 swa start http://localhost:3000 --run "npm start"
+
+Connect both front-end and the API to running development server
+swa start http://localhost:3000 --api-location http://localhost:7071
   `
     );
 }
 
-export async function start(startContext: string | undefined, options: SWACLIConfig) {
+export async function start(outputLocationOtHttpUrl: string, options: SWACLIConfig) {
   // WARNING:
   // environment variables are populated using values provided by the user to the CLI.
   // Code below doesn't have access to these environment variables which are defined later below.
   // Make sure this code (or code from utils) does't depend on environment variables!
 
-  let useAppDevServer: string | undefined | null = undefined;
+  let {
+    appLocation,
+    apiLocation,
+    apiPort,
+    devserverTimeout,
+    ssl,
+    sslCert,
+    sslKey,
+    build,
+    host,
+    port,
+    run,
+    open,
+    funcArgs,
+    swaConfigLocation,
+    verbose,
+  } = options;
+
   let useApiDevServer: string | undefined | null = undefined;
   let startupCommand: string | undefined | null = undefined;
 
-  const resolvedPortNumber = await isAcceptingTcpConnections({ host: options.host, port: options.port! });
+  const resolvedPortNumber = await isAcceptingTcpConnections({ host, port });
   // make sure the CLI default port is available before proceeding.
   if (resolvedPortNumber === 0) {
-    logger.error(`Port ${options.port} is already in use. Use '--port' to specify a different port.`, true);
+    logger.error(`Port ${port} is already in use. Use '--port' to specify a different port.`, true);
   }
 
-  // set the new port number in case we picked a new one (see isAcceptingTcpConnections())
+  // set the new port number in case we picked a new one (see net.isAcceptingTcpConnections())
   logger.silly(`Resolved port number: ${resolvedPortNumber}`);
-  options.port = resolvedPortNumber;
+  port = resolvedPortNumber;
 
-  // start context should never be undefined but we'll check anyway!
-  // if the user didn't provide a context, use the current directory
-  if (!startContext) {
-    startContext = DEFAULT_CONFIG.outputLocation;
+  // resolve the absolute path to the appLocation
+  appLocation = path.resolve(appLocation as string);
+
+  // let's find out if outputLocation is a URL or a folder
+  let outputLocation = outputLocationOtHttpUrl;
+
+  logger.silly(`Resolving outputLocation=${outputLocation} full path...`);
+
+  if (isHttpUrl(outputLocation)) {
+    // if the outputLocation is an http url, we will connect to the dev server at that url
+    logger.silly(`outputLocation is a URL, we will try connect to dev server at ${outputLocation}`);
+    outputLocation = outputLocation;
   } else {
-    if (isHttpUrl(startContext)) {
-      useAppDevServer = startContext;
-      options.outputLocation = useAppDevServer;
-    } else {
-      let outputLocationAbsolute = path.resolve(options.appLocation as string, startContext);
-      // if folder exists, start the emulator from a specific build folder (outputLocation), relative to appLocation
-      if (fs.existsSync(outputLocationAbsolute)) {
-        options.outputLocation = outputLocationAbsolute;
-      }
-      // check for build folder (outputLocation) using the absolute location
-      else if (fs.existsSync(startContext)) {
-        options.outputLocation = startContext;
-      } else {
-        logger.error(`The folder "${outputLocationAbsolute}" is not found. Exit.`, true);
-        return;
-      }
+    let resolvedOutputLocation = path.resolve(appLocation as string, outputLocation as string);
+
+    // if folder exists, start the emulator from a specific build folder (outputLocation), relative to appLocation
+    if (fs.existsSync(resolvedOutputLocation)) {
+      outputLocation = resolvedOutputLocation;
     }
+    // check for build folder (outputLocation) using the absolute location
+    else if (!fs.existsSync(outputLocation!)) {
+      logger.error(`The folder "${resolvedOutputLocation}" is not found. Exit.`, true);
+      return;
+    }
+
+    logger.silly(`Resolved outputLocation:`);
+    logger.silly(`  ${outputLocation}`);
   }
 
-  if (options.apiLocation) {
+  if (apiLocation) {
     // resolves to the absolute path of the apiLocation
-    let apiLocationAbsolute = path.resolve(options.appLocation as string, options.apiLocation);
+    let apiLocationAbsolute = path.resolve(appLocation as string, apiLocation);
 
     if (isHttpUrl(apiLocationAbsolute)) {
-      useApiDevServer = options.apiLocation;
-      options.apiLocation = useApiDevServer;
+      useApiDevServer = apiLocation;
+      apiLocation = useApiDevServer;
     }
     // make sure api folder exists
     else if (fs.existsSync(apiLocationAbsolute)) {
-      options.apiLocation = apiLocationAbsolute;
+      apiLocation = apiLocationAbsolute;
     } else {
       logger.info(`Skipping API because folder "${apiLocationAbsolute}" is missing`, "swa");
     }
   }
-
-  let [appLocation, outputLocation, apiLocation] = [options.appLocation as string, options.outputLocation as string, options.apiLocation as string];
-
-  let apiPort = (options.apiPort || DEFAULT_CONFIG.apiPort) as number;
-  let devserverTimeout = (options.devserverTimeout || DEFAULT_CONFIG.devserverTimeout) as number;
 
   let userWorkflowConfig: Partial<GithubActionWorkflow> | undefined = {
     appLocation,
@@ -163,6 +183,9 @@ export async function start(startContext: string | undefined, options: SWACLICon
     userWorkflowConfig = readWorkflowFile({
       userWorkflowConfig,
     });
+
+    logger.silly(`User workflow config:`);
+    logger.silly(userWorkflowConfig!);
   } catch (err) {
     logger.warn(``);
     logger.warn(`Error reading workflow configuration:`);
@@ -183,7 +206,7 @@ export async function start(startContext: string | undefined, options: SWACLICon
     // get the API port from the dev server
     apiPort = parseUrl(useApiDevServer)?.port;
   } else {
-    if (options.apiLocation && userWorkflowConfig?.apiLocation) {
+    if (apiLocation && userWorkflowConfig?.apiLocation) {
       // check if the func binary is globally available and if not, download it
       const funcBinary = await getCoreToolsBinary();
       const nodeMajorVersion = getNodeMajorVersion();
@@ -209,61 +232,59 @@ export async function start(startContext: string | undefined, options: SWACLICon
 
         // serve the api if and only if the user provides a folder via the --api-location flag
         if (isApiLocationExistsOnDisk) {
-          serveApiCommand = `cd "${userWorkflowConfig.apiLocation}" && ${funcBinary} start --cors "*" --port ${options.apiPort} ${
-            options.funcArgs ?? ""
-          }`;
+          serveApiCommand = `cd "${userWorkflowConfig.apiLocation}" && ${funcBinary} start --cors "*" --port ${apiPort} ${funcArgs ?? ""}`;
         }
       }
     }
   }
 
-  if (options.ssl) {
-    if (options.sslCert === undefined && options.sslKey === undefined) {
+  if (ssl) {
+    if (sslCert === undefined && sslKey === undefined) {
       logger.warn(`WARNING: Using built-in UNSIGNED certificate. DO NOT USE IN PRODUCTION!`);
       const pemFilepath = await getCertificate({
         selfSigned: true,
         days: 365,
-        commonName: options.host,
+        commonName: host,
         organization: `Azure Static Web Apps CLI ${packageInfo.version}`,
-        organizationUnit: "Engineering",
+        organizationUnit: "Azure Engineering",
         emailAddress: `secure@microsoft.com`,
       });
-      options.sslCert = pemFilepath;
-      options.sslKey = pemFilepath;
+      sslCert = pemFilepath;
+      sslKey = pemFilepath;
     } else {
       // user provided cert and key, so we'll use them
-      options.sslCert = options.sslCert && path.resolve(options.sslCert);
-      options.sslKey = options.sslKey && path.resolve(options.sslKey);
+      sslCert = sslCert && path.resolve(sslCert);
+      sslKey = sslKey && path.resolve(sslKey);
     }
   }
 
-  if (options.run) {
-    startupCommand = createStartupScriptCommand(options.run, options);
+  if (run) {
+    startupCommand = createStartupScriptCommand(run, options);
   }
 
   // resolve the following config to their absolute paths
-  options.swaConfigLocation = options.swaConfigLocation && path.resolve(options.swaConfigLocation);
+  swaConfigLocation = path.resolve(swaConfigLocation || process.cwd());
 
   // WARNING: code from above doesn't have access to env vars which are only defined below
 
   // set env vars for current command
   const envVarsObj: SWACLIEnv = {
-    SWA_RUNTIME_CONFIG_LOCATION: options.swaConfigLocation,
+    SWA_RUNTIME_CONFIG_LOCATION: swaConfigLocation,
     SWA_RUNTIME_WORKFLOW_LOCATION: userWorkflowConfig?.files?.[0] as string,
-    SWA_CLI_DEBUG: options.verbose as DebugFilterLevel,
+    SWA_CLI_DEBUG: verbose as DebugFilterLevel,
     SWA_CLI_API_PORT: `${apiPort}`,
     SWA_CLI_APP_LOCATION: userWorkflowConfig?.appLocation as string,
     SWA_CLI_OUTPUT_LOCATION: userWorkflowConfig?.outputLocation as string,
     SWA_CLI_API_LOCATION: userWorkflowConfig?.apiLocation as string,
-    SWA_CLI_HOST: `${options.host}`,
-    SWA_CLI_PORT: `${options.port}`,
-    SWA_CLI_APP_SSL: options.ssl ? "true" : "false",
-    SWA_CLI_APP_SSL_CERT: options.sslCert,
-    SWA_CLI_APP_SSL_KEY: options.sslKey,
+    SWA_CLI_HOST: `${host}`,
+    SWA_CLI_PORT: `${port}`,
+    SWA_CLI_APP_SSL: ssl ? "true" : "false",
+    SWA_CLI_APP_SSL_CERT: sslCert,
+    SWA_CLI_APP_SSL_KEY: sslKey,
     SWA_CLI_STARTUP_COMMAND: startupCommand as string,
     SWA_CLI_VERSION: packageInfo.version,
     SWA_CLI_DEVSERVER_TIMEOUT: `${devserverTimeout}`,
-    SWA_CLI_OPEN_BROWSER: options.open ? "true" : "false",
+    SWA_CLI_OPEN_BROWSER: open ? "true" : "false",
   };
 
   // merge SWA CLI env variables with process.env
@@ -293,7 +314,7 @@ export async function start(startContext: string | undefined, options: SWACLICon
     );
   }
 
-  if (options.build) {
+  if (build) {
     // run the app/api builds
     await builder({
       config: userWorkflowConfig as GithubActionWorkflow,
@@ -302,7 +323,7 @@ export async function start(startContext: string | undefined, options: SWACLICon
 
   logger.silly(`Starting the SWA emulator with the following configuration:`);
   logger.silly({
-    ssl: [options.ssl, options.sslCert, options.sslKey],
+    ssl: [ssl, sslCert, sslKey],
     env: envVarsObj,
     commands: {
       swa: concurrentlyCommands.find((c) => c.name === "swa")?.command,
@@ -315,8 +336,10 @@ export async function start(startContext: string | undefined, options: SWACLICon
 
   await result
     .then(
-      (code: CloseEvent[]) => {
-        logger.silly(`SWA emulator exited with code ${code.values().next().value}`);
+      (errorEvent: CloseEvent[]) => {
+        const killedCommand = errorEvent.filter((event) => event.killed).pop();
+        const exitCode = killedCommand?.exitCode;
+        logger.silly(`SWA emulator exited with code ${exitCode}`);
         process.exit();
       },
       (errorEvent: CloseEvent[]) => {

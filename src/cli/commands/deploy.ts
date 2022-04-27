@@ -1,4 +1,3 @@
-import { TokenCredential } from "@azure/identity";
 import chalk from "chalk";
 import { spawn } from "child_process";
 import { Command } from "commander";
@@ -6,25 +5,35 @@ import fs from "fs";
 import ora from "ora";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
-import { configureOptions, findSWAConfigFile, logger, logGiHubIssueMessageAndExit, readWorkflowFile } from "../../core";
-import { getStaticSiteDeployment } from "../../core/account";
+import {
+  configureOptions,
+  findSWAConfigFile,
+  getCurrentSwaCliConfigFromFile,
+  logger,
+  logGiHubIssueMessageAndExit,
+  readWorkflowFile,
+  updateSwaCliConfigFile,
+} from "../../core";
+import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../core/account";
 import { cleanUp, getDeployClientPath } from "../../core/deploy-client";
 import { swaCLIEnv } from "../../core/env";
-import { login, addSharedLoginOptionsToCommand } from "./login";
+import { addSharedLoginOptionsToCommand, login } from "./login";
 
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "package.json"));
 
 export default function registerCommand(program: Command) {
   const deployCommand = program
-    .command("deploy [context]")
-    .usage("[context] [options]")
+    .command("deploy [outputLocation]")
+    .usage("[outputLocation] [options]")
     .description("Deploy the current project to Azure Static Web Apps")
     .option("--api-location <apiLocation>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("--deployment-token <secret>", "the secret token used to authenticate with the Static Web Apps")
     .option("--dry-run", "simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
-    .action(async (context: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
-      const config = await configureOptions(context, command.optsWithGlobals(), command);
-      await deploy(config.context ?? context, config.options);
+    .option("--print-token", "print the deployment token", false)
+    .option("--env [environment]", "the type of deployment environment where to deploy the project", DEFAULT_CONFIG.env)
+    .action(async (outputLocation: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+      const options = await configureOptions(outputLocation, command.optsWithGlobals(), command, "deploy");
+      await deploy(options.outputLocation ?? outputLocation, options);
     })
     .addHelpText(
       "after",
@@ -40,30 +49,50 @@ Examples:
   Deploy using swa-cli.config.json file
   swa deploy
   swa deploy myconfig
+
+  Print the deployment token
+  swa deploy --print-token
+
+  Deploy to a specific environment
+  swa deploy --env production
     `
     );
   addSharedLoginOptionsToCommand(deployCommand);
 }
 
-export async function deploy(deployContext: string, options: SWACLIConfig) {
+export async function deploy(outputLocationOrConfigName: string, options: SWACLIConfig) {
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
 
-  if (options.dryRun) {
+  let { appLocation, apiLocation, dryRun, deploymentToken, printToken, appName, swaConfigLocation, verbose } = options;
+  let outputLocation = outputLocationOrConfigName;
+
+  if (dryRun) {
     logger.warn("***********************************************************************");
     logger.warn("* WARNING: Running in dry run mode. This project will not be deployed *");
     logger.warn("***********************************************************************");
     logger.warn("");
   }
 
-  const frontendFolder = path.resolve(process.cwd(), deployContext);
+  // make sure appLocation is set
+  appLocation = path.resolve(appLocation || process.cwd());
+
+  // make sure outputLocation is set
+  outputLocation = path.resolve(appLocation, outputLocation || process.cwd());
+
+  // if folder exists, deploy from a specific build folder (outputLocation), relative to appLocation
+  if (!fs.existsSync(outputLocation)) {
+    logger.error(`The folder "${outputLocation}" is not found. Exit.`, true);
+    return;
+  }
+
   logger.log(`Deploying front-end files from folder:`);
-  logger.log(`  ${chalk.green(frontendFolder)}`);
+  logger.log(`  ${chalk.green(outputLocation)}`);
   logger.log(``);
 
   // if --api-location is provided, use it as the api folder
-  if (options.apiLocation) {
-    const userApiFolder = path.resolve(process.cwd(), options.apiLocation!);
+  if (apiLocation) {
+    const userApiFolder = path.resolve(path.join(appLocation!, apiLocation!));
     if (!fs.existsSync(userApiFolder)) {
       logger.error(`The provided API folder ${userApiFolder} does not exist. Abort.`, true);
       return;
@@ -75,67 +104,107 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
   }
   // otherwise, check if the default api folder exists and print a warning
   else {
-    const defaultApiFolder = path.resolve(process.cwd(), DEFAULT_CONFIG.apiPrefix!);
+    const defaultApiFolder = path.normalize(path.join(appLocation, DEFAULT_CONFIG.apiPrefix!));
     if (fs.existsSync(defaultApiFolder)) {
       logger.warn(
         `An API folder was found at ".${
-          path.sep + DEFAULT_CONFIG.apiPrefix!
-        }" but the --api-location option was not provided. API will not be deployed!`,
-        "swa"
+          // TODO: should handle ./Api and ./api
+          path.sep + path.basename(defaultApiFolder)
+        }" but the --api-location option was not provided. The API will not be deployed.\n`
       );
     }
   }
 
-  let deploymentToken: string | undefined = undefined;
-  if (options.deploymentToken) {
-    deploymentToken = options.deploymentToken;
-    logger.log("Deployment token provide via flag");
-    logger.log({ [chalk.green(`--deployment-token`)]: options.deploymentToken });
+  // resolve the deployment token
+  if (deploymentToken) {
+    deploymentToken = deploymentToken;
+    logger.silly("Deployment token provide via flag");
+    logger.silly({ [chalk.green(`--deployment-token`)]: deploymentToken });
   } else if (SWA_CLI_DEPLOYMENT_TOKEN) {
     deploymentToken = SWA_CLI_DEPLOYMENT_TOKEN;
-    logger.log("Deployment token found in Environment Variables:");
-    logger.log({ [chalk.green(`SWA_CLI_DEPLOYMENT_TOKEN`)]: SWA_CLI_DEPLOYMENT_TOKEN });
-  } else if (options.dryRun === false) {
-    logger.warn(`No deployment token found. Trying interactive login...`);
+    logger.silly("Deployment token found in Environment Variables:");
+    logger.silly({ [chalk.green(`SWA_CLI_DEPLOYMENT_TOKEN`)]: SWA_CLI_DEPLOYMENT_TOKEN });
+  } else if (dryRun === false) {
+    logger.silly(`No deployment token found. Trying interactive login...`);
 
     try {
-      const { credentialChain, subscriptionId, resourceGroupName, staticSiteName } = await login({
+      const { credentialChain, subscriptionId } = await login({
         ...options,
-        useKeychain: true,
+      });
+
+      logger.silly(`Login successful`);
+
+      if (appName) {
+        logger.log(`\nChecking project "${appName}" settings...`);
+      } else {
+        logger.log(`\nChecking project settings...`);
+      }
+
+      const { resourceGroupName, staticSiteName } = (await chooseOrCreateProjectDetails(options, credentialChain, subscriptionId)) as {
+        resourceGroupName: string;
+        staticSiteName: string;
+      };
+
+      logger.silly(`Project settings:`);
+      logger.silly({
+        resourceGroupName,
+        staticSiteName,
+        subscriptionId,
       });
 
       const deploymentTokenResponse = await getStaticSiteDeployment(
-        credentialChain as TokenCredential,
+        credentialChain,
         subscriptionId,
-        resourceGroupName,
-        staticSiteName
+        resourceGroupName as string,
+        staticSiteName as string
       );
 
       deploymentToken = deploymentTokenResponse?.properties?.apiKey;
 
       if (!deploymentToken) {
-        throw new Error("Cannot find a deployment token. Aborting.");
-      }
+        logger.error("Cannot find a deployment token. Aborting.", true);
+      } else {
+        logger.log(chalk.green(`✔ Successfully setup project!`));
 
-      logger.log("Deployment token provided via remote config");
-      logger.log({ [chalk.green(`deploymentToken`)]: deploymentToken });
-    } catch {
-      logger.error("A deployment token is required to deploy to Azure Static Web Apps");
-      logger.error("Provide a deployment token using the --deployment-token option or SWA_CLI_DEPLOYMENT_TOKEN environment variable", true);
+        // store project settings in swa-cli.config.json (if available)
+        if (dryRun === false) {
+          const currentSwaCliConfig = getCurrentSwaCliConfigFromFile();
+          if (currentSwaCliConfig?.config) {
+            logger.silly(`Saving project settings to swa-cli.config.json...`);
+
+            const newConfig = { ...currentSwaCliConfig?.config };
+            newConfig.appName = staticSiteName;
+            newConfig.resourceGroupName = resourceGroupName;
+            updateSwaCliConfigFile(newConfig);
+          } else {
+            logger.silly(`No swa-cli.config.json file found. Skipping saving project settings.`);
+          }
+        }
+
+        logger.silly("\nDeployment token provided via remote configuration");
+        logger.silly({ [chalk.green(`deploymentToken`)]: deploymentToken });
+      }
+    } catch (error: any) {
+      logger.error(error.message);
       return;
     }
   }
-  logger.log(``);
+  logger.log(`Deploying to environment: ${chalk.green(options.env)}\n`);
 
-  let userWorkflowConfig: Partial<GithubActionWorkflow> | undefined = {
-    appLocation: options.appLocation,
-    outputLocation: options.outputLocation,
-    apiLocation: options.apiLocation,
-  };
+  if (printToken) {
+    logger.log(`Deployment token:`);
+    logger.log(chalk.green(deploymentToken));
+    process.exit(0);
+  }
 
   // mix CLI args with the project's build workflow configuration (if any)
   // use any specific workflow config that the user might provide undef ".github/workflows/"
   // Note: CLI args will take precedence over workflow config
+  let userWorkflowConfig: Partial<GithubActionWorkflow> | undefined = {
+    appLocation,
+    outputLocation,
+    apiLocation,
+  };
   try {
     userWorkflowConfig = readWorkflowFile({
       userWorkflowConfig,
@@ -150,35 +219,43 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
   }
 
   const cliEnv: SWACLIEnv = {
-    SWA_CLI_DEBUG: options.verbose as DebugFilterLevel,
+    SWA_CLI_DEBUG: verbose as DebugFilterLevel,
     SWA_RUNTIME_WORKFLOW_LOCATION: userWorkflowConfig?.files?.[0],
-    SWA_RUNTIME_CONFIG_LOCATION: options.swaConfigLocation,
-    SWA_RUNTIME_CONFIG: options.swaConfigLocation ? (await findSWAConfigFile(options.swaConfigLocation))?.file : undefined,
+    SWA_RUNTIME_CONFIG_LOCATION: swaConfigLocation,
+    SWA_RUNTIME_CONFIG: swaConfigLocation ? (await findSWAConfigFile(swaConfigLocation))?.filepath : undefined,
     SWA_CLI_VERSION: packageInfo.version,
-    SWA_CLI_DEPLOY_DRY_RUN: `${options.dryRun}`,
+    SWA_CLI_DEPLOY_DRY_RUN: `${dryRun}`,
     SWA_CLI_DEPLOY_BINARY: undefined,
   };
 
-  const deployClientEnv: SWACLIEnv = {
+  const deployClientEnv: StaticSiteClientEnv = {
     DEPLOYMENT_ACTION: options.dryRun ? "close" : "upload",
     DEPLOYMENT_PROVIDER: `swa-cli-${packageInfo.version}`,
-    REPOSITORY_BASE: deployContext,
+    REPOSITORY_BASE: appLocation,
     SKIP_APP_BUILD: "true",
     SKIP_API_BUILD: "true",
     DEPLOYMENT_TOKEN: deploymentToken,
-    APP_LOCATION: deployContext,
-    OUTPUT_LOCATION: options.outputLocation,
-    API_LOCATION: options.apiLocation,
+    APP_LOCATION: appLocation,
+    OUTPUT_LOCATION: outputLocation,
+    API_LOCATION: apiLocation,
     VERBOSE: isVerboseEnabled ? "true" : "false",
   };
 
+  // set the DEPLOYMENT_ENVIRONMENT env variable only when the user has provided
+  // a deployment environment which is not "production".
+  if (options.env !== "production" && options.env !== "prod") {
+    deployClientEnv.DEPLOYMENT_ENVIRONMENT = options.env;
+  }
+
+  logger.log(`Deploying project to Azure Static Web Apps...`);
+
   let spinner: ora.Ora = {} as ora.Ora;
   try {
-    const { binary, version } = await getDeployClientPath();
+    const { binary, buildId } = await getDeployClientPath();
 
     if (binary) {
       spinner = ora();
-      (cliEnv as any).SWA_CLI_DEPLOY_BINARY = `${binary}@${version}`;
+      (cliEnv as any).SWA_CLI_DEPLOY_BINARY = `${binary}@${buildId}`;
       spinner.text = `Deploying using ${cliEnv.SWA_CLI_DEPLOY_BINARY}`;
 
       logger.silly(`Deploying using the following options:`);
@@ -217,7 +294,7 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
 
               spinner.fail(chalk.red(line));
             } else {
-              if (isVerboseEnabled || options.dryRun) {
+              if (isVerboseEnabled || dryRun) {
                 spinner.info(line.trim());
               } else {
                 spinner.text = line.trim();
@@ -234,7 +311,8 @@ export async function deploy(deployContext: string, options: SWACLIConfig) {
         cleanUp();
 
         if (code === 0) {
-          spinner.succeed(chalk.green(`Deployed to ${projectUrl}`));
+          spinner.succeed(chalk.green(`Project deployed to ${chalk.underline(projectUrl)} 🚀`));
+          logger.log(``);
         }
       });
     }
