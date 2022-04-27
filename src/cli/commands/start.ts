@@ -41,10 +41,10 @@ export default function registerCommand(program: Command) {
     .option("--host <host>", "the host address to use for the CLI dev server", DEFAULT_CONFIG.host)
     .option<number>("--port <port>", "the port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
 
-    .option("--ssl", "serve the front-end application and API over HTTPS", DEFAULT_CONFIG.ssl)
-    .option("--ssl-cert <sslCertLocation>", "the SSL certificate (.crt) to use when enabling HTTPS", DEFAULT_CONFIG.sslCert)
-    .option("--ssl-key <sslKeyLocation>", "the SSL key (.key) to use when enabling HTTPS", DEFAULT_CONFIG.sslKey)
-    .option("--run <startupScript>", "run a custom shell command or script file at startup", DEFAULT_CONFIG.run)
+    .option("-s, --ssl", "serve the front-end application and API over HTTPS", DEFAULT_CONFIG.ssl)
+    .option("-e, --ssl-cert <sslCertLocation>", "the SSL certificate (.crt) to use when enabling HTTPS", DEFAULT_CONFIG.sslCert)
+    .option("-k, --ssl-key <sslKeyLocation>", "the SSL key (.key) to use when enabling HTTPS", DEFAULT_CONFIG.sslKey)
+    .option("-r, --run <startupScript>", "run a custom shell command or script file at startup", DEFAULT_CONFIG.run)
     .option<number>(
       "--devserver-timeout <time>",
       "the time to wait (in seconds) when connecting to a front-end application's dev server or api server",
