@@ -6,6 +6,7 @@ import jsonMap from "json-source-map";
 import fetch from "node-fetch";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
+import { SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB } from "../constants";
 import { logger } from "./logger";
 import { isHttpUrl } from "./net";
 const { readdir, readFile } = fsPromises;
@@ -61,6 +62,14 @@ export async function findSWAConfigFile(folder: string): Promise<{ filepath: str
       const content = await validateRuntimeConfigAndGetData(file.filepath!);
 
       if (content) {
+        const fileSize = (await fsPromises.stat(file.filepath)).size;
+        const fileSizeInKb = Math.round(fileSize / 1024);
+        if (fileSizeInKb > SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB) {
+          logger.warn(
+            `WARNING: ${DEFAULT_CONFIG.swaConfigFilename} is ${fileSizeInKb} bytes. The maximum size is ${SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB} bytes.`
+          );
+        }
+
         logger.silly(`Content parsed successfully`);
 
         logger.log(`\nFound configuration file:\n    ${chalk.green(file.filepath)}\n`);
@@ -90,7 +99,7 @@ export async function findSWAConfigFile(folder: string): Promise<{ filepath: str
   return null;
 }
 
-async function validateRuntimeConfigAndGetData(filepath: string) {
+async function validateRuntimeConfigAndGetData(filepath: string): Promise<SWAConfigFile | null> {
   const ajv4 = new Ajv4({
     strict: false,
     allErrors: true,
@@ -115,7 +124,7 @@ async function validateRuntimeConfigAndGetData(filepath: string) {
     config = JSON.parse(content);
   } catch (err) {
     printJSONValidationWarnings(filepath, content, (err as any).message);
-    return;
+    return null;
   }
 
   logger.silly(`Validating staticwebapp.config.json...`);
@@ -123,7 +132,7 @@ async function validateRuntimeConfigAndGetData(filepath: string) {
 
   if (!isValidSWAConfigFile) {
     printSchemaValidationWarnings(filepath, config, validate);
-    return;
+    return null;
   }
 
   logger.silly(`File validated successfully. Continuing with configuration!`);
