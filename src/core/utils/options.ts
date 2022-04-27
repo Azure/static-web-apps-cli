@@ -4,6 +4,9 @@ import { SWACommand, SWA_COMMANDS } from "../constants";
 import { getConfigFileOptions } from "./cli-config";
 import { logger } from "./logger";
 
+let userDefinedOptions: SWACLIConfig = {};
+let configFileDefinedOptions: SWACLIConfig = {};
+
 export async function configureOptions(
   outputLocationOrConfigEntry: string | undefined,
   options: SWACLIConfig,
@@ -14,19 +17,19 @@ export async function configureOptions(
 
   setLogLevel(verbose);
 
-  const userOptions = getUserOptions(command);
+  userDefinedOptions = getUserOptions(command);
   const configFileOptions = await getConfigFileOptions(outputLocationOrConfigEntry, options.config!);
   const configFileCommandSpecificOptions = commandName ? configFileOptions[commandName] || {} : {};
-
+  
   // Clean up subcommands overrides before merging
   // to avoid confusing the user when printing options
   SWA_COMMANDS.forEach((command) => { delete configFileOptions[command]; });
+  configFileDefinedOptions = { ...configFileOptions, ...configFileCommandSpecificOptions };
 
   options = {
     ...options,
-    ...configFileOptions,
-    ...configFileCommandSpecificOptions,
-    ...userOptions,
+    ...configFileDefinedOptions,
+    ...userDefinedOptions,
   };
 
   // Re-set log level again after config file has been read,
@@ -65,4 +68,16 @@ function getUserOptions(command: Command) {
     }
   }
   return userOptions as SWACLIConfig;
+}
+
+export function isUserOption(option: keyof SWACLIConfig): boolean {
+  return userDefinedOptions[option] !== undefined;
+}
+
+export function isConfigFileOption(option: keyof SWACLIConfig): boolean {
+  return configFileDefinedOptions[option] !== undefined;
+}
+
+export function isUserOrConfigOption(option: keyof SWACLIConfig): boolean {
+  return isUserOption(option) || isConfigFileOption(option);
 }
