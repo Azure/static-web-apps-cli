@@ -1,5 +1,5 @@
 import mockFs from "mock-fs";
-import { findUpPackageJsonDir, safeReadFile, safeReadJson } from "./file";
+import { findUpPackageJsonDir, pathExists, safeReadFile, safeReadJson } from "./file";
 
 describe("safeReadJson()", () => {
   afterEach(() => {
@@ -20,6 +20,22 @@ describe("safeReadJson()", () => {
     }`});
     const json = await safeReadJson("test.json");
     expect(json && json.hello).toBe("world");
+  });
+});
+
+describe("pathExists()", () => {
+  afterEach(() => {
+    mockFs.restore();
+  });
+
+  it("should return false if path doesn't exist", async () => {
+    mockFs();
+    expect(await pathExists("test.txt")).toBe(false);
+  });
+
+  it("should return true if path exists", async () => {
+    mockFs({ "test.txt": "hello" });
+    expect(await pathExists("test.txt")).toBe(true);
   });
 });
 
