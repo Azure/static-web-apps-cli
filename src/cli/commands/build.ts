@@ -90,11 +90,11 @@ export async function build(options: SWACLIConfig) {
   }
 
   logger.log(`Build configuration:`);
-  logger.log(`- App location: ${chalk.green(appLocation)}`);
-  logger.log(`- API location: ${chalk.green(apiLocation)}`);
-  logger.log(`- Output location: ${chalk.green(outputLocation)}`);
-  logger.log(`- App build command: ${chalk.green(appBuildCommand)}`);
-  logger.log(`- API build command: ${chalk.green(apiBuildCommand)}`);
+  logger.log(`- App location: ${chalk.green(appLocation || '')}`);
+  logger.log(`- API location: ${chalk.green(apiLocation || '')}`);
+  logger.log(`- Output location: ${chalk.green(outputLocation || '')}`);
+  logger.log(`- App build command: ${chalk.green(appBuildCommand || '')}`);
+  logger.log(`- API build command: ${chalk.green(apiBuildCommand || '')}`);
   
   if (appBuildCommand) {
     let buildPath = appLocation!;
