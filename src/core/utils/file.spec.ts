@@ -72,12 +72,12 @@ describe("findUpPackageJsonDir()", () => {
 
   it("should return base path", async () => {
     mockFs({ 'app/package.json': '{}' });
-    expect(await findUpPackageJsonDir('app', 'dist')).toBe('app');
+    expect(await findUpPackageJsonDir('app/', 'dist')).toBe('app');
   });
 
   it("should return start path", async () => {
     mockFs({ 'app/dist/package.json': '{}' });
-    expect(await findUpPackageJsonDir('app', 'dist')).toBe('app/dist');
+    expect(await findUpPackageJsonDir('app', 'dist/')).toBe('app/dist');
   });
 
   it("should return the correct path", async () => {
