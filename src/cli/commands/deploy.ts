@@ -26,6 +26,7 @@ export default function registerCommand(program: Command) {
     .command("deploy [outputLocation]")
     .usage("[outputLocation] [options]")
     .description("Deploy the current project to Azure Static Web Apps")
+    .option("--app-location <appLocation>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
     .option("--api-location <apiLocation>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("--deployment-token <secret>", "the secret token used to authenticate with the Static Web Apps")
     .option("--dry-run", "simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
