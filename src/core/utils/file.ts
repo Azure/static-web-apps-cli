@@ -25,3 +25,12 @@ export async function safeReadFile(path?: string): Promise<string | undefined> {
     return undefined;
   }
 }
+
+export async function pathExists(path: string) {
+  try {
+    await fs.access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}

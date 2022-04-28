@@ -152,6 +152,7 @@ declare type SWACLIStartOptions = {
   open?: boolean;
   funcArgs?: string;
   githubActionWorkflowLocation?: string;
+  runBuild?: boolean;
 };
 
 // -- CLI Build options ------------------------------------------------------
@@ -159,6 +160,7 @@ declare type SWACLIStartOptions = {
 declare type SWACLIBuildOptions = {
   appLocation?: string;
   apiLocation?: string;
+  outputLocation?: string;
   appBuildCommand?: string;
   apiBuildCommand?: string;
   auto?: boolean;
