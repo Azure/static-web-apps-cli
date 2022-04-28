@@ -5,7 +5,7 @@ import { execSync } from 'child_process';
 import { DEFAULT_CONFIG } from "../../config";
 import { detectProjectFolders, generateConfiguration } from "../../core/frameworks";
 import {
-  configureOptions, isUserOrConfigOption, logger, pathExists, readWorkflowFile, swaCliConfigFilename,
+  configureOptions, findUpPackageJsonDir, isUserOrConfigOption, logger, pathExists, readWorkflowFile, swaCliConfigFilename,
 } from "../../core/utils";
 
 export default function registerCommand(program: Command) {
@@ -98,7 +98,7 @@ export async function build(options: SWACLIConfig) {
   
   if (appBuildCommand) {
     let buildPath = appLocation!;
-    const packageJsonPath = await findUpPackageJsonPath(appLocation!, outputLocation!);
+    const packageJsonPath = await findUpPackageJsonDir(appLocation!, outputLocation!);
     if (packageJsonPath) {
       logger.log(`Found package.json in ${packageJsonPath}`);
       await installNpmDependencies(packageJsonPath);
@@ -111,7 +111,7 @@ export async function build(options: SWACLIConfig) {
 
   if (apiBuildCommand) {
     let buildPath = appLocation!;
-    const packageJsonPath = await findUpPackageJsonPath(appLocation!, apiLocation!);
+    const packageJsonPath = await findUpPackageJsonDir(appLocation!, apiLocation!);
     if (packageJsonPath) {
       logger.log(`Found package.json in ${packageJsonPath}`);
       await installNpmDependencies(packageJsonPath);
@@ -151,33 +151,6 @@ async function detectPackageManager(basePath: string): Promise<NpmPackageManager
   }
 
   return 'npm';
-}
-
-async function findUpPackageJsonPath(rootPath: string, startPath: string): Promise<string | undefined> {
-  if (!rootPath || !startPath) {
-    return undefined;
-  }
-
-  rootPath = (rootPath === '.' || rootPath === `.${path.sep}`) ? '' : rootPath;
-  startPath = path.join(rootPath, startPath);
-  const rootPathLength = rootPath.split(/[/\\]/).length;
-  const find = async (components: string[]): Promise<string | undefined> => {
-    if (components.length === 0 || components.length < rootPathLength) {
-      return undefined;
-    }
-
-    const dir = path.join(...components);
-    const packageFile = path.join(dir, 'package.json');
-    return await pathExists(packageFile) ? dir : find(components.slice(0, -1));
-  };
-
-  const components = startPath.split(/[/\\]/);
-  if (components.length > 0 && components[0].length === 0) {
-    // When path starts with a slash, the first path component is empty string
-    components[0] = path.sep;
-  }
-
-  return find(components);
 }
 
 async function installNpmDependencies(packageJsonPath: string): Promise<void> {

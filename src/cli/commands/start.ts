@@ -10,6 +10,7 @@ import {
   configureOptions,
   createStartupScriptCommand,
   detectTargetCoreToolsVersion,
+  findUpPackageJsonDir,
   getCoreToolsBinary,
   getNodeMajorVersion,
   isAcceptingTcpConnections,
@@ -305,11 +306,22 @@ export async function start(outputLocationOtHttpUrl: string, options: SWACLIConf
     );
   }
 
+  // run an external script, if it's available
   if (startupCommand) {
-    // TODO: find up package.json location from outputLocation like swa build
+    let startupPath = userWorkflowConfig?.appLocation;
+    const packageJsonDir = await findUpPackageJsonDir(
+      userWorkflowConfig?.appLocation || '.',
+      // TODO: incorrect when using devServer, need refacto of context
+      userWorkflowConfig?.outputLocation || '.'
+    );
+    if (packageJsonDir) {
+      logger.silly(`Found package.json in ${packageJsonDir}`);
+      // if a package.json file is found, use its directory as the startup path
+      startupPath = packageJsonDir;
+    }
+    
     concurrentlyCommands.push(
-      // run an external script, if it's available
-      { command: `cd "${userWorkflowConfig?.appLocation}" && ${startupCommand}`, name: "run", env, prefixColor: "gray.dim" }
+      { command: `cd "${startupPath}" && ${startupCommand}`, name: "run", env, prefixColor: "gray.dim" }
     );
   }
 
