@@ -2,7 +2,6 @@ import fs from "fs";
 import path from "path";
 import YAML from "yaml";
 import { DEFAULT_CONFIG } from "../../config";
-import { detectRuntime, RuntimeType } from "../runtimes";
 import { logger } from "./logger";
 import { isHttpUrl } from "./net";
 import { validateUserWorkflowConfig } from "./user-config";
@@ -131,14 +130,7 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
     api_location = path.normalize(path.join(process.cwd(), api_location || path.sep));
   }
   output_location = path.normalize(output_location);
-
-  const detectedRuntimeType = detectRuntime(app_location);
-  if (detectedRuntimeType === RuntimeType.dotnet) {
-    // TODO: work out what runtime is being used for .NET rather than hard-coded
-    output_location = path.join(app_location, "bin", "Debug", "netstandard2.1", "publish", output_location);
-  } else {
-    output_location = path.join(app_location, output_location);
-  }
+  output_location = path.join(app_location, output_location);
 
   // override SWA config with user's config (if provided):
   // if the user provides different app location, app artifact location or api location, use that information
