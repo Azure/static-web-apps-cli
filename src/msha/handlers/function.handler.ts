@@ -96,7 +96,7 @@ export function isFunctionRequest(req: http.IncomingMessage, rewritePath?: strin
 export async function validateFunctionTriggers(url: string) {
   try {
     const functionsResponse = await fetch(`${url}/admin/functions`);
-    const functions = await functionsResponse.json();
+    const functions = await functionsResponse.json() as Array<{config: {bindings: string[]}}>;
     const triggers = functions.map((f: any) => f.config.bindings.find((b: any) => /trigger$/i.test(b.type))).map((b: any) => b.type);
 
     if (triggers.some((t: string) => !/^httptrigger$/i.test(t))) {

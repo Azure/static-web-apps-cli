@@ -146,7 +146,7 @@ export function getPlatform(): "win-x64" | "osx-x64" | "linux-x64" | null {
 export async function fetchClientVersionDefinition(releaseVersion: string): Promise<StaticSiteClientReleaseMetadata | undefined> {
   logger.silly(`Fetching release metadata for version: ${releaseVersion}. Please wait...`);
 
-  const remoteVersionDefinitions: StaticSiteClientReleaseMetadata[] = await fetch(STATIC_SITE_CLIENT_RELEASE_METADATA_URL).then((res) => res.json());
+  const remoteVersionDefinitions = await fetch(STATIC_SITE_CLIENT_RELEASE_METADATA_URL).then((res) => res.json()) as StaticSiteClientReleaseMetadata[];
   if (Array.isArray(remoteVersionDefinitions) && remoteVersionDefinitions.length) {
     const releaseMetadata = remoteVersionDefinitions.find((versionDefinition) => versionDefinition?.version === releaseVersion);
 
@@ -175,7 +175,7 @@ async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadat
     throw new Error(`Failed to download ${DEPLOY_BINARY_NAME} binary. File not found (${response.status})`);
   }
 
-  const bodyStream = response.body.pipe(new PassThrough());
+  const bodyStream = response?.body?.pipe(new PassThrough());
 
   createDeployDirectoryIfNotExists(buildId);
 
@@ -184,10 +184,10 @@ async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadat
     let outputFile = path.join(DEPLOY_FOLDER, buildId, downloadFilename);
 
     const writableStream = fs.createWriteStream(outputFile, { mode: isPosix ? 0o755 : undefined });
-    bodyStream.pipe(writableStream);
+    bodyStream?.pipe(writableStream);
 
     writableStream.on("end", () => {
-      bodyStream.end();
+      bodyStream?.end();
     });
 
     writableStream.on("finish", () => {

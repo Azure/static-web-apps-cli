@@ -8,9 +8,9 @@ export function swaCLIEnv(...newEnvs: SWACLIEnv[]): SWACLIEnv {
   // Note: logger is not available in this context
   // use console.log instead
 
-  let env: SWACLIEnv = {
+  let env = {
     ...process.env,
-  };
+  } as SWACLIEnv;
 
   for (const newEnv of newEnvs) {
     env = {
