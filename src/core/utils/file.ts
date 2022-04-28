@@ -46,7 +46,7 @@ export async function findUpPackageJsonDir(rootPath: string, startPath: string):
 
   rootPath = (rootPath === '.' || rootPath === `.${path.sep}`) ? '' : rootPath;
   startPath = path.join(rootPath, startPath);
-  const rootPathLength = rootPath.split(/[/\\]/).length;
+  const rootPathLength = rootPath.split(/[/\\]/).filter(c => c).length;
   const find = async (components: string[]): Promise<string | undefined> => {
     if (components.length === 0 || components.length < rootPathLength) {
       return undefined;
@@ -54,14 +54,9 @@ export async function findUpPackageJsonDir(rootPath: string, startPath: string):
 
     const dir = path.join(...components);
     const packageFile = path.join(dir, 'package.json');
-    return await pathExists(packageFile) ? dir : find(components.slice(0, -1));
+    return (await pathExists(packageFile)) ? dir : find(components.slice(0, -1));
   };
 
-  const components = startPath.split(/[/\\]/);
-  if (components.length > 0 && components[0].length === 0) {
-    // When path starts with a slash, the first path component is empty string
-    components[0] = path.sep;
-  }
-
+  const components = startPath.split(/[/\\]/).filter(c => c);
   return find(components);
 }
