@@ -329,7 +329,6 @@ export async function start(outputLocationOtHttpUrl: string, options: SWACLIConf
     // run swa build
     execSync("npx swa build", {
       stdio: 'inherit',
-      cwd: userWorkflowConfig?.appLocation || '.',
       env: { ...process.env, CI: "1" }
     });
   }
