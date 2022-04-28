@@ -1,5 +1,5 @@
 import mockFs from "mock-fs";
-import { safeReadFile, safeReadJson } from "./file";
+import { findUpPackageJsonDir, safeReadFile, safeReadJson } from "./file";
 
 describe("safeReadJson()", () => {
   afterEach(() => {
@@ -38,3 +38,35 @@ describe("safeReadFile()", () => {
     expect(await safeReadFile("test.txt")).toBe("hello");
   });
 });
+
+describe("findUpPackageJsonDir()", () => {
+  afterEach(() => {
+    mockFs.restore();
+  });
+
+  it("should return undefined if package.json is not found", async () => {
+    mockFs();
+    expect(await findUpPackageJsonDir('app', 'dist')).toBe(undefined);
+  });
+
+  it("should return undefined if package.json is not found in path range", async () => {
+    mockFs({ 'package.json': '{}' });
+    expect(await findUpPackageJsonDir('app', 'dist')).toBe(undefined);
+  });
+
+  it("should return base path", async () => {
+    mockFs({ 'app/package.json': '{}' });
+    expect(await findUpPackageJsonDir('app', 'dist')).toBe('app');
+  });
+
+  it("should return start path", async () => {
+    mockFs({ 'app/dist/package.json': '{}' });
+    expect(await findUpPackageJsonDir('app', 'dist')).toBe('app/dist');
+  });
+
+  it("should return the correct path", async () => {
+    mockFs({ 'app/toto/package.json': '{}' });
+    expect(await findUpPackageJsonDir('app', 'toto/dist')).toBe('app/toto');
+  });
+});
+
