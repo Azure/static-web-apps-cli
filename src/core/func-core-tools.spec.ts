@@ -1,7 +1,7 @@
-import { sep } from "path";
 import { Buffer } from "buffer";
-import { Readable, PassThrough } from "stream";
 import mockFs from "mock-fs";
+import { sep } from "path";
+import { PassThrough, Readable } from "stream";
 import {
   detectTargetCoreToolsVersion,
   downloadCoreTools,
@@ -9,6 +9,9 @@ import {
   getLatestCoreToolsRelease,
   isCoreToolsVersionCompatible,
 } from "./func-core-tools";
+
+// see https://jestjs.io/docs/next/bypassing-module-mocks
+const { Headers } = jest.requireActual("node-fetch");
 
 jest.mock("process", () => ({ versions: { node: "16.0.0" } }));
 jest.mock("os", () => ({ platform: () => "linux", homedir: () => "/home/user" }));

@@ -27,7 +27,7 @@ describe("traverseFolder()", () => {
     expect(entry).toEqual([]);
   });
 
-  describe("should handle flat folder", async () => {
+  describe("should handle flat folder", () => {
     it("with single entry", async () => {
       mockFs({
         "foo.txt": "fake content",
@@ -55,7 +55,7 @@ describe("traverseFolder()", () => {
     });
   });
 
-  describe("should handle deep folders", async () => {
+  describe("should handle deep folders", () => {
     it("with single entry", async () => {
       mockFs({
         swa: {
@@ -87,7 +87,7 @@ describe("traverseFolder()", () => {
     });
   });
 
-  describe("should exclude folders", async () => {
+  describe("should exclude folders", () => {
     it("node_modules", async () => {
       mockFs({
         "foo.txt": "fake content",

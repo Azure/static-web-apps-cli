@@ -103,7 +103,7 @@ function getPlatform() {
 export async function getLatestCoreToolsRelease(targetVersion: number): Promise<CoreToolsRelease> {
   try {
     const response = await fetch(RELEASES_FEED_URL);
-    const feed = await response.json() as { releases: any, tags: any };
+    const feed = (await response.json()) as { releases: any; tags: any };
     const tag = feed.tags[`v${targetVersion}`];
     if (!tag || tag.hidden) {
       throw new Error(`Cannot find the latest version for v${targetVersion}`);
@@ -221,7 +221,6 @@ export async function getCoreToolsBinary(): Promise<string | undefined> {
   const downloadedVersion = getDownloadedCoreToolsVersion(targetVersion);
   if (downloadedVersion) {
     // Should we check for newer versions here?
-
     return getCoreToolBinaryPath(targetVersion);
   }
 
@@ -241,6 +240,7 @@ export async function getCoreToolsBinary(): Promise<string | undefined> {
   } catch (error: unknown) {
     logger.error(`Failed to download Functions Core Tools v${targetVersion}.`);
     logger.error(error as Error);
+    console.log(error);
     return undefined;
   }
 }
