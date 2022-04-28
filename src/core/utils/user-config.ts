@@ -3,7 +3,7 @@ import chalk from "chalk";
 import fs, { promises as fsPromises } from "fs";
 import type http from "http";
 import jsonMap from "json-source-map";
-import fetch from "node-fetch";
+import fetch, { RequestInit } from "node-fetch";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
 import { SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB } from "../constants";
@@ -170,10 +170,10 @@ function findLineAndColumnByPosition(content: string, position: number | undefin
 async function loadSWAConfigSchema(): Promise<JSONSchemaType<SWACLIConfigFile> | null> {
   const schemaUrl = "https://json.schemastore.org/staticwebapp.config.json";
   try {
-    const res = await fetch(schemaUrl, { timeout: 10 * 1000 });
+    const res = await fetch(schemaUrl, { timeout: 10 * 1000 } as RequestInit);
     if (res.status === 200) {
       logger.silly(`Schema loaded successfully from ${schemaUrl}`);
-      return await res.json();
+      return await res.json() as JSONSchemaType<SWACLIConfigFile>;
     }
   } catch {}
 

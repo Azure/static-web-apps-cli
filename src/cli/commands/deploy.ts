@@ -2,7 +2,7 @@ import chalk from "chalk";
 import { spawn } from "child_process";
 import { Command } from "commander";
 import fs from "fs";
-import ora from "ora";
+import ora, { Ora } from "ora";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
 import {
@@ -108,8 +108,8 @@ export async function deploy(outputLocationOrConfigName: string, options: SWACLI
     if (fs.existsSync(defaultApiFolder)) {
       logger.warn(
         `An API folder was found at ".${
-          // TODO: should handle ./Api and ./api
-          path.sep + path.basename(defaultApiFolder)
+        // TODO: should handle ./Api and ./api
+        path.sep + path.basename(defaultApiFolder)
         }" but the --api-location option was not provided. The API will not be deployed.\n`
       );
     }
@@ -249,7 +249,7 @@ export async function deploy(outputLocationOrConfigName: string, options: SWACLI
 
   logger.log(`Deploying project to Azure Static Web Apps...`);
 
-  let spinner: ora.Ora = {} as ora.Ora;
+  let spinner: Ora = {} as Ora;
   try {
     const { binary, buildId } = await getDeployClientPath();
 
