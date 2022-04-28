@@ -1,4 +1,4 @@
-import chalk, { ChalkInstance } from "chalk";
+import chalk from "chalk";
 import type http from "http";
 import { DEFAULT_CONFIG } from "../../config";
 import { SWA_CLI_APP_PROTOCOL } from "../constants";
@@ -79,7 +79,7 @@ export const logger = {
    * @param debugFilter (optional) A valid debug filter of type DebugFilterLevel.
    * @param color (optional) A valid Chalk color to be used when printing logs.
    */
-  silly(data: string | object, prefix: string | null = null, debugFilter: DebugFilterLevel = "silly", color: ChalkInstance = chalk.magenta) {
+  silly(data: string | object, prefix: string | null = null, debugFilter: DebugFilterLevel = "silly", color: chalk.Chalk = chalk.magenta) {
     const { SWA_CLI_DEBUG } = swaCLIEnv();
     if (!SWA_CLI_DEBUG || SWA_CLI_DEBUG?.includes("silent")) {
       return;

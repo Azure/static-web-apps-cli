@@ -231,7 +231,7 @@ export class NativeCredentialsStore implements KeychainCredentialsStore {
 
     const printX11ErrorAndExit = () =>
       logger.error(
-        `An X11 server is required when keychain is enabled. You can disable keychain using --use-keychain=false or try a different login method.`,
+        `An X11 server is required when keychain is enabled. You can disable keychain using --no-use-keychain or try a different login method.`,
         true
       );
 
