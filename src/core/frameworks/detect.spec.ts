@@ -42,7 +42,7 @@ describe("generateConfiguration()", () => {
       apiLocation: "node-ts/dist",
       appLocation: "e2e/fixtures/static-node-ts/",
       name: "Static HTML, with API: Node.js, TypeScript",
-      outputLocation: "e2e/fixtures/static-node-ts/",
+      outputLocation: ".",
     });
   });
 });

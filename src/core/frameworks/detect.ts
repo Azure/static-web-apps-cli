@@ -25,6 +25,7 @@ export async function generateConfiguration(app?: DetectedFolder, api?: Detected
     app.frameworks.forEach(f => config = { ...config, ...f.config });
     config.appLocation = await computePath(app.rootPath, config.appLocation);
     config.outputLocation = await computePath(config.appLocation, config.outputLocation);
+    config.outputLocation = path.normalize(path.relative(config.appLocation!, config.outputLocation));
   }
 
   if (api) {
@@ -37,6 +38,8 @@ export async function generateConfiguration(app?: DetectedFolder, api?: Detected
       logger.silly(`Api folder is not under app folder, using common root: ${config.appLocation}`);
 
       const movePath = path.relative(config.appLocation!, app.rootPath);
+      // Recompose the outputLocation path before the move
+      config.outputLocation = path.join(config.appLocation!, config.outputLocation!);
       // TODO: would be better to find the lowest common root folder instead
       config.appLocation = '.';
       config.outputLocation = path.normalize(path.join(movePath, config.outputLocation!));
