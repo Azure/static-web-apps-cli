@@ -12,7 +12,7 @@ export default function registerCommand(program: Command) {
   program
     .command("build [configurationName|outputLocation]")
     .usage("[configurationName|outputLocation] [options]")
-    .description("build your static web app project")
+    .description("build your project")
     .option("--app-location <appLocation>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
     .option("--api-location <apiLocation>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("--output-location <outputLocation>", "the folder where the front-end public files are location", DEFAULT_CONFIG.outputLocation)
