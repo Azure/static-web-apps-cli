@@ -327,8 +327,9 @@ export async function start(outputLocationOtHttpUrl: string, options: SWACLIConf
 
   if (runBuild) {
     // run swa build
-    execSync("npx swa build", {
+    execSync("swa build", {
       stdio: 'inherit',
+      // Set CI to avoid extra NPM logs and potentially unwanted interactive modes
       env: { ...process.env, CI: "1" }
     });
   }
