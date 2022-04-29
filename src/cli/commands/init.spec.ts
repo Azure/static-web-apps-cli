@@ -120,7 +120,7 @@ describe("swa init", () => {
         \\"$schema\\": \\"https://aka.ms/azure/static-web-apps-cli/schema\\",
         \\"configurations\\": {
           \\"test\\": {
-            \\"appLocation\\": \\"src/\\",
+            \\"appLocation\\": \\"src\\",
             \\"apiLocation\\": \\"node-ts/dist\\",
             \\"outputLocation\\": \\".\\",
             \\"apiBuildCommand\\": \\"npm run build --if-present\\"

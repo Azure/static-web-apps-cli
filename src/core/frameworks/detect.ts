@@ -2,7 +2,7 @@ import { promises as fs } from "fs";
 import globrex from "globrex";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
-import { logger, safeReadFile, safeReadJson } from "../utils";
+import { logger, removeTrailingPathSep, safeReadFile, safeReadJson } from "../utils";
 import { apiFrameworks, appFrameworks } from "./frameworks";
 
 const packageJsonFile = "package.json";
@@ -24,8 +24,10 @@ export async function generateConfiguration(app?: DetectedFolder, api?: Detected
     name += `${app.frameworks.map(f => f.name).join(', ')}`;
     app.frameworks.forEach(f => config = { ...config, ...f.config });
     config.appLocation = await computePath(app.rootPath, config.appLocation);
+    config.appLocation = removeTrailingPathSep(config.appLocation);
     config.outputLocation = await computePath(config.appLocation, config.outputLocation);
     config.outputLocation = path.normalize(path.relative(config.appLocation!, config.outputLocation));
+    config.outputLocation = removeTrailingPathSep(config.outputLocation);
   }
 
   if (api) {
@@ -47,6 +49,7 @@ export async function generateConfiguration(app?: DetectedFolder, api?: Detected
 
     config.apiLocation = await computePath(api.rootPath, config.apiLocation);
     config.apiLocation = path.normalize(path.relative(config.appLocation!, config.apiLocation));
+    config.apiLocation = removeTrailingPathSep(config.apiLocation);
   }
 
   config.name = name;

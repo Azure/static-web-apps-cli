@@ -1,4 +1,4 @@
-import { dasherize, stripJsonComments } from "./strings";
+import { dasherize, removeTrailingPathSep, stripJsonComments } from "./strings";
 
 describe("dasherize()", () => {
   it("should convert to dash case", () => {
@@ -33,5 +33,19 @@ describe("stripJsonComments()", () => {
       
       "but": "not // this or /* this */ or /* this"
     }`);
+  });
+});
+
+describe("removeTrailingPathSep()", () => {
+  it("should leave path untouched", () => {
+    expect(removeTrailingPathSep('./dir')).toBe('./dir');
+  });
+
+  it("should remove trailing slash", () => {
+    expect(removeTrailingPathSep('./')).toBe('.');
+  });
+
+  it("should remove trailing anti-slash", () => {
+    expect(removeTrailingPathSep('dir\\')).toBe('dir');
   });
 });
