@@ -1,7 +1,7 @@
 name: detection-e2-tests
 on:
   push:
-    branches: [main]
+    branches: [main, ga]
 
 jobs:
   detection-e2e-tests:
