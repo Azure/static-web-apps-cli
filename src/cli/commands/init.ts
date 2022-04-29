@@ -146,6 +146,11 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
   if (showHints) {
     logger.log(chalk.bold(`Get started with the following commands:`));
     logger.log(`- Use ${chalk.cyan("swa start")} to run your app locally.`);
+
+    if (cliConfig.appBuildCommand || cliConfig.apiBuildCommand) {
+      logger.log(`- Use ${chalk.cyan("swa build")} to build your app.`);
+    }
+
     logger.log(`- Use ${chalk.cyan("swa deploy")} to deploy your app to Azure.\n`);
   }
 }
