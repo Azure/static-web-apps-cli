@@ -173,12 +173,11 @@ async function loadSWAConfigSchema(): Promise<JSONSchemaType<SWACLIConfigFile> |
     const res = await fetch(schemaUrl, { timeout: 10 * 1000 } as RequestInit);
     if (res.status === 200) {
       logger.silly(`Schema loaded successfully from ${schemaUrl}`);
-      return await res.json() as JSONSchemaType<SWACLIConfigFile>;
+      return (await res.json()) as JSONSchemaType<SWACLIConfigFile>;
     }
   } catch {}
 
-  // return require(path.join(__dirname, "../../../../schema/staticwebapp.config.schema.json"));
-  logger.error(`Failed to load schema from ${schemaUrl}`);
+  logger.silly(`Failed to load schema from ${schemaUrl}`);
   return null;
 }
 
