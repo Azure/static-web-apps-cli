@@ -40,10 +40,10 @@ export async function build(options: SWACLIConfig) {
   });
 
   let appLocation = options.appLocation ?? workflowConfig?.appLocation;
-  let apiLocation = options.apiLocation !== undefined ? options.apiLocation : workflowConfig?.apiLocation;
-  let outputLocation = options.outputLocation !== undefined ? options.outputLocation : workflowConfig?.outputLocation;
-  let appBuildCommand = options.appBuildCommand !== undefined ? options.appBuildCommand : workflowConfig?.appBuildCommand;
-  let apiBuildCommand = options.apiBuildCommand !== undefined ? options.apiBuildCommand : workflowConfig?.apiBuildCommand;
+  let apiLocation = options.apiLocation ?? workflowConfig?.apiLocation;
+  let outputLocation = options.outputLocation ?? workflowConfig?.outputLocation;
+  let appBuildCommand = options.appBuildCommand ?? workflowConfig?.appBuildCommand;
+  let apiBuildCommand = options.apiBuildCommand ?? workflowConfig?.apiBuildCommand;
 
   if (options.auto && hasBuildOptionsDefined(options)) {
     logger.error(`You can't use the --auto option when you have defined appBuildCommand or apiBuildCommand in ${swaCliConfigFilename}`);
@@ -135,8 +135,6 @@ function showAutoErrorMessageAndExit() {
   logger.error(`build commands and paths.`, true);
 }
 
-declare type NpmPackageManager = 'npm' | 'yarn' | 'pnpm';
-
 async function detectPackageManager(basePath: string): Promise<NpmPackageManager> {
   const hasYarnLock = await pathExists(path.join(basePath, 'yarn.lock'));
   const hasNpmLock = await pathExists(path.join(basePath, 'package-lock.json'));
@@ -168,6 +166,7 @@ function runCommand(command: string, cwd: string) {
   execSync(command, {
     stdio: 'inherit',
     cwd,
+    // Set CI to avoid extra NPM logs and potentially unwanted interactive modes
     env: { ...process.env, CI: "1" }
   });
 }
