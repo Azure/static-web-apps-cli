@@ -39,7 +39,7 @@ export async function build(options: SWACLIConfig) {
     }
   });
 
-  let appLocation = options.appLocation !== undefined ? options.appLocation : workflowConfig?.appLocation;
+  let appLocation = options.appLocation ?? workflowConfig?.appLocation;
   let apiLocation = options.apiLocation !== undefined ? options.apiLocation : workflowConfig?.apiLocation;
   let outputLocation = options.outputLocation !== undefined ? options.outputLocation : workflowConfig?.outputLocation;
   let appBuildCommand = options.appBuildCommand !== undefined ? options.appBuildCommand : workflowConfig?.appBuildCommand;
