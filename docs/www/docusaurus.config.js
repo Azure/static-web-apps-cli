@@ -11,9 +11,9 @@ const config = {
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  url: 'https://azure.github.io', 
+  url: 'https://azure.github.io',  // Update for Org
   baseUrl: '/static-web-apps-cli/',
-  organizationName: 'azure',      
+  organizationName: 'azure',       // Update for Org
   projectName: 'static-web-apps-cli', 
   deploymentBranch: `gh-pages`, 
 
@@ -85,12 +85,6 @@ const config = {
             docId: 'contribute/intro',
             position: 'left',
             label: 'Contribute',
-          },
-          {
-            type: 'doc',
-            docId: 'releases/0.8.3/quickstart/install',
-            position: 'left',
-            label: 'Releases',
           },
           /*{to: '/blog', label: 'Blog', position: 'right'},*/
           {to: 'https://github.com/Azure/static-web-apps-cli/discussions', label: 'Discussions', position: 'right'},
