@@ -57,12 +57,6 @@ export default function registerCommand(program: Command) {
     .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
     .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
     .action(async (positionalArg: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
-      console.warn(chalk.yellow("************************************************************************"));
-      console.warn(chalk.yellow("* WARNING: This emulator is currently in preview and may not match the *"));
-      console.warn(chalk.yellow("* cloud environment exactly. Always deploy and test your app in Azure. *"));
-      console.warn(chalk.yellow("************************************************************************"));
-      console.warn();
-
       const options = await configureOptions(positionalArg, command.optsWithGlobals(), command, "start");
       if (!matchLoadedConfigName(positionalArg)) {
         // If it's not the config name, it's either output location or dev server url
@@ -79,6 +73,12 @@ export default function registerCommand(program: Command) {
           options.outputLocation = positionalArg;
         }
       }
+
+      console.warn(chalk.yellow("***********************************************************************"));
+      console.warn(chalk.yellow("* WARNING: This emulator may not match the cloud environment exactly. *"));
+      console.warn(chalk.yellow("* Always deploy and test your app in Azure.                           *"));
+      console.warn(chalk.yellow("***********************************************************************"));
+      console.warn();
 
       await start(options);
     })
