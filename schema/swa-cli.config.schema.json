@@ -231,7 +231,7 @@
     "deployCommandParameters": {
       "properties": {
         "appLocation": {
-          "description": "The folder containing the source code of the app application",
+          "description": "The folder containing the source code of the application",
           "type": "string"
         },
         "apiLocation": {
