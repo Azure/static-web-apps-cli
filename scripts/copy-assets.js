@@ -19,7 +19,6 @@ try {
     path.join("src", "public", "404.html"),
     path.join("src", "public", "403.html"),
     path.join("src", "cli", "bin.js"),
-    path.join("schema", "staticwebapp.config.schema.json"),
     path.join("schema", "swa-cli.config.schema.json"),
   ];
 
