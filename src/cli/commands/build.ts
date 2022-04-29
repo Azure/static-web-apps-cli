@@ -131,7 +131,7 @@ function hasBuildOptionsDefined(options: SWACLIConfig): boolean {
 }
 
 function showAutoErrorMessageAndExit() {
-  logger.error(`Please "swa init" to set your configuration or use options flags to set your`);
+  logger.error(`Please run "swa init" to set your configuration or use option flags to set your`);
   logger.error(`build commands and paths.`, true);
 }
 
