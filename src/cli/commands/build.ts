@@ -1,11 +1,10 @@
 import path from "path";
 import chalk from "chalk";
 import { Command } from "commander";
-import { execSync } from 'child_process';
 import { DEFAULT_CONFIG } from "../../config";
 import { detectProjectFolders, generateConfiguration } from "../../core/frameworks";
 import {
-  configureOptions, findUpPackageJsonDir, isUserOption, isUserOrConfigOption, logger, matchLoadedConfigName, pathExists, readWorkflowFile, swaCliConfigFilename,
+  configureOptions, findUpPackageJsonDir, isUserOption, isUserOrConfigOption, logger, matchLoadedConfigName, pathExists, readWorkflowFile, runCommand, swaCliConfigFilename,
 } from "../../core/utils";
 
 export default function registerCommand(program: Command) {
@@ -170,13 +169,4 @@ async function installNpmDependencies(packageJsonPath: string): Promise<void> {
     logger.error(`Cannot install dependencies:`);
     logger.error(error as Error, true);
   }
-}
-
-function runCommand(command: string, cwd: string) {
-  execSync(command, {
-    stdio: 'inherit',
-    cwd,
-    // Set CI to avoid extra NPM logs and potentially unwanted interactive modes
-    env: { ...process.env, CI: "1" }
-  });
 }

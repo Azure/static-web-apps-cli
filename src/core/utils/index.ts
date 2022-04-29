@@ -1,5 +1,6 @@
 export * from "./cli";
 export * from "./cli-config";
+export * from "./command";
 export * from "./cookie";
 export * from "./file";
 export * from "./glob";

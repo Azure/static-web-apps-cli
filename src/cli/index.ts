@@ -2,16 +2,17 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import chalk from "chalk";
-import { Option, program } from "commander";
+import { Command, Option, program } from "commander";
 import path from "path";
 import updateNotifier from "update-notifier";
 import { DEFAULT_CONFIG } from "../config";
-import { swaCliConfigFilename } from "../core";
+import { configureOptions, getCurrentSwaCliConfigFromFile, logger, runCommand, swaCliConfigFilename } from "../core";
 import registerDeploy from "./commands/deploy";
 import registerInit from "./commands/init";
 import registerLogin from "./commands/login";
 import registerStart from "./commands/start";
 import registerBuild from "./commands/build";
+import { promptOrUseDefault } from "../core/prompts";
 
 export * from "./commands";
 
@@ -32,7 +33,7 @@ export async function run(argv?: string[]) {
 
   program
     .name("swa")
-    .usage("<command> [options]")
+    .usage("[command] [options]")
     .version(pkg.version, "-v, --version")
 
     // SWA CLI common configuration options
@@ -49,7 +50,16 @@ export async function run(argv?: string[]) {
       "the directory where the staticwebapp.config.json file is located",
       DEFAULT_CONFIG.swaConfigLocation
     )
-    .addHelpText("after", "\nDocumentation:\n  https://aka.ms/swa/cli-local-development\n");
+    .action(async (_options: SWACLIConfig, command: Command) => {
+      const options = await configureOptions(`.${path.sep}`, command.optsWithGlobals(), command, "init");
+      swaMagic(options);
+    })
+    .addHelpText("after", `
+  Type "swa" to get started and deploy your project.
+  
+  Documentation:
+    https://aka.ms/swa/cli-local-development
+  `);
 
   // Register commands
   registerLogin(program);
@@ -61,4 +71,25 @@ export async function run(argv?: string[]) {
   program.showHelpAfterError();
 
   await program.parseAsync(argv);
+}
+
+export async function swaMagic(_options: SWACLIConfig) {
+  const hasLoadedConfig = getCurrentSwaCliConfigFromFile();
+  if (!hasLoadedConfig) {
+    runCommand("swa init")
+  }
+  runCommand("swa build");
+
+  const response = await promptOrUseDefault(false, {
+    type: "confirm",
+    name: "deploy",
+    message: "Do you want to deploy your app now?",
+    initial: true
+  });
+  if (!response.deploy) {
+    logger.log(`\nWhen you'll be ready to deploy your app, just use ${chalk.cyan("swa")} again.`);
+    return;
+  }
+
+  runCommand("swa deploy");
 }
