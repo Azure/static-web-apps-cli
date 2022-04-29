@@ -33,7 +33,7 @@ describe("swa init", () => {
   it("should create a config file", async () => {
     mockFs();
 
-    await init("test", { ...defaultCliConfig, yes: true });
+    await init({ ...defaultCliConfig, configName: "test", yes: true });
     const configFile = fs.readFileSync(defaultCliConfig.config, "utf-8");
 
     expect(configFile).toMatchInlineSnapshot(`
@@ -42,13 +42,7 @@ describe("swa init", () => {
         \\"configurations\\": {
           \\"test\\": {
             \\"appLocation\\": \\"./\\",
-            \\"outputLocation\\": \\"./\\",
-            \\"start\\": {
-              \\"outputLocation\\": \\"./\\"
-            },
-            \\"deploy\\": {
-              \\"outputLocation\\": \\"./\\"
-            }
+            \\"outputLocation\\": \\"./\\"
           }
         }
       }"
@@ -59,7 +53,7 @@ describe("swa init", () => {
     mockFs();
     const promptsMock = jest.requireMock("prompts");
 
-    await init(undefined, { ...defaultCliConfig, yes: true });
+    await init({ ...defaultCliConfig, yes: true });
     expect(promptsMock).not.toHaveBeenCalled();
   });
 
@@ -68,7 +62,7 @@ describe("swa init", () => {
     const promptsMock = jest.requireMock("prompts");
     promptsMock.mockResolvedValue(defautResolvedPrompts);
 
-    await init(undefined, { ...defaultCliConfig });
+    await init({ ...defaultCliConfig });
 
     // check that the first prompt ask for configName property
     expect(promptsMock.mock.calls[0][0].name).toEqual("configName");
@@ -79,7 +73,7 @@ describe("swa init", () => {
     const promptsMock = jest.requireMock("prompts");
     promptsMock.mockResolvedValue(defautResolvedPrompts);
 
-    await init("my-app", { ...defaultCliConfig });
+    await init({ ...defaultCliConfig, configName: "my-app" });
     const configJson = JSON.parse(fs.readFileSync(defaultCliConfig.config, "utf-8"));
 
     // check that the first prompt ask for configName property
@@ -92,8 +86,8 @@ describe("swa init", () => {
     const promptsMock: jest.Mock = jest.requireMock("prompts");
     promptsMock.mockResolvedValue({ ...defautResolvedPrompts, confirmOverwrite: false });
 
-    await init("test", { ...defaultCliConfig, yes: true });
-    await init("test", { ...defaultCliConfig });
+    await init({ ...defaultCliConfig, configName: "test", yes: true });
+    await init({ ...defaultCliConfig, configName: "test" });
 
     const configJson = JSON.parse(fs.readFileSync(defaultCliConfig.config, "utf-8"));
     const lastCall = promptsMock.mock.calls.length - 1;
@@ -106,8 +100,8 @@ describe("swa init", () => {
     const promptsMock: jest.Mock = jest.requireMock("prompts");
     promptsMock.mockResolvedValue(defautResolvedPrompts);
 
-    await init("test", { ...defaultCliConfig, yes: true });
-    await init("test", { ...defaultCliConfig });
+    await init({ ...defaultCliConfig, configName: "test", yes: true });
+    await init({ ...defaultCliConfig, configName: "test" });
 
     const configJson = JSON.parse(fs.readFileSync(defaultCliConfig.config, "utf-8"));
     const lastCall = promptsMock.mock.calls.length - 1;
@@ -118,7 +112,7 @@ describe("swa init", () => {
   it("should detect frameworks and create a config file", async () => {
     mockFs({ src: mockFs.load("e2e/fixtures/static-node-ts") });
 
-    await init("test", { ...defaultCliConfig, yes: true });
+    await init({ ...defaultCliConfig, configName: "test", yes: true });
     const configFile = fs.readFileSync(defaultCliConfig.config, "utf-8");
 
     expect(configFile).toMatchInlineSnapshot(`
@@ -128,14 +122,32 @@ describe("swa init", () => {
           \\"test\\": {
             \\"appLocation\\": \\"src/\\",
             \\"apiLocation\\": \\"node-ts/dist\\",
-            \\"outputLocation\\": \\"src/\\",
+            \\"outputLocation\\": \\".\\",
+            \\"apiBuildCommand\\": \\"npm run build --if-present\\"
+          }
+        }
+      }"
+    `);
+  });
+
+  it("should detect frameworks and create a config file including a dev server", async () => {
+    mockFs({ src: mockFs.load("e2e/fixtures/astro-node") });
+
+    await init({ ...defaultCliConfig, configName: "test", yes: true });
+    const configFile = fs.readFileSync(defaultCliConfig.config, "utf-8");
+
+    expect(configFile).toMatchInlineSnapshot(`
+      "{
+        \\"$schema\\": \\"https://aka.ms/azure/static-web-apps-cli/schema\\",
+        \\"configurations\\": {
+          \\"test\\": {
+            \\"appLocation\\": \\".\\",
+            \\"apiLocation\\": \\"src/node\\",
+            \\"outputLocation\\": \\"src/astro-preact/_site\\",
+            \\"appBuildCommand\\": \\"npm run build\\",
             \\"apiBuildCommand\\": \\"npm run build --if-present\\",
-            \\"start\\": {
-              \\"outputLocation\\": \\"src/\\"
-            },
-            \\"deploy\\": {
-              \\"outputLocation\\": \\"src/\\"
-            }
+            \\"run\\": \\"npm run dev\\",
+            \\"devServerUrl\\": \\"http://localhost:8080\\"
           }
         }
       }"

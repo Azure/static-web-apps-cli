@@ -67,12 +67,13 @@ describe("deploy", () => {
   });
 
   it("should return a Promise", () => {
-    expect(deploy("./dist", {})).toBeInstanceOf(Promise);
+    expect(deploy({ outputLocation: "./dist" })).toBeInstanceOf(Promise);
   });
 
   it("should print warning when using dry run mode", async () => {
     mockFs();
-    await deploy("./dist", {
+    await deploy({
+      outputLocation: "./dist",
       dryRun: true,
     });
     expect(logger.warn).toHaveBeenNthCalledWith(1, "***********************************************************************");
@@ -82,7 +83,8 @@ describe("deploy", () => {
 
   it.skip("should print error and exit when --api-location does not exist", async () => {
     mockFs();
-    await deploy("./dist", {
+    await deploy({
+      outputLocation: "./dist",
       apiLocation: "/does/not/exist",
     });
     expect(logger.error).toHaveBeenNthCalledWith(1, `The provided API folder /does/not/exist does not exist. Abort.`, true);
@@ -91,7 +93,8 @@ describe("deploy", () => {
   it.skip("should print an error and exit, if --deployment-token is not provided and login failed", async () => {
     jest.spyOn(loginModule, "login").mockImplementation(() => Promise.reject("mock-error"));
 
-    await deploy("./dist", {
+    await deploy({
+      outputLocation: "./dist",
       apiLocation: "./api",
       dryRun: false,
     });
@@ -112,7 +115,8 @@ describe("deploy", () => {
   });
 
   it.skip("should accept a deploymentToken provided via --deployment-token", async () => {
-    await deploy("./dist", {
+    await deploy({
+      outputLocation: "./dist",
       apiLocation: "./api",
       deploymentToken: "123",
       dryRun: false,
@@ -148,7 +152,8 @@ describe("deploy", () => {
   it.skip("should accept a deploymentToken provided via the environment variable SWA_CLI_DEPLOYMENT_TOKEN", async () => {
     process.env.SWA_CLI_DEPLOYMENT_TOKEN = "123";
 
-    await deploy("./dist", {
+    await deploy({
+      outputLocation: "./dist",
       apiLocation: "./api",
       dryRun: false,
     });
