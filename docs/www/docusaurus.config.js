@@ -8,12 +8,12 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'Static Web Apps CLI (Preview)',
   tagline: 'A Local Development Tool For Azure Static Web Apps',
-  url: 'https://fearlessly-dev.github.io', // PR-TODO: change to https://azure.github.io/
-  baseUrl: '/static-web-apps-cli/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  organizationName: 'fearlessly-dev',      // PR-TODO: Change to azure
+  url: 'https://azure.github.io', 
+  baseUrl: '/static-web-apps-cli/',
+  organizationName: 'azure',      
   projectName: 'static-web-apps-cli', 
   deploymentBranch: `gh-pages`, 
 
