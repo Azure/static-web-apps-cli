@@ -4,27 +4,33 @@
  * work well for content-centric websites.
  */
 
+/* 
+ * SWA CLI Theme Colors
+ *  A400 - #F50057
+ *  A200 - #FF4081
+ *  A100 - #FF80AB
+ */
+
 /* You can override the default Infima variables here. */
-:root {
-  --ifm-color-primary: #9b1c91;
-  --ifm-color-primary-dark: #8b1982;
-  --ifm-color-primary-darker: #84187b;
-  --ifm-color-primary-darkest: #6d1465;
-  --ifm-color-primary-light: #aa1f9f;
-  --ifm-color-primary-lighter: #b220a7;
-  --ifm-color-primary-lightest: #ca24bc;
-  --ifm-code-font-size: 95%;
+:root {  
+  --ifm-color-primary: #f50057;
+  --ifm-color-primary-dark: #dd004e;
+  --ifm-color-primary-darker: #d0004a;
+  --ifm-color-primary-darkest: #ab003d;
+  --ifm-color-primary-light: #ff0f64;
+  --ifm-color-primary-lighter: #ff1b6c;
+  --ifm-color-primary-lightest: #ff4084;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #ff9cfd;
-  --ifm-color-primary-dark: #ff73fc;
-  --ifm-color-primary-darker: #ff5efc;
-  --ifm-color-primary-darkest: #ff21fb;
-  --ifm-color-primary-light: #ffc5fe;
-  --ifm-color-primary-lighter: #ffdafe;
-  --ifm-color-primary-lightest: #ffffff;
+  --ifm-color-primary: #ff4081;
+  --ifm-color-primary-dark: #ff206c;
+  --ifm-color-primary-darker: #ff1061;
+  --ifm-color-primary-darkest: #df004c;
+  --ifm-color-primary-light: #ff6096;
+  --ifm-color-primary-lighter: #ff70a1;
+  --ifm-color-primary-lightest: #ffa0c0;
 }
 
 .docusaurus-highlight-code-line {

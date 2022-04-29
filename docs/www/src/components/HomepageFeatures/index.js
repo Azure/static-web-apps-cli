@@ -5,47 +5,65 @@ import styles from './styles.module.css';
 
 const FeatureList = [
   {
-    title: 'Azure Static Web Apps',
-    Svg: require('@site/static/img/read-docs.svg').default,
+    title: 'Install SWA CLI',
+    Svg: require('@site/static/img/landing-install.svg').default,
     description: (
       <>
-        Azure Static Web Apps is a service that automatically builds and deploys full stack web apps to Azure from a code repository. 
+        Get started by installing the Azure Static Web Apps CLI using <b>yarn</b> or <b>npm</b>. 
         <br/>
+        {/*
         <Link
           className="button button--secondary button--sm"
           to="https://docs.microsoft.com/en-us/azure/static-web-apps/getting-started?tabs=vanilla-javascript">
           Get Started With SWA
         </Link>
+     */}
       </>
     ),
   },
   {
-    title: 'Static Web Apps CLI',
-    Svg: require('@site/static/img/install-cli.svg').default,
+    title: 'Configure SWA CLI',
+    Svg: require('@site/static/img/landing-configure.svg').default,
     description: (
       <>
-        The Static Web Apps CLI supports local development needs. Initialize, validate, and deploy your SWA from the commandline.
+        Explore the <b>environment variables</b> and <b>config settings</b> available for SWA CLI.
+      </>
+    ),
+  },
+  {
+    title: 'Login to Azure',
+    Svg: require('@site/static/img/landing-login.svg').default,
+    description: (
+      <>
+        Use the <b>swa login</b> command to authenticate with the relevant services.
         <br/>  
-        <Link
-          className="button button--secondary button--sm"
-          to="/docs/intro">
-          Install the SWA CLI
-        </Link>
       </>
     ),
   },
   {
-    title: 'Recent News & Activity',
-    Svg: require('@site/static/img/whats-new.svg').default,
+    title: 'Initialize SWA',
+    Svg: require('@site/static/img/landing-init.svg').default,
     description: (
       <>
-        The Static Web Apps CLI is at <i>pre-release v0.8.3</i>. Learn what's new and get an sneak peek at upcoming features. 
-        <br/>
-        <Link
-          className="button button--secondary button--sm"
-          to="/blog">
-          Visit Our Dev Blog
-        </Link>
+        Use the <b>swa init</b> command to setup a project with a preferred web technology.
+      </>
+    ),
+  },
+  {
+    title: 'Develop SWA (local)',
+    Svg: require('@site/static/img/landing-start.svg').default,
+    description: (
+      <>
+        Use the <b>swa start</b> command to preview and debug your SWA on a local server.
+      </>
+    ),
+  },
+  {
+    title: 'Deploy SWA (cloud)',
+    Svg: require('@site/static/img/landing-deploy.svg').default,
+    description: (
+      <>
+        Use the <b>swa deploy</b> command to build and deploy SWA to multiple environments.
       </>
     ),
   },

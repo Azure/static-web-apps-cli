@@ -6,8 +6,8 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Static Web Apps CLI',
-  tagline: 'Local Dev Tool for Static Web Apps',
+  title: 'Static Web Apps CLI (Preview)',
+  tagline: 'A Local Development Tool For Azure Static Web Apps',
   url: 'https://fearlessly-dev.github.io', // PR-TODO: change to https://azure.github.io/
   baseUrl: '/static-web-apps-cli/',
   onBrokenLinks: 'throw',
@@ -27,6 +27,8 @@ const config = {
           // Please change this to your repo.
           editUrl: 'https://github.com/azure/static-web-apps-cli/tree/main/docs/www/',
         },
+        blog: false,
+        /** 
         blog: {
           blogTitle: 'What\'s New in SWA CLI!',
           blogDescription: 'Release notes and announcements from the Azure Static Web Apps CLI team',
@@ -42,6 +44,7 @@ const config = {
           editUrl:
             'https://github.com/azure/static-web-apps-cli/tree/main/docs/www/',
         },
+        */
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
@@ -56,17 +59,42 @@ const config = {
         title: 'SWA CLI',
         logo: {
           alt: 'SWA CLI Logo',
-          src: 'img/logo.png',
+          src: 'img/logo.svg',
         },
         items: [
           {
             type: 'doc',
             docId: 'intro',
             position: 'left',
-            label: 'Docs',
+            label: 'About',
           },
-          {to: '/blog', label: 'What\'s New', position: 'left'},
-          {to: '/contributors', label: 'Contribute', position: 'left'},
+          {
+            type: 'doc',
+            docId: 'cli/swa',
+            position: 'left',
+            label: 'CLI',
+          },
+          {
+            type: 'doc',
+            docId: 'use/install',
+            position: 'left',
+            label: 'Get Started',
+          },
+          {
+            type: 'doc',
+            docId: 'contribute/intro',
+            position: 'left',
+            label: 'Contribute',
+          },
+          {
+            type: 'doc',
+            docId: 'releases/0.8.3/quickstart/install',
+            position: 'left',
+            label: 'Releases',
+          },
+          /*{to: '/blog', label: 'Blog', position: 'right'},*/
+          {to: 'https://github.com/Azure/static-web-apps-cli/discussions', label: 'Discussions', position: 'right'},
+          {to: 'https://stackoverflow.com/questions/tagged/swa-cli', label: 'StackOverflow', position: 'right'},
           {
             href: 'https://github.com/Azure/static-web-apps-cli',
             position: 'right',
@@ -132,12 +160,24 @@ const config = {
           },
         ],
         */
-        copyright: `Copyright © ${new Date().getFullYear()} Microsoft Developer Relations | Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Microsoft | Built with Docusaurus - Icons from Noun Project.`,
       }, 
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
       },
+
+      announcementBar: {
+        id: 'Landing Page Banner',
+        content:
+          '<b>Join us May 19 at the <a href="https://aka.ms/swaanniversary">#SWAanniversary</a> event as we launch SWA CLI v1.0!</b>',
+        backgroundColor: '#F50057',
+        textColor: '#FFFFFF',
+        isCloseable: false,
+      },
+      
+
+
     }),
 };
 

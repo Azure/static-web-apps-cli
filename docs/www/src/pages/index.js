@@ -9,15 +9,15 @@ import HomepageFeatures from '@site/src/components/HomepageFeatures';
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
   return (
-    <header className={clsx('hero hero--primary', styles.heroBanner)}>
+    <header className={clsx('hero hero--secondary', styles.heroBanner)}>
       <div className="container">
         <h1 className="hero__title">{siteConfig.title}</h1>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
         <div className={styles.buttons}>
           <Link
             className="button button--secondary button--lg"
-            to="/docs/intro">
-            Quick Start ⏱️
+            to="/docs/use/install">
+            Try the SWA CLI Quickstart ↖️
           </Link>
         </div>
       </div>
@@ -29,8 +29,9 @@ export default function Home() {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />">
+      title={`${siteConfig.title} Documentation`}
+      description="Azure Static Web Apps CLI (SWA CLI) is a local development tool for the Azure Static Web Apps service. Explore the SWA CLI Documentation and Get Started using the tool.">
+      <HomepageHeader />
       <main>
         <HomepageFeatures />
       </main>
