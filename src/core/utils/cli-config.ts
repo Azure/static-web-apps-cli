@@ -54,7 +54,7 @@ export async function getConfigFileOptions(
   }
 
   if (contextOrConfigEntry === undefined) {
-    logger.warn(`No configuration specified. Ignoring "${swaCliConfigFilename}"`);
+    // Do no show any warning here as this is a common case
     return {};
   }
 

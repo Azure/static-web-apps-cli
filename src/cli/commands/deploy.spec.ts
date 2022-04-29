@@ -9,6 +9,10 @@ import * as loginModule from "./login";
 
 const pkg = require(path.join(__dirname, "..", "..", "..", "package.json"));
 
+jest.mock("ora", () => {
+  return jest.fn();
+});
+
 jest.mock("../../core/utils/logger", () => {
   return {
     logger: {

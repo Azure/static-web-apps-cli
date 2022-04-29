@@ -23,6 +23,9 @@
             "$ref": "#/$defs/deployCommandParameters"
           },
           {
+            "$ref": "#/$defs/buildCommandParameters"
+          },
+          {
             "properties": {
               "login": {
                 "allOf": [
@@ -79,6 +82,20 @@
                   },
                   {
                     "$ref": "#/$defs/deployCommandParameters"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "init": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/globalParameters"
+                  },
+                  {
+                    "$ref": "#/$defs/buildCommandParameters"
                   }
                 ]
               }
@@ -165,6 +182,10 @@
         "funcArgs": {
           "description": "Pass additional arguments to the func start command",
           "type": "string"
+        },
+        "runBuild": {
+          "description": "Run \"swa build\" before starting the emulator",
+          "type": "boolean"
         }
       },
       "type": "object"
@@ -209,6 +230,10 @@
     },
     "deployCommandParameters": {
       "properties": {
+        "appLocation": {
+          "description": "The folder containing the source code of the application",
+          "type": "string"
+        },
         "apiLocation": {
           "description": "The folder containing the source code of the API application",
           "type": "string"
@@ -232,6 +257,35 @@
       "properties": {
         "yes": {
           "description": "Answer yes to all prompts (disable interactive mode)",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "buildCommandParameters": {
+      "properties": {
+        "appLocation": {
+          "description": "The folder containing the source code of the front-end application",
+          "type": "string"
+        },
+        "apiLocation": {
+          "description": "The folder containing the source code of the API application",
+          "type": "string"
+        },
+        "outputLocation": {
+          "description": "The folder where the front-end public files are location",
+          "type": "string"
+        },
+        "appBuildCommand": {
+          "description": "The command used to build your app",
+          "type": "string"
+        },
+        "apiBuildCommand": {
+          "description": "The command used to build your api",
+          "type": "string"
+        },
+        "auto": {
+          "description": "Automatically detect how to build your app and api",
           "type": "boolean"
         }
       },

@@ -11,6 +11,7 @@ import registerDeploy from "./commands/deploy";
 import registerInit from "./commands/init";
 import registerLogin from "./commands/login";
 import registerStart from "./commands/start";
+import registerBuild from "./commands/build";
 
 export * from "./commands";
 
@@ -54,6 +55,7 @@ export async function run(argv?: string[]) {
   registerStart(program);
   registerDeploy(program);
   registerInit(program);
+  registerBuild(program);
 
   program.showHelpAfterError();
 

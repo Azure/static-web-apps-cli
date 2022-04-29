@@ -1,14 +1,16 @@
 import chalk from "chalk";
-import { Command, Option } from "commander";
+import { Command } from "commander";
 import concurrently, { CloseEvent } from "concurrently";
 import { CommandInfo } from "concurrently/dist/src/command";
 import fs from "fs";
 import path from "path";
+import { execSync } from 'child_process';
 import { DEFAULT_CONFIG } from "../../config";
 import {
   configureOptions,
   createStartupScriptCommand,
   detectTargetCoreToolsVersion,
+  findUpPackageJsonDir,
   getCoreToolsBinary,
   getNodeMajorVersion,
   isAcceptingTcpConnections,
@@ -20,7 +22,6 @@ import {
   parseUrl,
   readWorkflowFile,
 } from "../../core";
-import builder from "../../core/builder";
 import { swaCLIEnv } from "../../core/env";
 import { getCertificate } from "../../core/ssl";
 let packageInfo = require("../../../package.json");
@@ -35,9 +36,7 @@ export default function registerCommand(program: Command) {
     .option<number>("--api-port <apiPort>", "the API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
     .option("--host <host>", "the host address to use for the CLI dev server", DEFAULT_CONFIG.host)
     .option<number>("--port <port>", "the port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
-
-    // hide this flag from the help output
-    .addOption(new Option("--build", "build the front-end app and API before starting the emulator").default(false).hideHelp())
+    .option("--run-build", "run \"swa build\" before starting the emulator", false)
 
     .option("--ssl", "serve the front-end application and API over HTTPS", DEFAULT_CONFIG.ssl)
     .option("--ssl-cert <sslCertLocation>", "the SSL certificate (.crt) to use when enabling HTTPS", DEFAULT_CONFIG.sslCert)
@@ -102,7 +101,7 @@ export async function start(outputLocationOtHttpUrl: string, options: SWACLIConf
     ssl,
     sslCert,
     sslKey,
-    build,
+    runBuild,
     host,
     port,
     run,
@@ -307,17 +306,31 @@ export async function start(outputLocationOtHttpUrl: string, options: SWACLIConf
     );
   }
 
+  // run an external script, if it's available
   if (startupCommand) {
+    let startupPath = userWorkflowConfig?.appLocation;
+    const packageJsonDir = await findUpPackageJsonDir(
+      userWorkflowConfig?.appLocation || '.',
+      // TODO: incorrect when using devServer, need refacto of context
+      userWorkflowConfig?.outputLocation || '.'
+    );
+    if (packageJsonDir) {
+      logger.silly(`Found package.json in ${packageJsonDir}`);
+      // if a package.json file is found, use its directory as the startup path
+      startupPath = packageJsonDir;
+    }
+    
     concurrentlyCommands.push(
-      // run an external script, if it's available
-      { command: `cd "${userWorkflowConfig?.appLocation}" && ${startupCommand}`, name: "run", env, prefixColor: "gray.dim" }
+      { command: `cd "${startupPath}" && ${startupCommand}`, name: "run", env, prefixColor: "gray.dim" }
     );
   }
 
-  if (build) {
-    // run the app/api builds
-    await builder({
-      config: userWorkflowConfig as GithubActionWorkflow,
+  if (runBuild) {
+    // run swa build
+    execSync("swa build", {
+      stdio: 'inherit',
+      // Set CI to avoid extra NPM logs and potentially unwanted interactive modes
+      env: { ...process.env, CI: "1" }
     });
   }
 
