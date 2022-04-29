@@ -29,14 +29,25 @@ export const getCurrentSwaCliConfigFromFile = () => currentSwaCliConfigFromFile;
 export const swaCliConfigFileExists = (configFilePath: string) => existsSync(configFilePath);
 
 /**
+ * Checks if the specified value match the loaded configuration name.
+ *
+ * @param name The name to check.
+ * @returns True if the config loaded matches the name, false otherwise.
+ */
+export function matchLoadedConfigName(name: string) {
+  const configName = currentSwaCliConfigFromFile?.name;
+  return configName && configName === name;
+}
+
+/**
  * Loads the configuration from the `swa-cli.config.json` file (if available).
  *
- * @param contextOrConfigEntry This can be either the outputLocation, a devserverUrl or a config entry.
+ * @param configName The name of the configuration to load.
  * @param configFilePath The path to the `swa-cli.config.json` file.
  * @returns An object with the `{@link SWACLIOptions}` config or an empty object if the config file, or the config entry were not found.
  */
 export async function getConfigFileOptions(
-  contextOrConfigEntry: string | undefined,
+  configName: string | undefined,
   configFilePath: string
 ): Promise<SWACLIConfig> {
   logger.silly(`Getting config file options from ${configFilePath}...`);
@@ -53,8 +64,8 @@ export async function getConfigFileOptions(
     return {};
   }
 
-  if (contextOrConfigEntry === undefined) {
-    // Do no show any warning here as this is a common case
+  if (configName === undefined) {
+    // Do no show any warning here as this is a normal case with the `swa init` command.
     return {};
   }
 
@@ -64,14 +75,15 @@ export async function getConfigFileOptions(
 
   logger.silly(`Changed directory to ${configDir}`);
 
+  // In case config name is not provided, this will be the default value from positional argument
   // TODO: comparison here should be a constant, used also as the default context
   // for all commands taking a context argument
-  if (contextOrConfigEntry === `.${path.sep}`) {
+  if (configName === `.${path.sep}`) {
     const hasMultipleConfig = Object.entries(cliConfig.configurations).length > 1;
     if (hasMultipleConfig) {
       // Show as a log not warning because the user may want to use the default config
       logger.log(`Multiple configurations found in "${swaCliConfigFilename}", but none was specified.`);
-      logger.log(`Specify which configuration to use with "swa <command> <configurationName>"\n`);
+      logger.log(`Specify which configuration to use with "swa <command> --config-name <configName>"\n`);
     }
 
     const [configName, config] = Object.entries(cliConfig.configurations)[0];
@@ -84,11 +96,16 @@ export async function getConfigFileOptions(
     return { ...config };
   }
 
-  const config = cliConfig.configurations?.[contextOrConfigEntry];
+  const config = cliConfig.configurations?.[configName];
   if (config) {
-    logger.silly(`Found configuration "${contextOrConfigEntry}" in "${swaCliConfigFilename}"`);
+    logger.silly(`Found configuration "${configName}" in "${swaCliConfigFilename}"`);
 
-    printConfigMsg(contextOrConfigEntry, configFilePath);
+    printConfigMsg(configName, configFilePath);
+    currentSwaCliConfigFromFile = {
+      name: configName,
+      filePath: configFilePath,
+      config,
+    };
     return { ...config };
   }
 

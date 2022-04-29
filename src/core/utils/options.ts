@@ -8,7 +8,7 @@ let userDefinedOptions: SWACLIConfig = {};
 let configFileDefinedOptions: SWACLIConfig = {};
 
 export async function configureOptions(
-  outputLocationOrConfigEntry: string | undefined,
+  configName: string | undefined,
   options: SWACLIConfig,
   command: Command,
   commandName: SWACommand
@@ -18,7 +18,7 @@ export async function configureOptions(
   setLogLevel(verbose);
 
   userDefinedOptions = getUserOptions(command);
-  const configFileOptions = await getConfigFileOptions(outputLocationOrConfigEntry, options.config!);
+  const configFileOptions = await getConfigFileOptions(options.configName || configName, options.config!);
   const configFileCommandSpecificOptions = commandName ? configFileOptions[commandName] || {} : {};
   
   // Clean up subcommands overrides before merging

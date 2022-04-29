@@ -16,7 +16,9 @@ import {
   isAcceptingTcpConnections,
   isCoreToolsVersionCompatible,
   isHttpUrl,
+  isUserOption,
   logger,
+  matchLoadedConfigName,
   parseDevserverTimeout,
   parsePort,
   parseUrl,
@@ -28,11 +30,13 @@ let packageInfo = require("../../../package.json");
 
 export default function registerCommand(program: Command) {
   program
-    .command("start [outputLocation]")
-    .usage("[outputLocation] [options]")
+    .command("start [configName|outputLocation|devServerUrl]")
+    .usage("[configName|outputLocation|devServerUrl] [options]")
     .description("Start the emulator from a directory or bind to a dev server")
     .option("--app-location <appLocation>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
     .option("--api-location <apiLocation>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
+    .option("--dev-server-url <url>", "connect to the dev server at this URL instead of using output location", undefined)
+    .option("--api-server-url <url>", "connect to the api server at this URL instead of using output location", undefined)
     .option<number>("--api-port <apiPort>", "the API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
     .option("--host <host>", "the host address to use for the CLI dev server", DEFAULT_CONFIG.host)
     .option<number>("--port <port>", "the port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
@@ -51,15 +55,31 @@ export default function registerCommand(program: Command) {
 
     .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
     .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
-    .action(async (outputLocation: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+    .action(async (positionalArg: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
       console.warn(chalk.yellow("************************************************************************"));
       console.warn(chalk.yellow("* WARNING: This emulator is currently in preview and may not match the *"));
       console.warn(chalk.yellow("* cloud environment exactly. Always deploy and test your app in Azure. *"));
       console.warn(chalk.yellow("************************************************************************"));
       console.warn();
 
-      const options = await configureOptions(outputLocation, command.optsWithGlobals(), command, "start");
-      await start(options.outputLocation ?? outputLocation, options);
+      const options = await configureOptions(positionalArg, command.optsWithGlobals(), command, "start");
+      if (!matchLoadedConfigName(positionalArg)) {
+        // If it's not the config name, it's either output location or dev server url
+        const isUrl = isHttpUrl(positionalArg);
+        if (isUrl) {
+          if (isUserOption('devServerUrl')) {
+            logger.error(`devServerUrl was set on both positional argument and option.`, true);
+          }
+          options.devServerUrl = positionalArg;
+        } else {
+          if (isUserOption('outputLocation')) {
+            logger.error(`outputLocation was set on both positional argument and option.`, true);
+          }
+          options.outputLocation = positionalArg;
+        }
+      }
+
+      await start(options);
     })
     .addHelpText(
       "after",
@@ -87,7 +107,7 @@ swa start http://localhost:3000 --api-location http://localhost:7071
     );
 }
 
-export async function start(outputLocationOtHttpUrl: string, options: SWACLIConfig) {
+export async function start(options: SWACLIConfig) {
   // WARNING:
   // environment variables are populated using values provided by the user to the CLI.
   // Code below doesn't have access to these environment variables which are defined later below.
@@ -96,6 +116,9 @@ export async function start(outputLocationOtHttpUrl: string, options: SWACLIConf
   let {
     appLocation,
     apiLocation,
+    outputLocation,
+    devServerUrl,
+    apiServerUrl,
     apiPort,
     devserverTimeout,
     ssl,
@@ -127,16 +150,13 @@ export async function start(outputLocationOtHttpUrl: string, options: SWACLIConf
   // resolve the absolute path to the appLocation
   appLocation = path.resolve(appLocation as string);
 
-  // let's find out if outputLocation is a URL or a folder
-  let outputLocation = outputLocationOtHttpUrl;
-
-  logger.silly(`Resolving outputLocation=${outputLocation} full path...`);
-
-  if (isHttpUrl(outputLocation)) {
-    // if the outputLocation is an http url, we will connect to the dev server at that url
-    logger.silly(`outputLocation is a URL, we will try connect to dev server at ${outputLocation}`);
-    outputLocation = outputLocation;
+  
+  if (devServerUrl) {
+    logger.silly(`devServerUrl provided, we will try connect to dev server at ${outputLocation}`);
+    // TODO: properly refactor this after GA to send devServerUrl to the server
+    outputLocation = devServerUrl;
   } else {
+    logger.silly(`Resolving outputLocation=${outputLocation} full path...`);
     let resolvedOutputLocation = path.resolve(appLocation as string, outputLocation as string);
 
     // if folder exists, start the emulator from a specific build folder (outputLocation), relative to appLocation
@@ -154,12 +174,16 @@ export async function start(outputLocationOtHttpUrl: string, options: SWACLIConf
   }
 
   if (apiLocation) {
+    // TODO: apiServerUrl is not used
+
+
     // resolves to the absolute path of the apiLocation
     let apiLocationAbsolute = path.resolve(appLocation as string, apiLocation);
 
-    if (isHttpUrl(apiLocationAbsolute)) {
-      useApiDevServer = apiLocation;
-      apiLocation = useApiDevServer;
+    if (apiServerUrl) {
+      // TODO: properly refactor this after GA to send apiServerUrl to the server
+      useApiDevServer = apiServerUrl;
+      apiLocation = apiServerUrl;
     }
     // make sure api folder exists
     else if (fs.existsSync(apiLocationAbsolute)) {

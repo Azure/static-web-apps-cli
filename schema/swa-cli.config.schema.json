@@ -143,6 +143,14 @@
           "description": "The folder containing the source code of the API application",
           "type": "string"
         },
+        "devServerUrl": {
+          "description": "Connect to the dev server at this URL instead of using output location",
+          "type": "string"
+        },
+        "apiServerUrl": {
+          "description": "Connect to the api server at this URL instead of using api location",
+          "type": "string"
+        },
         "apiPort": {
           "description": "The API server port passed to func start",
           "type": "number"

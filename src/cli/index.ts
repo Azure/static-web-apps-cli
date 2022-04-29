@@ -42,6 +42,7 @@ export async function run(argv?: string[]) {
         .default(DEFAULT_CONFIG.verbose)
     )
     .option("--config <path>", "path to swa-cli.config.json file to use", path.relative(process.cwd(), swaCliConfigFilename))
+    .option("--configName <name>", "name of the configuration to use", undefined)
     .option("--print-config", "print all resolved options", false)
     .option(
       "--swa-config-location <swaConfigLocation>",

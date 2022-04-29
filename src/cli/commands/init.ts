@@ -7,6 +7,7 @@ import {
   configureOptions,
   dasherize,
   hasConfigurationNameInConfigFile,
+  isUserOption,
   logger,
   swaCliConfigFileExists,
   swaCliConfigFilename,
@@ -16,21 +17,29 @@ import { detectProjectFolders, generateConfiguration, isDescendantPath } from ".
 
 export default function registerCommand(program: Command) {
   program
-    .command("init [configurationName]")
-    .usage("[configurationName] [options]")
+    .command("init [configName]")
+    .usage("[configName] [options]")
     .description("initialize a new static web app project")
     .option("--yes", "answer yes to all prompts (disable interactive mode)", false)
-    .action(async (configurationName: string, _options: SWACLIConfig, command: Command) => {
+    .action(async (configName: string | undefined, _options: SWACLIConfig, command: Command) => {
       const options = await configureOptions(undefined, command.optsWithGlobals(), command, "init");
-      await init(configurationName, options);
+      if (configName) {
+        if (isUserOption('configName')) {
+          logger.error(`configName was set on both positional argument and option.`, true);
+        }
+
+        options.configName = configName;
+      }
+
+      await init(options);
     });
 }
 
-export async function init(name: string | undefined, options: SWACLIConfig, showHints: boolean = true) {
+export async function init(options: SWACLIConfig, showHints: boolean = true) {
   const configFilePath = options.config!;
   const disablePrompts = options.yes ?? false;
   const outputFolder = process.cwd();
-  let configName: string = name?.trim() ?? "";
+  let configName: string = options.configName?.trim() ?? "";
 
   if (configName === "") {
     const response = await promptOrUseDefault(disablePrompts, {
@@ -149,12 +158,7 @@ function convertToCliConfig(config: FrameworkConfig): SWACLIConfig {
     appBuildCommand: config.appBuildCommand,
     apiBuildCommand: config.apiBuildCommand,
     run: config.devServerCommand,
-    start: {
-      outputLocation: config.devServerUrl || config.outputLocation,
-    },
-    deploy: {
-      outputLocation: config.outputLocation,
-    },
+    devServerUrl: config.devServerUrl,
   };
 }
 

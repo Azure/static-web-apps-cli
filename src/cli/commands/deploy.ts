@@ -9,8 +9,10 @@ import {
   configureOptions,
   findSWAConfigFile,
   getCurrentSwaCliConfigFromFile,
+  isUserOption,
   logger,
   logGiHubIssueMessageAndExit,
+  matchLoadedConfigName,
   readWorkflowFile,
   updateSwaCliConfigFile,
 } from "../../core";
@@ -23,8 +25,8 @@ const packageInfo = require(path.join(__dirname, "..", "..", "..", "package.json
 
 export default function registerCommand(program: Command) {
   const deployCommand = program
-    .command("deploy [outputLocation]")
-    .usage("[outputLocation] [options]")
+    .command("deploy [configName|outputLocation]")
+    .usage("[configName|outputLocation] [options]")
     .description("Deploy the current project to Azure Static Web Apps")
     .option("--app-location <appLocation>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
     .option("--api-location <apiLocation>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
@@ -32,9 +34,18 @@ export default function registerCommand(program: Command) {
     .option("--dry-run", "simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
     .option("--print-token", "print the deployment token", false)
     .option("--env [environment]", "the type of deployment environment where to deploy the project", DEFAULT_CONFIG.env)
-    .action(async (outputLocation: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
-      const options = await configureOptions(outputLocation, command.optsWithGlobals(), command, "deploy");
-      await deploy(options.outputLocation ?? outputLocation, options);
+    .action(async (positionalArg: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+      const options = await configureOptions(positionalArg, command.optsWithGlobals(), command, "deploy");
+      if (!matchLoadedConfigName(positionalArg)) {
+        if (isUserOption('outputLocation')) {
+          logger.error(`outputLocation was set on both positional argument and option.`, true);
+        }
+
+        // If it's not the config name, then it's the output location
+        options.outputLocation = positionalArg;
+      }
+
+      await deploy(options);
     })
     .addHelpText(
       "after",
@@ -61,12 +72,11 @@ Examples:
   addSharedLoginOptionsToCommand(deployCommand);
 }
 
-export async function deploy(outputLocationOrConfigName: string, options: SWACLIConfig) {
+export async function deploy(options: SWACLIConfig) {
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
 
-  let { appLocation, apiLocation, dryRun, deploymentToken, printToken, appName, swaConfigLocation, verbose } = options;
-  let outputLocation = outputLocationOrConfigName;
+  let { appLocation, apiLocation, outputLocation, dryRun, deploymentToken, printToken, appName, swaConfigLocation, verbose } = options;
 
   if (dryRun) {
     logger.warn("***********************************************************************");

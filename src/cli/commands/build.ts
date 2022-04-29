@@ -5,13 +5,13 @@ import { execSync } from 'child_process';
 import { DEFAULT_CONFIG } from "../../config";
 import { detectProjectFolders, generateConfiguration } from "../../core/frameworks";
 import {
-  configureOptions, findUpPackageJsonDir, isUserOrConfigOption, logger, pathExists, readWorkflowFile, swaCliConfigFilename,
+  configureOptions, findUpPackageJsonDir, isUserOption, isUserOrConfigOption, logger, matchLoadedConfigName, pathExists, readWorkflowFile, swaCliConfigFilename,
 } from "../../core/utils";
 
 export default function registerCommand(program: Command) {
   program
-    .command("build [configurationName|outputLocation]")
-    .usage("[configurationName|outputLocation] [options]")
+    .command("build [configName|outputLocation]")
+    .usage("[configName|outputLocation] [options]")
     .description("build your project")
     .option("--app-location <appLocation>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
     .option("--api-location <apiLocation>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
@@ -19,8 +19,17 @@ export default function registerCommand(program: Command) {
     .option("--app-build-command <command>", "the command used to build your app", DEFAULT_CONFIG.appBuildCommand)
     .option("--api-build-command <command>", "the command used to build your api", DEFAULT_CONFIG.apiBuildCommand)
     .option("--auto", "automatically detect how to build your app and api", false)
-    .action(async (configOrOutputLocation: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
-      const options = await configureOptions(configOrOutputLocation, command.optsWithGlobals(), command, "build");
+    .action(async (positionalArg: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+      const options = await configureOptions(positionalArg, command.optsWithGlobals(), command, "build");
+      if (!matchLoadedConfigName(positionalArg)) {
+        if (isUserOption('outputLocation')) {
+          logger.error(`outputLocation was set on both positional argument and option.`, true);
+        }
+
+        // If it's not the config name, then it's the output location
+        options.outputLocation = positionalArg;
+      }
+
       await build(options);
     });
 }
