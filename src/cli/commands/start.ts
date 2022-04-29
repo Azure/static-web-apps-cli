@@ -174,9 +174,6 @@ export async function start(options: SWACLIConfig) {
   }
 
   if (apiLocation) {
-    // TODO: apiServerUrl is not used
-
-
     // resolves to the absolute path of the apiLocation
     let apiLocationAbsolute = path.resolve(appLocation as string, apiLocation);
 
@@ -203,6 +200,8 @@ export async function start(options: SWACLIConfig) {
   // use any specific workflow config that the user might provide undef ".github/workflows/"
   // Note: CLI args will take precedence over workflow config
   try {
+    // TODO: not sure if we should still do this here, as config/user options should override
+    // over any options in the workflow config, but it seems to do the opposite here.
     userWorkflowConfig = readWorkflowFile({
       userWorkflowConfig,
     });
@@ -333,10 +332,10 @@ export async function start(options: SWACLIConfig) {
   // run an external script, if it's available
   if (startupCommand) {
     let startupPath = userWorkflowConfig?.appLocation;
+    let realOutputLocation = devServerUrl ? options.outputLocation : userWorkflowConfig?.outputLocation;
     const packageJsonDir = await findUpPackageJsonDir(
       userWorkflowConfig?.appLocation || '.',
-      // TODO: incorrect when using devServer, need refacto of context
-      userWorkflowConfig?.outputLocation || '.'
+      realOutputLocation || '.'
     );
     if (packageJsonDir) {
       logger.silly(`Found package.json in ${packageJsonDir}`);
