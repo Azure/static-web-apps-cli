@@ -81,7 +81,7 @@ export async function build(options: SWACLIConfig) {
   if (!appBuildCommand && !apiBuildCommand) {
     if (!hasBuildOptionsDefined(options)) {
       logger.warn('No build options were defined.');
-      logger.warn(`Please "swa init" to set your configuration or use options flags to set your`);
+      logger.warn(`Please run "swa init" to set your project configuration or use option flags to set your`);
       logger.warn(`build commands and paths.\n`);
     }
 
