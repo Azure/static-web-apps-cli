@@ -17,3 +17,7 @@ export function stripJsonComments(json: string) {
     (match, group) => group ? "" : match
   );
 }
+
+export function removeTrailingPathSep(filePath: string): string {
+  return filePath.replace(/[\\/]+$/, '');
+}

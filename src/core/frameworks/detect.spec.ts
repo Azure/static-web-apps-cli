@@ -40,7 +40,7 @@ describe("generateConfiguration()", () => {
     expect(config).toEqual({
       apiBuildCommand: "npm run build --if-present",
       apiLocation: "node-ts/dist",
-      appLocation: "e2e/fixtures/static-node-ts/",
+      appLocation: "e2e/fixtures/static-node-ts",
       name: "Static HTML, with API: Node.js, TypeScript",
       outputLocation: ".",
     });
