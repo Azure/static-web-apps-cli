@@ -120,6 +120,7 @@ describe("Testing aliases for each of the commands and their options", () => {
       .option<number>("-j, --api-port <apiPort>", "", parsePort, DEFAULT_CONFIG.apiPort)
       .option("-q, --host <host>")
       .option<number>("-p, --port <port>", "", parsePort, DEFAULT_CONFIG.port)
+      .option("-b, --run-build")
       .option("-s, --ssl")
       .option("-e, --ssl-cert <sslCertLocation>")
       .option("-k, --ssl-key <sslKeyLocation>")
@@ -140,6 +141,7 @@ describe("Testing aliases for each of the commands and their options", () => {
         `${DEFAULT_CONFIG.host}`,
         "-p",
         "4567",
+        "-b",
         "-s",
         "-e",
         "./ssl/sslCert.crt",
@@ -160,6 +162,7 @@ describe("Testing aliases for each of the commands and their options", () => {
       apiPort: 7071,
       host: DEFAULT_CONFIG.host,
       port: 4567,
+      runBuild: true,
       ssl: true,
       sslCert: "./ssl/sslCert.crt",
       sslKey: "./ssl/sslKey.key",
@@ -167,6 +170,29 @@ describe("Testing aliases for each of the commands and their options", () => {
       devserverTimeout: 1000,
       open: true,
       funcArgs: "--arg",
+    });
+  });
+
+  it("should return appropriate user cli options for the alias commands for swa deploy options", async () => {
+    const command = await new Command()
+      .name("swa")
+      .option("-d, --deployment-token <secret>")
+      .option("-dr, --dry-run")
+      .option("-pt, --print-token")
+      .parseAsync(["node", "swa", "-d", "1234abcd", "-dr", "-pt"]);
+
+    expect(getUserOptions(command)).toStrictEqual({
+      deploymentToken: "1234abcd",
+      dryRun: true,
+      printToken: true,
+    });
+  });
+
+  it("should return appropriate user cli options for the alias commands for swa init options", async () => {
+    const command = await new Command().name("swa").option("-y, --yes").parseAsync(["node", "swa", "-y"]);
+
+    expect(getUserOptions(command)).toStrictEqual({
+      yes: true,
     });
   });
 });
