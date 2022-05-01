@@ -195,4 +195,59 @@ describe("Testing aliases for each of the commands and their options", () => {
       yes: true,
     });
   });
+
+  it("should return appropriate user cli options for the alias commands for swa build options", async () => {
+    const command = await new Command()
+      .name("swa")
+      .option("-O, --output-location <outputLocation>")
+      .option("-A, --app-build-command <command>")
+      .option("-I, --api-build-command <command>")
+      .parseAsync(["node", "swa", "-O", `./build`, "-A", "build-app", "-I", "build-api"]);
+
+    expect(getUserOptions(command)).toStrictEqual({
+      outputLocation: "./build",
+      appBuildCommand: "build-app",
+      apiBuildCommand: "build-api",
+    });
+  });
+
+  it("should return appropriate user cli options for the alias commands for swa login options", async () => {
+    const command = await new Command()
+      .name("swa")
+      .option("-S, --subscription-id [subscriptionId]")
+      .option("-R, --resource-group [resourceGroupName]")
+      .option("-T, --tenant-id [tenantId]")
+      .option("-C, --client-id [clientId]")
+      .option("-CS, --client-secret [clientSecret]")
+      .option("-n, --app-name [appName]")
+      .option("-u, --use-keychain")
+      .option("-nu, --no-use-keychain")
+      .parseAsync([
+        "node",
+        "swa",
+        "-S",
+        "subscriptionId",
+        "-R",
+        "resourceGroup",
+        "-T",
+        "tenantId",
+        "-C",
+        "clientId",
+        "-CS",
+        "clientSecret",
+        "-n",
+        "appName",
+        "-nu",
+      ]);
+
+    expect(getUserOptions(command)).toStrictEqual({
+      subscriptionId: "subscriptionId",
+      resourceGroup: "resourceGroup",
+      tenantId: "tenantId",
+      clientId: "clientId",
+      clientSecret: "clientSecret",
+      appName: "appName",
+      useKeychain: false,
+    });
+  });
 });
