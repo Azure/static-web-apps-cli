@@ -21,12 +21,9 @@ The CLI emulates commonly used capabilities of the Azure Static Web Apps cloud s
 
 ## Quickstart
 
-> Note: This quickstart assumes you are serving a front-end app from the curent folder. For more advanced use cases, see below.
-
 ### Using `npm` or `yarn`:
 
 - Install the cli
-
   ```bash
   npm install -g @azure/static-web-apps-cli
   ```
@@ -37,18 +34,28 @@ The CLI emulates commonly used capabilities of the Azure Static Web Apps cloud s
   ```bash
   cd my-awesome-swa-app
   ```
+- Create a configuration for your project:
+  ```bash
+  swa init
+  ```
 - Start the emulator:
   ```bash
   swa start
   ```
 - Access your SWA app from `http://localhost:4280`
 
+See all available [options](#cli-options).
+
 ### Using `npx`:
 
 - Open a SWA app folder at the root (outside any /api or /app folders):
-
 ```bash
 cd my-awesome-swa-app
+```
+
+- Create a configuration for your project:
+```bash
+npx @azure/static-web-apps-cli init
 ```
 
 - Start the emulator:
@@ -58,6 +65,8 @@ npx @azure/static-web-apps-cli start
 ```
 
 - Access your SWA app from `http://localhost:4280`
+
+See all available [options](#cli-options).
 
 ## Start the emulator
 
@@ -379,7 +388,7 @@ The CLI can also load options from a `swa-cli.config.json` file:
 }
 ```
 
-If only a single configuration is present in the `swa-cli.config.json` file, running `swa start` will use it by default. If options are loaded from a config file, no options passed in via command line will be respected. For example `swa start app --ssl=true`. The `--ssl=true` option will not be picked up by the CLI.
+If only a single configuration is present in the `swa-cli.config.json` file, running `swa start` will use it by default. Options passed in via command line will always override any settings set in the `swa-cli.config.json` file.
 
 ### Example
 
