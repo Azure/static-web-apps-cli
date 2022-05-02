@@ -2,8 +2,7 @@ import { TokenCredential } from "@azure/identity";
 import chalk from "chalk";
 import { Command } from "commander";
 import dotenv from "dotenv";
-import { existsSync } from "fs";
-import { readFile, writeFile } from "fs/promises";
+import { existsSync, promises as fsPromises } from "fs";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
 import { configureOptions, logger, logGiHubIssueMessageAndExit } from "../../core";
@@ -11,6 +10,7 @@ import { authenticateWithAzureIdentity, listSubscriptions, listTenants } from ".
 import { ENV_FILENAME } from "../../core/constants";
 import { updateGitIgnore } from "../../core/git";
 import { chooseSubscription, chooseTenant } from "../../core/prompts";
+const { readFile, writeFile } = fsPromises;
 
 export function addSharedLoginOptionsToCommand(command: Command) {
   command

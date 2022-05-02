@@ -1,6 +1,6 @@
 import Ajv4, { JSONSchemaType, ValidateFunction } from "ajv-draft-04";
 import chalk from "chalk";
-import fs, { promises as fsPromises } from "fs";
+import fs from "fs";
 import type http from "http";
 import jsonMap from "json-source-map";
 import fetch, { RequestInit } from "node-fetch";
@@ -8,7 +8,7 @@ import path from "path";
 import { SWA_CONFIG_FILENAME, SWA_CONFIG_FILENAME_LEGACY, SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB } from "../constants";
 import { logger } from "./logger";
 import { isHttpUrl } from "./net";
-const { readdir, readFile } = fsPromises;
+const { readdir, readFile, stat } = fs.promises;
 
 /**
  * A utility function to recursively traverse a folder and returns its entries.
@@ -61,7 +61,7 @@ export async function findSWAConfigFile(folder: string): Promise<{ filepath: str
       const content = await validateRuntimeConfigAndGetData(file.filepath!);
 
       if (content) {
-        const fileSize = (await fsPromises.stat(file.filepath)).size;
+        const fileSize = (await stat(file.filepath)).size;
         const fileSizeInKb = Math.round(fileSize / 1024);
         if (fileSizeInKb > SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB) {
           logger.warn(
