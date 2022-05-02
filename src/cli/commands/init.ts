@@ -94,7 +94,7 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
     const response = await promptOrUseDefault(disablePrompts, {
       type: "select",
       name: "api",
-      message: "Which app folder do you want to use?",
+      message: "Which api folder do you want to use?",
       choices: detectedFolders.api.map((folder) => ({ title: folder.rootPath, value: folder })),
       initial: 0
     });
