@@ -27,7 +27,7 @@ export default function registerCommand(program: Command) {
   const deployCommand = program
     .command("deploy [configName|outputLocation]")
     .usage("[configName|outputLocation] [options]")
-    .description("Deploy the current project to Azure Static Web Apps")
+    .description("deploy the current project to Azure Static Web Apps")
     .option("--app-location <path>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
     .option("--api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("--output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
