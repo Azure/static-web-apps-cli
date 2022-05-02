@@ -123,7 +123,7 @@ describe("swa init", () => {
             \\"appLocation\\": \\"src\\",
             \\"apiLocation\\": \\"node-ts/dist\\",
             \\"outputLocation\\": \\".\\",
-            \\"apiBuildCommand\\": \\"npm run build --if-present\\"
+            \\"apiBuildCommand\\": \\"cd node-ts && npm run build --if-present\\"
           }
         }
       }"
@@ -143,9 +143,9 @@ describe("swa init", () => {
           \\"test\\": {
             \\"appLocation\\": \\".\\",
             \\"apiLocation\\": \\"src/node\\",
-            \\"outputLocation\\": \\"src/astro-preact/_site\\",
-            \\"appBuildCommand\\": \\"npm run build\\",
-            \\"apiBuildCommand\\": \\"npm run build --if-present\\",
+            \\"outputLocation\\": \\"src/astro preact/_site\\",
+            \\"appBuildCommand\\": \\"cd \\\\\\"src/astro preact\\\\\\" && npm run build\\",
+            \\"apiBuildCommand\\": \\"cd src/node && npm run build --if-present\\",
             \\"run\\": \\"npm run dev\\",
             \\"devServerUrl\\": \\"http://localhost:8080\\"
           }

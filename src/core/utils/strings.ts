@@ -21,3 +21,5 @@ export function stripJsonComments(json: string) {
 export function removeTrailingPathSep(filePath: string): string {
   return filePath.replace(/[\\/]+$/, '');
 }
+
+export const hasSpaces = (str: string): boolean => str.indexOf(' ') !== -1;
