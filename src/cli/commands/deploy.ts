@@ -39,7 +39,8 @@ export default function registerCommand(program: Command) {
       const options = await configureOptions(positionalArg, command.optsWithGlobals(), command, "deploy");
       if (!matchLoadedConfigName(positionalArg)) {
         if (isUserOption('outputLocation')) {
-          logger.error(`outputLocation was set on both positional argument and option.`, true);
+          logger.error(`swa deploy <outputLocation> cannot be used when --output-location option is also set.`);
+          logger.error(`You either have to use the positional argument or option, not both at the same time.`, true);
         }
 
         // If it's not the config name, then it's the output location
