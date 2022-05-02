@@ -1,9 +1,10 @@
-import fs, { mkdir, writeFile } from "fs/promises";
+import fs from "fs";
 import os from "os";
 import path from "path";
 //@ts-ignore
 import pem from "pem";
 import { logger } from "./utils";
+const { mkdir, writeFile } = fs.promises;
 
 const ONE_MONTH = 1000 * 60 * 60 * 24 * 30;
 
