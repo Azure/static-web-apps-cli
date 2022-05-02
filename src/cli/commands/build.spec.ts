@@ -86,7 +86,7 @@ describe("swa build", () => {
     await build({ ...DEFAULT_CONFIG, auto: true });
     expect(execSyncMock.mock.calls[0][0]).toBe("npm install");
     expect(execSyncMock.mock.calls[0][1].cwd).toBe("src/node-ts");
-    expect(execSyncMock.mock.calls[1][0]).toBe("npm run build --if-present");
-    expect(execSyncMock.mock.calls[1][1].cwd).toBe("src/node-ts");
+    expect(execSyncMock.mock.calls[1][0]).toBe("cd node-ts && npm run build --if-present");
+    expect(execSyncMock.mock.calls[1][1].cwd).toBe("src");
   });
 });

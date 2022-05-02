@@ -1,4 +1,4 @@
-import { dasherize, removeTrailingPathSep, stripJsonComments } from "./strings";
+import { dasherize, hasSpaces, removeTrailingPathSep, stripJsonComments } from "./strings";
 
 describe("dasherize()", () => {
   it("should convert to dash case", () => {
@@ -47,5 +47,15 @@ describe("removeTrailingPathSep()", () => {
 
   it("should remove trailing anti-slash", () => {
     expect(removeTrailingPathSep('dir\\')).toBe('dir');
+  });
+});
+
+describe("hasSpaces()", () => {
+  it("should return false", () => {
+    expect(hasSpaces('./dir')).toBe(false);
+  });
+
+  it("should return true", () => {
+    expect(hasSpaces('c:\\my documents\\')).toBe(true);
   });
 });

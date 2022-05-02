@@ -2,7 +2,7 @@ import { promises as fs } from "fs";
 import globrex from "globrex";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
-import { logger, removeTrailingPathSep, safeReadFile, safeReadJson } from "../utils";
+import { hasSpaces, logger, removeTrailingPathSep, safeReadFile, safeReadJson } from "../utils";
 import { apiFrameworks, appFrameworks } from "./frameworks";
 
 const packageJsonFile = "package.json";
@@ -50,6 +50,24 @@ export async function generateConfiguration(app?: DetectedFolder, api?: Detected
     config.apiLocation = await computePath(api.rootPath, config.apiLocation);
     config.apiLocation = path.normalize(path.relative(config.appLocation!, config.apiLocation));
     config.apiLocation = removeTrailingPathSep(config.apiLocation);
+  }
+
+  const appRootPath = app && removeTrailingPathSep(app.rootPath);
+  if (appRootPath && config.appBuildCommand && appRootPath !== config.appLocation) {
+    // If the final app location is not the same as the detected root path of the app,
+    // we need to adjust the build command to run in the correct path.
+    let commandPath = path.relative(config.appLocation!, appRootPath);
+    commandPath = hasSpaces(commandPath) ? `"${commandPath}"` : commandPath;
+    config.appBuildCommand = `cd ${commandPath} && ${config.appBuildCommand}`;
+  }
+
+  const apiRootPath = api && removeTrailingPathSep(api.rootPath);
+  if (apiRootPath && config.apiBuildCommand && apiRootPath !== config.appLocation) {
+    // If the final api location is not the same as the detected root path of the app,
+    // we need to adjust the build command to run in the correct path.
+    let commandPath = path.relative(config.appLocation!, apiRootPath);
+    commandPath = hasSpaces(commandPath) ? `"${commandPath}"` : commandPath;
+    config.apiBuildCommand = `cd ${commandPath} && ${config.apiBuildCommand}`;
   }
 
   config.name = name;
