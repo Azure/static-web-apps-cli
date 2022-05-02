@@ -1,5 +1,5 @@
 <p align="center">
-    <h2 align="center">Azure Static Web Apps CLI (preview) <img src="https://github.com/azure/static-web-apps-cli/workflows/CI/badge.svg" height="15"> </h2>
+    <h2 align="center">Azure Static Web Apps CLI<img src="https://github.com/azure/static-web-apps-cli/workflows/CI/badge.svg" height="15"> </h2>
 </p>
 <p align="center">
     <img align="center" src="docs/swa-cli-logo.svg" width="300">
@@ -15,7 +15,7 @@ The Static Web Apps CLI, also known as SWA CLI, serves as a local development to
 
 ## Important Notes
 
-**Static Web Apps CLI is in preview.** If you have suggestions or you encounter issues, please report them or help us fix them. Your contributions are very much appreciated. 🙏
+If you have suggestions or you encounter issues, please report them or help us fix them. Your contributions are very much appreciated. 🙏
 
 The CLI emulates commonly used capabilities of the Azure Static Web Apps cloud service. **Some differences are expected. Always deploy and test your apps in Azure to confirm behavior.**
 
