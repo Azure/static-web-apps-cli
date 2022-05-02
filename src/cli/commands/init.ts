@@ -25,7 +25,8 @@ export default function registerCommand(program: Command) {
       const options = await configureOptions(undefined, command.optsWithGlobals(), command, "init");
       if (configName) {
         if (isUserOption('configName')) {
-          logger.error(`configName was set on both positional argument and option.`, true);
+          logger.error(`swa init <configName> cannot be used when --config-name option is also set.`);
+          logger.error(`You either have to use the positional argument or option, not both at the same time.`, true);
         }
 
         options.configName = configName;

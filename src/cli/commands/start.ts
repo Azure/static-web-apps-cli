@@ -63,12 +63,14 @@ export default function registerCommand(program: Command) {
         const isUrl = isHttpUrl(positionalArg);
         if (isUrl) {
           if (isUserOption('devServerUrl')) {
-            logger.error(`devServerUrl was set on both positional argument and option.`, true);
+            logger.error(`swa deploy <devServerUrl> cannot be used when --dev-server-url option is also set.`);
+            logger.error(`You either have to use the positional argument or option, not both at the same time.`, true);
           }
           options.devServerUrl = positionalArg;
         } else {
           if (isUserOption('outputLocation')) {
-            logger.error(`outputLocation was set on both positional argument and option.`, true);
+            logger.error(`swa deploy <outputLocation> cannot be used when --output-location option is also set.`);
+            logger.error(`You either have to use the positional argument or option, not both at the same time.`, true);
           }
           options.outputLocation = positionalArg;
         }
