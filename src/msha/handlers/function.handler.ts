@@ -2,7 +2,6 @@ import chalk from "chalk";
 import type http from "http";
 import httpProxy from "http-proxy";
 import fetch from "node-fetch";
-import { DEFAULT_CONFIG } from "../../config";
 import { decodeCookie, logger, logRequest, registerProcessExit, validateCookie } from "../../core";
 import { HAS_API, SWA_CLI_API_URI } from "../../core/constants";
 import { onConnectionLost } from "../middlewares/request.middleware";
@@ -90,7 +89,7 @@ export function handleFunctionRequest(req: http.IncomingMessage, res: http.Serve
 
 export function isFunctionRequest(req: http.IncomingMessage, rewritePath?: string) {
   let path = rewritePath || req.url;
-  return Boolean(path?.startsWith(`/${DEFAULT_CONFIG.apiPrefix}`));
+  return Boolean(path?.toLowerCase().startsWith(`/api/`));
 }
 
 export async function validateFunctionTriggers(url: string) {

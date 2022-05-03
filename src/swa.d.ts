@@ -117,7 +117,6 @@ declare type SWACLIOptionsToCleanUp = {
   overridableErrorCode?: number[];
   swaConfigFilename?: "staticwebapp.config.json";
   swaConfigFilenameLegacy?: "routes.json";
-  apiPrefix?: "api";
 };
 
 declare type SWACLIGlobalOptions = {
