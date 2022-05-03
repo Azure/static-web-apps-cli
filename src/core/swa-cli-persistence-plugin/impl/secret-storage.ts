@@ -39,8 +39,11 @@ export class SecretStorage {
         if (value.machineId === machineId) {
           return value.content;
         }
-      } catch (_) {
-        throw new Error("Cannot get credentials");
+      } catch (error: any) {
+        logger.silly(`Error while trying to parse credentials: ${error.message}`);
+        // Delete corrupted credentials or else we're stuck with them forever
+        await this.deleteCredentials(machineId, key);
+        throw new Error("Cannot load credentials, please try again.");
       }
     }
 
