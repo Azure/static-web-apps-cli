@@ -6,6 +6,10 @@ export function runCommand(command: string, cwd?: string) {
     stdio: 'inherit',
     cwd: cwd ?? process.cwd(),
     // Set CI to avoid extra NPM logs and potentially unwanted interactive modes
-    env: { ...process.env, CI: "1" }
+    env: {
+      ...process.env,
+      // Internal flag to avoid duplicating user messages
+      SWA_CLI_INTERNAL_COMMAND: "1",
+    }
   });
 }
