@@ -62,7 +62,6 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
 
   // TODO: these are constants, not configurable
   // they should be moved out of the config
-  apiPrefix: "api",
   swaConfigFilename: "staticwebapp.config.json",
   swaConfigFilenameLegacy: "routes.json",
   customUrlScheme: "swa://",
