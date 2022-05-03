@@ -9,8 +9,8 @@ import {
 
 export default function registerCommand(program: Command) {
   program
-    .command("build [configName|outputLocation]")
-    .usage("[configName|outputLocation] [options]")
+    .command("build [configName|appLocation]")
+    .usage("[configName|appLocation] [options]")
     .description("build your project")
     .option("--app-location <path>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
     .option("--api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
@@ -21,13 +21,13 @@ export default function registerCommand(program: Command) {
     .action(async (positionalArg: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
       const options = await configureOptions(positionalArg, command.optsWithGlobals(), command, "build");
       if (!matchLoadedConfigName(positionalArg)) {
-        if (isUserOption('outputLocation')) {
-          logger.error(`swa build <outputLocation> cannot be when with --output-location option is also set.`);
+        if (isUserOption('appLocation')) {
+          logger.error(`swa build <appLocation> cannot be when with --app-location option is also set.`);
           logger.error(`You either have to use the positional argument or option, not both at the same time.`, true);
         }
 
-        // If it's not the config name, then it's the output location
-        options.outputLocation = positionalArg;
+        // If it's not the config name, then it's the app location
+        options.appLocation = positionalArg;
       }
 
       await build(options);
