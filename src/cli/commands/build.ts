@@ -14,7 +14,7 @@ export default function registerCommand(program: Command) {
     .description("build your project")
     .option("--app-location <path>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
     .option("--api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
-    .option("--output-location <path>", "the folder where the front-end public files are location", DEFAULT_CONFIG.outputLocation)
+    .option("--output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
     .option("--app-build-command <command>", "the command used to build your app", DEFAULT_CONFIG.appBuildCommand)
     .option("--api-build-command <command>", "the command used to build your api", DEFAULT_CONFIG.apiBuildCommand)
     .option("--auto", "automatically detect how to build your app and api", false)
