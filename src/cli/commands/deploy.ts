@@ -131,7 +131,7 @@ export async function deploy(options: SWACLIConfig) {
   // resolve the deployment token
   if (deploymentToken) {
     deploymentToken = deploymentToken;
-    logger.silly("Deployment token provide via flag");
+    logger.silly("Deployment token provided via flag");
     logger.silly({ [chalk.green(`--deployment-token`)]: deploymentToken });
   } else if (SWA_CLI_DEPLOYMENT_TOKEN) {
     deploymentToken = SWA_CLI_DEPLOYMENT_TOKEN;
@@ -210,6 +210,7 @@ export async function deploy(options: SWACLIConfig) {
     process.exit(0);
   }
 
+  // TODO: do that in options
   // mix CLI args with the project's build workflow configuration (if any)
   // use any specific workflow config that the user might provide undef ".github/workflows/"
   // Note: CLI args will take precedence over workflow config

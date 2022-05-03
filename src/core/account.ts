@@ -98,6 +98,18 @@ async function createResourceGroup(resourcGroupeName: string, credentialChain: T
   return result as GenericResourceExpanded;
 }
 
+async function gracefullyFail<T>(promise: Promise<T>, errorCode?: number): Promise<T | undefined> {
+  try {
+    return await promise;
+  } catch (error: any) {
+    if (errorCode === undefined || (error.statusCode && errorCode === error.statusCode)) {
+      logger.silly(`Caught error: ${error.message}`);
+      return undefined;
+    }
+    throw error;
+  }
+}
+
 async function createStaticSite(options: SWACLIConfig, credentialChain: TokenCredential, subscriptionId: string): Promise<StaticSiteARMResource> {
   let { appName, resourceGroupName } = options;
 
@@ -137,8 +149,8 @@ async function createStaticSite(options: SWACLIConfig, credentialChain: TokenCre
     logger.silly(`Checking if project "${appName}" already exists...`);
 
     // check if the static site already exists
-    const project = await websiteClient.staticSites.getStaticSite(resourceGroupName, appName);
-    const projectExists = project.id !== undefined;
+    const project = await gracefullyFail(websiteClient.staticSites.getStaticSite(resourceGroupName, appName), 404);
+    const projectExists = project !== undefined;
 
     if (projectExists) {
       spinner.stop();
@@ -241,7 +253,7 @@ export async function chooseOrCreateProjectDetails(options: SWACLIConfig, creden
   logger.silly({ staticSite });
 
   if (staticSite && staticSite.id) {
-    if (staticSite.provider !== "Custom") {
+    if (staticSite.provider !== "Custom" && staticSite.provider !== "None") {
       // TODO: add a temporary warning message until we ship `swa link/unlink`
       logger.error(`The project "${staticSite.name}" is linked to "${staticSite.provider}"!`);
       logger.error(`Unlink the project from the "${staticSite.provider}" provider and try again.`, true);
