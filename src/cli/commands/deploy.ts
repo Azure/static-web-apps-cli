@@ -35,9 +35,9 @@ export default function registerCommand(program: Command) {
     .option("--dry-run", "simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
     .option("--print-token", "print the deployment token", false)
     .option("--env [environment]", "the type of deployment environment where to deploy the project", DEFAULT_CONFIG.env)
-    .action(async (positionalArg: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+    .action(async (positionalArg: string | undefined, _options: SWACLIConfig, command: Command) => {
       const options = await configureOptions(positionalArg, command.optsWithGlobals(), command, "deploy");
-      if (!matchLoadedConfigName(positionalArg)) {
+      if (positionalArg && !matchLoadedConfigName(positionalArg)) {
         if (isUserOption('outputLocation')) {
           logger.error(`swa deploy <outputLocation> cannot be used when --output-location option is also set.`);
           logger.error(`You either have to use the positional argument or option, not both at the same time.`, true);

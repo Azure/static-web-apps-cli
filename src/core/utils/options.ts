@@ -11,14 +11,15 @@ export async function configureOptions(
   configName: string | undefined,
   options: SWACLIConfig,
   command: Command,
-  commandName: SWACommand
+  commandName: SWACommand,
+  loadConfigFile: boolean = true
 ): Promise<SWACLIConfig> {
   const verbose = options.verbose;
 
   setLogLevel(verbose);
 
   userDefinedOptions = getUserOptions(command);
-  const configFileOptions = await getConfigFileOptions(options.configName || configName, options.config!);
+  const configFileOptions = loadConfigFile ? await getConfigFileOptions(options.configName || configName, options.config!) : {};
   const configFileCommandSpecificOptions = commandName ? configFileOptions[commandName] || {} : {};
   
   // Clean up subcommands overrides before merging
