@@ -139,7 +139,7 @@ export async function chooseStaticSite(staticSites: StaticSiteARMResource[], ini
   return response.staticSite as string | "NEW";
 }
 
-export async function confirmChooseRandomPort(initial?: string): Promise<boolean> {
+export async function confirmChooseRandomPort(initial?: boolean): Promise<boolean> {
   const response = await promptOrUseDefault(false, {
     type: "confirm",
     name: "confirm",

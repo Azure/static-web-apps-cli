@@ -7,6 +7,7 @@ import path from "path";
 import { execSync } from 'child_process';
 import { DEFAULT_CONFIG } from "../../config";
 import {
+  askNewPort,
   configureOptions,
   createStartupScriptCommand,
   detectTargetCoreToolsVersion,
@@ -139,8 +140,15 @@ export async function start(options: SWACLIConfig) {
   let useApiDevServer: string | undefined | null = undefined;
   let startupCommand: string | undefined | null = undefined;
 
-  const resolvedPortNumber = await isAcceptingTcpConnections({ host, port });
-  // make sure the CLI default port is available before proceeding.
+  let resolvedPortNumber = await isAcceptingTcpConnections({ host, port });
+  if (resolvedPortNumber === 0) {
+    logger.warn(`Port ${port} is already taken!`);
+    resolvedPortNumber = await askNewPort()
+  } else {
+    logger.silly(`Port ${port} is available. Use it.`);
+  }
+
+  // still no luck or user refused to use a random port
   if (resolvedPortNumber === 0) {
     logger.error(`Port ${port} is already in use. Use '--port' to specify a different port.`, true);
   }
