@@ -138,9 +138,11 @@ async function tryParseSwaCliConfig(configFilePath: string) {
  * @param configFilePath The path to the `swa-cli.config.json` file.
  */
 function printConfigMsg(name: string, configFilePath: string) {
-  logger.log(`Using configuration "${name}" from file:`);
-  logger.log(chalk.green(`  ${configFilePath}`));
-  logger.log("");
+  if (!process.env.SWA_CLI_INTERNAL_COMMAND) {
+    logger.log(`Using configuration "${name}" from file:`);
+    logger.log(chalk.green(`  ${configFilePath}`));
+    logger.log("");
+  }
 }
 
 /**
