@@ -12,7 +12,7 @@ const VALID_PORT_MAX = 65535;
 /**
  * Check if a given remote address and port are accepting TCP connections.
  * @param Object host and port of the server to check.
- * @returns The resolved port number if the given server is accepting TCP connections. 0 if the port is already taken.
+ * @returns The resolved port number if the given server does not accept TCP connections. 0 if the port is already taken.
  */
 export async function isAcceptingTcpConnections({ host, port }: { host?: string; port?: number }): Promise<number> {
   port = Number(port) as number;
@@ -30,19 +30,22 @@ export async function isAcceptingTcpConnections({ host, port }: { host?: string;
     socket
       .once("error", () => {
         socket.end();
-        logger.silly(`Port ${port} is available. Use it.`);
         resolve(port as number);
       })
       .once("connect", async () => {
-        logger.warn(`Port ${port} is already taken!`);
-        const portNumber = await confirmChooseRandomPort();
-
-        if (portNumber) {
-          resolve(getPort());
-        }
+        resolve(0);
         socket.end();
       });
   });
+}
+
+/**
+ * Ask if the user wants to use a new port number, and if yes return the new port number.
+ * @returns A new port number if the user accepts or 0 if he refuses.
+ */
+export async function askNewPort(): Promise<number> {
+  const confirm = await confirmChooseRandomPort(true);
+  return confirm ? getPort() : 0;
 }
 
 /**
@@ -80,7 +83,7 @@ export async function validateDevServerConfig(url: string | undefined, timeout: 
 
   try {
     const resolvedPortNumber = await isAcceptingTcpConnections({ port, host: hostname });
-    if (resolvedPortNumber === 0) {
+    if (resolvedPortNumber !== 0) {
       const spinner = ora();
       try {
         spinner.start(`Waiting for ${chalk.green(url)} to be ready`);
