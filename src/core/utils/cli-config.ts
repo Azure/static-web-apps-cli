@@ -64,21 +64,13 @@ export async function getConfigFileOptions(
     return {};
   }
 
-  if (configName === undefined) {
-    // Do no show any warning here as this is a normal case with the `swa init` command.
-    return {};
-  }
-
   // Use configuration root path as the outputLocation
   const configDir = path.dirname(configFilePath);
   process.chdir(configDir);
 
   logger.silly(`Changed directory to ${configDir}`);
 
-  // In case config name is not provided, this will be the default value from positional argument
-  // TODO: comparison here should be a constant, used also as the default context
-  // for all commands taking a context argument
-  if (configName === `.${path.sep}`) {
+  if (!configName) {
     const hasMultipleConfig = Object.entries(cliConfig.configurations).length > 1;
     if (hasMultipleConfig) {
       // Show as a log not warning because the user may want to use the default config

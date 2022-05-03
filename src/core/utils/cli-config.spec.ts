@@ -21,7 +21,6 @@ const spyWriteFile = jest.spyOn(fsModule.promises, "writeFile");
 
 import * as path from "path";
 import { logger } from "../../core";
-import { DEFAULT_CONFIG } from "../../config";
 import * as cliConfigModule from "./cli-config";
 import { getConfigFileOptions, updateSwaCliConfigFile, writeConfigFile } from "./cli-config";
 
@@ -95,16 +94,16 @@ describe("getConfigFileOptions()", () => {
 
   it("Should return the default config if there are one or more configs", async () => {
     mockConfig();
-    expect(await getConfigFileOptions(DEFAULT_CONFIG.appLocation, "swa-cli.config.json")).toStrictEqual(mockConfig1.configurations.app);
+    expect(await getConfigFileOptions(undefined, "swa-cli.config.json")).toStrictEqual(mockConfig1.configurations.app);
   });
 
   it("Should return a default config", async () => {
     mockConfig(mockConfig2);
-    expect(await getConfigFileOptions(DEFAULT_CONFIG.appLocation, "swa-cli.config.json")).toStrictEqual(mockConfig2.configurations.app);
+    expect(await getConfigFileOptions(undefined, "swa-cli.config.json")).toStrictEqual(mockConfig2.configurations.app);
   });
 
   it("Should return empty object if config file is not found", async () => {
-    expect(await getConfigFileOptions(DEFAULT_CONFIG.appLocation, "swa-cli.config.json")).toStrictEqual({});
+    expect(await getConfigFileOptions(undefined, "swa-cli.config.json")).toStrictEqual({});
   });
 
   it("Should return proper config without path specified", async () => {

@@ -56,9 +56,9 @@ export default function registerCommand(program: Command) {
 
     .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
     .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
-    .action(async (positionalArg: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+    .action(async (positionalArg: string | undefined, _options: SWACLIConfig, command: Command) => {
       const options = await configureOptions(positionalArg, command.optsWithGlobals(), command, "start");
-      if (!matchLoadedConfigName(positionalArg)) {
+      if (positionalArg && !matchLoadedConfigName(positionalArg)) {
         // If it's not the config name, it's either output location or dev server url
         const isUrl = isHttpUrl(positionalArg);
         if (isUrl) {
