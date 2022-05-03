@@ -91,39 +91,36 @@ export async function deploy(options: SWACLIConfig) {
   appLocation = path.resolve(appLocation || process.cwd());
 
   // make sure outputLocation is set
-  outputLocation = path.resolve(appLocation, outputLocation || process.cwd());
+  const resolvedOutputLocation = path.resolve(appLocation, outputLocation || process.cwd());
 
   // if folder exists, deploy from a specific build folder (outputLocation), relative to appLocation
-  if (!fs.existsSync(outputLocation)) {
-    logger.error(`The folder "${outputLocation}" is not found. Exit.`, true);
+  if (!fs.existsSync(resolvedOutputLocation)) {
+    logger.error(`The folder "${resolvedOutputLocation}" is not found. Exit.`, true);
     return;
   }
 
   logger.log(`Deploying front-end files from folder:`);
-  logger.log(`  ${chalk.green(outputLocation)}`);
+  logger.log(`  ${chalk.green(resolvedOutputLocation)}`);
   logger.log(``);
 
   // if --api-location is provided, use it as the api folder
+  let resolvedApiLocation = undefined;
   if (apiLocation) {
-    const userApiFolder = path.resolve(path.join(appLocation!, apiLocation!));
-    if (!fs.existsSync(userApiFolder)) {
-      logger.error(`The provided API folder ${userApiFolder} does not exist. Abort.`, true);
+    resolvedApiLocation = path.resolve(path.join(appLocation!, apiLocation!));
+    if (!fs.existsSync(resolvedApiLocation)) {
+      logger.error(`The provided API folder ${resolvedApiLocation} does not exist. Abort.`, true);
       return;
     } else {
       logger.log(`Deploying API from folder:`);
-      logger.log(`  ${chalk.green(userApiFolder)}`);
+      logger.log(`  ${chalk.green(resolvedApiLocation)}`);
       logger.log(``);
     }
-  }
-  // otherwise, check if the default api folder exists and print a warning
-  else {
-    const defaultApiFolder = path.normalize(path.join(appLocation, DEFAULT_CONFIG.apiPrefix!));
-    if (fs.existsSync(defaultApiFolder)) {
+  } else {
+    // otherwise, check if the default api folder exists and print a warning
+    const apiFolder = await findApiFolderInPath(appLocation);
+    if (apiFolder) {
       logger.warn(
-        `An API folder was found at ".${
-        // TODO: should handle ./Api and ./api
-        path.sep + path.basename(defaultApiFolder)
-        }" but the --api-location option was not provided. The API will not be deployed.\n`
+        `An API folder was found at ".${path.sep + path.basename(apiFolder)}" but the --api-location option was not provided. The API will not be deployed.\n`
       );
     }
   }
@@ -249,9 +246,11 @@ export async function deploy(options: SWACLIConfig) {
     SKIP_APP_BUILD: "true",
     SKIP_API_BUILD: "true",
     DEPLOYMENT_TOKEN: deploymentToken,
-    APP_LOCATION: appLocation,
-    OUTPUT_LOCATION: outputLocation,
-    API_LOCATION: apiLocation,
+    // /!\ Static site client doesn't seem to use OUTPUT_LOCATION at all,
+    // so you need to provide the output path as the app location
+    APP_LOCATION: resolvedOutputLocation,
+    // OUTPUT_LOCATION: outputLocation,
+    API_LOCATION: resolvedApiLocation,
     VERBOSE: isVerboseEnabled ? "true" : "false",
   };
 
@@ -272,6 +271,7 @@ export async function deploy(options: SWACLIConfig) {
       (cliEnv as any).SWA_CLI_DEPLOY_BINARY = `${binary}@${buildId}`;
       spinner.text = `Deploying using ${cliEnv.SWA_CLI_DEPLOY_BINARY}`;
 
+      logger.silly(`Deploying using ${cliEnv.SWA_CLI_DEPLOY_BINARY}`);
       logger.silly(`Deploying using the following options:`);
       logger.silly({ env: { ...cliEnv, ...deployClientEnv } });
 
@@ -341,4 +341,9 @@ export async function deploy(options: SWACLIConfig) {
   } finally {
     cleanUp();
   }
+}
+
+async function findApiFolderInPath(appPath: string): Promise<string | undefined> {
+    const entries = await fs.promises.readdir(appPath, { withFileTypes: true });
+    return entries.find(entry => entry.name.toLowerCase() === 'api' && entry.isDirectory())?.name;
 }
