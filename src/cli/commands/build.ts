@@ -18,9 +18,9 @@ export default function registerCommand(program: Command) {
     .option("--app-build-command <command>", "the command used to build your app", DEFAULT_CONFIG.appBuildCommand)
     .option("--api-build-command <command>", "the command used to build your api", DEFAULT_CONFIG.apiBuildCommand)
     .option("--auto", "automatically detect how to build your app and api", false)
-    .action(async (positionalArg: string = `.${path.sep}`, _options: SWACLIConfig, command: Command) => {
+    .action(async (positionalArg: string | undefined, _options: SWACLIConfig, command: Command) => {
       const options = await configureOptions(positionalArg, command.optsWithGlobals(), command, "build");
-      if (!matchLoadedConfigName(positionalArg)) {
+      if (positionalArg && !matchLoadedConfigName(positionalArg)) {
         if (isUserOption('appLocation')) {
           logger.error(`swa build <appLocation> cannot be when with --app-location option is also set.`);
           logger.error(`You either have to use the positional argument or option, not both at the same time.`, true);
