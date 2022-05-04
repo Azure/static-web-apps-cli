@@ -102,8 +102,7 @@ export async function validateDevServerConfig(url: string | undefined, timeout: 
         spinner.clear();
       } catch (err) {
         spinner.fail();
-        logger.error(`Could not connect to "${url}". Is the server up and running?`);
-        process.exit(1);
+        logger.error(`Could not connect to "${url}". Is the server up and running?`, true);
       }
     }
   } catch (err) {
