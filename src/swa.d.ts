@@ -19,6 +19,7 @@ declare interface StaticSiteClientEnv {
   API_LOCATION?: string;
   VERBOSE?: string;
   DEPLOYMENT_ENVIRONMENT?: string;
+  CONFIG_FILE_LOCATION?: string;
 }
 
 declare interface SWACLIEnv extends StaticSiteClientEnv {
@@ -124,7 +125,6 @@ declare type SWACLIGlobalOptions = {
   config?: string;
   configName?: string;
   printConfig?: boolean;
-  swaConfigLocation?: string;
 };
 
 // -- CLI Init options -------------------------------------------------------
@@ -153,6 +153,7 @@ declare type SWACLIStartOptions = {
   funcArgs?: string;
   githubActionWorkflowLocation?: string;
   runBuild?: boolean;
+  swaConfigLocation?: string;
 };
 
 // -- CLI Build options ------------------------------------------------------
@@ -172,6 +173,7 @@ declare type SWACLIDeployOptions = SWACLISharedLoginOptions & {
   apiLocation?: string;
   outputLocation?: string;
   deploymentToken?: string;
+  swaConfigLocation?: string;
   dryRun?: boolean;
   printToken?: boolean;
   env?: string;

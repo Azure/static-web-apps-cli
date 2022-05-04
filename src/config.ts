@@ -36,7 +36,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   appLocation: SWA_CLI_APP_LOCATION || `.`,
   apiLocation: SWA_CLI_API_LOCATION ? SWA_CLI_API_LOCATION : undefined,
   outputLocation: SWA_CLI_OUTPUT_LOCATION || `.`,
-  swaConfigLocation: SWA_RUNTIME_CONFIG_LOCATION || `.`,
+  swaConfigLocation: SWA_RUNTIME_CONFIG_LOCATION || undefined,
   ssl: useEnvVarOrUseDefault(SWA_CLI_APP_SSL, false),
   sslCert: SWA_CLI_APP_SSL_CERT || undefined,
   sslKey: SWA_CLI_APP_SSL_KEY || undefined,
