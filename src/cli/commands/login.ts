@@ -88,7 +88,7 @@ export async function login(options: SWACLIConfig): Promise<any> {
   credentialChain = await authenticateWithAzureIdentity({ tenantId, clientId, clientSecret }, options.useKeychain);
 
   if (await credentialChain.getToken("profile")) {
-    logger.log(chalk.green(`✔ Successfully logged into Azure Static Web Apps!`));
+    logger.log(chalk.green(`✔ Successfully logged into Azure!`));
   }
 
   return await setupProjectCredentials(options, credentialChain);
@@ -112,7 +112,11 @@ async function setupProjectCredentials(options: SWACLIConfig, credentialChain: T
       tenantId = tenant?.tenantId;
       // login again with the new tenant
       // TODO: can we silently authenticate the user with the new tenant?
-      credentialChain = await authenticateWithAzureIdentity({ tenantId, clientId, clientSecret }, options.useKeychain);
+      credentialChain = await authenticateWithAzureIdentity({ tenantId, clientId, clientSecret }, options.useKeychain, true);
+
+      if (await credentialChain.getToken("profile")) {
+        logger.log(chalk.green(`✔ Successfully logged into Azure tenant: ${tenantId}`));
+      }
     }
   }
 

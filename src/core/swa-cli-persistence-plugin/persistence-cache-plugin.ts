@@ -62,4 +62,19 @@ export class SWACLIPersistenceCachePlugin implements ICachePlugin {
 
     logger.silly(`After cache access plugin. Done.`);
   }
+
+  /**
+   * Clears credentials cache.
+   */
+  public async clearCache(): Promise<void> {
+    logger.silly(`Clearing credentials cache`);
+
+    const machineId = await getMachineId();
+    logger.silly(`Machine ID: ${machineId ? "<hidden>" : "<empty>"}`);
+
+    const secretStorage = new SecretStorage(this.options, new NativeCredentialsStore(this.options), new CryptoService(machineId));
+    
+    await secretStorage.deleteCredentials(machineId, Environment.AzureCloud.name);
+    logger.silly(`Credentials cache cleared`);
+  }
 }

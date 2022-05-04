@@ -17,11 +17,12 @@ import path from "path";
 import { swaCLIEnv } from "./env";
 import { chooseProjectName, chooseStaticSite, wouldYouLikeToCreateStaticSite, wouldYouLikeToOverrideStaticSite } from "./prompts";
 import { swaCliPersistencePlugin } from "./swa-cli-persistence-plugin";
+import { SWACLIPersistenceCachePlugin } from "./swa-cli-persistence-plugin/persistence-cache-plugin";
 import { dasherize, logger } from "./utils";
 
 const DEFAULT_AZURE_LOCATION = "West US 2";
 
-export async function authenticateWithAzureIdentity(details: LoginDetails = {}, useKeychain = true) {
+export async function authenticateWithAzureIdentity(details: LoginDetails = {}, useKeychain = true, clearCache = false): Promise<TokenCredential> {
   logger.silly("Executing authenticateWithAzureIdentity");
   logger.silly({ details, useKeychain });
 
@@ -36,6 +37,11 @@ export async function authenticateWithAzureIdentity(details: LoginDetails = {}, 
 
     useIdentityPlugin(swaCliPersistencePlugin);
     tokenCachePersistenceOptions.enabled = true;
+
+    if (clearCache) {
+      logger.silly("Clearing keychain credentials");
+      await new SWACLIPersistenceCachePlugin(tokenCachePersistenceOptions).clearCache();
+    }
   } else {
     logger.silly("Keychain is disabled");
 
