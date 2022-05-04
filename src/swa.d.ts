@@ -19,6 +19,8 @@ declare interface StaticSiteClientEnv {
   API_LOCATION?: string;
   VERBOSE?: string;
   DEPLOYMENT_ENVIRONMENT?: string;
+  FUNCTION_LANGUAGE?: string;
+  FUNCTION_LANGUAGE_VERSION?: string;
 }
 
 declare interface SWACLIEnv extends StaticSiteClientEnv {
@@ -175,6 +177,8 @@ declare type SWACLIDeployOptions = SWACLISharedLoginOptions & {
   dryRun?: boolean;
   printToken?: boolean;
   env?: string;
+  apiLanguage?: string;
+  apiVersion?: string;
 };
 
 // -- CLI Login options ------------------------------------------------------
@@ -305,4 +309,4 @@ declare interface CoreToolsZipInfo {
   sha2: string;
 }
 
-declare type NpmPackageManager = 'npm' | 'yarn' | 'pnpm';
+declare type NpmPackageManager = "npm" | "yarn" | "pnpm";

@@ -31,6 +31,8 @@ export default function registerCommand(program: Command) {
     .option("--app-location <path>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
     .option("--api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("--output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
+    .option("--api-language <apiLanguage>", "the runtime language of the function")
+    .option("--api-version <apiVersion>", "version of the function runtime language")
     .option("--deployment-token <secret>", "the secret token used to authenticate with the Static Web Apps")
     .option("--dry-run", "simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
     .option("--print-token", "print the deployment token", false)
@@ -38,7 +40,7 @@ export default function registerCommand(program: Command) {
     .action(async (positionalArg: string | undefined, _options: SWACLIConfig, command: Command) => {
       const options = await configureOptions(positionalArg, command.optsWithGlobals(), command, "deploy");
       if (positionalArg && !matchLoadedConfigName(positionalArg)) {
-        if (isUserOption('outputLocation')) {
+        if (isUserOption("outputLocation")) {
           logger.error(`swa deploy <outputLocation> cannot be used when --output-location option is also set.`);
           logger.error(`You either have to use the positional argument or option, not both at the same time.`, true);
         }
@@ -78,7 +80,19 @@ export async function deploy(options: SWACLIConfig) {
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
 
-  let { appLocation, apiLocation, outputLocation, dryRun, deploymentToken, printToken, appName, swaConfigLocation, verbose } = options;
+  let {
+    appLocation,
+    apiLocation,
+    outputLocation,
+    dryRun,
+    deploymentToken,
+    printToken,
+    appName,
+    swaConfigLocation,
+    verbose,
+    apiLanguage,
+    apiVersion,
+  } = options;
 
   if (dryRun) {
     logger.warn("***********************************************************************");
@@ -120,7 +134,9 @@ export async function deploy(options: SWACLIConfig) {
     const apiFolder = await findApiFolderInPath(appLocation);
     if (apiFolder) {
       logger.warn(
-        `An API folder was found at ".${path.sep + path.basename(apiFolder)}" but the --api-location option was not provided. The API will not be deployed.\n`
+        `An API folder was found at ".${
+          path.sep + path.basename(apiFolder)
+        }" but the --api-location option was not provided. The API will not be deployed.\n`
       );
     }
   }
@@ -251,6 +267,8 @@ export async function deploy(options: SWACLIConfig) {
     APP_LOCATION: resolvedOutputLocation,
     // OUTPUT_LOCATION: outputLocation,
     API_LOCATION: resolvedApiLocation,
+    FUNCTION_LANGUAGE: apiLanguage,
+    FUNCTION_LANGUAGE_VERSION: apiVersion,
     VERBOSE: isVerboseEnabled ? "true" : "false",
   };
 
@@ -344,6 +362,6 @@ export async function deploy(options: SWACLIConfig) {
 }
 
 async function findApiFolderInPath(appPath: string): Promise<string | undefined> {
-    const entries = await fs.promises.readdir(appPath, { withFileTypes: true });
-    return entries.find(entry => entry.name.toLowerCase() === 'api' && entry.isDirectory())?.name;
+  const entries = await fs.promises.readdir(appPath, { withFileTypes: true });
+  return entries.find((entry) => entry.name.toLowerCase() === "api" && entry.isDirectory())?.name;
 }
