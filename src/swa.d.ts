@@ -59,6 +59,7 @@ declare interface SWACLIEnv extends StaticSiteClientEnv {
 
   // swa login
   SWA_CLI_LOGIN_USE_KEYCHAIN?: string;
+  SWA_CLI_LOGIN_CLEAR_CREDENTIALS?: string;
 
   // Azure AD
   AZURE_SUBSCRIPTION_ID?: string;
@@ -191,11 +192,11 @@ declare type SWACLISharedLoginOptions = LoginDetails & {
   subscriptionId?: string;
   resourceGroupName?: string;
   appName?: string;
+  useKeychain?: boolean;
+  clearCredentials?: boolean;
 };
 
-declare type SWACLILoginOptions = SWACLISharedLoginOptions & {
-  useKeychain?: boolean;
-};
+declare type SWACLILoginOptions = SWACLISharedLoginOptions;
 
 // -- CLI Config options -----------------------------------------------------
 

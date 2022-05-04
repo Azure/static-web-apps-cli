@@ -223,16 +223,20 @@
         "clientSecret": {
           "description": "Azure client secret",
           "type": "string"
+        },
+        "useKeychain": {
+          "description": "Enable using the operating system native keychain for persistent credentials",
+          "type": "boolean"
+        },
+        "clearCredentials": {
+          "description": "Clear persisted credentials before login",
+          "type": "boolean"
         }
       },
       "type": "object"
     },
     "loginCommandParameters": {
       "properties": {
-        "persist": {
-          "description": "Enable credentials cache persistence",
-          "type": "boolean"
-        }
       },
       "type": "object"
     },
