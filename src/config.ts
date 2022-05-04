@@ -26,6 +26,7 @@ const {
   SWA_CLI_APP_NAME,
   SWA_CLI_DEPLOY_DRY_RUN,
   SWA_CLI_DEPLOY_ENV,
+  SWA_CLI_LOGIN_CLEAR_CREDENTIALS
 } = swaCLIEnv();
 
 export const DEFAULT_CONFIG: SWACLIConfig = {
@@ -58,6 +59,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   clientSecret: AZURE_CLIENT_SECRET || undefined,
   appName: SWA_CLI_APP_NAME || undefined,
   dryRun: useEnvVarOrUseDefault(SWA_CLI_DEPLOY_DRY_RUN, false),
+  clearCredentials: useEnvVarOrUseDefault(SWA_CLI_LOGIN_CLEAR_CREDENTIALS, false),
 
   // TODO: these are constants, not configurable
   // they should be moved out of the config
