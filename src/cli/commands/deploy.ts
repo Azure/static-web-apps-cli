@@ -199,7 +199,7 @@ export async function deploy(options: SWACLIConfig) {
       return;
     }
   }
-  logger.log(`Deploying to environment: ${chalk.green(options.env)}\n`);
+  logger.log(`\nDeploying to environment: ${chalk.green(options.env)}\n`);
 
   if (printToken) {
     logger.log(`Deployment token:`);
