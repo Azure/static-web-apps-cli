@@ -53,7 +53,11 @@ export default function registerCommand(program: Command) {
       parseServerTimeout,
       DEFAULT_CONFIG.serverTimeout
     )
-
+    .option(
+      "--swa-config-location <swaConfigLocation>",
+      "the directory where the staticwebapp.config.json file is located",
+      DEFAULT_CONFIG.swaConfigLocation
+    )
     .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
     .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
     .action(async (positionalArg: string | undefined, _options: SWACLIConfig, command: Command) => {
@@ -102,7 +106,7 @@ Serve static content from a folder and run an API from another folder
 swa start ./output-folder --api-location ./api
 
 Use a custom command to run framework development server at startup
-swa start http://localhost:3000 --run "npm start"
+swa start http://localhost:3000 --run-build "npm start"
 
 Connect both front-end and the API to running development server
 swa start http://localhost:3000 --api-location http://localhost:7071

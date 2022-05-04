@@ -47,11 +47,6 @@ export async function run(argv?: string[]) {
     .option("--config <path>", "path to swa-cli.config.json file to use", path.relative(process.cwd(), swaCliConfigFilename))
     .option("--config-name <name>", "name of the configuration to use", undefined)
     .option("--print-config", "print all resolved options", false)
-    .option(
-      "--swa-config-location <swaConfigLocation>",
-      "the directory where the staticwebapp.config.json file is located",
-      DEFAULT_CONFIG.swaConfigLocation
-    )
     .action(async (_options: SWACLIConfig, command: Command) => {
       const options = await configureOptions(undefined, command.optsWithGlobals(), command, "init");
       swaMagic(options);
