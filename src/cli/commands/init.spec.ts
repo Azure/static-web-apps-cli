@@ -41,8 +41,8 @@ describe("swa init", () => {
         \\"$schema\\": \\"https://aka.ms/azure/static-web-apps-cli/schema\\",
         \\"configurations\\": {
           \\"test\\": {
-            \\"appLocation\\": \\"./\\",
-            \\"outputLocation\\": \\"./\\"
+            \\"appLocation\\": \\".\\",
+            \\"outputLocation\\": \\".\\"
           }
         }
       }"
@@ -92,7 +92,7 @@ describe("swa init", () => {
     const configJson = JSON.parse(fs.readFileSync(defaultCliConfig.config, "utf-8"));
     const lastCall = promptsMock.mock.calls.length - 1;
     expect(promptsMock.mock.calls[lastCall][0].name).toEqual("confirmOverwrite");
-    expect(configJson.configurations.test.outputLocation).toEqual("./");
+    expect(configJson.configurations.test.outputLocation).toEqual(".");
   });
 
   it("should ask for overwrite if a config already exists and overwrite it", async () => {

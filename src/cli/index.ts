@@ -53,7 +53,7 @@ export async function run(argv?: string[]) {
       DEFAULT_CONFIG.swaConfigLocation
     )
     .action(async (_options: SWACLIConfig, command: Command) => {
-      const options = await configureOptions(`.${path.sep}`, command.optsWithGlobals(), command, "init");
+      const options = await configureOptions(undefined, command.optsWithGlobals(), command, "init");
       swaMagic(options);
     })
     .addHelpText("after", `

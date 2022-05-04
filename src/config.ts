@@ -1,4 +1,3 @@
-import path from "path";
 import { useEnvVarOrUseDefault, swaCLIEnv } from "./core/env";
 const {
   SWA_CLI_APP_LOCATION,
@@ -34,10 +33,10 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   port: parseInt(SWA_CLI_PORT || "4280", 10),
   host: SWA_CLI_HOST || "localhost",
   apiPort: parseInt(SWA_CLI_API_PORT || "7071", 10),
-  appLocation: SWA_CLI_APP_LOCATION || `.${path.sep}`,
+  appLocation: SWA_CLI_APP_LOCATION || `.`,
   apiLocation: SWA_CLI_API_LOCATION ? SWA_CLI_API_LOCATION : undefined,
-  outputLocation: SWA_CLI_OUTPUT_LOCATION || `.${path.sep}`,
-  swaConfigLocation: SWA_RUNTIME_CONFIG_LOCATION || `.${path.sep}`,
+  outputLocation: SWA_CLI_OUTPUT_LOCATION || `.`,
+  swaConfigLocation: SWA_RUNTIME_CONFIG_LOCATION || `.`,
   ssl: useEnvVarOrUseDefault(SWA_CLI_APP_SSL, false),
   sslCert: SWA_CLI_APP_SSL_CERT || undefined,
   sslKey: SWA_CLI_APP_SSL_KEY || undefined,
