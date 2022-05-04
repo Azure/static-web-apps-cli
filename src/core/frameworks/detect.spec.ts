@@ -23,14 +23,14 @@ describe("generateConfiguration()", () => {
     const { app, api } = await detectProjectFolders("e2e/fixtures/astro-node");
     const config = await generateConfiguration(app[0], api[0]);
     expect(config).toEqual({
-      apiBuildCommand: "cd e2e/fixtures/astro-node/node && npm run build --if-present",
+      apiBuildCommand: "npm run build --if-present",
       apiLocation: "e2e/fixtures/astro-node/node",
-      appBuildCommand: "cd \"e2e/fixtures/astro-node/astro preact\" && npm run build",
-      appLocation: ".",
+      appBuildCommand: "npm run build",
+      appLocation: "e2e/fixtures/astro-node/astro preact",
       devServerCommand: "npm run dev",
       devServerUrl: "http://localhost:8080",
       name: "Astro, with API: Node.js",
-      outputLocation: "e2e/fixtures/astro-node/astro preact/_site",
+      outputLocation: "_site",
     });
   });
 
@@ -38,8 +38,8 @@ describe("generateConfiguration()", () => {
     const { app, api } = await detectProjectFolders("e2e/fixtures/static-node-ts");
     const config = await generateConfiguration(app[0], api[0]);
     expect(config).toEqual({
-      apiBuildCommand: "cd node-ts && npm run build --if-present",
-      apiLocation: "node-ts/dist",
+      apiBuildCommand: "npm run build --if-present",
+      apiLocation: "e2e/fixtures/static-node-ts/node-ts",
       appLocation: "e2e/fixtures/static-node-ts",
       name: "Static HTML, with API: Node.js, TypeScript",
       outputLocation: ".",
