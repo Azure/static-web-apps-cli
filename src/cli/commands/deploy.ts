@@ -106,7 +106,7 @@ export async function deploy(options: SWACLIConfig) {
   // if --api-location is provided, use it as the api folder
   let resolvedApiLocation = undefined;
   if (apiLocation) {
-    resolvedApiLocation = path.resolve(path.join(appLocation!, apiLocation!));
+    resolvedApiLocation = path.resolve(apiLocation!);
     if (!fs.existsSync(resolvedApiLocation)) {
       logger.error(`The provided API folder ${resolvedApiLocation} does not exist. Abort.`, true);
       return;
@@ -246,7 +246,7 @@ export async function deploy(options: SWACLIConfig) {
     SKIP_APP_BUILD: "true",
     SKIP_API_BUILD: "true",
     DEPLOYMENT_TOKEN: deploymentToken,
-    // /!\ Static site client doesn't seem to use OUTPUT_LOCATION at all,
+    // /!\ Static site client doesn't use OUTPUT_LOCATION at all if SKIP_APP_BUILD is set,
     // so you need to provide the output path as the app location
     APP_LOCATION: resolvedOutputLocation,
     // OUTPUT_LOCATION: outputLocation,

@@ -117,14 +117,15 @@ export async function build(options: SWACLIConfig) {
   }
 
   if (apiBuildCommand) {
-    const packageJsonPath = await findUpPackageJsonDir(appLocation!, apiLocation!);
+    // For now, only look up in the api location as there's no equivalent to outputLocation for api
+    const packageJsonPath = await findUpPackageJsonDir(apiLocation!, '.');
     if (packageJsonPath) {
       logger.log(`Found package.json in ${packageJsonPath}`);
       await installNpmDependencies(packageJsonPath);
     }
 
-    logger.log(`Building api with ${chalk.green(apiBuildCommand)} in ${chalk.dim(appLocation)}...`);
-    runCommand(apiBuildCommand, appLocation!);
+    logger.log(`Building api with ${chalk.green(apiBuildCommand)} in ${chalk.dim(apiLocation)}...`);
+    runCommand(apiBuildCommand, apiLocation!);
   }
 }
 

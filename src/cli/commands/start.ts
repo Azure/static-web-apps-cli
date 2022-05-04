@@ -159,7 +159,6 @@ export async function start(options: SWACLIConfig) {
 
   // resolve the absolute path to the appLocation
   appLocation = path.resolve(appLocation as string);
-
   
   if (devServerUrl) {
     logger.silly(`devServerUrl provided, we will try connect to dev server at ${outputLocation}`);
@@ -185,7 +184,7 @@ export async function start(options: SWACLIConfig) {
 
   if (apiLocation) {
     // resolves to the absolute path of the apiLocation
-    let apiLocationAbsolute = path.resolve(appLocation as string, apiLocation);
+    let resolvedApiLocation = path.resolve(apiLocation);
 
     if (apiServerUrl) {
       // TODO: properly refactor this after GA to send apiServerUrl to the server
@@ -193,10 +192,10 @@ export async function start(options: SWACLIConfig) {
       apiLocation = apiServerUrl;
     }
     // make sure api folder exists
-    else if (fs.existsSync(apiLocationAbsolute)) {
-      apiLocation = apiLocationAbsolute;
+    else if (fs.existsSync(resolvedApiLocation)) {
+      apiLocation = resolvedApiLocation;
     } else {
-      logger.info(`Skipping API because folder "${apiLocationAbsolute}" is missing`, "swa");
+      logger.info(`Skipping API because folder "${resolvedApiLocation}" is missing`, "swa");
     }
   }
 
@@ -295,6 +294,7 @@ export async function start(options: SWACLIConfig) {
   }
 
   // resolve the following config to their absolute paths
+  // TODO: search in outputLocation then appLocation
   swaConfigLocation = path.resolve(swaConfigLocation || process.cwd());
 
   // WARNING: code from above doesn't have access to env vars which are only defined below
