@@ -39,7 +39,7 @@ declare interface SWACLIEnv extends StaticSiteClientEnv {
   SWA_CLI_APP_SSL_CERT?: string;
   SWA_CLI_APP_SSL_KEY?: string;
   SWA_CLI_STARTUP_COMMAND?: string;
-  SWA_CLI_DEVSERVER_TIMEOUT?: string;
+  SWA_CLI_SERVER_TIMEOUT?: string;
   SWA_CLI_OPEN_BROWSER?: string;
 
   // swa deploy
@@ -148,7 +148,7 @@ declare type SWACLIStartOptions = {
   sslCert?: string;
   sslKey?: string;
   run?: string;
-  devserverTimeout?: number;
+  serverTimeout?: number;
   open?: boolean;
   funcArgs?: string;
   githubActionWorkflowLocation?: string;

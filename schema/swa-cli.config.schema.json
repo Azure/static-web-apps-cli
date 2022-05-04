@@ -159,8 +159,8 @@
           "description": "Automatically open the CLI dev server in the default browser",
           "type": "boolean"
         },
-        "devserverTimeout": {
-          "description": "The time to wait (in ms) when connecting to a front-end application's dev server",
+        "serverTimeout": {
+          "description": "The time to wait (in seconds) when connecting to a front-end application's dev server or api server",
           "type": "number"
         },
         "host": {
