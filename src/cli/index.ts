@@ -76,22 +76,27 @@ export async function run(argv?: string[]) {
 }
 
 export async function swaMagic(_options: SWACLIConfig) {
-  const hasLoadedConfig = getCurrentSwaCliConfigFromFile();
-  if (!hasLoadedConfig) {
-    runCommand("swa init")
+  try {
+    const hasLoadedConfig = getCurrentSwaCliConfigFromFile();
+    if (!hasLoadedConfig) {
+      runCommand("swa init")
+    }
+    runCommand("swa build");
+  
+    const response = await promptOrUseDefault(false, {
+      type: "confirm",
+      name: "deploy",
+      message: "Do you want to deploy your app now?",
+      initial: true
+    });
+    if (!response.deploy) {
+      logger.log(`\nWhen you'll be ready to deploy your app, just use ${chalk.cyan("swa")} again.`);
+      return;
+    }
+  
+    runCommand("swa deploy");
+  } catch (_) {
+    // Pokemon, go catch'em all!
+    // (Errors are alreay catched an displayed in individual commands)
   }
-  runCommand("swa build");
-
-  const response = await promptOrUseDefault(false, {
-    type: "confirm",
-    name: "deploy",
-    message: "Do you want to deploy your app now?",
-    initial: true
-  });
-  if (!response.deploy) {
-    logger.log(`\nWhen you'll be ready to deploy your app, just use ${chalk.cyan("swa")} again.`);
-    return;
-  }
-
-  runCommand("swa deploy");
 }
