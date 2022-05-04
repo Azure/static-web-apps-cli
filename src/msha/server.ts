@@ -141,11 +141,11 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
   };
 
   if (IS_APP_DEV_SERVER()) {
-    await validateDevServerConfig(DEFAULT_CONFIG.outputLocation, DEFAULT_CONFIG.devserverTimeout);
+    await validateDevServerConfig(DEFAULT_CONFIG.outputLocation, DEFAULT_CONFIG.serverTimeout);
   }
 
   if (HAS_API) {
-    await validateDevServerConfig(SWA_CLI_API_URI() as string, DEFAULT_CONFIG.devserverTimeout);
+    await validateDevServerConfig(SWA_CLI_API_URI() as string, DEFAULT_CONFIG.serverTimeout);
     await validateFunctionTriggers(SWA_CLI_API_URI() as string);
   }
 

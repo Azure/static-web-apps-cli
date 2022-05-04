@@ -19,7 +19,7 @@ import {
   isUserOption,
   logger,
   matchLoadedConfigName,
-  parseDevserverTimeout,
+  parseServerTimeout,
   parsePort,
   parseUrl,
   readWorkflowFile,
@@ -48,10 +48,10 @@ export default function registerCommand(program: Command) {
     .option("--ssl-key <sslKeyLocation>", "the SSL key (.key) to use when enabling HTTPS", DEFAULT_CONFIG.sslKey)
     .option("--run <startupScript>", "run a custom shell command or script file at startup", DEFAULT_CONFIG.run)
     .option<number>(
-      "--devserver-timeout <devserverTimeout>",
-      "the time to wait (in ms) when connecting to a front-end application's dev server",
-      parseDevserverTimeout,
-      DEFAULT_CONFIG.devserverTimeout
+      "--server-timeout <time>",
+      "the time to wait (in seconds) when connecting to a front-end application's dev server or api server",
+      parseServerTimeout,
+      DEFAULT_CONFIG.serverTimeout
     )
 
     .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
@@ -123,7 +123,7 @@ export async function start(options: SWACLIConfig) {
     devServerUrl,
     apiServerUrl,
     apiPort,
-    devserverTimeout,
+    serverTimeout,
     ssl,
     sslCert,
     sslKey,
@@ -315,7 +315,7 @@ export async function start(options: SWACLIConfig) {
     SWA_CLI_APP_SSL_KEY: sslKey,
     SWA_CLI_STARTUP_COMMAND: startupCommand as string,
     SWA_CLI_VERSION: packageInfo.version,
-    SWA_CLI_DEVSERVER_TIMEOUT: `${devserverTimeout}`,
+    SWA_CLI_SERVER_TIMEOUT: `${serverTimeout}`,
     SWA_CLI_OPEN_BROWSER: open ? "true" : "false",
   };
 

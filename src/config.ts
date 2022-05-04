@@ -2,7 +2,7 @@ import { useEnvVarOrUseDefault, swaCLIEnv } from "./core/env";
 const {
   SWA_CLI_APP_LOCATION,
   SWA_CLI_API_LOCATION,
-  SWA_CLI_DEVSERVER_TIMEOUT,
+  SWA_CLI_SERVER_TIMEOUT,
   SWA_CLI_OUTPUT_LOCATION,
   SWA_CLI_OPEN_BROWSER,
   SWA_CLI_APP_SSL,
@@ -44,7 +44,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   apiBuildCommand: SWA_CLI_API_BUILD_COMMAND || undefined,
   run: SWA_CLI_STARTUP_COMMAND || undefined,
   verbose: SWA_CLI_DEBUG || "log",
-  devserverTimeout: parseInt(SWA_CLI_DEVSERVER_TIMEOUT || "30000", 10),
+  serverTimeout: parseInt(SWA_CLI_SERVER_TIMEOUT || "60", 10),
   open: useEnvVarOrUseDefault(SWA_CLI_OPEN_BROWSER, false),
   githubActionWorkflowLocation: SWA_RUNTIME_WORKFLOW_LOCATION ? SWA_RUNTIME_WORKFLOW_LOCATION : undefined,
   env: SWA_CLI_DEPLOY_ENV || "preview",
