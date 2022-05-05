@@ -290,4 +290,4 @@ declare interface CoreToolsZipInfo {
   sha2: string;
 }
 
-declare type NpmPackageManager = 'npm' | 'yarn' | 'pnpm';
+declare type NpmPackageManager = "npm" | "yarn" | "pnpm";

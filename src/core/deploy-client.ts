@@ -146,7 +146,9 @@ export function getPlatform(): "win-x64" | "osx-x64" | "linux-x64" | null {
 export async function fetchClientVersionDefinition(releaseVersion: string): Promise<StaticSiteClientReleaseMetadata | undefined> {
   logger.silly(`Fetching release metadata for version: ${releaseVersion}. Please wait...`);
 
-  const remoteVersionDefinitions = await fetch(STATIC_SITE_CLIENT_RELEASE_METADATA_URL).then((res) => res.json()) as StaticSiteClientReleaseMetadata[];
+  const remoteVersionDefinitions = (await fetch(STATIC_SITE_CLIENT_RELEASE_METADATA_URL).then((res) =>
+    res.json()
+  )) as StaticSiteClientReleaseMetadata[];
   if (Array.isArray(remoteVersionDefinitions) && remoteVersionDefinitions.length) {
     const releaseMetadata = remoteVersionDefinitions.find((versionDefinition) => versionDefinition?.version === releaseVersion);
 

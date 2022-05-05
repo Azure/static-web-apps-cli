@@ -10,7 +10,7 @@ const packageJsonFile = "package.json";
 export async function generateConfiguration(app?: DetectedFolder, api?: DetectedFolder): Promise<FrameworkConfig> {
   let config: FrameworkConfig = {
     appLocation: DEFAULT_CONFIG.appLocation!,
-    outputLocation: DEFAULT_CONFIG.outputLocation!
+    outputLocation: DEFAULT_CONFIG.outputLocation!,
   };
 
   if (!app && !api) {
@@ -18,11 +18,11 @@ export async function generateConfiguration(app?: DetectedFolder, api?: Detected
     return config;
   }
 
-  let name = '';
+  let name = "";
 
   if (app) {
-    name += `${app.frameworks.map(f => f.name).join(', ')}`;
-    app.frameworks.forEach(f => config = { ...config, ...f.config });
+    name += `${app.frameworks.map((f) => f.name).join(", ")}`;
+    app.frameworks.forEach((f) => (config = { ...config, ...f.config }));
     config.appLocation = await computePath(app.rootPath, config.appLocation);
     config.appLocation = removeTrailingPathSep(config.appLocation);
     config.outputLocation = await computePath(config.appLocation, config.outputLocation);
@@ -31,9 +31,9 @@ export async function generateConfiguration(app?: DetectedFolder, api?: Detected
   }
 
   if (api) {
-    name += (name ? ', with ' : 'No app frameworks detected, ');
-    name += `API: ${api.frameworks.map(f => f.name).join(', ')}`;
-    api.frameworks.forEach(f => config = { ...config, ...f.config });
+    name += name ? ", with " : "No app frameworks detected, ";
+    name += `API: ${api.frameworks.map((f) => f.name).join(", ")}`;
+    api.frameworks.forEach((f) => (config = { ...config, ...f.config }));
 
     const computedApiLocation = await computePath(api.rootPath, config.apiLocation);
     if (computedApiLocation !== api.rootPath) {
@@ -71,10 +71,10 @@ async function computePath(basePath: string, additionalPath?: string): Promise<s
     return basePath;
   }
 
-  if (!additionalPath.startsWith('{')) {
+  if (!additionalPath.startsWith("{")) {
     return path.join(basePath, additionalPath);
   }
-  
+
   // Matches {<filename>#<expression>}, the first group is the filename, the second the expression
   const match = additionalPath.match(/^\{(.*?)#(.*?)\}$/);
   const [, filename, expression] = match || [];
@@ -93,9 +93,8 @@ async function computePath(basePath: string, additionalPath?: string): Promise<s
     throw new Error(`Invalid JSON file: ${file}`);
   }
 
-  const evaluateExpression = (json: JsonData, expr: string) =>
-    Function(`"use strict";return data => (${expr})`)()(json);
-  
+  const evaluateExpression = (json: JsonData, expr: string) => Function(`"use strict";return data => (${expr})`)()(json);
+
   try {
     const result = evaluateExpression(json, expression);
     if (result) {
@@ -110,7 +109,7 @@ async function computePath(basePath: string, additionalPath?: string): Promise<s
   return basePath;
 }
 
-export async function detectProjectFolders(projectPath: string = '.'): Promise<DetectionResult> {
+export async function detectProjectFolders(projectPath: string = "."): Promise<DetectionResult> {
   const projectFiles = await getFiles(projectPath);
   const apiFrameworks = await detectApiFrameworks(projectFiles);
   const appFrameworks = await detectAppFrameworks(projectFiles);
@@ -152,15 +151,9 @@ export async function detectFrameworks(projectFiles: string[], frameworks: Frame
     // Parent files are implicit for child frameworks
     if (framework.parent) {
       const parent = frameworksById[framework.parent];
-      files.push(
-        ...(parent.files ?? []),
-        ...(parent.packages ? [packageJsonFile] : [])
-      );
+      files.push(...(parent.files ?? []), ...(parent.packages ? [packageJsonFile] : []));
     }
-    files.push(
-      ...(framework.files ?? []),
-      ...(framework.packages ? [packageJsonFile] : [])
-    );
+    files.push(...(framework.files ?? []), ...(framework.packages ? [packageJsonFile] : []));
 
     const rootPaths = await findRootPathsForFiles(files, projectFiles);
     if (rootPaths !== undefined) {
@@ -170,7 +163,7 @@ export async function detectFrameworks(projectFiles: string[], frameworks: Frame
 
   detectedFrameworks = await asyncFilter(
     detectedFrameworks,
-    async framework => await matchPackages(framework) && await matchContains(framework, projectFiles)
+    async (framework) => (await matchPackages(framework)) && (await matchContains(framework, projectFiles))
   );
   let detectedFolders = await aggregateFolders(detectedFrameworks);
   detectedFolders = filterDescendantFolders(detectedFolders);
@@ -182,14 +175,14 @@ export async function detectFrameworks(projectFiles: string[], frameworks: Frame
 
 async function detectApiFrameworks(projectFiles: string[]): Promise<DetectedFolder[]> {
   const detectedApiFolders: DetectedFolder[] = await detectFrameworks(projectFiles, apiFrameworks);
-  logger.silly(formatDetectedFolders(detectedApiFolders, 'api'));
+  logger.silly(formatDetectedFolders(detectedApiFolders, "api"));
 
   return detectedApiFolders;
 }
 
 async function detectAppFrameworks(projectFiles: string[]): Promise<DetectedFolder[]> {
   const detectedAppFolders: DetectedFolder[] = await detectFrameworks(projectFiles, appFrameworks);
-  logger.silly(formatDetectedFolders(detectedAppFolders, 'app'));
+  logger.silly(formatDetectedFolders(detectedAppFolders, "app"));
 
   return detectedAppFolders;
 }
@@ -212,20 +205,17 @@ async function matchPackages(framework: DetectedFramework): Promise<boolean> {
     return true;
   }
 
-  const rootPathsMatches: string[] | undefined = await asyncFilter(framework.rootPaths, async rootPath => {
+  const rootPathsMatches: string[] | undefined = await asyncFilter(framework.rootPaths, async (rootPath) => {
     const packageJsonPath = path.join(rootPath, packageJsonFile);
     const packageJson = await safeReadJson(packageJsonPath);
     if (!packageJson) {
       return false;
     }
-  
+
     const dependencies = Object.keys(packageJson.dependencies ?? {});
     const devDependencies = Object.keys(packageJson.devDependencies ?? {});
 
-    return framework.packages!.some(packageName =>
-      dependencies.includes(packageName) ||
-      devDependencies.includes(packageName)
-    );
+    return framework.packages!.some((packageName) => dependencies.includes(packageName) || devDependencies.includes(packageName));
   });
 
   framework.rootPaths = rootPathsMatches;
@@ -237,7 +227,7 @@ async function matchContains(framework: DetectedFramework, files: string[]): Pro
     return true;
   }
 
-  const rootPathsMatches: string[] | undefined = await asyncFilter(framework.rootPaths, async rootPath => {
+  const rootPathsMatches: string[] | undefined = await asyncFilter(framework.rootPaths, async (rootPath) => {
     const currentFiles = filesFromRootPath(rootPath, files);
     return asyncEvery(Object.entries(framework.contains!), async ([filename, stringToFind]) => {
       const file = findFile(filename, currentFiles);
@@ -262,8 +252,8 @@ function filterDescendantFolders(folders: DetectedFolder[]): DetectedFolder[] {
   // Find all folders that are descendants of other folders
   const descendantPaths: Set<string> = new Set();
   for (const folder of folders) {
-    const descendantsFolders = folders.filter(f => isDescendantPath(f.rootPath, folder.rootPath));
-    descendantsFolders.forEach(f => descendantPaths.add(f.rootPath));
+    const descendantsFolders = folders.filter((f) => isDescendantPath(f.rootPath, folder.rootPath));
+    descendantsFolders.forEach((f) => descendantPaths.add(f.rootPath));
   }
 
   if (descendantPaths.size === 0) {
@@ -274,15 +264,15 @@ function filterDescendantFolders(folders: DetectedFolder[]): DetectedFolder[] {
   logger.silly(`- ${Array.from(descendantPaths).join("\n- ")}`);
 
   // Only keep folders that are not descendants
-  return folders.filter(f => !descendantPaths.has(f.rootPath));
+  return folders.filter((f) => !descendantPaths.has(f.rootPath));
 }
 
 function filterPreemptedFrameworks(detectedFolders: DetectedFolder[]): void {
   for (const folder of detectedFolders) {
     const overridenFrameworkIds: Set<string> = new Set();
-    folder.frameworks.forEach(f => {
+    folder.frameworks.forEach((f) => {
       if (f.overrides) {
-        f.overrides.forEach(id => overridenFrameworkIds.add(id));
+        f.overrides.forEach((id) => overridenFrameworkIds.add(id));
       }
     });
 
@@ -291,14 +281,14 @@ function filterPreemptedFrameworks(detectedFolders: DetectedFolder[]): void {
     if (folder.frameworks.length > 1) {
       overridenFrameworkIds.add("static");
     }
-  
+
     if (overridenFrameworkIds.size === 0) {
       continue;
     }
-  
+
     logger.silly(`Found frameworks to override in path ${folder.rootPath}: ${Array.from(overridenFrameworkIds).join(",")}`);
-  
-    folder.frameworks = folder.frameworks.filter(f => !overridenFrameworkIds.has(f.id));
+
+    folder.frameworks = folder.frameworks.filter((f) => !overridenFrameworkIds.has(f.id));
   }
 }
 
@@ -312,7 +302,7 @@ function orderFrameworksByParent(detectedFolders: DetectedFolder[]): void {
     for (const framework of frameworks) {
       if (framework.parent && frameworkIndexById[framework.parent] === undefined) {
         // Whoops, parent must be placed before this framework!
-        const parentIndex = frameworks.findIndex(f => f.id === framework.parent);
+        const parentIndex = frameworks.findIndex((f) => f.id === framework.parent);
         if (parentIndex === -1) {
           // Lonely childs should not be a thing
           logger.silly(`Framework ${framework.id} has parent ${framework.parent} but it's not detected`);
@@ -330,7 +320,7 @@ function orderFrameworksByParent(detectedFolders: DetectedFolder[]): void {
 
 function findAllFiles(fileglob: string, files: string[]): string[] {
   const { regex } = globrex(`?(*/)${fileglob}`, { extended: true, flags: "i" } as globrex.Options);
-  return files.filter(file => regex.test(file));
+  return files.filter((file) => regex.test(file));
 }
 
 function findFile(fileglob: string, files: string[]): string | undefined {
@@ -338,34 +328,34 @@ function findFile(fileglob: string, files: string[]): string | undefined {
 }
 
 function filesFromRootPath(rootPath: string, files: string[]): string[] {
-  return files.filter(file => file.startsWith(rootPath));
+  return files.filter((file) => file.startsWith(rootPath));
 }
 
 function findRootPathsForFiles(fileglobs: string[], files: string[]): string[] | undefined {
-  const foundFiles = fileglobs.map(fileglob => findAllFiles(fileglob, files));
+  const foundFiles = fileglobs.map((fileglob) => findAllFiles(fileglob, files));
 
   // Get possible root path from first glob matches
   // Note: currently it doesn't work if globs include subfolders
   // TODO: find common path denominator based on lowest dirname ancestor to try to find common root
-  const uniqueRootPaths = new Set(foundFiles[0].map(file => path.dirname(file)));
+  const uniqueRootPaths = new Set(foundFiles[0].map((file) => path.dirname(file)));
   const otherFoundFiles = foundFiles.slice(1);
-  const possibleRootPaths = [...uniqueRootPaths].filter(
-    p => otherFoundFiles.every(files => files.some(file => path.dirname(file) === p))
-  );
+  const possibleRootPaths = [...uniqueRootPaths].filter((p) => otherFoundFiles.every((files) => files.some((file) => path.dirname(file) === p)));
 
   return possibleRootPaths.length > 0 ? possibleRootPaths : undefined;
 }
 
 async function getFiles(rootPath: string): Promise<string[]> {
   const entries = await fs.readdir(rootPath, { withFileTypes: true });
-  const files = await Promise.all(entries.map(async (entry): Promise<string[]> => {
-    // Ignore dot files and node_modules
-    if (entry.name.startsWith(".") || entry.name.includes("node_modules")) {
-      return [];
-    }
-    const entryPath = path.join(rootPath, entry.name);
-    return entry.isDirectory() ? [entryPath, ...(await getFiles(entryPath))] : [entryPath];
-  }));
+  const files = await Promise.all(
+    entries.map(async (entry): Promise<string[]> => {
+      // Ignore dot files and node_modules
+      if (entry.name.startsWith(".") || entry.name.includes("node_modules")) {
+        return [];
+      }
+      const entryPath = path.join(rootPath, entry.name);
+      return entry.isDirectory() ? [entryPath, ...(await getFiles(entryPath))] : [entryPath];
+    })
+  );
   return files.flat();
 }
 
@@ -382,9 +372,9 @@ async function asyncEvery<T>(array: T[], predicate: (item: T) => Promise<boolean
 export function printSupportedFrameworks(showList = false): void {
   if (showList) {
     logger.info(`Supported api frameworks: ${apiFrameworks.length}`);
-    logger.info(`- ${apiFrameworks.map(f => f.name).join("- \n")}`);
+    logger.info(`- ${apiFrameworks.map((f) => f.name).join("- \n")}`);
     logger.info(`Supported app frameworks: ${apiFrameworks.length}`);
-    logger.info(`- ${appFrameworks.map(f => f.name).join("- \n")}`);
+    logger.info(`- ${appFrameworks.map((f) => f.name).join("- \n")}`);
   } else {
     logger.info(`Supported frameworks:`);
     logger.info(`- api: ${apiFrameworks.length}`);
@@ -393,6 +383,8 @@ export function printSupportedFrameworks(showList = false): void {
 }
 
 export function formatDetectedFolders(folders: DetectedFolder[], type: string): string {
-  return `Detected ${type} folders (${folders.length}):\n` +
-    `- ${folders.map(f => `${f.rootPath} (${f.frameworks.map(fr => fr.name).join(', ')})`).join("\n- ")}`;
+  return (
+    `Detected ${type} folders (${folders.length}):\n` +
+    `- ${folders.map((f) => `${f.rootPath} (${f.frameworks.map((fr) => fr.name).join(", ")})`).join("\n- ")}`
+  );
 }

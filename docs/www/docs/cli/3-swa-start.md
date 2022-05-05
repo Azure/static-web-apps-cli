@@ -4,7 +4,6 @@ sidebar_position: 3
 
 # `swa start`
 
-
 If you need to override the default values for the `swa start` subcommand, you can provide the following options:
 
 | Option                | Description                                                                                                    | Default   | Example                                                            |

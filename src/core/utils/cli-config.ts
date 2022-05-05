@@ -46,10 +46,7 @@ export function matchLoadedConfigName(name: string) {
  * @param configFilePath The path to the `swa-cli.config.json` file.
  * @returns An object with the `{@link SWACLIOptions}` config or an empty object if the config file, or the config entry were not found.
  */
-export async function getConfigFileOptions(
-  configName: string | undefined,
-  configFilePath: string
-): Promise<SWACLIConfig> {
+export async function getConfigFileOptions(configName: string | undefined, configFilePath: string): Promise<SWACLIConfig> {
   logger.silly(`Getting config file options from ${configFilePath}...`);
 
   configFilePath = path.resolve(configFilePath);

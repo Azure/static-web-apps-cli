@@ -14,20 +14,24 @@ describe("dasherize()", () => {
 
 describe("stripJsonComments()", () => {
   it("should leave valid JSON untouched", () => {
-    expect(stripJsonComments(`{
+    expect(
+      stripJsonComments(`{
       "hello": "world"
-    }`)).toBe(`{
+    }`)
+    ).toBe(`{
       "hello": "world"
     }`);
   });
 
   it("should strip JSON comments", () => {
-    expect(stripJsonComments(`{
+    expect(
+      stripJsonComments(`{
       // this is a /* tricky comment
       "hello": "world",
       /* and this should be removed too // */
       "but": "not // this or /* this */ or /* this"
-    }`)).toBe(`{
+    }`)
+    ).toBe(`{
       
       "hello": "world",
       
@@ -38,24 +42,24 @@ describe("stripJsonComments()", () => {
 
 describe("removeTrailingPathSep()", () => {
   it("should leave path untouched", () => {
-    expect(removeTrailingPathSep('./dir')).toBe('./dir');
+    expect(removeTrailingPathSep("./dir")).toBe("./dir");
   });
 
   it("should remove trailing slash", () => {
-    expect(removeTrailingPathSep('./')).toBe('.');
+    expect(removeTrailingPathSep("./")).toBe(".");
   });
 
   it("should remove trailing anti-slash", () => {
-    expect(removeTrailingPathSep('dir\\')).toBe('dir');
+    expect(removeTrailingPathSep("dir\\")).toBe("dir");
   });
 });
 
 describe("hasSpaces()", () => {
   it("should return false", () => {
-    expect(hasSpaces('./dir')).toBe(false);
+    expect(hasSpaces("./dir")).toBe(false);
   });
 
   it("should return true", () => {
-    expect(hasSpaces('c:\\my documents\\')).toBe(true);
+    expect(hasSpaces("c:\\my documents\\")).toBe(true);
   });
 });

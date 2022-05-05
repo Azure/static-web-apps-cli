@@ -6,7 +6,6 @@ sidebar_position: 5
 
 Azure Static Web Apps can be configured with an optional `staticwebapp.config.json` file. For more information, see [Configure Static Web Apps documentation](https://docs.microsoft.com/azure/static-web-apps/configuration).
 
-
 ## 6.1 Default File Location
 
 If you are serving static files from a folder, the CLI will search this folder for `staticwebapp.config.json`.
@@ -23,8 +22,7 @@ If you are using a front-end dev server, the CLI will search the current directo
 swa start http://localhost:3000
 ```
 
-
-## 6.2 Specify File Location 
+## 6.2 Specify File Location
 
 To control where the CLI searches for `staticwebapp.config.json`, use `--swa-config-location`.
 
