@@ -92,7 +92,7 @@ export async function validateDevServerConfig(url: string | undefined, timeout: 
           delay: 1000, // initial delay in ms, default 0
           interval: 100, // poll interval in ms, default 250ms
           simultaneous: 1, // limit to 1 connection per resource at a time
-          timeout, // timeout in ms, default Infinity
+          timeout: timeout ? timeout * 1000 : timeout, // timeout in ms, default Infinity
           tcpTimeout: 1000, // tcp timeout in ms, default 300ms
           window: 1000, // stabilization time in ms, default 750ms
           strictSSL: false,
@@ -102,8 +102,7 @@ export async function validateDevServerConfig(url: string | undefined, timeout: 
         spinner.clear();
       } catch (err) {
         spinner.fail();
-        logger.error(`Could not connect to "${url}". Is the server up and running?`);
-        process.exit(1);
+        logger.error(`Could not connect to "${url}". Is the server up and running?`, true);
       }
     }
   } catch (err) {

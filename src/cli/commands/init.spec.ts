@@ -121,9 +121,9 @@ describe("swa init", () => {
         \\"configurations\\": {
           \\"test\\": {
             \\"appLocation\\": \\"src\\",
-            \\"apiLocation\\": \\"node-ts/dist\\",
+            \\"apiLocation\\": \\"src/node-ts\\",
             \\"outputLocation\\": \\".\\",
-            \\"apiBuildCommand\\": \\"cd node-ts && npm run build --if-present\\"
+            \\"apiBuildCommand\\": \\"npm run build --if-present\\"
           }
         }
       }"
@@ -141,11 +141,11 @@ describe("swa init", () => {
         \\"$schema\\": \\"https://aka.ms/azure/static-web-apps-cli/schema\\",
         \\"configurations\\": {
           \\"test\\": {
-            \\"appLocation\\": \\".\\",
+            \\"appLocation\\": \\"src/astro preact\\",
             \\"apiLocation\\": \\"src/node\\",
-            \\"outputLocation\\": \\"src/astro preact/_site\\",
-            \\"appBuildCommand\\": \\"cd \\\\\\"src/astro preact\\\\\\" && npm run build\\",
-            \\"apiBuildCommand\\": \\"cd src/node && npm run build --if-present\\",
+            \\"outputLocation\\": \\"_site\\",
+            \\"appBuildCommand\\": \\"npm run build\\",
+            \\"apiBuildCommand\\": \\"npm run build --if-present\\",
             \\"run\\": \\"npm run dev\\",
             \\"devServerUrl\\": \\"http://localhost:8080\\"
           }

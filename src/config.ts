@@ -2,7 +2,7 @@ import { useEnvVarOrUseDefault, swaCLIEnv } from "./core/env";
 const {
   SWA_CLI_APP_LOCATION,
   SWA_CLI_API_LOCATION,
-  SWA_CLI_DEVSERVER_TIMEOUT,
+  SWA_CLI_SERVER_TIMEOUT,
   SWA_CLI_OUTPUT_LOCATION,
   SWA_CLI_OPEN_BROWSER,
   SWA_CLI_APP_SSL,
@@ -26,6 +26,7 @@ const {
   SWA_CLI_APP_NAME,
   SWA_CLI_DEPLOY_DRY_RUN,
   SWA_CLI_DEPLOY_ENV,
+  SWA_CLI_LOGIN_CLEAR_CREDENTIALS
 } = swaCLIEnv();
 
 export const DEFAULT_CONFIG: SWACLIConfig = {
@@ -36,7 +37,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   appLocation: SWA_CLI_APP_LOCATION || `.`,
   apiLocation: SWA_CLI_API_LOCATION ? SWA_CLI_API_LOCATION : undefined,
   outputLocation: SWA_CLI_OUTPUT_LOCATION || `.`,
-  swaConfigLocation: SWA_RUNTIME_CONFIG_LOCATION || `.`,
+  swaConfigLocation: SWA_RUNTIME_CONFIG_LOCATION || undefined,
   ssl: useEnvVarOrUseDefault(SWA_CLI_APP_SSL, false),
   sslCert: SWA_CLI_APP_SSL_CERT || undefined,
   sslKey: SWA_CLI_APP_SSL_KEY || undefined,
@@ -44,25 +45,19 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   apiBuildCommand: SWA_CLI_API_BUILD_COMMAND || undefined,
   run: SWA_CLI_STARTUP_COMMAND || undefined,
   verbose: SWA_CLI_DEBUG || "log",
-  devserverTimeout: parseInt(SWA_CLI_DEVSERVER_TIMEOUT || "30000", 10),
+  serverTimeout: parseInt(SWA_CLI_SERVER_TIMEOUT || "60", 10),
   open: useEnvVarOrUseDefault(SWA_CLI_OPEN_BROWSER, false),
   githubActionWorkflowLocation: SWA_RUNTIME_WORKFLOW_LOCATION ? SWA_RUNTIME_WORKFLOW_LOCATION : undefined,
   env: SWA_CLI_DEPLOY_ENV || "preview",
+  appName: SWA_CLI_APP_NAME || undefined,
+  dryRun: useEnvVarOrUseDefault(SWA_CLI_DEPLOY_DRY_RUN, false),
 
   // swa login options
-  useKeychain: useEnvVarOrUseDefault(SWA_CLI_LOGIN_USE_KEYCHAIN, true),
   subscriptionId: AZURE_SUBSCRIPTION_ID || undefined,
   resourceGroupName: AZURE_RESOURCE_GROUP || undefined,
   tenantId: AZURE_TENANT_ID || undefined,
   clientId: AZURE_CLIENT_ID || undefined,
   clientSecret: AZURE_CLIENT_SECRET || undefined,
-  appName: SWA_CLI_APP_NAME || undefined,
-  dryRun: useEnvVarOrUseDefault(SWA_CLI_DEPLOY_DRY_RUN, false),
-
-  // TODO: these are constants, not configurable
-  // they should be moved out of the config
-  swaConfigFilename: "staticwebapp.config.json",
-  swaConfigFilenameLegacy: "routes.json",
-  customUrlScheme: "swa://",
-  overridableErrorCode: [400, 401, 403, 404],
+  useKeychain: useEnvVarOrUseDefault(SWA_CLI_LOGIN_USE_KEYCHAIN, true),
+  clearCredentials: useEnvVarOrUseDefault(SWA_CLI_LOGIN_CLEAR_CREDENTIALS, false),
 };

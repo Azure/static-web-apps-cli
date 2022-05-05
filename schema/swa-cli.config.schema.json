@@ -121,10 +121,6 @@
         "printConfig": {
           "description": "Print all resolved options",
           "type": "string"
-        },
-        "swaConfigLocation": {
-          "description": "The directory where the staticwebapp.config.json file is located",
-          "type": "string"
         }
       },
       "type": "object"
@@ -159,8 +155,8 @@
           "description": "Automatically open the CLI dev server in the default browser",
           "type": "boolean"
         },
-        "devserverTimeout": {
-          "description": "The time to wait (in ms) when connecting to a front-end application's dev server",
+        "serverTimeout": {
+          "description": "The time to wait (in seconds) when connecting to a front-end application's dev server or api server",
           "type": "number"
         },
         "host": {
@@ -194,6 +190,10 @@
         "runBuild": {
           "description": "Run \"swa build\" before starting the emulator",
           "type": "boolean"
+        },
+        "swaConfigLocation": {
+          "description": "The directory where the staticwebapp.config.json file is located",
+          "type": "string"
         }
       },
       "type": "object"
@@ -223,16 +223,20 @@
         "clientSecret": {
           "description": "Azure client secret",
           "type": "string"
+        },
+        "useKeychain": {
+          "description": "Enable using the operating system native keychain for persistent credentials",
+          "type": "boolean"
+        },
+        "clearCredentials": {
+          "description": "Clear persisted credentials before login",
+          "type": "boolean"
         }
       },
       "type": "object"
     },
     "loginCommandParameters": {
       "properties": {
-        "persist": {
-          "description": "Enable credentials cache persistence",
-          "type": "boolean"
-        }
       },
       "type": "object"
     },
@@ -248,6 +252,10 @@
         },
         "outputLocation": {
           "description": "The folder where the front-end public files are location",
+          "type": "string"
+        },
+        "swaConfigLocation": {
+          "description": "The directory where the staticwebapp.config.json file is located",
           "type": "string"
         },
         "deploymentToken": {

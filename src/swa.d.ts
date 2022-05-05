@@ -21,6 +21,7 @@ declare interface StaticSiteClientEnv {
   DEPLOYMENT_ENVIRONMENT?: string;
   FUNCTION_LANGUAGE?: string;
   FUNCTION_LANGUAGE_VERSION?: string;
+  CONFIG_FILE_LOCATION?: string;
 }
 
 declare interface SWACLIEnv extends StaticSiteClientEnv {
@@ -41,7 +42,7 @@ declare interface SWACLIEnv extends StaticSiteClientEnv {
   SWA_CLI_APP_SSL_CERT?: string;
   SWA_CLI_APP_SSL_KEY?: string;
   SWA_CLI_STARTUP_COMMAND?: string;
-  SWA_CLI_DEVSERVER_TIMEOUT?: string;
+  SWA_CLI_SERVER_TIMEOUT?: string;
   SWA_CLI_OPEN_BROWSER?: string;
 
   // swa deploy
@@ -60,6 +61,7 @@ declare interface SWACLIEnv extends StaticSiteClientEnv {
 
   // swa login
   SWA_CLI_LOGIN_USE_KEYCHAIN?: string;
+  SWA_CLI_LOGIN_CLEAR_CREDENTIALS?: string;
 
   // Azure AD
   AZURE_SUBSCRIPTION_ID?: string;
@@ -93,15 +95,6 @@ declare interface Path {
   method: "GET" | "POST";
 }
 
-// TODO: cleanup when we rework RuntimeHost
-declare type RuntimeHostConfig = {
-  appPort: number;
-  proxyHost: string;
-  proxyPort: number;
-  appLocation: string | undefined;
-  outputLocation: string | undefined;
-};
-
 declare type GithubActionWorkflow = {
   appBuildCommand?: string;
   apiBuildCommand?: string;
@@ -113,20 +106,11 @@ declare type GithubActionWorkflow = {
 
 // -- CLI Global options -----------------------------------------------------
 
-declare type SWACLIOptionsToCleanUp = {
-  // TODO: cleanup these
-  customUrlScheme?: string;
-  overridableErrorCode?: number[];
-  swaConfigFilename?: "staticwebapp.config.json";
-  swaConfigFilenameLegacy?: "routes.json";
-};
-
 declare type SWACLIGlobalOptions = {
   verbose?: string;
   config?: string;
   configName?: string;
   printConfig?: boolean;
-  swaConfigLocation?: string;
 };
 
 // -- CLI Init options -------------------------------------------------------
@@ -150,11 +134,12 @@ declare type SWACLIStartOptions = {
   sslCert?: string;
   sslKey?: string;
   run?: string;
-  devserverTimeout?: number;
+  serverTimeout?: number;
   open?: boolean;
   funcArgs?: string;
   githubActionWorkflowLocation?: string;
   runBuild?: boolean;
+  swaConfigLocation?: string;
 };
 
 // -- CLI Build options ------------------------------------------------------
@@ -174,6 +159,7 @@ declare type SWACLIDeployOptions = SWACLISharedLoginOptions & {
   apiLocation?: string;
   outputLocation?: string;
   deploymentToken?: string;
+  swaConfigLocation?: string;
   dryRun?: boolean;
   printToken?: boolean;
   env?: string;
@@ -193,16 +179,15 @@ declare type SWACLISharedLoginOptions = LoginDetails & {
   subscriptionId?: string;
   resourceGroupName?: string;
   appName?: string;
+  useKeychain?: boolean;
+  clearCredentials?: boolean;
 };
 
-declare type SWACLILoginOptions = SWACLISharedLoginOptions & {
-  useKeychain?: boolean;
-};
+declare type SWACLILoginOptions = SWACLISharedLoginOptions;
 
 // -- CLI Config options -----------------------------------------------------
 
-declare type SWACLIConfig = SWACLIOptionsToCleanUp &
-  SWACLIGlobalOptions &
+declare type SWACLIConfig = SWACLIGlobalOptions &
   SWACLILoginOptions &
   SWACLIInitOptions &
   SWACLIBuildOptions &

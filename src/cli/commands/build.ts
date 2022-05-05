@@ -90,8 +90,8 @@ export async function build(options: SWACLIConfig) {
   if (!appBuildCommand && !apiBuildCommand) {
     if (!hasBuildOptionsDefined(options)) {
       logger.warn('No build options were defined.');
-      logger.warn(`Please run "swa init" to set your project configuration or use option flags to set your`);
-      logger.warn(`build commands and paths.\n`);
+      logger.warn('If your app needs a build step, run "swa init" to set your project configuration');
+      logger.warn(`or use option flags to set your build commands and paths.\n`);
     }
 
     logger.log('Nothing to build.');
@@ -112,19 +112,20 @@ export async function build(options: SWACLIConfig) {
       await installNpmDependencies(packageJsonPath);
     }
 
-    logger.log(`Building app with ${chalk.green(appBuildCommand)} in ${chalk.dim(appLocation)}...`);
+    logger.log(`Building app with ${chalk.green(appBuildCommand)} in ${chalk.dim(appLocation)} ...`);
     runCommand(appBuildCommand, appLocation!);
   }
 
   if (apiBuildCommand) {
-    const packageJsonPath = await findUpPackageJsonDir(appLocation!, apiLocation!);
+    // For now, only look up in the api location as there's no equivalent to outputLocation for api
+    const packageJsonPath = await findUpPackageJsonDir(apiLocation!, '.');
     if (packageJsonPath) {
       logger.log(`Found package.json in ${packageJsonPath}`);
       await installNpmDependencies(packageJsonPath);
     }
 
-    logger.log(`Building api with ${chalk.green(apiBuildCommand)} in ${chalk.dim(appLocation)}...`);
-    runCommand(apiBuildCommand, appLocation!);
+    logger.log(`Building api with ${chalk.green(apiBuildCommand)} in ${chalk.dim(apiLocation)} ...`);
+    runCommand(apiBuildCommand, apiLocation!);
   }
 }
 

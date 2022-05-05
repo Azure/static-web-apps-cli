@@ -25,7 +25,7 @@ title: env vars
 | SWA_CLI_APP_SSL_CERT          | SSL certificate (.crt) to use when enabling HTTPS                                  |            |               |
 | SWA_CLI_STARTUP_COMMAND       | Run a custom shell command or script file at startup                               |            |               |
 | SWA_CLI_OPEN_BROWSER          | Automatically open the CLI dev server in the default browser (`true` or `false`)   |            | `false`       |
-| SWA_CLI_DEVSERVER_TIMEOUT     | The time to wait (in ms) when connecting to a front-end application's dev server   |            | `30000`       |
+| SWA_CLI_SERVER_TIMEOUT        | The time to wait (in seconds) when connecting to a front-end application's dev server or api server   |            | `60`       |
 | **Deploy settings**           |                                                                                    |            |               |
 | SWA_CLI_APP_NAME              | Project name                                                                       |            |               |
 | SWA_CLI_DEPLOYMENT_TOKEN      | Secret token used to authenticate with the Static Web Apps                         |            |               |

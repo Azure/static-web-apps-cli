@@ -35,21 +35,13 @@ export async function generateConfiguration(app?: DetectedFolder, api?: Detected
     name += `API: ${api.frameworks.map(f => f.name).join(', ')}`;
     api.frameworks.forEach(f => config = { ...config, ...f.config });
 
-    // If api is not under app folder, we must find a common root folder
-    if (app && !isDescendantPath(api.rootPath, config.appLocation!)) {
-      logger.silly(`Api folder is not under app folder, using common root: ${config.appLocation}`);
-
-      const movePath = path.relative(config.appLocation!, app.rootPath);
-      // Recompose the outputLocation path before the move
-      config.outputLocation = path.join(config.appLocation!, config.outputLocation!);
-      // TODO: would be better to find the lowest common root folder instead
-      config.appLocation = '.';
-      config.outputLocation = path.normalize(path.join(movePath, config.outputLocation!));
+    const computedApiLocation = await computePath(api.rootPath, config.apiLocation);
+    if (computedApiLocation !== api.rootPath) {
+      // TODO: if someday SWA introduces an equivalent to outputLocation for the API
+      // we should handle this here
+      logger.silly(`Built API location "${computedApiLocation}" does not match root API location ${api.rootPath}, which is not supported yet`);
     }
-
-    config.apiLocation = await computePath(api.rootPath, config.apiLocation);
-    config.apiLocation = path.normalize(path.relative(config.appLocation!, config.apiLocation));
-    config.apiLocation = removeTrailingPathSep(config.apiLocation);
+    config.apiLocation = removeTrailingPathSep(api.rootPath);
   }
 
   const appRootPath = app && removeTrailingPathSep(app.rootPath);
@@ -62,10 +54,10 @@ export async function generateConfiguration(app?: DetectedFolder, api?: Detected
   }
 
   const apiRootPath = api && removeTrailingPathSep(api.rootPath);
-  if (apiRootPath && config.apiBuildCommand && apiRootPath !== config.appLocation) {
-    // If the final api location is not the same as the detected root path of the app,
+  if (apiRootPath && config.apiBuildCommand && apiRootPath !== config.apiLocation) {
+    // If the final api location is not the same as the detected root path of the api,
     // we need to adjust the build command to run in the correct path.
-    let commandPath = path.relative(config.appLocation!, apiRootPath);
+    let commandPath = path.relative(config.apiLocation!, apiRootPath);
     commandPath = hasSpaces(commandPath) ? `"${commandPath}"` : commandPath;
     config.apiBuildCommand = `cd ${commandPath} && ${config.apiBuildCommand}`;
   }

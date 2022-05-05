@@ -19,7 +19,7 @@ import {
   isUserOption,
   logger,
   matchLoadedConfigName,
-  parseDevserverTimeout,
+  parseServerTimeout,
   parsePort,
   parseUrl,
   readWorkflowFile,
@@ -48,12 +48,16 @@ export default function registerCommand(program: Command) {
     .option("--ssl-key <sslKeyLocation>", "the SSL key (.key) to use when enabling HTTPS", DEFAULT_CONFIG.sslKey)
     .option("--run <startupScript>", "run a custom shell command or script file at startup", DEFAULT_CONFIG.run)
     .option<number>(
-      "--devserver-timeout <devserverTimeout>",
-      "the time to wait (in ms) when connecting to a front-end application's dev server",
-      parseDevserverTimeout,
-      DEFAULT_CONFIG.devserverTimeout
+      "--server-timeout <time>",
+      "the time to wait (in seconds) when connecting to a front-end application's dev server or api server",
+      parseServerTimeout,
+      DEFAULT_CONFIG.serverTimeout
     )
-
+    .option(
+      "--swa-config-location <swaConfigLocation>",
+      "the directory where the staticwebapp.config.json file is located",
+      DEFAULT_CONFIG.swaConfigLocation
+    )
     .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
     .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
     .action(async (positionalArg: string | undefined, _options: SWACLIConfig, command: Command) => {
@@ -102,7 +106,7 @@ Serve static content from a folder and run an API from another folder
 swa start ./output-folder --api-location ./api
 
 Use a custom command to run framework development server at startup
-swa start http://localhost:3000 --run "npm start"
+swa start http://localhost:3000 --run-build "npm start"
 
 Connect both front-end and the API to running development server
 swa start http://localhost:3000 --api-location http://localhost:7071
@@ -123,7 +127,7 @@ export async function start(options: SWACLIConfig) {
     devServerUrl,
     apiServerUrl,
     apiPort,
-    devserverTimeout,
+    serverTimeout,
     ssl,
     sslCert,
     sslKey,
@@ -159,7 +163,6 @@ export async function start(options: SWACLIConfig) {
 
   // resolve the absolute path to the appLocation
   appLocation = path.resolve(appLocation as string);
-
   
   if (devServerUrl) {
     logger.silly(`devServerUrl provided, we will try connect to dev server at ${outputLocation}`);
@@ -185,7 +188,7 @@ export async function start(options: SWACLIConfig) {
 
   if (apiLocation) {
     // resolves to the absolute path of the apiLocation
-    let apiLocationAbsolute = path.resolve(appLocation as string, apiLocation);
+    let resolvedApiLocation = path.resolve(apiLocation);
 
     if (apiServerUrl) {
       // TODO: properly refactor this after GA to send apiServerUrl to the server
@@ -193,10 +196,10 @@ export async function start(options: SWACLIConfig) {
       apiLocation = apiServerUrl;
     }
     // make sure api folder exists
-    else if (fs.existsSync(apiLocationAbsolute)) {
-      apiLocation = apiLocationAbsolute;
+    else if (fs.existsSync(resolvedApiLocation)) {
+      apiLocation = resolvedApiLocation;
     } else {
-      logger.info(`Skipping API because folder "${apiLocationAbsolute}" is missing`, "swa");
+      logger.info(`Skipping API because folder "${resolvedApiLocation}" is missing`, "swa");
     }
   }
 
@@ -295,7 +298,8 @@ export async function start(options: SWACLIConfig) {
   }
 
   // resolve the following config to their absolute paths
-  swaConfigLocation = path.resolve(swaConfigLocation || process.cwd());
+  // note: the server will perform a search starting from this path
+  swaConfigLocation = path.resolve(swaConfigLocation || userWorkflowConfig?.appLocation || process.cwd());
 
   // WARNING: code from above doesn't have access to env vars which are only defined below
 
@@ -315,7 +319,7 @@ export async function start(options: SWACLIConfig) {
     SWA_CLI_APP_SSL_KEY: sslKey,
     SWA_CLI_STARTUP_COMMAND: startupCommand as string,
     SWA_CLI_VERSION: packageInfo.version,
-    SWA_CLI_DEVSERVER_TIMEOUT: `${devserverTimeout}`,
+    SWA_CLI_SERVER_TIMEOUT: `${serverTimeout}`,
     SWA_CLI_OPEN_BROWSER: open ? "true" : "false",
   };
 

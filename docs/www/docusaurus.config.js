@@ -12,7 +12,7 @@ const config = {
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
   url: 'https://azure.github.io',  // Update for Org
-  baseUrl: '/static-web-apps-cli/',
+  baseUrl: '/',
   organizationName: 'azure',       // Update for Org
   projectName: 'static-web-apps-cli', 
   deploymentBranch: `gh-pages`, 

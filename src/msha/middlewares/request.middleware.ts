@@ -8,7 +8,7 @@ import path from "path";
 import serveStatic from "serve-static";
 import { DEFAULT_CONFIG } from "../../config";
 import { findSWAConfigFile, logger, logRequest } from "../../core";
-import { AUTH_STATUS, IS_APP_DEV_SERVER, SWA_PUBLIC_DIR } from "../../core/constants";
+import { AUTH_STATUS, CUSTOM_URL_SCHEME, IS_APP_DEV_SERVER, SWA_PUBLIC_DIR } from "../../core/constants";
 import { getAuthBlockResponse, handleAuthRequest, isAuthRequest, isLoginRequest, isLogoutRequest } from "../handlers/auth.handler";
 import { handleErrorPage } from "../handlers/error-page.handler";
 import { isFunctionRequest } from "../handlers/function.handler";
@@ -79,7 +79,7 @@ function serveStaticOrProxyResponse(req: http.IncomingMessage, res: http.ServerR
 
     logger.silly(`custom page or index.html detected`);
     // extract user custom page filename
-    req.url = req.url?.replace(DEFAULT_CONFIG.customUrlScheme!, "");
+    req.url = req.url?.replace(CUSTOM_URL_SCHEME, "");
     target = DEFAULT_CONFIG.outputLocation;
 
     logger.silly(` - url: ${chalk.yellow(req.url)}`);
