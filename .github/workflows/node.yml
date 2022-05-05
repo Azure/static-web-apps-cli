@@ -84,7 +84,7 @@ jobs:
           npm ci
           npm link
           cd cypress/fixtures/
-          swa deploy ./static --dry-run --verbose=silly --api-location=./static/api --output-location ./static/app --deployment-token=123
+          swa deploy app --dry-run --verbose=silly --api-location=./static/api --app-location ./static --deployment-token=00000000000000000000000000000000000000000000000000000000000000000-00000000-0000-0000-0000-00000000000000000000
 
   test-windows:
     needs: [format]
@@ -148,7 +148,7 @@ jobs:
           npm ci
           npm link
           cd cypress/fixtures/
-          swa deploy ./static --dry-run --verbose=silly --api-location=./static/api --output-location ./static/app --deployment-token=123
+          swa deploy app --dry-run --verbose=silly --api-location=./static/api --app-location ./static --deployment-token=00000000000000000000000000000000000000000000000000000000000000000-00000000-0000-0000-0000-00000000000000000000
 
   test-linux:
     needs: [format]
@@ -212,7 +212,7 @@ jobs:
           npm ci
           npm link
           cd cypress/fixtures/
-          swa deploy ./static --dry-run --verbose=silly --api-location=./static/api --output-location ./static/app --deployment-token=123
+          swa deploy app --dry-run --verbose=silly --api-location=./static/api --app-location ./static --deployment-token=00000000000000000000000000000000000000000000000000000000000000000-00000000-0000-0000-0000-00000000000000000000
 
   # TODO: Cypress setup is failing on CI. Investigate.
   # e2e:
