@@ -12,12 +12,14 @@ describe("safeReadJson()", () => {
   });
 
   it("should ignore JSON comments and parse JSON anyway", async () => {
-    mockFs({ "test.json": `{
+    mockFs({
+      "test.json": `{
       // this is a /* tricky comment
       "hello": "world",
       /* and this should be removed too // */
       "but": "not // this or /* this */ or /* this"
-    }`});
+    }`,
+    });
     const json = await safeReadJson("test.json");
     expect(json && json.hello).toBe("world");
   });
@@ -62,27 +64,26 @@ describe("findUpPackageJsonDir()", () => {
 
   it("should return undefined if package.json is not found", async () => {
     mockFs();
-    expect(await findUpPackageJsonDir('app', 'dist')).toBe(undefined);
+    expect(await findUpPackageJsonDir("app", "dist")).toBe(undefined);
   });
 
   it("should return undefined if package.json is not found in path range", async () => {
-    mockFs({ 'package.json': '{}' });
-    expect(await findUpPackageJsonDir('app', 'dist')).toBe(undefined);
+    mockFs({ "package.json": "{}" });
+    expect(await findUpPackageJsonDir("app", "dist")).toBe(undefined);
   });
 
   it("should return base path", async () => {
-    mockFs({ 'app/package.json': '{}' });
-    expect(await findUpPackageJsonDir('app/', 'dist')).toBe('app');
+    mockFs({ "app/package.json": "{}" });
+    expect(await findUpPackageJsonDir("app/", "dist")).toBe("app");
   });
 
   it("should return start path", async () => {
-    mockFs({ 'app/dist/package.json': '{}' });
-    expect(await findUpPackageJsonDir('app', 'dist/')).toBe('app/dist');
+    mockFs({ "app/dist/package.json": "{}" });
+    expect(await findUpPackageJsonDir("app", "dist/")).toBe("app/dist");
   });
 
   it("should return the correct path", async () => {
-    mockFs({ 'app/toto/package.json': '{}' });
-    expect(await findUpPackageJsonDir('app', 'toto/dist')).toBe('app/toto');
+    mockFs({ "app/toto/package.json": "{}" });
+    expect(await findUpPackageJsonDir("app", "toto/dist")).toBe("app/toto");
   });
 });
-

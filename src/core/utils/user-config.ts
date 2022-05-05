@@ -64,9 +64,7 @@ export async function findSWAConfigFile(folder: string): Promise<{ filepath: str
         const fileSize = (await stat(file.filepath)).size;
         const fileSizeInKb = Math.round(fileSize / 1024);
         if (fileSizeInKb > SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB) {
-          logger.warn(
-            `WARNING: ${SWA_CONFIG_FILENAME} is ${fileSizeInKb} bytes. The maximum size is ${SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB} bytes.`
-          );
+          logger.warn(`WARNING: ${SWA_CONFIG_FILENAME} is ${fileSizeInKb} bytes. The maximum size is ${SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB} bytes.`);
         }
 
         logger.silly(`Content parsed successfully`);

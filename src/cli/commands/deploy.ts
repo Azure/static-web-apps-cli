@@ -43,7 +43,7 @@ export default function registerCommand(program: Command) {
     .action(async (positionalArg: string | undefined, _options: SWACLIConfig, command: Command) => {
       const options = await configureOptions(positionalArg, command.optsWithGlobals(), command, "deploy");
       if (positionalArg && !matchLoadedConfigName(positionalArg)) {
-        if (isUserOption('outputLocation')) {
+        if (isUserOption("outputLocation")) {
           logger.error(`swa deploy <outputLocation> cannot be used when --output-location option is also set.`);
           logger.error(`You either have to use the positional argument or option, not both at the same time.`, true);
         }
@@ -125,7 +125,9 @@ export async function deploy(options: SWACLIConfig) {
     const apiFolder = await findApiFolderInPath(appLocation);
     if (apiFolder) {
       logger.warn(
-        `An API folder was found at ".${path.sep + path.basename(apiFolder)}" but the --api-location option was not provided. The API will not be deployed.\n`
+        `An API folder was found at ".${
+          path.sep + path.basename(apiFolder)
+        }" but the --api-location option was not provided. The API will not be deployed.\n`
       );
     }
   }
@@ -355,6 +357,6 @@ export async function deploy(options: SWACLIConfig) {
 }
 
 async function findApiFolderInPath(appPath: string): Promise<string | undefined> {
-    const entries = await fs.promises.readdir(appPath, { withFileTypes: true });
-    return entries.find(entry => entry.name.toLowerCase() === 'api' && entry.isDirectory())?.name;
+  const entries = await fs.promises.readdir(appPath, { withFileTypes: true });
+  return entries.find((entry) => entry.name.toLowerCase() === "api" && entry.isDirectory())?.name;
 }

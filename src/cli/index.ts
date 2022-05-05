@@ -51,12 +51,15 @@ export async function run(argv?: string[]) {
       const options = await configureOptions(undefined, command.optsWithGlobals(), command, "init");
       swaMagic(options);
     })
-    .addHelpText("after", `
+    .addHelpText(
+      "after",
+      `
   Type "swa" to get started and deploy your project.
   
   Documentation:
     https://aka.ms/swa/cli-local-development
-  `);
+  `
+    );
 
   // Register commands
   registerLogin(program);
@@ -74,21 +77,21 @@ export async function swaMagic(_options: SWACLIConfig) {
   try {
     const hasLoadedConfig = getCurrentSwaCliConfigFromFile();
     if (!hasLoadedConfig) {
-      runCommand("swa init")
+      runCommand("swa init");
     }
     runCommand("swa build");
-  
+
     const response = await promptOrUseDefault(false, {
       type: "confirm",
       name: "deploy",
       message: "Do you want to deploy your app now?",
-      initial: true
+      initial: true,
     });
     if (!response.deploy) {
       logger.log(`\nWhen you'll be ready to deploy your app, just use ${chalk.cyan("swa")} again.`);
       return;
     }
-  
+
     runCommand("swa deploy");
   } catch (_) {
     // Pokemon, go catch'em all!

@@ -4,7 +4,6 @@ sidebar_position: 5
 
 # 5. Deploy SWA to Azure
 
-
 The CLI can also be used to deploy an app to Azure Static Web Apps using the command: `swa deploy`. Here are some common use cases:
 
 1. Deploy a front-end app without an API

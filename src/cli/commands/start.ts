@@ -4,7 +4,7 @@ import concurrently, { CloseEvent } from "concurrently";
 import { CommandInfo } from "concurrently/dist/src/command";
 import fs from "fs";
 import path from "path";
-import { execSync } from 'child_process';
+import { execSync } from "child_process";
 import { DEFAULT_CONFIG } from "../../config";
 import {
   askNewPort,
@@ -41,7 +41,7 @@ export default function registerCommand(program: Command) {
     .option<number>("--api-port <apiPort>", "the API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
     .option("--host <host>", "the host address to use for the CLI dev server", DEFAULT_CONFIG.host)
     .option<number>("--port <port>", "the port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
-    .option("--run-build", "run \"swa build\" before starting the emulator", false)
+    .option("--run-build", 'run "swa build" before starting the emulator', false)
 
     .option("--ssl", "serve the front-end application and API over HTTPS", DEFAULT_CONFIG.ssl)
     .option("--ssl-cert <sslCertLocation>", "the SSL certificate (.crt) to use when enabling HTTPS", DEFAULT_CONFIG.sslCert)
@@ -66,13 +66,13 @@ export default function registerCommand(program: Command) {
         // If it's not the config name, it's either output location or dev server url
         const isUrl = isHttpUrl(positionalArg);
         if (isUrl) {
-          if (isUserOption('devServerUrl')) {
+          if (isUserOption("devServerUrl")) {
             logger.error(`swa deploy <devServerUrl> cannot be used when --dev-server-url option is also set.`);
             logger.error(`You either have to use the positional argument or option, not both at the same time.`, true);
           }
           options.devServerUrl = positionalArg;
         } else {
-          if (isUserOption('outputLocation')) {
+          if (isUserOption("outputLocation")) {
             logger.error(`swa deploy <outputLocation> cannot be used when --output-location option is also set.`);
             logger.error(`You either have to use the positional argument or option, not both at the same time.`, true);
           }
@@ -147,7 +147,7 @@ export async function start(options: SWACLIConfig) {
   let resolvedPortNumber = await isAcceptingTcpConnections({ host, port });
   if (resolvedPortNumber === 0) {
     logger.warn(`Port ${port} is already taken!`);
-    resolvedPortNumber = await askNewPort()
+    resolvedPortNumber = await askNewPort();
   } else {
     logger.silly(`Port ${port} is available. Use it.`);
   }
@@ -163,7 +163,7 @@ export async function start(options: SWACLIConfig) {
 
   // resolve the absolute path to the appLocation
   appLocation = path.resolve(appLocation as string);
-  
+
   if (devServerUrl) {
     logger.silly(`devServerUrl provided, we will try connect to dev server at ${outputLocation}`);
     // TODO: properly refactor this after GA to send devServerUrl to the server
@@ -346,18 +346,16 @@ export async function start(options: SWACLIConfig) {
   // run an external script, if it's available
   if (startupCommand) {
     let startupPath = userWorkflowConfig?.appLocation;
-    
-    concurrentlyCommands.push(
-      { command: `cd "${startupPath}" && ${startupCommand}`, name: "run", env, prefixColor: "gray.dim" }
-    );
+
+    concurrentlyCommands.push({ command: `cd "${startupPath}" && ${startupCommand}`, name: "run", env, prefixColor: "gray.dim" });
   }
 
   if (runBuild) {
     // run swa build
     execSync("swa build", {
-      stdio: 'inherit',
+      stdio: "inherit",
       // Set CI to avoid extra NPM logs and potentially unwanted interactive modes
-      env: { ...process.env, CI: "1" }
+      env: { ...process.env, CI: "1" },
     });
   }
 

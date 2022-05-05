@@ -236,8 +236,7 @@
       "type": "object"
     },
     "loginCommandParameters": {
-      "properties": {
-      },
+      "properties": {},
       "type": "object"
     },
     "deployCommandParameters": {

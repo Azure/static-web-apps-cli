@@ -5,7 +5,7 @@ export const apiFrameworks: FrameworkDefinition[] = [
     files: ["package.json", "host.json"],
     config: {
       apiBuildCommand: "npm run build --if-present",
-    }
+    },
   },
   {
     id: "typescript",
@@ -24,7 +24,7 @@ export const apiFrameworks: FrameworkDefinition[] = [
     files: ["*.?(csproj|fsproj)", "host.json"],
     config: {
       apiBuildCommand: "dotnet build",
-    }
+    },
   },
   {
     id: "python",
@@ -32,8 +32,8 @@ export const apiFrameworks: FrameworkDefinition[] = [
     files: ["?(requirements.txt|pyproject.toml|runtime.txt|setup.py)", "host.json"],
     config: {
       // Nothing to setup, but we need to know the apiLocation (rootPath)
-    }
-  }
+    },
+  },
 ];
 
 export const appFrameworks: FrameworkDefinition[] = [
@@ -43,7 +43,7 @@ export const appFrameworks: FrameworkDefinition[] = [
     config: {
       outputLocation: "./",
     },
-    files: ["@(index.htm|default.htm)?(l)"]
+    files: ["@(index.htm|default.htm)?(l)"],
   },
   {
     id: "angular",
@@ -64,7 +64,7 @@ export const appFrameworks: FrameworkDefinition[] = [
     packages: ["@scullyio/scully"],
     config: {
       // Same as base angular
-    }
+    },
   },
   {
     id: "react",
@@ -75,7 +75,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "npm start",
       devServerUrl: "http://localhost:3000",
       outputLocation: "build",
-    }
+    },
   },
   {
     id: "nextjs",
@@ -86,8 +86,8 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "npm run build",
       devServerCommand: "npm dev",
       devServerUrl: "http://localhost:3000",
-      outputLocation: "./"
-    }
+      outputLocation: "./",
+    },
   },
   {
     id: "gatsby",
@@ -99,8 +99,8 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "npm run build",
       devServerCommand: "npm start",
       devServerUrl: "http://localhost:8000",
-      outputLocation: "public"
-    }
+      outputLocation: "public",
+    },
   },
   {
     id: "docusaurus",
@@ -109,7 +109,7 @@ export const appFrameworks: FrameworkDefinition[] = [
     packages: ["@docusaurus/core"],
     config: {
       // Same as base react
-    }
+    },
   },
   {
     id: "react-static",
@@ -117,8 +117,8 @@ export const appFrameworks: FrameworkDefinition[] = [
     parent: "react",
     packages: ["react-static"],
     config: {
-      outputLocation: "dist"
-    }
+      outputLocation: "dist",
+    },
   },
   {
     id: "preact",
@@ -128,8 +128,8 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "npm run build",
       devServerCommand: "npm run dev",
       devServerUrl: "http://localhost:8080",
-      outputLocation: "build"
-    }
+      outputLocation: "build",
+    },
   },
   {
     id: "vue",
@@ -140,7 +140,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "npm run serve",
       devServerUrl: "http://localhost:8080",
       outputLocation: "dist",
-    }
+    },
   },
   {
     id: "vite",
@@ -150,7 +150,7 @@ export const appFrameworks: FrameworkDefinition[] = [
     config: {
       devServerCommand: "npm run dev",
       devServerUrl: "http://localhost:3000",
-    }
+    },
   },
   {
     id: "nuxtjs",
@@ -163,7 +163,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "npm run dev",
       devServerUrl: "http://localhost:3000",
       outputLocation: "dist",
-    }
+    },
   },
   {
     id: "vuepress",
@@ -174,8 +174,8 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "npm run build",
       devServerCommand: "npm run dev",
       devServerUrl: "http://localhost:8080",
-      outputLocation: "src/.vuepress/dist"
-    }
+      outputLocation: "src/.vuepress/dist",
+    },
   },
   {
     id: "vitepress",
@@ -187,7 +187,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "npm run docs:dev",
       devServerUrl: "http://localhost:3000",
       outputLocation: "docs/.vitepress/dist",
-    }
+    },
   },
   {
     id: "svelte",
@@ -197,8 +197,8 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "npm run build",
       devServerCommand: "npm run dev",
       devServerUrl: "http://localhost:8080",
-      outputLocation: "public"
-    }
+      outputLocation: "public",
+    },
   },
   {
     id: "svelte-kit",
@@ -209,8 +209,8 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "npm run build",
       devServerCommand: "npm run dev",
       devServerUrl: "http://localhost:8080",
-      outputLocation: "build"
-    }
+      outputLocation: "build",
+    },
   },
   {
     id: "sapper",
@@ -221,8 +221,8 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "npm run export",
       devServerCommand: "npm run dev",
       devServerUrl: "http://localhost:3000",
-      outputLocation: "__sapper__/export"
-    }
+      outputLocation: "__sapper__/export",
+    },
   },
   {
     id: "riot",
@@ -232,8 +232,8 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "npm run build",
       devServerCommand: "npm start",
       devServerUrl: "http://localhost:3000",
-      outputLocation: "dist"
-    }
+      outputLocation: "dist",
+    },
   },
   {
     id: "stencil",
@@ -244,8 +244,8 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "npm run build",
       devServerCommand: "npm start",
       devServerUrl: "http://localhost:3333",
-      outputLocation: "www"
-    }
+      outputLocation: "www",
+    },
   },
   {
     id: "aurelia",
@@ -255,8 +255,8 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "npm run build",
       devServerCommand: "npm start",
       devServerUrl: "http://localhost:8080",
-      outputLocation: "dist"
-    }
+      outputLocation: "dist",
+    },
   },
   {
     id: "ember",
@@ -266,8 +266,8 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "npm run build",
       devServerCommand: "npm start",
       devServerUrl: "http://localhost:4200",
-      outputLocation: "dist"
-    }
+      outputLocation: "dist",
+    },
   },
   {
     id: "elm",
@@ -277,8 +277,8 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "elm make src/Main.elm --optimize",
       devServerCommand: "elm reactor",
       devServerUrl: "http://localhost:8000",
-      outputLocation: "./"
-    }
+      outputLocation: "./",
+    },
   },
   {
     id: "polymer",
@@ -289,9 +289,8 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "polymer build --preset es6-bundled",
       devServerCommand: "polymer serve --open",
       devServerUrl: "http://localhost:8081",
-      outputLocation: "build/es6-bundled"
-
-    }
+      outputLocation: "build/es6-bundled",
+    },
   },
   {
     id: "lit",
@@ -301,8 +300,8 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "npm run build --if-present",
       devServerCommand: "npm start",
       devServerUrl: "http://localhost:8081",
-      outputLocation: "./"
-    }
+      outputLocation: "./",
+    },
   },
   {
     id: "hugo",
@@ -315,8 +314,8 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "hugo -D",
       devServerCommand: "hugo server -D",
       devServerUrl: "http://localhost:1313",
-      outputLocation: "public"
-    }
+      outputLocation: "public",
+    },
   },
   {
     id: "flutter",
@@ -327,7 +326,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "flutter run --web-port 8080",
       devServerUrl: "http://localhost:8080",
       outputLocation: "build/web",
-    }
+    },
   },
   {
     id: "jekyll",
@@ -338,7 +337,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "bundle exec jekyll serve --livereload",
       devServerUrl: "http://localhost:4000",
       outputLocation: "_site",
-    }
+    },
   },
   {
     id: "slate",
@@ -350,7 +349,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "./slate.sh serve",
       devServerUrl: "http://localhost:4567",
       outputLocation: "build",
-    }
+    },
   },
   {
     id: "mkdocs",
@@ -361,7 +360,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "mkdocs serve",
       devServerUrl: "http://localhost:8000",
       outputLocation: "site",
-    }
+    },
   },
   {
     id: "eleventy",
@@ -372,7 +371,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "eleventy --serve",
       devServerUrl: "http://localhost:8080",
       outputLocation: "_site",
-    }
+    },
   },
   {
     id: "astro",
@@ -385,7 +384,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "npm run dev",
       devServerUrl: "http://localhost:8080",
       outputLocation: "_site",
-    }
+    },
   },
   {
     id: "pelican",
@@ -396,7 +395,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "make devserver",
       devServerUrl: "http://localhost:8000",
       outputLocation: "output",
-    }
+    },
   },
   {
     id: "hexo",
@@ -407,21 +406,21 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "npm run server",
       devServerUrl: "http://localhost:4000",
       outputLocation: "public",
-    }
+    },
   },
   {
     id: "blazor-wasm",
     name: "Blazor WASM",
     files: ["*.csproj", "App.razor", "wwwroot", "Program.cs"],
     contains: {
-      "Program.cs": "WebAssemblyHostBuilder.CreateDefault"
+      "Program.cs": "WebAssemblyHostBuilder.CreateDefault",
     },
     config: {
       appBuildCommand: "dotnet build",
       devServerCommand: "dotnet watch run",
       devServerUrl: "http://localhost:8000",
       outputLocation: "output",
-    }
+    },
   },
   {
     id: "gridsome",
@@ -432,7 +431,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "npm run develop",
       devServerUrl: "http://localhost:8080",
       outputLocation: "dist",
-    }
+    },
   },
   {
     id: "solid",
@@ -443,7 +442,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "npm run dev",
       devServerUrl: "http://localhost:3000",
       outputLocation: "dist",
-    }
+    },
   },
   {
     id: "remix",
@@ -455,7 +454,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "npm run dev",
       devServerUrl: "http://localhost:3000",
       outputLocation: "public/build",
-    }
+    },
   },
   {
     id: "metalsmith",
@@ -466,7 +465,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "npm run serve",
       devServerUrl: "http://localhost:3000",
       outputLocation: "build",
-    }
+    },
   },
   {
     id: "brunch",
@@ -477,7 +476,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "npm start",
       devServerUrl: "http://localhost:3333",
       outputLocation: "public",
-    }
+    },
   },
   {
     id: "wintersmith",
@@ -488,7 +487,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "wintersmith preview",
       devServerUrl: "http://localhost:8080",
       outputLocation: "build",
-    }
+    },
   },
   {
     id: "middleman",
@@ -499,7 +498,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "bundle exec middleman server",
       devServerUrl: "http://localhost:4567",
       outputLocation: "build",
-    }
+    },
   },
   {
     id: "mdbook",
@@ -510,7 +509,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "mdbook serve",
       devServerUrl: "http://localhost:3000",
       outputLocation: "book",
-    }
+    },
   },
   {
     id: "zola",
@@ -524,7 +523,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "zola serve",
       devServerUrl: "http://localhost:1111",
       outputLocation: "public",
-    }
+    },
   },
   {
     id: "lektor",
@@ -535,6 +534,6 @@ export const appFrameworks: FrameworkDefinition[] = [
       devServerCommand: "lektor server",
       devServerUrl: "http://localhost:5000",
       outputLocation: "dist",
-    }
+    },
   },
 ];

@@ -1,2 +1,2 @@
-export * from './frameworks';
-export * from './detect';
+export * from "./frameworks";
+export * from "./detect";

@@ -19,7 +19,7 @@
     "watch": "tsc --watch",
     "copy-assets": "node ./scripts/copy-assets.js",
     "prepare": "npm run build",
-    "format": "prettier --write 'src/**/*.ts' '**/*.md' 'scripts/**/*.js' 'cypress/**/*.js' 'schema/**/*.json'"
+    "format": "prettier --write 'src/**/*.ts' *.md'' 'docs/**/*.md' 'scripts/**/*.js' 'cypress/**/*.js' 'schema/**/*.json'"
   },
   "bin": {
     "swa": "dist/cli/bin.js"
