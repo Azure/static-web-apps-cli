@@ -92,6 +92,6 @@ export async function swaMagic(_options: SWACLIConfig) {
     runCommand("swa deploy");
   } catch (_) {
     // Pokemon, go catch'em all!
-    // (Errors are alreay catched an displayed in individual commands)
+    // (Errors are already caught an displayed in individual commands)
   }
 }
