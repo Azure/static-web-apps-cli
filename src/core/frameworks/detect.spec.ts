@@ -1,8 +1,9 @@
+import { convertToUnixPaths } from "../../jest.helpers.";
 import { detectProjectFolders, formatDetectedFolders, generateConfiguration } from "./detect";
 
 describe("detectProjectFolders()", () => {
   it("should detect frameworks", async () => {
-    const detectedFolders = await detectProjectFolders("e2e/fixtures");
+    const detectedFolders = convertToUnixPaths(await detectProjectFolders("e2e/fixtures"));
     expect(detectedFolders.api.length).toBe(2);
     expect(detectedFolders.app.length).toBe(2);
     expect(formatDetectedFolders(detectedFolders.api, "api")).toMatchInlineSnapshot(`
@@ -21,7 +22,7 @@ describe("detectProjectFolders()", () => {
 describe("generateConfiguration()", () => {
   it("should generate expected configuration for app astro-node", async () => {
     const { app, api } = await detectProjectFolders("e2e/fixtures/astro-node");
-    const config = await generateConfiguration(app[0], api[0]);
+    const config = convertToUnixPaths(await generateConfiguration(app[0], api[0]));
     expect(config).toEqual({
       apiBuildCommand: "npm run build --if-present",
       apiLocation: "e2e/fixtures/astro-node/node",
@@ -36,7 +37,7 @@ describe("generateConfiguration()", () => {
 
   it("should generate expected configuration for app static-node-ts", async () => {
     const { app, api } = await detectProjectFolders("e2e/fixtures/static-node-ts");
-    const config = await generateConfiguration(app[0], api[0]);
+    const config = convertToUnixPaths(await generateConfiguration(app[0], api[0]));
     expect(config).toEqual({
       apiBuildCommand: "npm run build --if-present",
       apiLocation: "e2e/fixtures/static-node-ts/node-ts",

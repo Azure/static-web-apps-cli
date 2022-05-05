@@ -3,6 +3,7 @@ import mockFs from "mock-fs";
 import { init } from "./init";
 import { DEFAULT_CONFIG } from "../../config";
 import { swaCliConfigFilename } from "../../core/utils";
+import { convertToNativePaths, convertToUnixPaths } from "../../jest.helpers.";
 
 jest.mock("prompts", () => jest.fn());
 
@@ -13,9 +14,9 @@ const defaultCliConfig = {
 
 const defautResolvedPrompts = {
   projectName: "test-project",
-  appLocation: "./app",
-  apiLocation: "./api",
-  outputLocation: "./dist",
+  appLocation: convertToNativePaths("./app"),
+  apiLocation: convertToNativePaths("./api"),
+  outputLocation: convertToNativePaths("./dist"),
   appBuildCommand: "npm run build",
   apiBuildCommand: "npm run build:api",
   devServerCommand: "npm run dev",
@@ -106,14 +107,14 @@ describe("swa init", () => {
     const configJson = JSON.parse(fs.readFileSync(defaultCliConfig.config, "utf-8"));
     const lastCall = promptsMock.mock.calls.length - 1;
     expect(promptsMock.mock.calls[lastCall][0].name).toEqual("confirmOverwrite");
-    expect(configJson.configurations.test.outputLocation).toEqual("./dist");
+    expect(configJson.configurations.test.outputLocation).toEqual(convertToNativePaths("./dist"));
   });
 
   it("should detect frameworks and create a config file", async () => {
     mockFs({ src: mockFs.load("e2e/fixtures/static-node-ts") });
 
     await init({ ...defaultCliConfig, configName: "test", yes: true });
-    const configFile = fs.readFileSync(defaultCliConfig.config, "utf-8");
+    const configFile = convertToUnixPaths(fs.readFileSync(defaultCliConfig.config, "utf-8"));
 
     expect(configFile).toMatchInlineSnapshot(`
       "{
@@ -134,7 +135,7 @@ describe("swa init", () => {
     mockFs({ src: mockFs.load("e2e/fixtures/astro-node") });
 
     await init({ ...defaultCliConfig, configName: "test", yes: true });
-    const configFile = fs.readFileSync(defaultCliConfig.config, "utf-8");
+    const configFile = convertToUnixPaths(fs.readFileSync(defaultCliConfig.config, "utf-8"));
 
     expect(configFile).toMatchInlineSnapshot(`
       "{
