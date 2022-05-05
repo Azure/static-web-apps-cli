@@ -93,15 +93,6 @@ declare interface Path {
   method: "GET" | "POST";
 }
 
-// TODO: cleanup when we rework RuntimeHost
-declare type RuntimeHostConfig = {
-  appPort: number;
-  proxyHost: string;
-  proxyPort: number;
-  appLocation: string | undefined;
-  outputLocation: string | undefined;
-};
-
 declare type GithubActionWorkflow = {
   appBuildCommand?: string;
   apiBuildCommand?: string;
