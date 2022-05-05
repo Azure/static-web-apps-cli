@@ -9,9 +9,6 @@ on:
   pull_request:
     branches: [main, ga]
 
-env:
-  NODE_VERSIONS: '["14.x", "15.x", "16.x", "17.x"]'
-
 jobs:
 
   format:
@@ -31,7 +28,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest]
-        node-version: ${{ env.NODE_VERSIONS }}
+        node-version: [14.x, 15.x, 16.x, 17.x]
 
     name: "test: use node ${{ matrix.node-version }}"
     steps:
@@ -62,7 +59,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest]
-        node-version: ${{ env.NODE_VERSIONS }}
+        node-version: [14.x, 15.x, 16.x, 17.x]
 
     name: "deploy: use node ${{ matrix.node-version }}"
     steps:
@@ -94,7 +91,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node-version: ${{ env.NODE_VERSIONS }}
+        node-version: [14.x, 15.x, 16.x, 17.x]
 
     name: "test: use node ${{ matrix.node-version }}"
     steps:
@@ -125,7 +122,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node-version: ${{ env.NODE_VERSIONS }}
+        node-version: [14.x, 15.x, 16.x, 17.x]
 
     name: "deploy: use node ${{ matrix.node-version }}"
     steps:
@@ -157,7 +154,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04]
-        node-version: ${{ env.NODE_VERSIONS }}
+        node-version: [14.x, 15.x, 16.x, 17.x]
 
     name: "test: use node ${{ matrix.node-version }}"
     steps:
@@ -188,7 +185,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04]
-        node-version: ${{ env.NODE_VERSIONS }}
+        node-version: [14.x, 15.x, 16.x, 17.x]
 
     name: "deploy: use node ${{ matrix.node-version }}"
     steps:
