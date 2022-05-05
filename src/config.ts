@@ -49,22 +49,15 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   open: useEnvVarOrUseDefault(SWA_CLI_OPEN_BROWSER, false),
   githubActionWorkflowLocation: SWA_RUNTIME_WORKFLOW_LOCATION ? SWA_RUNTIME_WORKFLOW_LOCATION : undefined,
   env: SWA_CLI_DEPLOY_ENV || "preview",
+  appName: SWA_CLI_APP_NAME || undefined,
+  dryRun: useEnvVarOrUseDefault(SWA_CLI_DEPLOY_DRY_RUN, false),
 
   // swa login options
-  useKeychain: useEnvVarOrUseDefault(SWA_CLI_LOGIN_USE_KEYCHAIN, true),
   subscriptionId: AZURE_SUBSCRIPTION_ID || undefined,
   resourceGroupName: AZURE_RESOURCE_GROUP || undefined,
   tenantId: AZURE_TENANT_ID || undefined,
   clientId: AZURE_CLIENT_ID || undefined,
   clientSecret: AZURE_CLIENT_SECRET || undefined,
-  appName: SWA_CLI_APP_NAME || undefined,
-  dryRun: useEnvVarOrUseDefault(SWA_CLI_DEPLOY_DRY_RUN, false),
+  useKeychain: useEnvVarOrUseDefault(SWA_CLI_LOGIN_USE_KEYCHAIN, true),
   clearCredentials: useEnvVarOrUseDefault(SWA_CLI_LOGIN_CLEAR_CREDENTIALS, false),
-
-  // TODO: these are constants, not configurable
-  // they should be moved out of the config
-  swaConfigFilename: "staticwebapp.config.json",
-  swaConfigFilenameLegacy: "routes.json",
-  customUrlScheme: "swa://",
-  overridableErrorCode: [400, 401, 403, 404],
 };

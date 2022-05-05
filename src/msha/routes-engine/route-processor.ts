@@ -1,8 +1,7 @@
 import type http from "http";
 import chalk from "chalk";
-import { DEFAULT_CONFIG } from "../../config";
 import { logger } from "../../core";
-import { AUTH_STATUS, SWA_CLI_APP_PROTOCOL } from "../../core/constants";
+import { AUTH_STATUS, CUSTOM_URL_SCHEME, SWA_CLI_APP_PROTOCOL } from "../../core/constants";
 import { globToRegExp, isValidGlobExpression } from "../../core/utils/glob";
 import { getIndexHtml } from "./rules/routes";
 
@@ -123,7 +122,7 @@ function doesRequestPathMatchWildcardRoute(requestPath: string, requestPathFileW
 }
 
 export function isCustomUrl(req: http.IncomingMessage) {
-  return !!req.url?.startsWith(DEFAULT_CONFIG.customUrlScheme!);
+  return !!req.url?.startsWith(CUSTOM_URL_SCHEME);
 }
 
 export function parseQueryParams(req: http.IncomingMessage, matchingRouteRule: SWAConfigFileRoute | undefined) {

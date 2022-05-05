@@ -1,7 +1,6 @@
 import chalk from "chalk";
 import type http from "http";
-import { DEFAULT_CONFIG } from "../../config";
-import { SWA_CLI_APP_PROTOCOL } from "../constants";
+import { CUSTOM_URL_SCHEME, SWA_CLI_APP_PROTOCOL } from "../constants";
 import { swaCLIEnv } from "../env";
 
 const SENSITIVE_KEYS = ["DEPLOYMENT_TOKEN", "SWA_CLI_DEPLOYMENT_TOKEN", "--deployment-token", "deploymentToken"];
@@ -119,7 +118,7 @@ export const logger = {
  * @param prefix (optional) A prefix to prepend to the printed message.
  */
 export function logRequest(req: http.IncomingMessage, target: string = "", statusCode: number | null = null, prefix = "") {
-  let url = req.url?.replace(DEFAULT_CONFIG.customUrlScheme!, "");
+  let url = req.url?.replace(CUSTOM_URL_SCHEME, "");
   url = url?.startsWith("/") ? url : `/${url}`;
 
   const proto = target?.startsWith("ws") ? "ws" : SWA_CLI_APP_PROTOCOL;
