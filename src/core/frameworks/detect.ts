@@ -319,7 +319,7 @@ function orderFrameworksByParent(detectedFolders: DetectedFolder[]): void {
 }
 
 function findAllFiles(fileglob: string, files: string[]): string[] {
-  const { regex } = globrex(`?(*/)${fileglob}`, { extended: true, flags: "i" } as globrex.Options);
+  const { regex } = globrex(`?(*${path.sep})${fileglob}`, { extended: true, flags: "i" } as globrex.Options);
   return files.filter((file) => regex.test(file));
 }
 
