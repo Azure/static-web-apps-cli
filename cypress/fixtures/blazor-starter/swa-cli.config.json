@@ -3,12 +3,12 @@
   "configurations": {
     "app": {
       "outputLocation": "http://localhost:5000",
-      "appLocation": "./cypress/fixtures/blazor-starter",
-      "apiLocation": "./cypress/fixtures/blazor-starter/Api",
+      "appLocation": ".",
+      "apiLocation": "./Api",
       "run": "dotnet run --project ./cypress/fixtures/blazor-starter/Client",
       "port": 1234,
       "host": "0.0.0.0",
-      "serverTimeout": 10,
+      "serverTimeout": 100,
       "verbose": "silly"
     }
   }
