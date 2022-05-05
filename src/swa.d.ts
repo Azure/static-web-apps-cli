@@ -104,14 +104,6 @@ declare type GithubActionWorkflow = {
 
 // -- CLI Global options -----------------------------------------------------
 
-declare type SWACLIOptionsToCleanUp = {
-  // TODO: cleanup these
-  customUrlScheme?: string;
-  overridableErrorCode?: number[];
-  swaConfigFilename?: "staticwebapp.config.json";
-  swaConfigFilenameLegacy?: "routes.json";
-};
-
 declare type SWACLIGlobalOptions = {
   verbose?: string;
   config?: string;
@@ -191,8 +183,7 @@ declare type SWACLILoginOptions = SWACLISharedLoginOptions;
 
 // -- CLI Config options -----------------------------------------------------
 
-declare type SWACLIConfig = SWACLIOptionsToCleanUp &
-  SWACLIGlobalOptions &
+declare type SWACLIConfig = SWACLIGlobalOptions &
   SWACLILoginOptions &
   SWACLIInitOptions &
   SWACLIBuildOptions &

@@ -174,6 +174,11 @@ export const SWA_CLI_APP_PROTOCOL = DEFAULT_CONFIG.ssl ? `https` : `http`;
 export const SWA_PUBLIC_DIR = path.resolve(__dirname, "..", "public"); //SWA_PUBLIC_DIR = "../public"
 export const HAS_API = Boolean(DEFAULT_CONFIG.apiLocation && SWA_CLI_API_URI());
 
+export const SWA_CONFIG_FILENAME = "staticwebapp.config.json";
+export const SWA_CONFIG_FILENAME_LEGACY = "routes.json";
+export const CUSTOM_URL_SCHEME = "swa://";
+export const OVERRIDABLE_ERROR_CODES = [400, 401, 403, 404];
+
 // --
 // Note: declare these as functions so that their body gets evaluated at runtime!
 // The reason for this is that these function depend on values set by environment variables which are set
