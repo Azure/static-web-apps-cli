@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
-import { readFile, writeFile } from "fs/promises";
 import { logger } from "./utils";
+const { readFile, writeFile } = fs.promises;
 
 export async function isGitProject() {
   const gitFolder = path.join(process.cwd(), ".git");
