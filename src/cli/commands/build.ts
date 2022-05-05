@@ -112,7 +112,7 @@ export async function build(options: SWACLIConfig) {
       await installNpmDependencies(packageJsonPath);
     }
 
-    logger.log(`Building app with ${chalk.green(appBuildCommand)} in ${chalk.dim(appLocation)}...`);
+    logger.log(`Building app with ${chalk.green(appBuildCommand)} in ${chalk.dim(appLocation)} ...`);
     runCommand(appBuildCommand, appLocation!);
   }
 
@@ -124,7 +124,7 @@ export async function build(options: SWACLIConfig) {
       await installNpmDependencies(packageJsonPath);
     }
 
-    logger.log(`Building api with ${chalk.green(apiBuildCommand)} in ${chalk.dim(apiLocation)}...`);
+    logger.log(`Building api with ${chalk.green(apiBuildCommand)} in ${chalk.dim(apiLocation)} ...`);
     runCommand(apiBuildCommand, apiLocation!);
   }
 }
