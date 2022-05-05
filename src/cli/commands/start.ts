@@ -298,8 +298,8 @@ export async function start(options: SWACLIConfig) {
   }
 
   // resolve the following config to their absolute paths
-  // TODO: search in outputLocation then appLocation
-  swaConfigLocation = path.resolve(swaConfigLocation || process.cwd());
+  // note: the server will perform a search starting from this path
+  swaConfigLocation = path.resolve(swaConfigLocation || userWorkflowConfig?.appLocation || process.cwd());
 
   // WARNING: code from above doesn't have access to env vars which are only defined below
 
