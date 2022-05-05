@@ -1,4 +1,5 @@
 import mockFs from "mock-fs";
+import { convertToNativePaths } from "../../jest.helpers.";
 import { findUpPackageJsonDir, pathExists, safeReadFile, safeReadJson } from "./file";
 
 describe("safeReadJson()", () => {
@@ -73,17 +74,17 @@ describe("findUpPackageJsonDir()", () => {
   });
 
   it("should return base path", async () => {
-    mockFs({ "app/package.json": "{}" });
-    expect(await findUpPackageJsonDir("app/", "dist")).toBe("app");
+    mockFs({ [convertToNativePaths("app/package.json")]: "{}" });
+    expect(await findUpPackageJsonDir(convertToNativePaths("app/"), "dist")).toBe("app");
   });
 
   it("should return start path", async () => {
-    mockFs({ "app/dist/package.json": "{}" });
-    expect(await findUpPackageJsonDir("app", "dist/")).toBe("app/dist");
+    mockFs({ [convertToNativePaths("app/dist/package.json")]: "{}" });
+    expect(await findUpPackageJsonDir("app", convertToNativePaths("dist/"))).toBe(convertToNativePaths("app/dist"));
   });
 
   it("should return the correct path", async () => {
-    mockFs({ "app/toto/package.json": "{}" });
-    expect(await findUpPackageJsonDir("app", "toto/dist")).toBe("app/toto");
+    mockFs({ [convertToNativePaths("app/toto/package.json")]: "{}" });
+    expect(await findUpPackageJsonDir("app", convertToNativePaths("toto/dist"))).toBe(convertToNativePaths("app/toto"));
   });
 });
