@@ -41,7 +41,7 @@ export const appFrameworks: FrameworkDefinition[] = [
     id: "static",
     name: "Static HTML",
     config: {
-      outputLocation: "./",
+      outputLocation: ".",
     },
     files: ["@(index.htm|default.htm)?(l)"],
   },
@@ -86,7 +86,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "npm run build",
       devServerCommand: "npm dev",
       devServerUrl: "http://localhost:3000",
-      outputLocation: "./",
+      outputLocation: ".",
     },
   },
   {
@@ -277,7 +277,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "elm make src/Main.elm --optimize",
       devServerCommand: "elm reactor",
       devServerUrl: "http://localhost:8000",
-      outputLocation: "./",
+      outputLocation: ".",
     },
   },
   {
@@ -300,7 +300,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "npm run build --if-present",
       devServerCommand: "npm start",
       devServerUrl: "http://localhost:8081",
-      outputLocation: "./",
+      outputLocation: ".",
     },
   },
   {
