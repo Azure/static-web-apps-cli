@@ -10,7 +10,7 @@ on:
     branches: [main, ga]
 
 env:
-  NODE_VERSIONS: [14.x, 15.x, 16.x, 17.x]
+  NODE_VERSIONS: '["14.x", "15.x", "16.x", "17.x"]'
 
 jobs:
 
@@ -18,8 +18,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 16.x
-        uses: actions/setup-node@v1
+      - uses: actions/setup-node@v1
         with:
           node-version: 16.x
 
@@ -32,7 +31,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest]
-        node-version: ${{ env.NODE_VERSIONS }}
+        node-version: ${{ fromJSON(env.NODE_VERSIONS) }}
 
     name: "test: use node ${{ matrix.node-version }}"
     steps:
@@ -63,7 +62,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest]
-        node-version: ${{ env.NODE_VERSIONS }}
+        node-version: ${{ fromJSON(env.NODE_VERSIONS) }}
 
     name: "deploy: use node ${{ matrix.node-version }}"
     steps:
@@ -95,7 +94,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node-version: ${{ env.NODE_VERSIONS }}
+        node-version: ${{ fromJSON(env.NODE_VERSIONS) }}
 
     name: "test: use node ${{ matrix.node-version }}"
     steps:
@@ -126,7 +125,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node-version: ${{ env.NODE_VERSIONS }}
+        node-version: ${{ fromJSON(env.NODE_VERSIONS) }}
 
     name: "deploy: use node ${{ matrix.node-version }}"
     steps:
@@ -158,7 +157,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04]
-        node-version: ${{ env.NODE_VERSIONS }}
+        node-version: ${{ fromJSON(env.NODE_VERSIONS) }}
 
     name: "test: use node ${{ matrix.node-version }}"
     steps:
@@ -189,7 +188,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04]
-        node-version: ${{ env.NODE_VERSIONS }}
+        node-version: ${{ fromJSON(env.NODE_VERSIONS) }}
 
     name: "deploy: use node ${{ matrix.node-version }}"
     steps:
@@ -255,10 +254,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 14.x
-        uses: actions/setup-node@v1
+      - uses: actions/setup-node@v1
         with:
-          node-version: 14.x
+          node-version: 16.x
 
       - run: npm ci
       - run: npm version prerelease --preid=ci-$GITHUB_RUN_ID --no-git-tag-version
