@@ -77,9 +77,13 @@ export async function swaMagic(_options: SWACLIConfig) {
   try {
     const hasLoadedConfig = getCurrentSwaCliConfigFromFile();
     if (!hasLoadedConfig) {
+      logger.log(`${chalk.cyan("→")} No configuration found, running ${chalk.cyan("swa init")}...\n`);
       runCommand("swa init");
     }
+
+    logger.log(`${chalk.cyan("→")} Running ${chalk.cyan("swa build")}...\n`);
     runCommand("swa build");
+    logger.log("");
 
     const response = await promptOrUseDefault(false, {
       type: "confirm",
@@ -92,6 +96,7 @@ export async function swaMagic(_options: SWACLIConfig) {
       return;
     }
 
+    logger.log(`\n${chalk.cyan("→")} Running ${chalk.cyan("swa deploy")}...\n`);
     runCommand("swa deploy");
   } catch (_) {
     // Pokemon, go catch'em all!
