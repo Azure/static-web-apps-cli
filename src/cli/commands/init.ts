@@ -32,7 +32,7 @@ export default function registerCommand(program: Command) {
         options.configName = configName;
       }
 
-      await init(options);
+      await init(options, !process.env.SWA_CLI_INTERNAL_COMMAND);
     });
 }
 

@@ -69,7 +69,7 @@ export async function findSWAConfigFile(folder: string): Promise<{ filepath: str
 
         logger.silly(`Content parsed successfully`);
 
-        logger.log(`\nFound configuration file:\n    ${chalk.green(file.filepath)}\n`);
+        logger.log(`\nFound configuration file:\n  ${chalk.green(file.filepath)}\n`);
         return {
           filepath: file.filepath,
           content,
