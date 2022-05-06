@@ -1,7 +1,6 @@
 import baseFs from "fs";
 import os from "os";
 import path from "path";
-//@ts-ignore
 import pem from "pem";
 import { logger } from "./utils";
 const fs = baseFs.promises;
