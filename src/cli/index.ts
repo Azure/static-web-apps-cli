@@ -18,8 +18,11 @@ export * from "./commands";
 
 const pkg = require("../../package.json");
 
-const printWelcomeMessage = () => {
-  if (!process.env.SWA_CLI_INTERNAL_COMMAND) {
+const printWelcomeMessage = (argv?: string[]) => {
+  const args = argv?.slice(2) || [];
+  const hideMessage = process.env.SWA_CLI_INTERNAL_COMMAND || args.includes("--version") || args.includes("-v");
+
+  if (!hideMessage) {
     // don't use logger here: SWA_CLI_DEBUG is not set yet
     console.log(``);
     console.log(`Welcome to Azure Static Web Apps CLI (${chalk.green(pkg.version)})`);
@@ -28,7 +31,7 @@ const printWelcomeMessage = () => {
 };
 
 export async function run(argv?: string[]) {
-  printWelcomeMessage();
+  printWelcomeMessage(argv);
 
   // Once a day, check for updates
   updateNotifier({ pkg }).notify();
