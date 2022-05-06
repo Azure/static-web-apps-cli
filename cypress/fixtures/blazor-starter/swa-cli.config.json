@@ -5,7 +5,7 @@
       "outputLocation": "http://localhost:5000",
       "appLocation": ".",
       "apiLocation": "./Api",
-      "run": "dotnet run --project ./cypress/fixtures/blazor-starter/Client",
+      "run": "dotnet run --project ./Client",
       "port": 1234,
       "host": "0.0.0.0",
       "serverTimeout": 100,
