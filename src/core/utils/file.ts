@@ -5,7 +5,7 @@ import { stripJsonComments } from "./strings";
 
 export async function safeReadJson(path: string): Promise<JsonData | undefined> {
   try {
-    let contents = await fs.readFile(path, 'utf8');
+    let contents = await fs.readFile(path, "utf8");
     contents = stripJsonComments(contents);
     return JSON.parse(contents) as JsonData;
   } catch (error) {
@@ -20,7 +20,7 @@ export async function safeReadFile(path?: string): Promise<string | undefined> {
   }
 
   try {
-    return await fs.readFile(path, 'utf8');
+    return await fs.readFile(path, "utf8");
   } catch (error) {
     logger.warn(`Failed to read file at: ${path}`);
     return undefined;
@@ -44,19 +44,19 @@ export async function findUpPackageJsonDir(rootPath: string, startPath: string):
     return undefined;
   }
 
-  rootPath = (rootPath === '.' || rootPath === `.${path.sep}`) ? '' : rootPath;
+  rootPath = rootPath === "." || rootPath === `.${path.sep}` ? "" : rootPath;
   startPath = path.join(rootPath, startPath);
-  const rootPathLength = rootPath.split(/[/\\]/).filter(c => c).length;
+  const rootPathLength = rootPath.split(/[/\\]/).filter((c) => c).length;
   const find = async (components: string[]): Promise<string | undefined> => {
     if (components.length === 0 || components.length < rootPathLength) {
       return undefined;
     }
 
     const dir = path.join(...components);
-    const packageFile = path.join(dir, 'package.json');
+    const packageFile = path.join(dir, "package.json");
     return (await pathExists(packageFile)) ? dir : find(components.slice(0, -1));
   };
 
-  const components = startPath.split(/[/\\]/).filter(c => c);
+  const components = startPath.split(/[/\\]/).filter((c) => c);
   return find(components);
 }

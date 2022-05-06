@@ -3,9 +3,9 @@ import { DEFAULT_CONFIG } from "../config";
 import { address, isHttpUrl } from "./utils/net";
 
 export const STATIC_SITE_CLIENT_RELEASE_METADATA_URL = "https://swalocaldeploy.azureedge.net/downloads/versions.json";
-export const SWA_COMMANDS = ['login', 'init', 'start', 'deploy', 'build'] as const;
+export const SWA_COMMANDS = ["login", "init", "start", "deploy", "build"] as const;
 // Type cannot be in swa.d.ts as it's inferred from SWA_COMMANDS
-export type SWACommand = (typeof SWA_COMMANDS)[number];
+export type SWACommand = typeof SWA_COMMANDS[number];
 
 export const SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB = 20; // 20kb
 

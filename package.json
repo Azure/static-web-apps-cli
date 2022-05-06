@@ -19,7 +19,7 @@
     "watch": "tsc --watch",
     "copy-assets": "node ./scripts/copy-assets.js",
     "prepare": "npm run build",
-    "format": "prettier --write 'src/**/*.ts' '**/*.md' 'scripts/**/*.js' 'cypress/**/*.js' 'schema/**/*.json'"
+    "format": "prettier --write 'src/**/*.ts' *.md'' 'docs/**/*.md' 'scripts/**/*.js' 'cypress/**/*.js' 'schema/**/*.json'"
   },
   "bin": {
     "swa": "dist/cli/bin.js"
@@ -31,8 +31,6 @@
     "@azure/arm-subscriptions": "^5.0.0",
     "@azure/identity": "^2.0.4",
     "@azure/msal-common": "^6.2.0",
-    "@types/globalyzer": "^0.1.1",
-    "@types/globrex": "^0.1.2",
     "ajv": "^8.11.0",
     "ajv-draft-04": "^1.0.0",
     "chalk": "^4.1.2",
@@ -69,9 +67,12 @@
     "@types/cli-progress": "^3.9.2",
     "@types/cookie": "^0.5.1",
     "@types/finalhandler": "^1.1.1",
+    "@types/globalyzer": "^0.1.1",
+    "@types/globrex": "^0.1.2",
     "@types/http-proxy": "^1.17.8",
     "@types/jest": "^27.4.1",
     "@types/mock-fs": "^4.13.1",
+    "@types/node": "^14.18.16",
     "@types/node-fetch": "^2.6.1",
     "@types/prompts": "^2.0.14",
     "@types/serve-static": "^1.13.10",

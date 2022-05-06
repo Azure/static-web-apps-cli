@@ -5,21 +5,19 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, ga]
   pull_request:
-    branches: [main]
+    branches: [main, ga]
 
 jobs:
 
   format:
     runs-on: ubuntu-20.04
-
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 14.x
-        uses: actions/setup-node@v1
+      - uses: actions/setup-node@v1
         with:
-          node-version: 14.x
+          node-version: 16.x
 
       - run: npm ci
       - run: npm run format
@@ -30,7 +28,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest]
-        node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
+        node-version: [14.x, 15.x, 16.x, 17.x]
 
     name: "test: use node ${{ matrix.node-version }}"
     steps:
@@ -61,7 +59,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest]
-        node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
+        node-version: [14.x, 15.x, 16.x, 17.x]
 
     name: "deploy: use node ${{ matrix.node-version }}"
     steps:
@@ -84,8 +82,9 @@ jobs:
       - name: "swa deploy"
         run: |
           npm ci
+          npm link
           cd cypress/fixtures/
-          node ../../dist/cli/bin.js deploy ./static --dry-run --verbose=silly --api-location=./api --deployment-token=123
+          swa deploy app --dry-run --verbose=silly --api-location=./static/api --app-location ./static --deployment-token=00000000000000000000000000000000000000000000000000000000000000000-00000000-0000-0000-0000-00000000000000000000
 
   test-windows:
     needs: [format]
@@ -93,7 +92,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
+        node-version: [14.x, 15.x, 16.x, 17.x]
 
     name: "test: use node ${{ matrix.node-version }}"
     steps:
@@ -124,7 +123,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
+        node-version: [14.x, 15.x, 16.x, 17.x]
 
     name: "deploy: use node ${{ matrix.node-version }}"
     steps:
@@ -147,8 +146,9 @@ jobs:
       - name: "swa deploy"
         run: |
           npm ci
+          npm link
           cd cypress/fixtures/
-          node ../../dist/cli/bin.js deploy ./static --dry-run --verbose=silly --api-location=./api --deployment-token=123
+          swa deploy app --dry-run --verbose=silly --api-location=./static/api --app-location ./static --deployment-token=00000000000000000000000000000000000000000000000000000000000000000-00000000-0000-0000-0000-00000000000000000000
 
   test-linux:
     needs: [format]
@@ -156,7 +156,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04]
-        node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
+        node-version: [14.x, 15.x, 16.x, 17.x]
 
     name: "test: use node ${{ matrix.node-version }}"
     steps:
@@ -187,7 +187,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04]
-        node-version: [12.x, 13.x, 14.x, 15.x, 16.x, 17.x]
+        node-version: [14.x, 15.x, 16.x, 17.x]
 
     name: "deploy: use node ${{ matrix.node-version }}"
     steps:
@@ -210,8 +210,9 @@ jobs:
       - name: "swa deploy"
         run: |
           npm ci
+          npm link
           cd cypress/fixtures/
-          node ../../dist/cli/bin.js deploy ./static --dry-run --verbose=silly --api-location=./api --deployment-token=123
+          swa deploy app --dry-run --verbose=silly --api-location=./static/api --app-location ./static --deployment-token=00000000000000000000000000000000000000000000000000000000000000000-00000000-0000-0000-0000-00000000000000000000
 
   # TODO: Cypress setup is failing on CI. Investigate.
   # e2e:
@@ -253,10 +254,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 14.x
-        uses: actions/setup-node@v1
+      - uses: actions/setup-node@v1
         with:
-          node-version: 14.x
+          node-version: 16.x
 
       - run: npm ci
       - run: npm version prerelease --preid=ci-$GITHUB_RUN_ID --no-git-tag-version

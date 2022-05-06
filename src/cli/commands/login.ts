@@ -2,8 +2,7 @@ import { TokenCredential } from "@azure/identity";
 import chalk from "chalk";
 import { Command } from "commander";
 import dotenv from "dotenv";
-import { existsSync } from "fs";
-import { readFile, writeFile } from "fs/promises";
+import { existsSync, promises as fsPromises } from "fs";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
 import { configureOptions, logger, logGiHubIssueMessageAndExit } from "../../core";
@@ -11,6 +10,7 @@ import { authenticateWithAzureIdentity, listSubscriptions, listTenants } from ".
 import { ENV_FILENAME } from "../../core/constants";
 import { updateGitIgnore } from "../../core/git";
 import { chooseSubscription, chooseTenant } from "../../core/prompts";
+const { readFile, writeFile } = fsPromises;
 
 export function addSharedLoginOptionsToCommand(command: Command) {
   command
@@ -21,7 +21,7 @@ export function addSharedLoginOptionsToCommand(command: Command) {
     .option("--client-secret <clientSecret>", "Azure client secret", DEFAULT_CONFIG.clientSecret)
     .option("--app-name <appName>", "Azure Static Web App application name", DEFAULT_CONFIG.appName)
     .option("--clear-credentials", "clear persisted credentials before login", DEFAULT_CONFIG.clearCredentials)
-    
+
     .option("--use-keychain", "enable using the operating system native keychain for persistent credentials", DEFAULT_CONFIG.useKeychain)
     // Note: Commander does not automatically recognize the --no-* option, so we have to explicitly use --no-use-keychain- instead
     .option("--no-use-keychain", "disable using the operating system native keychain", !DEFAULT_CONFIG.useKeychain);

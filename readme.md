@@ -24,6 +24,7 @@ The CLI emulates commonly used capabilities of the Azure Static Web Apps cloud s
 ### Using `npm` or `yarn`:
 
 - Install the cli
+
   ```bash
   npm install -g @azure/static-web-apps-cli
   ```
@@ -49,11 +50,13 @@ See all available [options](#cli-options).
 ### Using `npx`:
 
 - Open a SWA app folder at the root (outside any /api or /app folders):
+
 ```bash
 cd my-awesome-swa-app
 ```
 
 - Create a configuration for your project:
+
 ```bash
 npx @azure/static-web-apps-cli init
 ```

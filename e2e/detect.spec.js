@@ -4,7 +4,9 @@ describe("framework detection", () => {
   it("should detect frameworks", async () => {
     process.chdir(__dirname);
 
-    const result = await detect("./samples", 2);
+    let result = await detect("./samples", 2);
+    // Fix windows paths
+    result = result.replace(/\\/g, "/");
     expect(result).toMatchInlineSnapshot(`
       "Detected api folders (6):
       - samples/api/dotnet (.NET)

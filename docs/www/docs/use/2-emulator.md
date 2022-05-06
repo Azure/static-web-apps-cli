@@ -4,11 +4,10 @@ sidebar_position: 3
 
 # 2. Start The Emulator
 
-The SWA Emulator is run by using the `swa start` command. 
- * It runs on `http://localhost:4280` by default. 
- * Read the [docs](/docs/cli/swa-start) for more command details.
+The SWA Emulator is run by using the `swa start` command.
 
-
+- It runs on `http://localhost:4280` by default.
+- Read the [docs](/docs/cli/swa-start) for more command details.
 
 ## 2.1 Serve from current folder
 
@@ -32,8 +31,8 @@ When developing your SWA front-end, you may want to use the front-end framework'
 
 SWA CLI can reverse proxy requests to that dev server, allowing you to retain the above benefits during local development of your SWA. You can achieve this in two steps:
 
- 1. Start the local dev server as usual. _Note the URL (localhost:port) the dev server runs on._
- 2. Start the SWA CLI in a new terminal _with dev server URL specified._
+1.  Start the local dev server as usual. _Note the URL (localhost:port) the dev server runs on._
+2.  Start the SWA CLI in a new terminal _with dev server URL specified._
 
 ```bash
 swa start <dev-server-url>
@@ -70,10 +69,9 @@ swa start http://localhost:4200 --run "./startup.sh"
 
 Then access the application with the emulated services from `http://localhost:4280`
 
-
 ## 2.5 Default Dev Server ports
 
-Here are some of the default ports used by dev servers in popular front-end frameworks and static site generators today. 
+Here are some of the default ports used by dev servers in popular front-end frameworks and static site generators today.
 
 | Tool                                                                               | Port | Command                           |
 | ---------------------------------------------------------------------------------- | ---- | --------------------------------- |
