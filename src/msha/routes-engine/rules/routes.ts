@@ -4,12 +4,19 @@ import type http from "http";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../../config";
 import { decodeCookie, logger } from "../../../core";
-import { ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT, AUTH_STATUS, SWA_CLI_APP_PROTOCOL } from "../../../core/constants";
+import { ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT, AUTH_STATUS, IS_APP_DEV_SERVER, SWA_CLI_APP_PROTOCOL } from "../../../core/constants";
 import { isAuthRequest } from "../../handlers/auth.handler";
 import { doesRequestPathMatchLegacyRoute, doesRequestPathMatchRoute } from "../route-processor";
 
 export function tryFindFileForRequest(rawRequestPath: string) {
   logger.silly(`finding file for request`);
+
+  // if the user is connecting to a remote dev server, filePath will be an HTTP request pointing to the remote resource.
+  // We exit here and let the remote server handle the request.
+  if (IS_APP_DEV_SERVER()) {
+    return rawRequestPath;
+  }
+
   // percent decode request path
   let requestPath = decodeURIComponent(rawRequestPath);
   if (requestPath.endsWith("/")) {
