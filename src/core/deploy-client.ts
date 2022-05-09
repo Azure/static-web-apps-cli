@@ -75,7 +75,9 @@ export async function getDeployClientPath(): Promise<{ binary: string; buildId: 
           logger.warn(`  Received ${localChecksum}`);
         }
       } else {
-        logger.warn(`${DEPLOY_BINARY_NAME} is outdated! Expected ${remoteBuildId}, got ${localBuildId}`);
+        if (localBuildId) {
+          logger.warn(`${DEPLOY_BINARY_NAME} is outdated! Expected ${remoteBuildId}, got ${localBuildId}`);
+        }
       }
     }
   }
