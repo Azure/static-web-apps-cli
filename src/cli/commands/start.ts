@@ -41,7 +41,6 @@ export default function registerCommand(program: Command) {
     .option<number>("--api-port <apiPort>", "the API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
     .option("--host <host>", "the host address to use for the CLI dev server", DEFAULT_CONFIG.host)
     .option<number>("--port <port>", "the port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
-    .option("--run-build", 'run "swa build" before starting the emulator', false)
 
     .option("--ssl", "serve the front-end application and API over HTTPS", DEFAULT_CONFIG.ssl)
     .option("--ssl-cert <sslCertLocation>", "the SSL certificate (.crt) to use when enabling HTTPS", DEFAULT_CONFIG.sslCert)
@@ -131,7 +130,6 @@ export async function start(options: SWACLIConfig) {
     ssl,
     sslCert,
     sslKey,
-    runBuild,
     host,
     port,
     run,
@@ -348,15 +346,6 @@ export async function start(options: SWACLIConfig) {
     let startupPath = userWorkflowConfig?.appLocation;
 
     concurrentlyCommands.push({ command: `cd "${startupPath}" && ${startupCommand}`, name: "run", env, prefixColor: "gray.dim" });
-  }
-
-  if (runBuild) {
-    // run swa build
-    execSync("swa build", {
-      stdio: "inherit",
-      // Set CI to avoid extra NPM logs and potentially unwanted interactive modes
-      env: { ...process.env, CI: "1" },
-    });
   }
 
   logger.silly(`Starting the SWA emulator with the following configuration:`);

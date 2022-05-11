@@ -187,10 +187,6 @@
           "description": "Pass additional arguments to the func start command",
           "type": "string"
         },
-        "runBuild": {
-          "description": "Run \"swa build\" before starting the emulator",
-          "type": "boolean"
-        },
         "swaConfigLocation": {
           "description": "The directory where the staticwebapp.config.json file is located",
           "type": "string"
