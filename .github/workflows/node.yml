@@ -234,7 +234,8 @@ jobs:
         with:
           record: false
           start: npm run e2e:static
-          browser: chrome
+          # use Electron
+          # browser: electron
           headless: true
           wait-on: "http://0.0.0.0:1234, http://localhost:7071"
           wait-on-timeout: 120
