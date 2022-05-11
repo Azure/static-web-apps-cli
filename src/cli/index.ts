@@ -1,12 +1,13 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+import process from "process";
 import chalk from "chalk";
 import { Command, Option, program } from "commander";
 import path from "path";
 import updateNotifier from "update-notifier";
 import { DEFAULT_CONFIG } from "../config";
-import { configureOptions, getCurrentSwaCliConfigFromFile, logger, runCommand, swaCliConfigFilename } from "../core";
+import { configureOptions, getCurrentSwaCliConfigFromFile, getNodeMajorVersion, logger, runCommand, swaCliConfigFilename } from "../core";
 import registerDeploy from "./commands/deploy";
 import registerInit from "./commands/init";
 import registerLogin from "./commands/login";
@@ -18,9 +19,10 @@ export * from "./commands";
 
 const pkg = require("../../package.json");
 
-const printWelcomeMessage = (argv?: string[]) => {
+function printWelcomeMessage(argv?: string[]) {
   const args = argv?.slice(2) || [];
-  const hideMessage = process.env.SWA_CLI_INTERNAL_COMMAND || args.includes("--version") || args.includes("-v");
+  const showVersion = args.includes("--version") || args.includes("-v");
+  const hideMessage = process.env.SWA_CLI_INTERNAL_COMMAND || showVersion;
 
   if (!hideMessage) {
     // don't use logger here: SWA_CLI_DEBUG is not set yet
@@ -28,7 +30,21 @@ const printWelcomeMessage = (argv?: string[]) => {
     console.log(`Welcome to Azure Static Web Apps CLI (${chalk.green(pkg.version)})`);
     console.log(``);
   }
-};
+
+  if (!showVersion) {
+    checkNodeVersion();
+  }
+}
+
+function checkNodeVersion() {
+  const nodeMajorVersion = getNodeMajorVersion();
+  const minVersion = pkg.engines.node.substring(2, pkg.engines.node.indexOf("."));
+
+  if (nodeMajorVersion < minVersion) {
+    logger.error(`You are using Node ${process.versions.node} but this version of the CLI requires Node ${minVersion} or higher.`);
+    logger.error(`Please upgrade your Node version.\n`, true);
+  }
+}
 
 export async function run(argv?: string[]) {
   printWelcomeMessage(argv);
