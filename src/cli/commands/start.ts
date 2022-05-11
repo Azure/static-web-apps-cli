@@ -4,7 +4,6 @@ import concurrently, { CloseEvent } from "concurrently";
 import { CommandInfo } from "concurrently/dist/src/command";
 import fs from "fs";
 import path from "path";
-import { execSync } from "child_process";
 import { DEFAULT_CONFIG } from "../../config";
 import {
   askNewPort,
