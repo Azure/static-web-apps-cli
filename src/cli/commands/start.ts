@@ -324,6 +324,8 @@ export async function start(options: SWACLIConfig) {
   // merge SWA CLI env variables with process.env
   process.env = {
     ...swaCLIEnv(envVarsObj),
+    // Prevent react-scripts from opening browser
+    BROWSER: "none",
   };
 
   // INFO: from here, code may access SWA CLI env vars.
