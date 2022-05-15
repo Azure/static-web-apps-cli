@@ -11,10 +11,10 @@ const config = {
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  url: 'https://azure.github.io',  // Update for Org
-  baseUrl: '/',
-  organizationName: 'azure',       // Update for Org
-  projectName: 'static-web-apps-cli', 
+  url: 'https://nitya.github.io',  // PR-TODO: https://azure.github.io
+  baseUrl: '/swa-cli-docs/',       // PR-TODO: /static-web-apps-cli/
+  organizationName: 'nitya',       // PR-TODO: azure
+  projectName: 'swa-cli-docs',     // PR-TODO: static-web-apps-cli
   deploymentBranch: `gh-pages`, 
 
   presets: [
@@ -154,7 +154,7 @@ const config = {
           },
         ],
         */
-        copyright: `Copyright © ${new Date().getFullYear()} Microsoft | Built with Docusaurus - Icons from Noun Project.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Microsoft | Built with Docusaurus and Iconcloud.design.`,
       }, 
       prism: {
         theme: lightCodeTheme,
@@ -164,7 +164,7 @@ const config = {
       announcementBar: {
         id: 'Landing Page Banner',
         content:
-          '<b>Join us May 19 at the <a href="https://aka.ms/swaanniversary">#SWAanniversary</a> event as we launch SWA CLI v1.0!</b>',
+          '<b> If you find SWA CLI useful <a href="https://github.com/Azure/static-web-apps-cli/stargazers"> do give us a ⭐️  on GitHub</a> - we apprecite your support! </a></b>',
         backgroundColor: '#F50057',
         textColor: '#FFFFFF',
         isCloseable: false,

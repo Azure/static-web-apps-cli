@@ -2,127 +2,303 @@
 sidebar_position: 2
 ---
 
-# Build From Source
+# Build From Source 
 
-This document describes how to set up your development environment to build and test the Azure Static Web Apps CLI (SWA CLI).
-It also explains the basic mechanics of using `git`, `node`, and `npm`.
+This document describes how to set up your development environment to build and test the Azure Static Web Apps CLI. In the documentation we may refer to it interchangeably as **SWA CLI** or simply as **`swa`**.
 
-- [Building and Testing Azure Static Web Apps CLI (SWA CLI)](#building-and-testing-azure-static-web-apps-cli-swa-cli)
-  - [Prerequisite Software](#prerequisite-software)
-  - [Getting the Sources](#getting-the-sources)
-  - [Installing NPM Modules](#installing-npm-modules)
-  - [Building](#building)
-  - [Running Tests Locally](#running-tests-locally)
-    - [Testing changes against a local project](#testing-changes-against-a-local-project)
-  - [Formatting your source code](#formatting-your-source-code)
-    - [Atom](#atom)
-    - [Emacs:](#emacs)
-    - [Espresso:](#espresso)
-    - [Nova:](#nova)
-    - [Sublime Text:](#sublime-text)
-    - [Vim:](#vim)
-    - [Visual Studio](#visual-studio)
-    - [VS Code](#vs-code)
-    - [WebStorm](#webstorm)
+Please [**review the Contribution Guidelines**](/docs/contribute/intro) if you plan to contribute back to the project codebase (by fixing issues, editing docs etc.).
 
-See the [contribution guidelines](https://github.com/azure/static-web-apps-cli/blob/main/CONTRIBUTING.md) if you'd like to contribute to this project.
+---
 
-## Prerequisite Software
+## 1. Build Requirements
 
-Before you can build and test SWA CLI, you must install and configure the following products on your development machine:
+### Install Git
 
-- [Git](https://git-scm.com/) and/or the [**GitHub app**](https://desktop.github.com/) (for Mac and Windows);
-  [GitHub's Guide to Installing Git](https://help.github.com/articles/set-up-git) is a good source of information.
+:::info
 
-- [Node.js](https://nodejs.org), (version specified in the engines field of [`package.json`](../package.json)) which is used to run a development web server, run tests, and generate distributable files.
+> **Installation Guide: ** Follow the [GitHub's Guide to Installing Git](https://help.github.com/articles/set-up-git) guidance for setup.
+> :::
 
-- [npm](https://www.npmjs.com/) (version specified in the engines field of [`package.json`](../package.json)) which is used to install dependencies.
+The SWA CLI codebase contains both [source code](https://github.com/Azure/static-web-apps-cli/tree/main/src)
+and [documentation files](https://github.com/Azure/static-web-apps-cli/tree/main/docs) for the project - all hosted **in the same GitHub repository**.
 
-## Getting the Sources
+You will need to install [**Git**](https://git-scm.com/) (command-line utility) or [**GitHub Desktop**](https://desktop.github.com/) (IDE for Windows/macOS only) to work with our codebase. This allows you to:
 
-Fork and clone the SWA CLI repository:
+- fork and clone the SWA CLI codebase for local development
+- maintain source code and version control over files in your fork
+- streamline pull request (PR) workflows to contribute back changes
 
-1. Login to your GitHub account or create one by following the instructions given [here](https://github.com/signup/free).
+If you're new to Git, we recommend the and follow the instructions for your preferred development platform (Linux, Windows, macOS or other), to set this up.
 
-2. [Fork](https://help.github.com/forking) the [main SWA CLI repository](https://github.com/azure/static-web-apps-cli).
+### Install Node.js
 
-3. Clone your fork of the SWA CLI repository:
+:::info
+
+> **Installation Guide: ** Follow the [Downloading & installing Node.js and npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) guidance for setup.
+> :::
+
+The SWA CLI is written in JavaScript/TypeScript and built for execution in a [**Node.js**](https://nodejs.org/en/) runtime on the desktop. The SWA CLI is also packaged and distributed as [@azure/static-web-apps-cli](https://www.npmjs.com/package/@azure/static-web-apps-cli) in the [npm registry](https://www.npmjs.com/).
+
+You will need to install [**Node.js**](https://nodejs.org) to preview, run, and test, the SWA CLI. You'll also need to install [**npm**](https://docs.npmjs.com/cli/v8/using-npm/developers) to handle package dependencies and configure scripts to streamline developer workflows with Node.js.
+
+This allows you to:
+
+- use [npm install](https://docs.npmjs.com/cli/v8/commands/npm-install) to install SWA CLI dependencies in `package.json`.
+- use [npm run](https://docs.npmjs.com/cli/v8/commands/npm-run-script) to execute "scripts" defined in `package.json`
+- use [npm test](https://docs.npmjs.com/cli/v8/commands/npm-test) to run the "test" script in `package.json`
+- use [npm run format](#formatting-your-source-code) to format source when getting ready to PR.
+
+We strongly agree with the recommendation to **[use the Node Version Manager (nvm)](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)** to manage your installs - [nvm](https://github.com/nvm-sh/nvm) makes it easy to install, and switch between, [multiple versions](https://nodejs.org/en/about/releases/) of Node, directly from the command line.
+:::info
+**Version Requirements: **
+Installed versions must meet the `engines` requirements for this project.
+:::
+
+The `engines` object defines the minimum versions of Node.js and npm that are required for SWA CLI, in this [package.json](../../../../package.json). The object looks something like this:
+
+```
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  }
+```
+
+This indicates that the current SWA CLI works with a minimum version of Node.js v14.0.0 and npm v6.0.0. Check your current dev environment versions by using the `--version` option. Here's an example of usage:
+
+```
+$ node --version
+v16.2.0
+
+$ npm --version
+7.13.0
+```
+
+Need to change versions to meet requirements? Use [nvm](https://github.com/nvm-sh/nvm):
+
+```
+// List locally-installed versions
+nvm list
+
+// Switch to an installed version (if requirement met)
+nvm use <installed-version>
+
+// .. Or find version to install (that meets requirement)
+nvm ls-remote
+
+// .. And install it locally
+nvm install <remote-version>
+
+// .. Then validate install worked
+nvm which <remote-version>
+
+// .. And switch to use it
+nvm use <remote-version>
+```
+
+---
+
+## 2. Clone The Project
+
+Once you've met the build requirements, you can download the SWA CLI codebase and configure it for local development using these steps:
+
+:::info
+The SWA CLI codebase is hosted [here on GitHub](https://github.com/azure/static-web-apps-cli) and contains both the **source code** and the **documentation files** for the project.
+:::
+
+**First**, fork the repository and clone it for local development.
 
 ```shell
 git clone https://github.com/{YOUR_GITHUB_ACCOUNT}/static-web-apps-cli.git
 ```
 
-4. **OPTIONAL**: Clone a specific feature branch:
+**Optionally**, clone a specific branch using `-b BRANCH_NAME`:
 
-```shell
+```bash
 git clone -b BRANCH_NAME https://github.com/{YOUR_GITHUB_ACCOUNT}/static-web-apps-cli.git
 ```
 
-5. Go to the SWA CLI directory:
+**Next**, switch your working directory to the _SWA CLI_ project root:
 
 ```shell
 cd static-web-apps-cli
 ```
 
-6. Define an `upstream` remote pointing back to the SWA CLI repository that you forked in the first place
+**Next**, add an `upstream` remote pointing back to the original SWA CLI repository. This makes it easier to fetch updates and contribute PRs.
 
 ```shell
 git remote add upstream https://github.com/azure/static-web-apps-cli.git
 ```
 
-## Installing NPM Modules
+## 3. Build The Project
 
-Next, install SWA CLI project dependencies defined in the [`package.json`](../package.json)) file:
+### Install Deps
+
+The [`package.json`](../../../../package.json) file describes the project's dependencies. Use the following command to setup your local development environment. The process may take a few minutes.
 
 ```shell
 npm install
 ```
 
-## Building
+### Build Dist
 
-To build SWA CLI, run:
+To build the SWA CLI distribution, run the folllowing command. This may take a few minutes.
 
 ```shell
 npm run build
 ```
 
-This step will create a `./dist` folder containing the built project.
-
-Test that the CLI is running as expected using the command:
+On successful completion, it creates a `dist/` folder with the following contents (output cleaned up for clarity).
 
 ```shell
-node dist/cli/bin.js -h
+$  ls dist
+
+  cli/
+  config.d.ts.map
+  config.js.map
+  msha/
+  schema/
+  config.d.ts
+  config.js
+  core/
+  public/
 ```
 
-## Running Tests Locally
+### Validate CLI
 
-You should execute all test suites before submitting a PR to GitHub.
+Validate that the CLI build works by running the following command:
 
-- `npm test` will run all test suites.
+```shell
+node dist/cli/bin.js
+```
 
-### Testing changes against a local project
+You should see _something like this_. Your exact output will depend on the release version you are working with.
 
-Often for developers the best way to ensure the changes they have made work as expected is to run use changes in another library or project. To do this developers can build SWA CLI locally, and using `npm link` build a local project with the created artifacts.
+```shell
+Welcome to Azure Static Web Apps CLI (0.8.4-alpha)
 
-From the root folder of your project (where `package.json` is located), run:
+Usage: swa <command> [options]
+
+Options:
+  -v, --version                                       output the version number
+  --verbose [prefix]                                  enable verbose output. Values are:
+                                                      silly,info,log,silent (default: "log", preset:
+                                                      "log")
+  --config <path>                                     path to swa-cli.config.json file to use (default:
+                                                      "swa-cli.config.json")
+  --print-config                                      print all resolved options (default: false)
+  --swa-config-location <swaConfigLocation>           the directory where the staticwebapp.config.json
+                                                      file is located (default: "./")
+  -h, --help                                          display help for command
+
+Commands:
+  login [options]                                     login into Azure Static Web Apps
+  start [options] [outputLocation]                    Start the emulator from a directory or bind to a
+                                                      dev server
+  deploy [options] [outputLocation]                   Deploy the current project to Azure Static Web Apps
+  init [options] [configurationName]                  initialize a new static web app project
+  build [options] [configurationName|outputLocation]  build your project
+  help [command]                                      display help for command
+
+Documentation:
+  https://aka.ms/swa/cli-local-development
+
+```
+
+:::note Congratulations!!
+You have successfully built and run the SWA CLI in your local env.
+:::
+
+## 4. Prep Contributions
+
+If you forked the project with the intent of contributing back to the original codebase, we have three steps you need to take:
+
+1.  [**Review the Contribution Guidelines**](/docs/contribute/intro)
+2.  [**Test your changes against a local project**](#run-tests)
+3.  [**Format your source to align with our guidelines**](#4-format-source)
+
+### Run Tests
+
+Use this command to run all test suites on your project's PR-ready branch before you initiate the pull request.
+
+```
+npm test
+```
+
+The process may take a few minutes to complete all test suites - track progress by monitoring the (verbose) test output. A successful run will likely end with something like this:
+
+```
+..
+..
+Test Suites: 27 passed, 27 total
+Tests:       5 skipped, 423 passed, 428 total
+Snapshots:   5 passed, 5 total
+Time:        37.658 s
+```
+
+### Create Symlink
+
+A good way to validate the changes you make is to use with with a real application project that can benefit from using the Static Web Apps CLI. The [`npm link`](https://docs.npmjs.com/cli/v8/commands/npm-link) command can help you setup your local development environment to do this transparently.
+
+**Using npm link**
+
+Run the following command in the root folder where `package.json` is located:
 
 ```shell
 npm link ./
 ```
 
-Now you can run `swa -h` from anywhere in your system and this will run the CLI from your `./dist` folder.
+Once command completes successfully,run `swa` from any directory on your local development system.
 
-When making multiple changes to the project source files, you can run `npm run watch` which will watch and rebuild the project on the fly
+```shell
+cd <some-project-dir>
+swa --h
+```
 
-## Formatting your source code
+You should see the `swa` output reflect the version and functionality provided by the locally-built distribution previously linked. You can now test the `swa` capability with real projects in your local development device, to validate your changes.
 
-SWA CLI uses [prettier](https://prettier.io/) to format the source code. If the source code is not properly formatted, the CI will fail and the PR cannot be merged.
+**How does npm link work?**
 
-You can automatically format your code by running:
+The [`npm link`](https://docs.npmjs.com/cli/v8/commands/npm-link) docs have more detail, but here's a short overview that can help you debug any issues with usage later.
 
-- `npm run format`: format _all_ source code
+1. Your local dev environment has a global folder for installed node packages. It's located at `{prefix}/lib/node_modules/` - find the prefix for your local dev setup using `npm prefix -g`.
 
-A better way is to set up your IDE to format the changed file on each file save.
+2. Installing a package `xyz` globally (e.g., with `npm -g install xyz`) creates a subfolder `{prefix}/lib/node_modules/xyz` - making it possible for local projects with this dependency, to find and use it transparently.
+
+3. For a local implementation of `xyz`, use `npm link ./` in the root folder (location of `package.json`). This converts `{prefix}/lib/node_modules/xyz` to a _symbolic link_ to your local distribution, making it the default for resolving that dependency.
+
+:::note Troubleshooting 🐞
+The `npm unlink` command is an alias for `npm uninstall` which may not work as intuitively as you might expect [(_see issue_)](https://github.com/npm/npm/issues/4005). As recommended there,
+
+- use `npm unlink **-g**` to remove symbolic link from global folder
+- verify there is no symlink at `{prefix}/lib/node_modules/<pkg>`
+:::
+
+
+### Watch Mode
+
+When making multiple changes to project source files, you might want to get instantaneous feedback on how these impact the project build. Use the following command instead of `npm run build`:
+
+```shell
+npm run watch
+```
+
+You should see console output similar to that shown below. Now, as you make changes to files (and save them), the project will be automatically rebuilt and status updated on the terminal.
+
+```
+Starting compilation in watch mode...
+
+Found 0 errors. Watching for file changes.
+```
+
+## 4. Format Source
+
+SWA CLI uses [prettier](https://prettier.io/) to format the source code. We require code to be formatted properly in the Pull Request (PR) - else the CI workflow will fail and your PR cannot be merged. To resolve this, **run this command to format _all_ source code**
+
+```shell
+npm run format
+```
+
+A better approach is to configure the settings in your preferred IDE to auto-format your source code files on each _Save_. Check out the relevant links for popular IDEs below. **Don't see your favorite IDE listed?** _Try [contributing to the project!](/docs/contribute/intro)!_.
 
 ### Atom
 
