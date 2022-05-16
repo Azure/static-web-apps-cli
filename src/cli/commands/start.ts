@@ -32,32 +32,32 @@ export default function registerCommand(program: Command) {
     .command("start [configName|outputLocation|appDevserverUrl]")
     .usage("[configName|outputLocation|appDevserverUrl] [options]")
     .description("start the emulator from a directory or bind to a dev server")
-    .option("--app-location <path>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
-    .option("--api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
-    .option("--output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
-    .option("--app-devserver-url <url>", "connect to the dev server at this URL instead of using output location", DEFAULT_CONFIG.appDevserverUrl)
-    .option("--api-devserver-url <url>", "connect to the api server at this URL instead of using output location", DEFAULT_CONFIG.apiDevserverUrl)
-    .option<number>("--api-port <apiPort>", "the API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
-    .option("--host <host>", "the host address to use for the CLI dev server", DEFAULT_CONFIG.host)
-    .option<number>("--port <port>", "the port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
+    .option("-a, --app-location <path>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
+    .option("-i, --api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
+    .option("-O, --output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
+    .option("-D, --dev-server-url <url>", "connect to the dev server at this URL instead of using output location", DEFAULT_CONFIG.appDevserverUrl)
+    .option("-au, --api-server-url <url>", "connect to the api server at this URL instead of using output location", DEFAULT_CONFIG.apiDevserverUrl)
+    .option<number>("-j, --api-port <apiPort>", "the API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
+    .option("-q, --host <host>", "the host address to use for the CLI dev server", DEFAULT_CONFIG.host)
+    .option<number>("-p, --port <port>", "the port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
 
     .option("-s, --ssl", "serve the front-end application and API over HTTPS", DEFAULT_CONFIG.ssl)
     .option("-e, --ssl-cert <sslCertLocation>", "the SSL certificate (.crt) to use when enabling HTTPS", DEFAULT_CONFIG.sslCert)
     .option("-k, --ssl-key <sslKeyLocation>", "the SSL key (.key) to use when enabling HTTPS", DEFAULT_CONFIG.sslKey)
     .option("-r, --run <startupScript>", "run a custom shell command or script file at startup", DEFAULT_CONFIG.run)
     .option<number>(
-      "--devserver-timeout <time>",
+      "-t, --devserver-timeout <time>",
       "the time to wait (in seconds) when connecting to a front-end application's dev server or api server",
       parseServerTimeout,
       DEFAULT_CONFIG.devserverTimeout
     )
     .option(
-      "--swa-config-location <swaConfigLocation>",
+      "-w, --swa-config-location <swaConfigLocation>",
       "the directory where the staticwebapp.config.json file is located",
       DEFAULT_CONFIG.swaConfigLocation
     )
-    .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
-    .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
+    .option("-o, --open", "open the browser to the dev server", DEFAULT_CONFIG.open)
+    .option("-f, --func-args <funcArgs>", "pass additional arguments to the func start command")
     .action(async (positionalArg: string | undefined, _options: SWACLIConfig, command: Command) => {
       const options = await configureOptions(positionalArg, command.optsWithGlobals(), command, "start");
       if (positionalArg && !matchLoadedConfigName(positionalArg)) {

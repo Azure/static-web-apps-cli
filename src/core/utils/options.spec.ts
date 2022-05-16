@@ -2,7 +2,7 @@ import { Command } from "commander";
 import mockFs from "mock-fs";
 import { swaCliConfigFilename } from "./cli-config";
 import { parsePort } from "./net";
-import { parseDevserverTimeout } from "./cli";
+import { parseServerTimeout } from "./cli";
 import { configureOptions, getUserOptions } from "./options";
 import { DEFAULT_CONFIG } from "../../config";
 
@@ -100,15 +100,15 @@ describe("Testing aliases for each of the commands and their options", () => {
       .name("swa")
       .option("-V, --verbose [prefix]", "", DEFAULT_CONFIG.verbose)
       .option("-c, --config <path>")
+      .option("-cn, --config-name <name>")
       .option("-g, --print-config", "", false)
-      .option("-w, --swa-config-location <swaConfigLocation>")
-      .parseAsync(["node", "swa", "-V", "log", "-c", `../${swaCliConfigFilename}`, "-g", "-w", `${DEFAULT_CONFIG.swaConfigLocation}`]);
+      .parseAsync(["node", "swa", "-V", "log", "-c", `../${swaCliConfigFilename}`, "-cn", `${swaCliConfigFilename}`, "-g"]);
 
     expect(getUserOptions(command)).toStrictEqual({
       verbose: "log",
       config: `../${swaCliConfigFilename}`,
+      configName: `${swaCliConfigFilename}`,
       printConfig: true,
-      swaConfigLocation: DEFAULT_CONFIG.swaConfigLocation,
     });
   });
 
@@ -117,15 +117,18 @@ describe("Testing aliases for each of the commands and their options", () => {
       .name("swa")
       .option("-a, --app-location <appLocation>")
       .option("-i, --api-location <apiLocation>")
+      .option("-O, --output-location <outputLocation>")
+      .option("-D, --dev-server-url <url>")
+      .option("-au, --api-server-url <url>")
       .option<number>("-j, --api-port <apiPort>", "", parsePort, DEFAULT_CONFIG.apiPort)
       .option("-q, --host <host>")
       .option<number>("-p, --port <port>", "", parsePort, DEFAULT_CONFIG.port)
-      .option("-b, --run-build")
       .option("-s, --ssl")
       .option("-e, --ssl-cert <sslCertLocation>")
       .option("-k, --ssl-key <sslKeyLocation>")
       .option("-r, --run <startupScript>")
-      .option<number>("-t, --devserver-timeout <devserverTimeout>", "", parseDevserverTimeout, DEFAULT_CONFIG.devserverTimeout)
+      .option<number>("-t, --devserver-timeout <time>", "", parseServerTimeout, DEFAULT_CONFIG.devserverTimeout)
+      .option("-w, --swa-config-location <swaConfigLocation>")
       .option("-o, --open")
       .option("-f, --func-args <funcArgs>")
       .parseAsync([
@@ -135,13 +138,18 @@ describe("Testing aliases for each of the commands and their options", () => {
         `${DEFAULT_CONFIG.appLocation}`,
         "-i",
         "./api",
+        "-O",
+        `./build`,
+        "-D",
+        "https://swa-dev-server.com",
+        "-au",
+        "https://swa-dev-server.com/api/v2",
         "-j",
         "7071",
         "-q",
         `${DEFAULT_CONFIG.host}`,
         "-p",
         "4567",
-        "-b",
         "-s",
         "-e",
         "./ssl/sslCert.crt",
@@ -151,6 +159,8 @@ describe("Testing aliases for each of the commands and their options", () => {
         "run.sh",
         "-t",
         "1000",
+        "-w",
+        "./config",
         "-o",
         "-f",
         "--arg",
@@ -159,15 +169,18 @@ describe("Testing aliases for each of the commands and their options", () => {
     expect(getUserOptions(command)).toStrictEqual({
       appLocation: DEFAULT_CONFIG.appLocation,
       apiLocation: "./api",
+      outputLocation: "./build",
+      devServerUrl: "https://swa-dev-server.com",
+      apiServerUrl: "https://swa-dev-server.com/api/v2",
       apiPort: 7071,
       host: DEFAULT_CONFIG.host,
       port: 4567,
-      runBuild: true,
       ssl: true,
       sslCert: "./ssl/sslCert.crt",
       sslKey: "./ssl/sslKey.key",
       run: "run.sh",
       devserverTimeout: 1000,
+      swaConfigLocation: "./config",
       open: true,
       funcArgs: "--arg",
     });
@@ -199,13 +212,11 @@ describe("Testing aliases for each of the commands and their options", () => {
   it("should return appropriate user cli options for the alias commands for swa build options", async () => {
     const command = await new Command()
       .name("swa")
-      .option("-O, --output-location <outputLocation>")
       .option("-A, --app-build-command <command>")
       .option("-I, --api-build-command <command>")
-      .parseAsync(["node", "swa", "-O", `./build`, "-A", "build-app", "-I", "build-api"]);
+      .parseAsync(["node", "swa", "-A", "build-app", "-I", "build-api"]);
 
     expect(getUserOptions(command)).toStrictEqual({
-      outputLocation: "./build",
       appBuildCommand: "build-app",
       apiBuildCommand: "build-api",
     });
@@ -220,6 +231,7 @@ describe("Testing aliases for each of the commands and their options", () => {
       .option("-C, --client-id [clientId]")
       .option("-CS, --client-secret [clientSecret]")
       .option("-n, --app-name [appName]")
+      .option("-cc, --clear-credentials")
       .option("-u, --use-keychain")
       .option("-nu, --no-use-keychain")
       .parseAsync([
@@ -237,6 +249,7 @@ describe("Testing aliases for each of the commands and their options", () => {
         "clientSecret",
         "-n",
         "appName",
+        "-cc",
         "-nu",
       ]);
 
@@ -248,6 +261,7 @@ describe("Testing aliases for each of the commands and their options", () => {
       clientSecret: "clientSecret",
       appName: "appName",
       useKeychain: false,
+      clearCredentials: true,
     });
   });
 });
