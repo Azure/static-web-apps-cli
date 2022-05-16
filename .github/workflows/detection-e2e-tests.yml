@@ -1,4 +1,4 @@
-name: detection-e2-tests
+name: E2E Tests for framework detection
 on:
   push:
     branches: [main, ga]

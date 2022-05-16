@@ -1,5 +1,9 @@
 /// <reference types="cypress" />
 
+Cypress.Screenshot.defaults({
+  screenshotOnRunFailure: false,
+});
+
 const SWA_AUTH_COOKIE_NAME = "StaticWebAppsAuthCookie";
 const clientPrincipal = {
   identityProvider: "facebook",

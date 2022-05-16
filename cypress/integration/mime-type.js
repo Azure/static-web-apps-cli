@@ -1,5 +1,9 @@
 /// <reference types="cypress" />
 
+Cypress.Screenshot.defaults({
+  screenshotOnRunFailure: false,
+});
+
 context("Mime types", () => {
   beforeEach(() => {
     cy.visit("http://0.0.0.0:1234/");

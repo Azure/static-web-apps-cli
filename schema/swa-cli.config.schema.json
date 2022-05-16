@@ -155,7 +155,7 @@
           "description": "Automatically open the CLI dev server in the default browser",
           "type": "boolean"
         },
-        "serverTimeout": {
+        "devserverTimeout": {
           "description": "The time to wait (in seconds) when connecting to a front-end application's dev server or api server",
           "type": "number"
         },
@@ -186,10 +186,6 @@
         "funcArgs": {
           "description": "Pass additional arguments to the func start command",
           "type": "string"
-        },
-        "runBuild": {
-          "description": "Run \"swa build\" before starting the emulator",
-          "type": "boolean"
         },
         "swaConfigLocation": {
           "description": "The directory where the staticwebapp.config.json file is located",

@@ -1,5 +1,9 @@
 /// <reference types="cypress" />
 
+Cypress.Screenshot.defaults({
+  screenshotOnRunFailure: false,
+});
+
 context.only("/api", () => {
   beforeEach(() => {
     cy.visit("http://0.0.0.0:1234/");

@@ -133,11 +133,10 @@ declare type SWACLIStartOptions = {
   sslCert?: string;
   sslKey?: string;
   run?: string;
-  serverTimeout?: number;
+  devserverTimeout?: number;
   open?: boolean;
   funcArgs?: string;
   githubActionWorkflowLocation?: string;
-  runBuild?: boolean;
   swaConfigLocation?: string;
 };
 

@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest]
-        node-version: [14.x, 15.x, 16.x, 17.x]
+        node-version: [14.x, 15.x, 16.x, 17.x, '>= 18.x']
 
     name: "test: use node ${{ matrix.node-version }}"
     steps:
@@ -59,7 +59,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest]
-        node-version: [14.x, 15.x, 16.x, 17.x]
+        node-version: [14.x, 15.x, 16.x, 17.x, '>= 18.x']
 
     name: "deploy: use node ${{ matrix.node-version }}"
     steps:
@@ -92,7 +92,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node-version: [14.x, 15.x, 16.x, 17.x]
+        node-version: [14.x, 15.x, 16.x, 17.x, '>= 18.x']
 
     name: "test: use node ${{ matrix.node-version }}"
     steps:
@@ -123,7 +123,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node-version: [14.x, 15.x, 16.x, 17.x]
+        node-version: [14.x, 15.x, 16.x, 17.x, '>= 18.x']
 
     name: "deploy: use node ${{ matrix.node-version }}"
     steps:
@@ -156,7 +156,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04]
-        node-version: [14.x, 15.x, 16.x, 17.x]
+        node-version: [14.x, 15.x, 16.x, 17.x, '>= 18.x']
 
     name: "test: use node ${{ matrix.node-version }}"
     steps:
@@ -187,7 +187,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04]
-        node-version: [14.x, 15.x, 16.x, 17.x]
+        node-version: [14.x, 15.x, 16.x, 17.x, '>= 18.x']
 
     name: "deploy: use node ${{ matrix.node-version }}"
     steps:
@@ -214,43 +214,8 @@ jobs:
           cd cypress/fixtures/
           swa deploy app --dry-run --verbose=silly --api-location=./static/api --app-location ./static --deployment-token=00000000000000000000000000000000000000000000000000000000000000000-00000000-0000-0000-0000-00000000000000000000
 
-  e2e:
-    needs: [e2e-deploy-macos, e2e-deploy-windows, e2e-deploy-linux]
-    runs-on: ${{ matrix.os }}
-    strategy:
-      # when one test fails, DO NOT cancel the other
-      # containers, because this will kill Cypress processes
-      # https://github.com/cypress-io/github-action/issues/48
-      fail-fast: false
-      matrix:
-        os: [macos-latest, windows-latest, ubuntu-20.04]
-        node-version: [16.x]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Cypress run
-        uses: cypress-io/github-action@v2
-        with:
-          record: false
-          start: npm run e2e:static
-          # use Electron
-          # browser: electron
-          headless: true
-          wait-on: "http://0.0.0.0:1234, http://localhost:7071"
-          wait-on-timeout: 120
-        env:
-          DEBUG: "cypress:*"
-          CI: 1
-
-      - uses: actions/upload-artifact@v1
-        if: failure()
-        with:
-          name: cypress-screenshots
-          path: cypress/screenshots
-
   package:
-    needs: [e2e]
+    needs: [e2e-deploy-macos, e2e-deploy-linux, e2e-deploy-windows]
     runs-on: ubuntu-20.04
 
     steps:

@@ -45,7 +45,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   apiBuildCommand: SWA_CLI_API_BUILD_COMMAND || undefined,
   run: SWA_CLI_STARTUP_COMMAND || undefined,
   verbose: SWA_CLI_DEBUG || "log",
-  serverTimeout: parseInt(SWA_CLI_SERVER_TIMEOUT || "60", 10),
+  devserverTimeout: parseInt(SWA_CLI_SERVER_TIMEOUT || "60", 10),
   open: useEnvVarOrUseDefault(SWA_CLI_OPEN_BROWSER, false),
   githubActionWorkflowLocation: SWA_RUNTIME_WORKFLOW_LOCATION ? SWA_RUNTIME_WORKFLOW_LOCATION : undefined,
   env: SWA_CLI_DEPLOY_ENV || "preview",

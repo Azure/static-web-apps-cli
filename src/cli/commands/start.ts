@@ -4,7 +4,6 @@ import concurrently, { CloseEvent } from "concurrently";
 import { CommandInfo } from "concurrently/dist/src/command";
 import fs from "fs";
 import path from "path";
-import { execSync } from "child_process";
 import { DEFAULT_CONFIG } from "../../config";
 import {
   askNewPort,
@@ -41,17 +40,16 @@ export default function registerCommand(program: Command) {
     .option<number>("--api-port <apiPort>", "the API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
     .option("--host <host>", "the host address to use for the CLI dev server", DEFAULT_CONFIG.host)
     .option<number>("--port <port>", "the port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
-    .option("--run-build", 'run "swa build" before starting the emulator', false)
 
     .option("--ssl", "serve the front-end application and API over HTTPS", DEFAULT_CONFIG.ssl)
     .option("--ssl-cert <sslCertLocation>", "the SSL certificate (.crt) to use when enabling HTTPS", DEFAULT_CONFIG.sslCert)
     .option("--ssl-key <sslKeyLocation>", "the SSL key (.key) to use when enabling HTTPS", DEFAULT_CONFIG.sslKey)
     .option("--run <startupScript>", "run a custom shell command or script file at startup", DEFAULT_CONFIG.run)
     .option<number>(
-      "--server-timeout <time>",
+      "--devserver-timeout <time>",
       "the time to wait (in seconds) when connecting to a front-end application's dev server or api server",
       parseServerTimeout,
-      DEFAULT_CONFIG.serverTimeout
+      DEFAULT_CONFIG.devserverTimeout
     )
     .option(
       "--swa-config-location <swaConfigLocation>",
@@ -127,11 +125,10 @@ export async function start(options: SWACLIConfig) {
     devServerUrl,
     apiServerUrl,
     apiPort,
-    serverTimeout,
+    devserverTimeout,
     ssl,
     sslCert,
     sslKey,
-    runBuild,
     host,
     port,
     run,
@@ -319,13 +316,15 @@ export async function start(options: SWACLIConfig) {
     SWA_CLI_APP_SSL_KEY: sslKey,
     SWA_CLI_STARTUP_COMMAND: startupCommand as string,
     SWA_CLI_VERSION: packageInfo.version,
-    SWA_CLI_SERVER_TIMEOUT: `${serverTimeout}`,
+    SWA_CLI_SERVER_TIMEOUT: `${devserverTimeout}`,
     SWA_CLI_OPEN_BROWSER: open ? "true" : "false",
   };
 
   // merge SWA CLI env variables with process.env
   process.env = {
     ...swaCLIEnv(envVarsObj),
+    // Prevent react-scripts from opening browser
+    BROWSER: "none",
   };
 
   // INFO: from here, code may access SWA CLI env vars.
@@ -348,15 +347,6 @@ export async function start(options: SWACLIConfig) {
     let startupPath = userWorkflowConfig?.appLocation;
 
     concurrentlyCommands.push({ command: `cd "${startupPath}" && ${startupCommand}`, name: "run", env, prefixColor: "gray.dim" });
-  }
-
-  if (runBuild) {
-    // run swa build
-    execSync("swa build", {
-      stdio: "inherit",
-      // Set CI to avoid extra NPM logs and potentially unwanted interactive modes
-      env: { ...process.env, CI: "1" },
-    });
   }
 
   logger.silly(`Starting the SWA emulator with the following configuration:`);
