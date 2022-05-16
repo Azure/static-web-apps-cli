@@ -27,8 +27,8 @@ const {
   SWA_CLI_DEPLOY_DRY_RUN,
   SWA_CLI_DEPLOY_ENV,
   SWA_CLI_LOGIN_CLEAR_CREDENTIALS,
-  SWA_CLI_DEV_SERVER_URL,
-  SWA_CLI_API_SERVER_URL,
+  SWA_CLI_APP_DEVSERVER_URL,
+  SWA_CLI_API_DEVSERVER_URL,
 } = swaCLIEnv();
 
 export const DEFAULT_CONFIG: SWACLIConfig = {
@@ -53,8 +53,8 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   env: SWA_CLI_DEPLOY_ENV || "preview",
   appName: SWA_CLI_APP_NAME || undefined,
   dryRun: useEnvVarOrUseDefault(SWA_CLI_DEPLOY_DRY_RUN, false),
-  devServerUrl: SWA_CLI_DEV_SERVER_URL || undefined,
-  apiServerUrl: SWA_CLI_API_SERVER_URL || undefined,
+  appDevserverUrl: SWA_CLI_APP_DEVSERVER_URL || undefined,
+  apiDevserverUrl: SWA_CLI_API_DEVSERVER_URL || undefined,
 
   // swa login options
   subscriptionId: AZURE_SUBSCRIPTION_ID || undefined,

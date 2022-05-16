@@ -28,8 +28,8 @@ describe("generateConfiguration()", () => {
       apiLocation: "e2e/fixtures/astro-node/node",
       appBuildCommand: "npm run build",
       appLocation: "e2e/fixtures/astro-node/astro preact",
-      devServerCommand: "npm run dev",
-      devServerUrl: "http://localhost:8080",
+      appDevserverCommand: "npm run dev",
+      appDevserverUrl: "http://localhost:8080",
       name: "Astro, with API: Node.js",
       outputLocation: "_site",
     });

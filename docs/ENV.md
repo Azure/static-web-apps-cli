@@ -17,8 +17,8 @@
 | SWA_CLI_STARTUP_COMMAND         | Run a custom shell command or script file at startup                                                |            |               |
 | SWA_CLI_OPEN_BROWSER            | Automatically open the CLI dev server in the default browser (`true` or `false`)                    |            | `false`       |
 | SWA_CLI_SERVER_TIMEOUT          | The time to wait (in seconds) when connecting to a front-end application's dev server or api server |            | `60`          |
-| SWA_CLI_DEV_SERVER_URL          | Connect to the dev server at this URL instead of using output location                              |            |               |
-| SWA_CLI_API_SERVER_URL          | Connect to the api server at this URL instead of using output location                              |            |               |
+| SWA_CLI_APP_DEVSERVER_URL       | Connect to the dev server at this URL instead of using output location                              |            |               |
+| SWA_CLI_API_DEVSERVER_URL       | Connect to the api server at this URL instead of using output location                              |            |               |
 | **Deploy settings**             |                                                                                                     |            |               |
 | SWA_CLI_APP_NAME                | Project name                                                                                        |            |               |
 | SWA_CLI_DEPLOYMENT_TOKEN        | Secret token used to authenticate with the Static Web Apps                                          |            |               |

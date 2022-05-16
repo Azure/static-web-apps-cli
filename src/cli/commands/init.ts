@@ -163,8 +163,8 @@ function convertToCliConfig(config: FrameworkConfig): SWACLIConfig {
     outputLocation: config.outputLocation,
     appBuildCommand: config.appBuildCommand,
     apiBuildCommand: config.apiBuildCommand,
-    run: config.devServerCommand,
-    devServerUrl: config.devServerUrl,
+    run: config.appDevserverCommand,
+    appDevserverUrl: config.appDevserverUrl,
   };
 }
 
@@ -214,16 +214,16 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
     },
     {
       type: "text",
-      name: "devServerCommand",
+      name: "appDevserverCommand",
       message: "What command do you use to run your app for development? (optional)",
-      initial: detectedConfig.devServerCommand,
+      initial: detectedConfig.appDevserverCommand,
       format: trimValue,
     },
     {
       type: "text",
-      name: "devServerUrl",
+      name: "appDevserverUrl",
       message: "What is your development server url (optional)",
-      initial: detectedConfig.devServerUrl,
+      initial: detectedConfig.appDevserverUrl,
       format: trimValue,
     },
   ]);
@@ -238,8 +238,8 @@ function printFrameworkConfig(config: FrameworkConfig) {
   logger.log(`- API location: ${chalk.green(config.apiLocation ?? "")}`);
   logger.log(`- App build command: ${chalk.green(config.appBuildCommand ?? "")}`);
   logger.log(`- API build command: ${chalk.green(config.apiBuildCommand ?? "")}`);
-  logger.log(`- Dev command: ${chalk.green(config.devServerCommand ?? "")}`);
-  logger.log(`- Dev server URL: ${chalk.green(config.devServerUrl ?? "")}\n`);
+  logger.log(`- App dev server command: ${chalk.green(config.appDevserverCommand ?? "")}`);
+  logger.log(`- App dev server URL: ${chalk.green(config.appDevserverUrl ?? "")}\n`);
 }
 
 // function isEmptyFolder(path: string) {

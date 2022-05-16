@@ -139,11 +139,11 @@
           "description": "The folder containing the source code of the API application",
           "type": "string"
         },
-        "devServerUrl": {
+        "appDevserverUrl": {
           "description": "Connect to the dev server at this URL instead of using output location",
           "type": "string"
         },
-        "apiServerUrl": {
+        "apiDevserverUrl": {
           "description": "Connect to the api server at this URL instead of using api location",
           "type": "string"
         },
