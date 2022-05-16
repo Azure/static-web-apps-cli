@@ -46,10 +46,10 @@ export default function registerCommand(program: Command) {
     .option("--ssl-key <sslKeyLocation>", "the SSL key (.key) to use when enabling HTTPS", DEFAULT_CONFIG.sslKey)
     .option("--run <startupScript>", "run a custom shell command or script file at startup", DEFAULT_CONFIG.run)
     .option<number>(
-      "--server-timeout <time>",
+      "--devserver-timeout <time>",
       "the time to wait (in seconds) when connecting to a front-end application's dev server or api server",
       parseServerTimeout,
-      DEFAULT_CONFIG.serverTimeout
+      DEFAULT_CONFIG.devserverTimeout
     )
     .option(
       "--swa-config-location <swaConfigLocation>",
@@ -125,7 +125,7 @@ export async function start(options: SWACLIConfig) {
     devServerUrl,
     apiServerUrl,
     apiPort,
-    serverTimeout,
+    devserverTimeout,
     ssl,
     sslCert,
     sslKey,
@@ -316,7 +316,7 @@ export async function start(options: SWACLIConfig) {
     SWA_CLI_APP_SSL_KEY: sslKey,
     SWA_CLI_STARTUP_COMMAND: startupCommand as string,
     SWA_CLI_VERSION: packageInfo.version,
-    SWA_CLI_SERVER_TIMEOUT: `${serverTimeout}`,
+    SWA_CLI_SERVER_TIMEOUT: `${devserverTimeout}`,
     SWA_CLI_OPEN_BROWSER: open ? "true" : "false",
   };
 
