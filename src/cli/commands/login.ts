@@ -14,17 +14,17 @@ const { readFile, writeFile } = fsPromises;
 
 export function addSharedLoginOptionsToCommand(command: Command) {
   command
-    .option("--subscription-id <subscriptionId>", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
-    .option("--resource-group <resourceGroupName>", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroupName)
-    .option("--tenant-id <tenantId>", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
-    .option("--client-id <clientId>", "Azure client ID", DEFAULT_CONFIG.clientId)
-    .option("--client-secret <clientSecret>", "Azure client secret", DEFAULT_CONFIG.clientSecret)
-    .option("--app-name <appName>", "Azure Static Web App application name", DEFAULT_CONFIG.appName)
-    .option("--clear-credentials", "clear persisted credentials before login", DEFAULT_CONFIG.clearCredentials)
+    .option("-S, --subscription-id <subscriptionId>", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
+    .option("-R, --resource-group <resourceGroupName>", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroupName)
+    .option("-T, --tenant-id <tenantId>", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
+    .option("-C, --client-id <clientId>", "Azure client ID", DEFAULT_CONFIG.clientId)
+    .option("-CS, --client-secret <clientSecret>", "Azure client secret", DEFAULT_CONFIG.clientSecret)
+    .option("-n, --app-name <appName>", "Azure Static Web App application name", DEFAULT_CONFIG.appName)
+    .option("-cc, --clear-credentials", "clear persisted credentials before login", DEFAULT_CONFIG.clearCredentials)
 
-    .option("--use-keychain", "enable using the operating system native keychain for persistent credentials", DEFAULT_CONFIG.useKeychain)
+    .option("-u, --use-keychain", "enable using the operating system native keychain for persistent credentials", DEFAULT_CONFIG.useKeychain)
     // Note: Commander does not automatically recognize the --no-* option, so we have to explicitly use --no-use-keychain- instead
-    .option("--no-use-keychain", "disable using the operating system native keychain", !DEFAULT_CONFIG.useKeychain);
+    .option("-nu, --no-use-keychain", "disable using the operating system native keychain", !DEFAULT_CONFIG.useKeychain);
 }
 
 export default function registerCommand(program: Command) {
