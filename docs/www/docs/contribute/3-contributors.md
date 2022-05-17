@@ -1,6 +1,6 @@
 ---
 id: contributors
-title: Contributors 🏆
+title: Contributors
 sidebar_position: 3
 ---
 
