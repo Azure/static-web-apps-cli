@@ -82,6 +82,12 @@ const config = {
         items: [
           {
             type: "doc",
+            docId: "use/install",
+            position: "left",
+            label: "Get Started",
+          },
+          {
+            type: "doc",
             docId: "intro",
             position: "left",
             label: "About",
@@ -90,13 +96,7 @@ const config = {
             type: "doc",
             docId: "cli/swa",
             position: "left",
-            label: "CLI",
-          },
-          {
-            type: "doc",
-            docId: "use/install",
-            position: "left",
-            label: "Get Started",
+            label: "Docs",
           },
           {
             type: "doc",
@@ -104,9 +104,7 @@ const config = {
             position: "left",
             label: "Contribute",
           },
-          /*{to: '/blog', label: 'Blog', position: 'right'},*/
-          { to: "https://github.com/Azure/static-web-apps-cli/discussions", label: "Discussions", position: "right" },
-          { to: "https://stackoverflow.com/questions/tagged/swa-cli", label: "StackOverflow", position: "right" },
+          { to: "https://stackoverflow.com/questions/tagged/swa-cli", label: "StackOverflow", position: "left" },
           {
             href: "https://github.com/Azure/static-web-apps-cli",
             position: "right",

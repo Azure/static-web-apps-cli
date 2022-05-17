@@ -49,6 +49,7 @@ This allows you to:
 - use [npm run format](#formatting-your-source-code) to format source when getting ready to PR.
 
 We strongly agree with the recommendation to **[use the Node Version Manager (nvm)](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)** to manage your installs - [nvm](https://github.com/nvm-sh/nvm) makes it easy to install, and switch between, [multiple versions](https://nodejs.org/en/about/releases/) of Node, directly from the command line.
+
 :::info
 **Version Requirements: **
 Installed versions must meet the `engines` requirements for this project.
@@ -168,39 +169,35 @@ $  ls dist
 Validate that the CLI build works by running the following command:
 
 ```shell
-node dist/cli/bin.js
+node dist/cli/bin.js -h
 ```
 
 You should see _something like this_. Your exact output will depend on the release version you are working with.
 
 ```shell
-Welcome to Azure Static Web Apps CLI (0.8.4-alpha)
+Welcome to Azure Static Web Apps CLI
 
-Usage: swa <command> [options]
+Usage: swa [command] [options]
 
 Options:
-  -v, --version                                       output the version number
-  --verbose [prefix]                                  enable verbose output. Values are:
-                                                      silly,info,log,silent (default: "log", preset:
-                                                      "log")
-  --config <path>                                     path to swa-cli.config.json file to use (default:
-                                                      "swa-cli.config.json")
-  --print-config                                      print all resolved options (default: false)
-  --swa-config-location <swaConfigLocation>           the directory where the staticwebapp.config.json
-                                                      file is located (default: "./")
-  -h, --help                                          display help for command
+  -v, --version                                                output the version number
+  -V, --verbose [prefix]                                       enable verbose output. Values are: silly,info,log,silent (default: "log", preset: "log")
+  -c, --config <path>                                          path to swa-cli.config.json file to use (default: "swa-cli.config.json")
+  -cn, --config-name <name>                                    name of the configuration to use
+  -g, --print-config                                           print all resolved options (default: false)
+  -h, --help                                                   display help for command
 
 Commands:
-  login [options]                                     login into Azure Static Web Apps
-  start [options] [outputLocation]                    Start the emulator from a directory or bind to a
-                                                      dev server
-  deploy [options] [outputLocation]                   Deploy the current project to Azure Static Web Apps
-  init [options] [configurationName]                  initialize a new static web app project
-  build [options] [configurationName|outputLocation]  build your project
-  help [command]                                      display help for command
+  login [options]                                              login into Azure
+  start [options] [configName|outputLocation|appDevserverUrl]  start the emulator from a directory or bind to a dev server
+  deploy [options] [configName|outputLocation]                 deploy the current project to Azure Static Web Apps
+  init [options] [configName]                                  initialize a new static web app project
+  build [options] [configName|appLocation]                     build your project
 
-Documentation:
-  https://aka.ms/swa/cli-local-development
+  Type "swa" to get started and deploy your project.
+
+  Documentation:
+    https://aka.ms/swa/cli-local-development
 
 ```
 
@@ -266,7 +263,7 @@ The [`npm link`](https://docs.npmjs.com/cli/v8/commands/npm-link) docs have more
 
 3. For a local implementation of `xyz`, use `npm link ./` in the root folder (location of `package.json`). This converts `{prefix}/lib/node_modules/xyz` to a _symbolic link_ to your local distribution, making it the default for resolving that dependency.
 
-:::note Troubleshooting 🐞
+:::note Troubleshooting
 The `npm unlink` command is an alias for `npm uninstall` which may not work as intuitively as you might expect [(_see issue_)](https://github.com/npm/npm/issues/4005). As recommended there,
 
 - use `npm unlink **-g**` to remove symbolic link from global folder
@@ -305,25 +302,25 @@ A better approach is to configure the settings in your preferred IDE to auto-for
 - [https://github.com/t9md/atom-mprettier](https://github.com/t9md/atom-mprettier)
 - [https://github.com/duailibe/atom-miniprettier](https://github.com/duailibe/atom-miniprettier)
 
-### Emacs:
+### Emacs
 
 - [https://github.com/prettier/prettier-emacs](https://github.com/prettier/prettier-emacs)
 - [https://github.com/jscheid/prettier.el](https://github.com/jscheid/prettier.el)
 - [https://github.com/raxod502/apheleia](https://github.com/raxod502/apheleia)
 
-### Espresso:
+### Espresso
 
 - [https://github.com/eablokker/espresso-prettier](https://github.com/eablokker/espresso-prettier)
 
-### Nova:
+### Nova
 
 - [https://extensions.panic.com/extensions/alexanderweiss/alexanderweiss.prettier](https://extensions.panic.com/extensions/alexanderweiss/alexanderweiss.prettier)
 
-### Sublime Text:
+### Sublime Text
 
 - [https://packagecontrol.io/packages/JsPrettier](https://packagecontrol.io/packages/JsPrettier)
 
-### Vim:
+### Vim
 
 - [https://github.com/prettier/vim-prettier](https://github.com/prettier/vim-prettier)
 - [https://github.com/sbdchd/neoformat](https://github.com/sbdchd/neoformat)
