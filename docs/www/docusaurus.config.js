@@ -1,34 +1,52 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+const lightCodeTheme = require("prism-react-renderer/themes/github");
+const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Static Web Apps CLI (Preview)',
-  tagline: 'A Local Development Tool For Azure Static Web Apps',
-  onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon.ico',
-  url: 'https://azure.github.io',  // Update for Org
-  baseUrl: '/',
-  organizationName: 'azure',       // Update for Org
-  projectName: 'static-web-apps-cli', 
-  deploymentBranch: `gh-pages`, 
+  title: "Static Web Apps CLI (Preview)",
+  tagline: "A Local Development Tool For Azure Static Web Apps",
+  onBrokenLinks: "throw",
+  onBrokenMarkdownLinks: "warn",
+  favicon: "img/favicon.ico",
+
+  /* PICK A VERSION FROM STAGING vs. PRODUCTION */
+  url: "https://azure.github.io",
+  baseUrl: "/static-web-apps-cli/", //  Needs to be "/" if deploying to SWA
+  organizationName: "azure",
+  projectName: "static-web-apps-cli",
+  deploymentBranch: `gh-pages`,
+
+  /* -- USE FOR STAGING VERSION (@nitya)
+  url: 'https://nitya.github.io',
+  baseUrl: '/swa-cli-docs/',
+  organizationName: 'nitya',
+  projectName: 'swa-cli-docs',
+  deploymentBranch: `gh-pages`,
+  */
+
+  /* -- USE FOR PRODUCTION VERSION (@azure)
+  url: 'https://azure.github.io',
+  baseUrl: '/static-web-apps-cli/',
+  organizationName: 'azure',
+  projectName: 'static-web-apps-cli',
+  deploymentBranch: `gh-pages`,
+  */
 
   presets: [
     [
-      'classic',
+      "classic",
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
-          sidebarPath: require.resolve('./sidebars.js'),
+          sidebarPath: require.resolve("./sidebars.js"),
           // Please change this to your repo.
-          editUrl: 'https://github.com/azure/static-web-apps-cli/tree/main/docs/www/',
+          editUrl: "https://github.com/azure/static-web-apps-cli/tree/main/docs/www/",
         },
         blog: false,
-        /** 
+        /**
         blog: {
           blogTitle: 'What\'s New in SWA CLI!',
           blogDescription: 'Release notes and announcements from the Azure Static Web Apps CLI team',
@@ -46,7 +64,7 @@ const config = {
         },
         */
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
+          customCss: require.resolve("./src/css/custom.css"),
         },
       }),
     ],
@@ -56,49 +74,49 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'SWA CLI',
+        title: "SWA CLI",
         logo: {
-          alt: 'SWA CLI Logo',
-          src: 'img/logo.svg',
+          alt: "SWA CLI Logo",
+          src: "img/logo.svg",
         },
         items: [
           {
-            type: 'doc',
-            docId: 'intro',
-            position: 'left',
-            label: 'About',
+            type: "doc",
+            docId: "intro",
+            position: "left",
+            label: "About",
           },
           {
-            type: 'doc',
-            docId: 'cli/swa',
-            position: 'left',
-            label: 'CLI',
+            type: "doc",
+            docId: "cli/swa",
+            position: "left",
+            label: "CLI",
           },
           {
-            type: 'doc',
-            docId: 'use/install',
-            position: 'left',
-            label: 'Get Started',
+            type: "doc",
+            docId: "use/install",
+            position: "left",
+            label: "Get Started",
           },
           {
-            type: 'doc',
-            docId: 'contribute/intro',
-            position: 'left',
-            label: 'Contribute',
+            type: "doc",
+            docId: "contribute/intro",
+            position: "left",
+            label: "Contribute",
           },
           /*{to: '/blog', label: 'Blog', position: 'right'},*/
-          {to: 'https://github.com/Azure/static-web-apps-cli/discussions', label: 'Discussions', position: 'right'},
-          {to: 'https://stackoverflow.com/questions/tagged/swa-cli', label: 'StackOverflow', position: 'right'},
+          { to: "https://github.com/Azure/static-web-apps-cli/discussions", label: "Discussions", position: "right" },
+          { to: "https://stackoverflow.com/questions/tagged/swa-cli", label: "StackOverflow", position: "right" },
           {
-            href: 'https://github.com/Azure/static-web-apps-cli',
-            position: 'right',
-            className: 'header-github-link',
-            'aria-label': 'GitHub repository',
+            href: "https://github.com/Azure/static-web-apps-cli",
+            position: "right",
+            className: "header-github-link",
+            "aria-label": "GitHub repository",
           },
         ],
       },
       footer: {
-        style: 'dark',
+        style: "dark",
         /*
         links: [
           {
@@ -154,24 +172,21 @@ const config = {
           },
         ],
         */
-        copyright: `Copyright © ${new Date().getFullYear()} Microsoft | Built with Docusaurus - Icons from Noun Project.`,
-      }, 
+        copyright: `Copyright © ${new Date().getFullYear()} Microsoft | Built with Docusaurus and Iconcloud.design.`,
+      },
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
       },
 
       announcementBar: {
-        id: 'Landing Page Banner',
+        id: "Landing Page Banner",
         content:
-          '<b>Join us May 19 at the <a href="https://aka.ms/swaanniversary">#SWAanniversary</a> event as we launch SWA CLI v1.0!</b>',
-        backgroundColor: '#F50057',
-        textColor: '#FFFFFF',
+          '<b> If you find SWA CLI useful <a href="https://github.com/Azure/static-web-apps-cli/stargazers"> do give us a ⭐️  on GitHub</a> - we apprecite your support! </a></b>',
+        backgroundColor: "#F50057",
+        textColor: "#FFFFFF",
         isCloseable: false,
       },
-      
-
-
     }),
 };
 
