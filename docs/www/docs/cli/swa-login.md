@@ -5,8 +5,8 @@ title: "swa login"
 
 ## Synopsis
 
-```
-Usage: swa login [options]
+```bash
+swa login [options]
 ```
 
 ## Description
@@ -34,25 +34,25 @@ Here are the options you can use with `swa login`:
 
 Interactive login
 
-```
+```bash
 swa login
 ```
 
 Interactive login without persisting credentials
 
-```
+```bash
 swa login --no-use-keychain
 ```
 
 Log in into specific tenant
 
-```
+```bash
 swa login --tenant-id 00000000-0000-0000-0000-000000000000
 ```
 
 Log in using a specific subscription, resource group or an application
 
-```
+```bash
 swa login --subscription my-subscription \
           --resource-group my-resource-group \
           --app-name my-static-site
@@ -60,7 +60,7 @@ swa login --subscription my-subscription \
 
 Login using service principal
 
-```
+```bash
 swa login --tenant-id 00000000-0000-0000-0000-000000000000 \
           --client-id 00000000-0000-0000-0000-000000000000 \
           --client-secret 0000000000000000000000000000000000000000000000000000000000000000

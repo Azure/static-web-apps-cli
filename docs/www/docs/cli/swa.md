@@ -4,8 +4,8 @@ sidebar_position: 1
 
 ## Synopsis
 
-```
-Usage: swa [command] [options]
+```bash
+swa [command] [options]
 ```
 
 ## Description
@@ -22,50 +22,22 @@ This is the commandline utility for streamlining local development for Azure Sta
 
 Here are the options you can use with `swa`:
 
-```
-// output the version number
--v, --version
-
-// enable verbose output.
-//   Values are: silly,info,log,silent
-//   (default: "log", preset: "log")
---verbose [prefix]
-
-// specify configuration file name
-//   default: "swa-cli.config.json"
---config-name <name>
-
-// specify configuration file location (path)
-//  default:  current directory
---config <path>
-
-// print all resolved configuration options
---print-config
-
-// display help for command
--h, --help
-```
+- `-v, --version`: output the version number
+- `-V, --verbose [prefix]`: enable verbose output. Values are: silly,info,log,silent (default: "log", preset: "log")
+- `-c, --config <path>`: path to swa-cli.config.json file to use (default: "swa-cli.config.json")
+- `-cn, --config-name <name>`: name of the configuration to use
+- `-g, --print-config`: print all resolved options (default: false)
+- `-h, --help`: display help for command
 
 ## Commands
 
 Here are the currently supported `swa` commands. Use `swa <command> --help` to learn about options and usage for that particular command.
 
-```
-// login to Azure
-login [options]
-
-// start the emulator from a directory or bind to a dev server
-start [options] [configName|outputLocation|devServerUrl
-
-// deploy the current project to Azure Static Web Apps
-deploy [options] [configName|outputLocation]
-
-// initialize a new static web app project
-init [options] [configName]
-
-// build your project
-build [options] [configName|appLocation]
-```
+- [`login`](swa-login): login into Azure
+- [`start`](swa-start): start the emulator from a directory or bind to a dev server
+- [`deploy`](swa-deploy): deploy the current project to Azure Static Web Apps
+- [`init`](swa-init): initialize a new static web app project
+- [`build`](swa-build): build your project
 
 ## See Also
 

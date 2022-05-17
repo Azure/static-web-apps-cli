@@ -44,10 +44,8 @@ The Static Webs CLI provides a `--print-config` option that you can use to deter
 
 Here is an example of what that output looks like when run on a new project (i.e., shows default settings)
 
-```
+```bash
 swa --print-config
-
-Welcome to Azure Static Web Apps CLI (1.0.0-preview)
 
 Options:
  - port: 4280
@@ -89,13 +87,13 @@ Use `swa init` to kickstart the workflow to create a configuration file for a ne
 
 By default the process creates these settings in a `swa-cli.config.json` in the _current working directory_ of your project. This is the default file name/location used by `swa` when searching for project configuration info.
 
-```
+```bash
 swa --config <path>
 ```
 
 If the file contains only one named configuration, it is used by default. If multiple configurations are defined, specify the one to use at commandline
 
-```
+```bash
 swa --config-name
 ```
 

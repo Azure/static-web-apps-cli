@@ -5,8 +5,8 @@ title: "swa deploy"
 
 ## Synopsis
 
-```
-Usage: swa deploy [configName|outputLocation] [options]
+```bash
+swa deploy [configName|outputLocation] [options]
 ```
 
 ## Description
@@ -173,32 +173,32 @@ Here are the options you can use with `swa deploy`:
 
 Deploy using a deployment token
 
-```
+```bash
 swa deploy ./dist/ --api-location ./api/ --deployment-token <token>
 ```
 
 Deploy using a deployment token from the environment variables
 
-```
+```bash
 SWA_CLI_DEPLOYMENT_TOKEN=123 swa deploy ./dist/ --api-location ./api/
 ```
 
 Deploy using `swa-cli.config.json` file
 
-```
+```bash
 swa deploy
 swa deploy myconfig
 ```
 
 Print the deployment token
 
-```
+```bash
 swa deploy --print-token
 ```
 
 Deploy to a specific environment
 
-```
+```bash
 swa deploy --env production
 ```
 

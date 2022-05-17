@@ -57,7 +57,7 @@ Installed versions must meet the `engines` requirements for this project.
 
 The `engines` object defines the minimum versions of Node.js and npm that are required for SWA CLI, in this [package.json](../../../../package.json). The object looks something like this:
 
-```
+```json
   "engines": {
     "node": ">=14.0.0",
     "npm": ">=6.0.0"
@@ -66,7 +66,7 @@ The `engines` object defines the minimum versions of Node.js and npm that are re
 
 This indicates that the current SWA CLI works with a minimum version of Node.js v14.0.0 and npm v6.0.0. Check your current dev environment versions by using the `--version` option. Here's an example of usage:
 
-```
+```bash
 $ node --version
 v16.2.0
 
@@ -76,7 +76,7 @@ $ npm --version
 
 Need to change versions to meet requirements? Use [nvm](https://github.com/nvm-sh/nvm):
 
-```
+```bash
 // List locally-installed versions
 nvm list
 
@@ -108,7 +108,7 @@ The SWA CLI codebase is hosted [here on GitHub](https://github.com/azure/static-
 
 **First**, fork the repository and clone it for local development.
 
-```shell
+```bash
 git clone https://github.com/{YOUR_GITHUB_ACCOUNT}/static-web-apps-cli.git
 ```
 
@@ -120,13 +120,13 @@ git clone -b BRANCH_NAME https://github.com/{YOUR_GITHUB_ACCOUNT}/static-web-app
 
 **Next**, switch your working directory to the _SWA CLI_ project root:
 
-```shell
+```bash
 cd static-web-apps-cli
 ```
 
 **Next**, add an `upstream` remote pointing back to the original SWA CLI repository. This makes it easier to fetch updates and contribute PRs.
 
-```shell
+```bash
 git remote add upstream https://github.com/azure/static-web-apps-cli.git
 ```
 
@@ -136,7 +136,7 @@ git remote add upstream https://github.com/azure/static-web-apps-cli.git
 
 The [`package.json`](../../../../package.json) file describes the project's dependencies. Use the following command to setup your local development environment. The process may take a few minutes.
 
-```shell
+```bash
 npm install
 ```
 
@@ -144,13 +144,13 @@ npm install
 
 To build the SWA CLI distribution, run the folllowing command. This may take a few minutes.
 
-```shell
+```bash
 npm run build
 ```
 
 On successful completion, it creates a `dist/` folder with the following contents (output cleaned up for clarity).
 
-```shell
+```bash
 $  ls dist
 
   cli/
@@ -168,13 +168,13 @@ $  ls dist
 
 Validate that the CLI build works by running the following command:
 
-```shell
+```bash
 node dist/cli/bin.js -h
 ```
 
 You should see _something like this_. Your exact output will depend on the release version you are working with.
 
-```shell
+```bash
 Welcome to Azure Static Web Apps CLI
 
 Usage: swa [command] [options]
@@ -217,13 +217,13 @@ If you forked the project with the intent of contributing back to the original c
 
 Use this command to run all test suites on your project's PR-ready branch before you initiate the pull request.
 
-```
+```bash
 npm test
 ```
 
 The process may take a few minutes to complete all test suites - track progress by monitoring the (verbose) test output. A successful run will likely end with something like this:
 
-```
+```bash
 ..
 ..
 Test Suites: 27 passed, 27 total
@@ -240,13 +240,13 @@ A good way to validate the changes you make is to use with with a real applicati
 
 Run the following command in the root folder where `package.json` is located:
 
-```shell
+```bash
 npm link ./
 ```
 
 Once command completes successfully,run `swa` from any directory on your local development system.
 
-```shell
+```bash
 cd <some-project-dir>
 swa --h
 ```
@@ -274,13 +274,13 @@ The `npm unlink` command is an alias for `npm uninstall` which may not work as i
 
 When making multiple changes to project source files, you might want to get instantaneous feedback on how these impact the project build. Use the following command instead of `npm run build`:
 
-```shell
+```bash
 npm run watch
 ```
 
 You should see console output similar to that shown below. Now, as you make changes to files (and save them), the project will be automatically rebuilt and status updated on the terminal.
 
-```
+```bash
 Starting compilation in watch mode...
 
 Found 0 errors. Watching for file changes.
@@ -290,7 +290,7 @@ Found 0 errors. Watching for file changes.
 
 SWA CLI uses [prettier](https://prettier.io/) to format the source code. We require code to be formatted properly in the Pull Request (PR) - else the CI workflow will fail and your PR cannot be merged. To resolve this, **run this command to format _all_ source code**
 
-```shell
+```bash
 npm run format
 ```
 
