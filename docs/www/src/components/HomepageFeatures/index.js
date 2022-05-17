@@ -25,14 +25,14 @@ const FeatureList = [
     ),
   },
   {
-    title: "Configure",
-    Svg: require("@site/static/img/landing-configure-icon.svg").default,
-    link: "docs/cli/env-vars",
+    title: "Init",
+    Svg: require("@site/static/img/landing-init-icon.svg").default,
+    link: "docs/cli/swa-init",
     description: (
       <>
-        Setup <b>environment variables</b>
+        Setup your project
         <br />
-        and <b>config settings</b>.
+        using <b>swa init</b>
       </>
     ),
   },
@@ -45,18 +45,6 @@ const FeatureList = [
         Authenticate with Azure services
         <br /> using <b>swa login </b>
         <br />
-      </>
-    ),
-  },
-  {
-    title: "Init",
-    Svg: require("@site/static/img/landing-init-icon.svg").default,
-    link: "docs/cli/swa-init",
-    description: (
-      <>
-        Scaffold your static web app
-        <br />
-        using <b>swa init</b>
       </>
     ),
   },
@@ -79,6 +67,18 @@ const FeatureList = [
       <>
         Build/deploy to multiple environments
         <br /> using <b>swa deploy</b>
+      </>
+    ),
+  },
+  {
+    title: "Configure",
+    Svg: require("@site/static/img/landing-configure-icon.svg").default,
+    link: "docs/cli/env-vars",
+    description: (
+      <>
+        Setup <b>environment variables</b>
+        <br />
+        and <b>config settings</b>.
       </>
     ),
   },
