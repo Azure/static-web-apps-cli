@@ -3,10 +3,6 @@ sidebar_position: 7
 title: Environment Vars
 ---
 
-:::danger TO BE UPDATED
-These environment variables reflect the v0.8.3 preview release. They are currently being updated for v1.0.0-preview.
-:::
-
 # Environment Variables
 
 | Environment Variable          | Purpose                                                                            | Read Only? | Default Value |

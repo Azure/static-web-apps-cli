@@ -2,10 +2,6 @@
 sidebar_position: 1
 ---
 
-:::info Version
-Updated for Azure Static Web Apps CLI (1.0.0-preview)
-:::
-
 ## Synopsis
 
 ```

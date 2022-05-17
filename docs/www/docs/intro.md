@@ -81,11 +81,6 @@ The Static Web Apps CLI is a convenience for local development and testing. It u
 
 ## Contributing to CLI
 
-:::info PROJECT STATUS
-
-Static Web Apps CLI is expected to become generally available by the end of **May 2022**. It is currently in public preview (v0.8.3)
-:::
-
 This is an open-source project made for the benefit of our developer community. Your feedback and contributions are key to its success.
 
 **Here are some ways to help:**

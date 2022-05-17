@@ -6,7 +6,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: "Static Web Apps CLI (Preview)",
+  title: "Static Web Apps CLI",
   tagline: "A Local Development Tool For Azure Static Web Apps",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
