@@ -1,5 +1,6 @@
 ---
 sidebar_position: 1
+title: "swa"
 ---
 
 ## Synopsis
@@ -18,9 +19,13 @@ This is the commandline utility for streamlining local development for Azure Sta
 - start emulator or bind to dev server
 - deploy project to Azure Static Web Apps
 
+If you don't enter any command and run `swa`, it will act as a macro command shorcut for `swa init`, `swa build`, `swa login` and `swa deploy`. The `swa init` command will only be executed if the `swa-cli.config.json` does not exist in the current folder.
+
+The best way to get started is to use the `swa` command and follow the interactive prompts.
+
 ## Options
 
-Here are the options you can use with `swa`:
+Here are global options that you can use with any command supported by the `swa` CLI:
 
 - `-v, --version`: output the version number
 - `-V, --verbose [prefix]`: enable verbose output. Values are: silly,info,log,silent (default: "log", preset: "log")
@@ -34,10 +39,18 @@ Here are the options you can use with `swa`:
 Here are the currently supported `swa` commands. Use `swa <command> --help` to learn about options and usage for that particular command.
 
 - [`login`](swa-login): login into Azure
+- [`init`](swa-init): initialize a new static web app project
 - [`start`](swa-start): start the emulator from a directory or bind to a dev server
 - [`deploy`](swa-deploy): deploy the current project to Azure Static Web Apps
-- [`init`](swa-init): initialize a new static web app project
 - [`build`](swa-build): build your project
+
+## Usage
+
+Configure, build and deploy your project to Azure Static Web Apps:
+
+```bash
+swa
+```
 
 ## See Also
 
