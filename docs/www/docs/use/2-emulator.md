@@ -2,7 +2,7 @@
 sidebar_position: 3
 ---
 
-# 2. Start The Emulator
+# 2. Start the Emulator
 
 The SWA Emulator is run by using the `swa start` command.
 
