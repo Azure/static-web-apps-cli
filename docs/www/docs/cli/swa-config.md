@@ -1,29 +1,25 @@
 ---
 sidebar_position: 8
-title: Configuring CLI
+title: Configuring file
 ---
 
-:::info Version
-Updated for Azure Static Web Apps CLI (1.0.0-preview)
-:::
-
-## Configuration
+## `swa-cli.config.json`
 
 The SWA CLI gets configuration information for your Azure Static Web Apps in one of two ways:
 
 - from CLI options (passed in at runtime)
 - from a CLI configuration file (created and stored in project)
 
+:::info
 By default, the SWA CLI looks for a configuration file called **`swa-cli.config.json`** in the **current directory**.
-
-**Configuration File:**
+:::
 
 The configuration file can contain multiple configurations (e.g., one per project), each identified by a unique configuration name.
 
 - If only a single configuration is present in the `swa-cli.config.json` file, running `swa start` will use it by default.
-- If options are loaded from a config file, no options passed in via command line will be respected. For example if we use `swa start app --ssl=true`, the `ssl=true` option will not be picked up by the CLI.
+- If options are loaded from a config file, no options passed in via command line will be respected. For example if we use `swa start app --ssl`, the `ssl=true` option will not be picked up by the CLI.
 
-**Configuration File Example:**
+## Configuration File Example
 
 ```json
 {
@@ -37,6 +33,24 @@ The configuration file can contain multiple configurations (e.g., one per projec
   }
 }
 ```
+
+## Initialize a Configuration File
+
+Use `swa init` to kickstart the workflow to create a configuration file for a new or existing project. If the project exists, `swa init` will try to make educated guesses on the configuration settings for you, with ability to override it during creation.
+
+By default the process creates these settings in a `swa-cli.config.json` in the _current working directory_ of your project. This is the default file name/location used by `swa` when searching for project configuration info.
+
+```bash
+swa --config <path>
+```
+
+If the file contains only one named configuration, it is used by default. If multiple configurations are defined, specify the one to use at commandline
+
+```bash
+swa --config-name
+```
+
+When the configuration file option is used, the settings are stored in JSON format. Once created, you can manually edit the file to update settings (if preferred) or use `swa init` to make updates.
 
 ## View Configuration
 
@@ -79,25 +93,15 @@ Options:
  - printConfig: true
 ```
 
-Running `swa --print-config` will provide the current configuration defaults - if the project has not yet defined a configuration file, this will automatically trigger the `swa init` workflow to help you create one.
+Running `swa --print-config` will provide the current configuration defaults.
 
-## Init Configuration
+:::info
+if the project has not yet defined a configuration file, this will automatically trigger the `swa init` workflow to help you create one.
+:::
 
-Use `swa init` to kickstart the workflow to create a configuration file for a new or existing project. If the project exists, `swa init` will try to make educated guesses on the configuration settings for you, with ability to override it during creation.
+## Validate Configuration
 
-By default the process creates these settings in a `swa-cli.config.json` in the _current working directory_ of your project. This is the default file name/location used by `swa` when searching for project configuration info.
-
-```bash
-swa --config <path>
-```
-
-If the file contains only one named configuration, it is used by default. If multiple configurations are defined, specify the one to use at commandline
-
-```bash
-swa --config-name
-```
-
-When the configuration file option is used, the settings are stored in JSON format. Once created, you can manually edit the file to update settings (if preferred) or use `swa init` to make updates.
+The `swa-cli.config.json` file can be validated against the following schema: https://aka.ms/azure/static-web-apps-cli/schema
 
 ## See Also
 
