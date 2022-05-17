@@ -32,6 +32,7 @@ Here are the options you can use with `swa build`:
 - `-A, --app-build-command <command>`: the command used to build your app
 - `-I, --api-build-command <command>`: the command used to build your api
 - `--auto`: automatically detect how to build your app and api (default: false)
+- `-h, --help`: display help for command
 
 ## Usage
 
@@ -51,6 +52,12 @@ Build your API:
 
 ```bash
 swa build --api-location ./api --app-build-command "npm run build"
+```
+
+Use the configuration named "myApp" in `swa-cli.config.json` to build your app:
+
+```bash
+swa build myApp
 ```
 
 ## See Also
