@@ -23,15 +23,15 @@ This command is used to authenticate with Azure and get a deployment token that 
 
 Here are the options you can use with `swa login`:
 
-- `--subscription-id <subscriptionId>`: Azure subscription ID used by this project (default: `process.env.AZURE_SUBSCRIPTION_ID`)
-- `--resource-group <resourceGroupName>`: Azure resource group used by this project
-- `--tenant-id <tenantId>`: Azure tenant ID (default: `process.env.AZURE_TENANT_ID`)
-- `--client-id <clientId>`: Azure client ID
-- `--client-secret <clientSecret>`: Azure client secret
-- `--app-name <appName>`: Azure Static Web App application name
-- `--clear-credentials`: clear persisted credentials before login (default: `false`)
-- `--use-keychain`: enable using the operating system native keychain for persistent credentials (default: `true`)
-- `--no-use-keychain`: disable using the operating system native keychain
+- `-S, --subscription-id <subscriptionId>`: Azure subscription ID used by this project (default: `process.env.AZURE_SUBSCRIPTION_ID`)
+- `-R, --resource-group <resourceGroupName>`: Azure resource group used by this project
+- `-T, --tenant-id <tenantId>`: Azure tenant ID (default: `process.env.AZURE_TENANT_ID`)
+- `-C, --client-id <clientId>`: Azure client ID
+- `-CS, --client-secret <clientSecret>`: Azure client secret
+- `-n, --app-name <appName>`: Azure Static Web App application name
+- `-cc, --clear-credentials`: clear persisted credentials before login (default: `false`)
+- `-u, --use-keychain`: enable using the operating system native keychain for persistent credentials (default: `true`)
+- `-u, --no-use-keychain`: disable using the operating system native keychain
 - `-h, --help`: display help for command
 
 ## Usage
