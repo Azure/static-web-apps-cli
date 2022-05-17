@@ -19,22 +19,6 @@ const config = {
   projectName: "static-web-apps-cli",
   deploymentBranch: `gh-pages`,
 
-  /* -- USE FOR STAGING VERSION (@nitya)
-  url: 'https://nitya.github.io',
-  baseUrl: '/swa-cli-docs/',
-  organizationName: 'nitya',
-  projectName: 'swa-cli-docs',
-  deploymentBranch: `gh-pages`,
-  */
-
-  /* -- USE FOR PRODUCTION VERSION (@azure)
-  url: 'https://azure.github.io',
-  baseUrl: '/static-web-apps-cli/',
-  organizationName: 'azure',
-  projectName: 'static-web-apps-cli',
-  deploymentBranch: `gh-pages`,
-  */
-
   presets: [
     [
       "classic",
@@ -180,8 +164,8 @@ const config = {
       announcementBar: {
         id: "Landing Page Banner",
         content:
-          '<b> If you find SWA CLI useful <a href="https://github.com/Azure/static-web-apps-cli/stargazers"> do give us a ⭐️  on GitHub</a> - we apprecite your support! </a></b>',
-        backgroundColor: "#F50057",
+          'If you like SWA CLI, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/Azure/static-web-apps-cli/stargazers">GitHub</a> and follow us on <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/AzureStaticApps">Twitter</a>',
+        backgroundColor: "#eb5281",
         textColor: "#FFFFFF",
         isCloseable: false,
       },
