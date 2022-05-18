@@ -8,7 +8,7 @@
     "e2e:start:blazor": "npm run build && node ./dist/cli/bin.js --config ./cypress/fixtures/blazor-starter/swa-cli.config.json start app",
     "e2e:static": "start-server-and-test e2e:start:static http://0.0.0.0:1234 cy:run",
     "e2e:blazor": "start-server-and-test e2e:start:blazor http://0.0.0.0:1234 cy:run",
-    "e2e:detection:prepare-samples": "npx -y degit sinedied/frameworks-playground#samples e2e/samples",
+    "e2e:detection:prepare-samples": "rimraf -fr e2e/samples && npx -y degit sinedied/frameworks-playground#samples e2e/samples",
     "e2e:detection:run": "node e2e/detect.js e2e/samples 2",
     "e2e:detection:test": "jest --config e2e/jest.config.js",
     "cy:run": "cypress run",

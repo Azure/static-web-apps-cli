@@ -1,0 +1,18 @@
+{
+  "name": "@example/framework-preact",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "devDependencies": {
+    "@astrojs/preact": "^0.1.2",
+    "astro": "^1.0.0-beta.20"
+  },
+  "dependencies": {
+    "preact": "^10.7.1"
+  }
+}

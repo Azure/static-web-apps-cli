@@ -300,5 +300,4 @@ dist
 cypress/videos/
 cypress/screenshots/
 /coverage
-/e2e/samples
 TODO
