@@ -1,0 +1,38 @@
+<for|i| from=1 to=2>
+  <div 
+    class=[input.class, i === 1 ? "mouse-mask-base" : "mouse-mask"] 
+    style=`--mouse-x:${state.x}px;--mouse-y:${state.y}px;` 
+    on-mousemove("move")>
+    <${input.renderBody}/>
+  </div>
+</for>
+
+class {
+  onCreate() {
+    this.state = { x: 0, y: 0 };
+  }
+  move(e) {
+    this.state.x = e.clientX;
+    this.state.y = e.clientY;
+  }
+}
+
+style {
+  .mouse-mask,
+  .mouse-mask-base {
+    position: absolute;
+  }
+  .mouse-mask-base {
+    filter: grayscale(100%) brightness(50%);
+  }
+  .mouse-mask {
+    --mouse-x: 0px;
+    --mouse-y: 0px;
+    mask-image: radial-gradient(circle, black 20%, transparent 70%);
+    mask-repeat: no-repeat;
+    mask-size: 100vmin 100vmin;
+    -webkit-mask-position-x: calc(var(--mouse-x) - 50vmin);
+    -webkit-mask-position-y: calc(var(--mouse-y) - 50vmin);
+    background: transparent;
+  }
+}

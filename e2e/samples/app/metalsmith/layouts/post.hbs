@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" >
+  <title>{{ title }}</title>
+  <meta name="description" content="{{ description }}">
+  <link rel="stylesheet" href="//stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <meta name="generator" content="metalsmith">
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <nav>
+        {{ sitename }} |
+        <a href="/">Home</a> | 
+        <a href="/about">About</a>
+      </nav>
+      <h1>{{ title }}<time class="float-right">{{ formattedDate date }}</time></h1>
+    </header>
+
+    <main>
+      {{{ contents }}}
+    </main>
+
+    <footer>
+      <p>Generated with {{ generator }} &mdash; <a href="{{ url }}">{{ url }}</a></p>
+    </footer>
+
+  </div>
+
+</body>
+</html>
