@@ -44,17 +44,17 @@ swa
 
 It will generate a configuration for you, then build your project and ask if you want to deploy it to Azure.
 
-See [swa](../cli/swa) for more details.
+See [swa](https://azure.github.io/static-web-apps-cli/docs/cli/swa) for more details.
 
 ## Extended usage
 
 Here are the currently supported `swa` commands. Use `swa <command> --help` to learn about options and usage for that particular command.
 
-- [`login`](../cli/swa-login): login into Azure
-- [`init`](../cli/swa-init): initialize a new static web app project
-- [`start`](../cli/swa-start): start the emulator from a directory or bind to a dev server
-- [`deploy`](../cli/swa-deploy): deploy the current project to Azure Static Web Apps
-- [`build`](../cli/swa-build): build your project
+- [`login`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-login): login into Azure
+- [`init`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-init): initialize a new static web app project
+- [`start`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-start): start the emulator from a directory or bind to a dev server
+- [`deploy`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-deploy): deploy the current project to Azure Static Web Apps
+- [`build`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-build): build your project
 
 ## Run using npx
 
