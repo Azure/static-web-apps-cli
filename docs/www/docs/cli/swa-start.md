@@ -162,4 +162,4 @@ swa start http://localhost:3000 --api-location http://localhost:7071
 
 ## See Also
 
-- [swa](docs/cli/swa) - The Static Web Apps CLI
+- [swa](https://azure.github.io/static-web-apps-cli/docs/cli/swa) - The Static Web Apps CLI
