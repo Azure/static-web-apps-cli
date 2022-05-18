@@ -80,6 +80,7 @@
     "@types/update-notifier": "^5.1.0",
     "@types/wait-on": "^5.3.1",
     "@types/which": "^2.0.1",
+    "all-contributors-cli": "^6.20.0",
     "cypress": "^9.6.0",
     "husky": "^4.3.8",
     "jest": "^27.2.5",
