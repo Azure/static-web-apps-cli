@@ -14,6 +14,7 @@ import registerLogin from "./commands/login";
 import registerStart from "./commands/start";
 import registerBuild from "./commands/build";
 import { promptOrUseDefault } from "../core/prompts";
+import registerCommand from "./commands/docs";
 
 export * from "./commands";
 
@@ -86,6 +87,7 @@ export async function run(argv?: string[]) {
   registerDeploy(program);
   registerInit(program);
   registerBuild(program);
+  registerCommand(program);
 
   program.showHelpAfterError();
 
