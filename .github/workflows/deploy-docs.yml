@@ -15,6 +15,7 @@ jobs:
           node-version: '16.x'
       - name: "deploy docs"
         run: |
+          cd docs/www/
           npm ci
           npm run build
         env:
