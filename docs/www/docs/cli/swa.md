@@ -38,11 +38,11 @@ Here are global options that you can use with any command supported by the `swa`
 
 Here are the currently supported `swa` commands. Use `swa <command> --help` to learn about options and usage for that particular command.
 
-- [`login`](swa-login): login into Azure
-- [`init`](swa-init): initialize a new static web app project
-- [`start`](swa-start): start the emulator from a directory or bind to a dev server
-- [`deploy`](swa-deploy): deploy the current project to Azure Static Web Apps
-- [`build`](swa-build): build your project
+- [`login`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-login): login into Azure
+- [`init`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-init): initialize a new static web app project
+- [`start`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-start): start the emulator from a directory or bind to a dev server
+- [`deploy`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-deploy): deploy the current project to Azure Static Web Apps
+- [`build`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-build): build your project
 
 ## Usage
 
@@ -54,10 +54,10 @@ swa
 
 ## See Also
 
-- [swa init](docs/cli/swa-init)
-- [swa build](docs/cli/swa-build)
-- [swa start](docs/cli/swa-start)
-- [swa login](docs/cli/swa-login)
-- [swa deploy](docs/cli/swa-deploy)
-- [Configuring CLI](docs/cli/swa-config) - file location, defaults
-- [Environment Vars](docs/cli/swa-deploy) - supported settings
+- [swa init](https://azure.github.io/static-web-apps-cli/docs/cli/swa-init)
+- [swa build](https://azure.github.io/static-web-apps-cli/docs/cli/swa-build)
+- [swa start](https://azure.github.io/static-web-apps-cli/docs/cli/swa-start)
+- [swa login](https://azure.github.io/static-web-apps-cli/docs/cli/swa-login)
+- [swa deploy](https://azure.github.io/static-web-apps-cli/docs/cli/swa-deploy)
+- [Configuring CLI](https://azure.github.io/static-web-apps-cli/docs/cli/swa-config) - file location, defaults
+- [Environment Vars](https://azure.github.io/static-web-apps-cli/docs/cli/swa-deploy) - supported settings
