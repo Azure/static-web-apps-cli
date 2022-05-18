@@ -10,14 +10,14 @@ Please review the [Contributor Guidelines](https://github.com/Azure/static-web-a
 
 This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. As a contributor, this is what you need to know:
 
-- [Signing the CLA](https://github.com/Azure/static-web-apps-cli/blob/ga/CONTRIBUTING.md#signing-the-cla)
-- [Code of Conduct](https://github.com/Azure/static-web-apps-cli/blob/ga/CONTRIBUTING.md#code-of-conduct)
-- [Got a Question or Problem?](https://github.com/Azure/static-web-apps-cli/blob/ga/CONTRIBUTING.md#got-a-question-or-problem)
-- [Found an Bug?](https://github.com/Azure/static-web-apps-cli/blob/ga/CONTRIBUTING.md#found-an-bug)
-- [Missing a Feature?](https://github.com/Azure/static-web-apps-cli/blob/ga/CONTRIBUTING.md#missing-a-feature)
-- [Submission Guidelines](https://github.com/Azure/static-web-apps-cli/blob/ga/CONTRIBUTING.md#submission-guidelines)
-- [Coding Rules](https://github.com/Azure/static-web-apps-cli/blob/ga/CONTRIBUTING.md#coding-rules)
-- [Commit Message Guidelines](https://github.com/Azure/static-web-apps-cli/blob/ga/CONTRIBUTING.md#commit-message-guidelines)
+- [Signing the CLA](https://github.com/Azure/static-web-apps-cli/blob/main/CONTRIBUTING.md#signing-the-cla)
+- [Code of Conduct](https://github.com/Azure/static-web-apps-cli/blob/main/CONTRIBUTING.md#code-of-conduct)
+- [Got a Question or Problem?](https://github.com/Azure/static-web-apps-cli/blob/main/CONTRIBUTING.md#got-a-question-or-problem)
+- [Found an Bug?](https://github.com/Azure/static-web-apps-cli/blob/main/CONTRIBUTING.md#found-an-bug)
+- [Missing a Feature?](https://github.com/Azure/static-web-apps-cli/blob/main/CONTRIBUTING.md#missing-a-feature)
+- [Submission Guidelines](https://github.com/Azure/static-web-apps-cli/blob/main/CONTRIBUTING.md#submission-guidelines)
+- [Coding Rules](https://github.com/Azure/static-web-apps-cli/blob/main/CONTRIBUTING.md#coding-rules)
+- [Commit Message Guidelines](https://github.com/Azure/static-web-apps-cli/blob/main/CONTRIBUTING.md#commit-message-guidelines)
 
 > 🚧 | `TODO:` Update ga links to main.
 

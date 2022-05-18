@@ -13,7 +13,7 @@ swa login [options]
 
 Used to login to Azure.
 
-This command is used to authenticate with Azure and get a deployment token that can be used to deploy to Azure Static Web Apps, using the [`swa deploy`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-deploy) command.
+This command is used to authenticate with Azure and get a deployment token that can be used to deploy to Azure Static Web Apps, using the [`swa deploy`](./swa-deploy) command.
 
 ## Options
 
@@ -68,5 +68,5 @@ swa login --tenant-id 00000000-0000-0000-0000-000000000000 \
 
 ## See Also
 
-- [swa deploy](https://azure.github.io/static-web-apps-cli/docs/cli/swa-deploy)
-- [swa](https://azure.github.io/static-web-apps-cli/docs/cli/swa)
+- [swa deploy](./swa-deploy)
+- [swa](./swa)
