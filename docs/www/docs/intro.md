@@ -7,8 +7,8 @@ sidebar_position: 1
 The **Static Web Apps (SWA) CLI** is an open-source commandline tool that streamlines local development and deployment for Azure Static Web Apps.
 
 - Find it on npm: [@azure/static-web-apps-cli](https://www.npmjs.com/package/@azure/static-web-apps-cli)
-- Get Started: [Install the SWA CLI](docs/use/install)
-- Contribute: [Build from Source](docs/contribute/developer)
+- Get Started: [Install the SWA CLI](https://azure.github.io/static-web-apps-cli/docs/use/install)
+- Contribute: [Build from Source](https://azure.github.io/static-web-apps-cli/docs/contribute/developer)
 
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/azure/static-web-apps-cli/issues)
 

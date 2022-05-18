@@ -105,9 +105,9 @@ The `swa-cli.config.json` file can be validated against the following schema: ht
 
 ## See Also
 
-- [swa](docs/cli/swa) - The Static Web Apps CLI
-- [swa-init](docs/cli/swa-init)
-- [swa-start](docs/cli/swa-start)
+- [swa](https://azure.github.io/static-web-apps-cli/docs/cli/swa) - The Static Web Apps CLI
+- [swa-init](https://azure.github.io/static-web-apps-cli/docs/cli/swa-init)
+- [swa-start](https://azure.github.io/static-web-apps-cli/docs/cli/swa-start)
 
 <!--
 ## Configuration File
