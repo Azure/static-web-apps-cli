@@ -17,6 +17,6 @@ jobs:
         run: |
           cd docs/www/
           npm ci
-          npm run build
+          npm run deploy
         env:
           GITHUB_TOKEN: ${{ secrets.SWA_CLI_DEPLOY_DOCS_GH_PAGES }}
