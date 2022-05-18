@@ -1,5 +1,4 @@
-jest.mock("../../../core/constants", () => {});
-import { DEFAULT_CONFIG } from "../../../config";
+import { CUSTOM_URL_SCHEME } from "../../../core/constants";
 import { responseOverrides } from "./response-overrides";
 
 describe("responseOverrides()", () => {
@@ -54,7 +53,7 @@ describe("responseOverrides()", () => {
     };
     responseOverrides(req, res, userConfig);
 
-    expect(req.url).toBe(`${DEFAULT_CONFIG.customUrlScheme}foo`);
+    expect(req.url).toBe(`${CUSTOM_URL_SCHEME}foo`);
   });
 
   it("should override redirect rule", () => {

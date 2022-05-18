@@ -1,7 +1,9 @@
 import chalk from "chalk";
 import type http from "http";
-import { DEFAULT_CONFIG } from "../../config";
-import { SWA_CLI_APP_PROTOCOL } from "../constants";
+import { CUSTOM_URL_SCHEME, SWA_CLI_APP_PROTOCOL } from "../constants";
+import { swaCLIEnv } from "../env";
+
+const SENSITIVE_KEYS = ["DEPLOYMENT_TOKEN", "SWA_CLI_DEPLOYMENT_TOKEN", "--deployment-token", "deploymentToken"];
 
 export const logger = {
   _print(prefix: string | null, data: string) {
@@ -42,6 +44,7 @@ export const logger = {
   log(data: string | object, prefix: string | null = null) {
     this.silly(data, prefix, "log", chalk.reset);
   },
+
   /**
    * Print information data.
    * @param data Either a string or an object to be printed.
@@ -50,20 +53,21 @@ export const logger = {
   warn(data: string | object, prefix: string | null = null) {
     this.silly(data, prefix, "log", chalk.yellow);
   },
+
   /**
    * Print error data and optionally exit the CLI instance.
    * @param data Either a string or an object to be printed.
    * @param exit If set to True, the CLI instance will be terminated after printing the error message (code -1).
    */
   error(data: string | object, exit = false) {
-    const { SWA_CLI_DEBUG } = process.env;
-    if (!SWA_CLI_DEBUG || SWA_CLI_DEBUG?.includes("silent")) {
+    const { SWA_CLI_DEBUG } = swaCLIEnv();
+    if (SWA_CLI_DEBUG?.includes("silent")) {
       return;
     }
 
-    console.error(chalk.red(data));
+    console.error(chalk.red("✖ " + data));
     if (exit) {
-      process.exit(-1);
+      process.exit(1);
     }
   },
 
@@ -75,16 +79,23 @@ export const logger = {
    * @param color (optional) A valid Chalk color to be used when printing logs.
    */
   silly(data: string | object, prefix: string | null = null, debugFilter: DebugFilterLevel = "silly", color: chalk.Chalk = chalk.magenta) {
-    const { SWA_CLI_DEBUG } = process.env;
+    const { SWA_CLI_DEBUG } = swaCLIEnv();
     if (!SWA_CLI_DEBUG || SWA_CLI_DEBUG?.includes("silent")) {
       return;
     }
+
+    const isSensitiveKey = (key: string) => SENSITIVE_KEYS.some((sensitiveKey) => key.includes(sensitiveKey));
 
     if (SWA_CLI_DEBUG?.includes("silly") || SWA_CLI_DEBUG?.includes(debugFilter)) {
       if (typeof data === "object") {
         this._traverseObjectProperties(data, (key: string, value: string | null, indent: string) => {
           if (value !== null) {
-            value = typeof value === "undefined" ? chalk.yellow("<undefined>") : value;
+            if (isSensitiveKey(key)) {
+              value = chalk.yellow("<hidden>");
+            } else if (typeof value === "undefined") {
+              value = chalk.yellow("<undefined>");
+            }
+
             this._print(prefix, color(`${indent}- ${key}: ${chalk.yellow(value)}`));
           } else {
             this._print(prefix, color(`${indent}- ${key}:`));
@@ -107,7 +118,7 @@ export const logger = {
  * @param prefix (optional) A prefix to prepend to the printed message.
  */
 export function logRequest(req: http.IncomingMessage, target: string = "", statusCode: number | null = null, prefix = "") {
-  let url = req.url?.replace(DEFAULT_CONFIG.customUrlScheme!, "");
+  let url = req.url?.replace(CUSTOM_URL_SCHEME, "");
   url = url?.startsWith("/") ? url : `/${url}`;
 
   const proto = target?.startsWith("ws") ? "ws" : SWA_CLI_APP_PROTOCOL;
@@ -120,4 +131,12 @@ export function logRequest(req: http.IncomingMessage, target: string = "", statu
   } else {
     logger.log(chalk.yellow(`${prefix}${req.method} ${target + url} (proxy)`));
   }
+}
+
+export function logGiHubIssueMessageAndExit() {
+  logger.log(``);
+  logger.error(
+    "If you believe this behavior is unexpected, please raise a GitHub issue at:\n  https://github.com/Azure/static-web-apps-cli/issues/new/choose",
+    true
+  );
 }

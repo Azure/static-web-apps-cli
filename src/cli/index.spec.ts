@@ -1,3 +1,6 @@
+// Avoid FSREQCALLBACK error
+jest.mock("./commands/start");
+
 import { program } from "commander";
 import { UpdateNotifier } from "update-notifier";
 import { run } from "./index";
@@ -24,7 +27,7 @@ describe("cli", () => {
   it("should notify of newer version", async () => {
     // Forces an update notification, bypassing regular checks
     process.stdout.isTTY = true;
-    spyOn(UpdateNotifier.prototype, "check").and.callFake(function (this: any) {
+    jest.spyOn(UpdateNotifier.prototype, "check").mockImplementation(function (this: any) {
       this.shouldNotifyInNpmScript = true;
       this.update = {
         current: "0.1.0",
@@ -33,7 +36,7 @@ describe("cli", () => {
       };
     });
     const orginalNotify = UpdateNotifier.prototype.notify;
-    spyOn(UpdateNotifier.prototype, "notify").and.callFake(function (this: any, options: any = {}) {
+    jest.spyOn(UpdateNotifier.prototype, "notify").mockImplementation(function (this: any, options: any = {}) {
       options.defer = false;
       orginalNotify.bind(this as any)(options);
     });

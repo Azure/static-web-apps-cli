@@ -1,7 +1,7 @@
 jest.mock("../constants", () => {});
 import mockFs from "mock-fs";
 import path from "path";
-import { argv, createStartupScriptCommand, parseDevserverTimeout } from "./cli";
+import { argv, createStartupScriptCommand, parseServerTimeout } from "./cli";
 import { logger } from "./logger";
 
 describe("argv()", () => {
@@ -148,23 +148,23 @@ describe("createStartupScriptCommand()", () => {
     });
   });
 
-  describe("parseDevserverTimeout()", () => {
+  describe("parseServerTimeout()", () => {
     const mockLoggerError = jest.spyOn(logger, "error").mockImplementation(() => {
       return undefined as never;
     });
 
     it("DevserverTimeout below 0 should be invalid", () => {
-      parseDevserverTimeout("-10");
+      parseServerTimeout("-10");
       expect(mockLoggerError).toBeCalled();
     });
 
     it("DevserverTimeout for any positive value should be valid", () => {
-      const timeValue = parseDevserverTimeout("30000");
+      const timeValue = parseServerTimeout("30000");
       expect(timeValue).toBe(30000);
     });
 
     it("Non-number DevserverTimeout should be invalid", () => {
-      parseDevserverTimeout("not a number");
+      parseServerTimeout("not a number");
       expect(mockLoggerError).toBeCalled();
     });
   });

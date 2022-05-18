@@ -1,0 +1,25 @@
+name: Deploy CLI docs
+on:
+  push:
+    branches: [ga]  # TODO: update to main after GA
+
+jobs:
+  build_and_deploy_job:
+    runs-on: ubuntu-latest
+    name: Build and Deploy Job
+    steps:
+      - uses: actions/checkout@v2
+      - run: git config --global user.email "github@wassim.dev"
+      - run: git config --global user.name "Wassim Chegham"
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3.2.0
+        with:
+          node-version: '16.x'
+      - name: "deploy docs"
+        run: |
+          cd docs/www/
+          npm ci
+          npm run deploy
+        env:
+          GIT_PASS: ${{ secrets.SWA_CLI_DEPLOY_DOCS_GH_PAGES }}
+          GIT_USER: "manekinekko"

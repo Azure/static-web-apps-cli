@@ -2,7 +2,6 @@ import chalk from "chalk";
 import type http from "http";
 import httpProxy from "http-proxy";
 import fetch from "node-fetch";
-import { DEFAULT_CONFIG } from "../../config";
 import { decodeCookie, logger, logRequest, registerProcessExit, validateCookie } from "../../core";
 import { HAS_API, SWA_CLI_API_URI } from "../../core/constants";
 import { onConnectionLost } from "../middlewares/request.middleware";
@@ -14,7 +13,7 @@ registerProcessExit(() => {
   process.exit(0);
 });
 
-function injectHeaders(req: http.ClientRequest, host: string) {
+function injectHeaders(req: http.ClientRequest, host: string | undefined) {
   logger.silly(`injecting headers to Functions request:`);
   if (!req.getHeader("x-ms-original-url")) {
     req.setHeader("x-ms-original-url", encodeURI(new URL(req.path!, host).toString()));
@@ -90,13 +89,13 @@ export function handleFunctionRequest(req: http.IncomingMessage, res: http.Serve
 
 export function isFunctionRequest(req: http.IncomingMessage, rewritePath?: string) {
   let path = rewritePath || req.url;
-  return Boolean(path?.startsWith(`/${DEFAULT_CONFIG.apiPrefix}`));
+  return Boolean(path?.toLowerCase().startsWith(`/api/`));
 }
 
-export async function validateFunctionTriggers() {
+export async function validateFunctionTriggers(url: string) {
   try {
-    const functionsResponse = await fetch(`${SWA_CLI_API_URI()}/admin/functions`);
-    const functions = await functionsResponse.json();
+    const functionsResponse = await fetch(`${url}/admin/functions`);
+    const functions = (await functionsResponse.json()) as Array<{ config: { bindings: string[] } }>;
     const triggers = functions.map((f: any) => f.config.bindings.find((b: any) => /trigger$/i.test(b.type))).map((b: any) => b.type);
 
     if (triggers.some((t: string) => !/^httptrigger$/i.test(t))) {
@@ -104,9 +103,8 @@ export async function validateFunctionTriggers() {
         "\nFunction app contains non-HTTP triggered functions. Azure Static Web Apps managed functions only support HTTP functions. To use this function app with Static Web Apps, see 'Bring your own function app'.\n"
       );
     }
-  } catch (e) {
-    console.error(e);
-
-    logger.log("Unable to query functions trigger types.");
+  } catch (error) {
+    logger.warn("Unable to query functions trigger types from local function app. Skipping.");
+    logger.warn(`Note: Only Http trigger functions are supported. See https://docs.microsoft.com/azure/static-web-apps/apis`);
   }
 }

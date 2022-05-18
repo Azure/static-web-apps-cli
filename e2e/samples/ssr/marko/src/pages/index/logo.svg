@@ -1,0 +1,72 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="512"
+  viewBox="0 0 2560 1400"
+>
+  <style>
+    stop:not([stop-color]) {
+      stop-color: inherit;
+    }
+  </style>
+  <g>
+    <path fill="url(#h)" d="M2132 0h-361l427 697-428 697h361l428-697z" />
+    <linearGradient id="h" x2="0" y2="1" stop-color="#df1b1c">
+      <stop offset="0" stop-color="#e02a89" />
+      <stop offset=".31" />
+      <stop offset=".5" />
+      <stop offset=".5" stop-color="#7f1e4f" />
+      <stop offset=".833" />
+    </linearGradient>
+  </g>
+  <g>
+    <g>
+      <path fill="url(#a)" d="M427 0h361L361 697l427 697H427L0 698z" />
+      <linearGradient id="a" x2="0" y2="1" stop-color="#44bfef">
+        <stop offset="0" stop-color="#00828b" />
+        <stop offset=".25" />
+        <stop offset=".5" stop-color="#88d0f1" />
+        <stop offset=".5" />
+        <stop offset=".685" />
+        <stop offset="1" stop-color="#2073ba" />
+      </linearGradient>
+    </g>
+    <g>
+      <path fill="url(#b)" d="M854 697h361L788 0H427z" />
+      <linearGradient id="b" x2="0" y2="1">
+        <stop offset="0" stop-color="#8ed0e1" />
+        <stop offset="1" stop-color="#00ac71" />
+      </linearGradient>
+      <path fill="url(#c)" d="M607 294L788 0H427z" />
+      <linearGradient id="c" x2="0" y2="1" stop-color="#419aaa">
+        <stop offset="0" stop-opacity="0" />
+        <stop offset="1" />
+      </linearGradient>
+    </g>
+    <g>
+      <path fill="url(#d)" d="M1281 0h361l-427 697H854z" />
+      <linearGradient id="d" x2="0" y2="1">
+        <stop offset="0" stop-color="#698932" />
+        <stop offset="0.833" stop-color="#8dc220" />
+      </linearGradient>
+      <path fill="url(#e)" d="M1034 402L854 698H1216z" />
+      <linearGradient id="e" x2="0" y2="1" stop-color="#67b168">
+        <stop offset="0" />
+        <stop offset="1" stop-opacity="0" />
+      </linearGradient>
+    </g>
+    <g>
+      <path fill="url(#f)" d="M1642 0h-361l428 697-428 697h361l428-697z" />
+      <linearGradient id="f" x2="0" y2="1" stop-color="#f9bc00">
+        <stop offset="0" stop-color="#ffed01" />
+        <stop offset=".5" />
+        <stop offset=".5" stop-color="#e95506" />
+        <stop offset=".833" />
+      </linearGradient>
+      <path fill="url(#g)" d="M1281 0H1642 L1461 294z" />
+      <linearGradient id="g" x2="0" y2="1" stop-color="#b5c449">
+        <stop offset="0" stop-opacity="0" />
+        <stop offset="1" />
+      </linearGradient>
+    </g>
+  </g>
+</svg>

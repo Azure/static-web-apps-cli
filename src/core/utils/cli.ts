@@ -107,11 +107,11 @@ export function createStartupScriptCommand(startupScript: string, options: SWACL
  * @param time devserver-timeout flag as string
  * @returns parses the string and returns an integer
  */
-export function parseDevserverTimeout(time: string) {
-  //The argument 10 implies to convert the given string to base-10(decimal)
+export function parseServerTimeout(time: string) {
+  // The argument 10 implies to convert the given string to base-10(decimal)
   const timeValue = parseInt(time, 10);
   if (isNaN(timeValue)) {
-    logger.error(`--devserver-timeout should be a number expressed in milliseconds. Got "${time}".`, true);
+    logger.error(`--devserver-timeout should be a number expressed in seconds. Got "${time}".`, true);
   } else if (timeValue < 0) {
     logger.error(`--devserver-timeout should be a positive number`);
   }

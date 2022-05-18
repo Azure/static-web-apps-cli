@@ -1,97 +1,304 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema",
   "properties": {
     "configurations": {
       "additionalProperties": {
         "allOf": [
           {
-            "properties": {
-              "apiLocation": {
-                "description": "API folder or Azure Functions emulator address",
-                "type": "string"
-              },
-              "apiPort": {
-                "description": "API backend port",
-                "type": "number"
-              },
-              "apiPrefix": {
-                "enum": ["api"],
-                "type": "string"
-              },
-              "appArtifactLocation": {
-                "description": "Location of the build output directory relative to the appLocation",
-                "type": "string"
-              },
-              "appLocation": {
-                "description": "Location for the static app source code",
-                "type": "string"
-              },
-              "build": {
-                "type": "boolean"
-              },
-              "customUrlScheme": {
-                "type": "string"
-              },
-              "devserverTimeout": {
-                "description": "Time to wait(in ms) for the dev server to start",
-                "type": "number"
-              },
-              "host": {
-                "description": "CLI host address",
-                "type": "string"
-              },
-              "overridableErrorCode": {
-                "items": {
-                  "type": "number"
-                },
-                "type": "array"
-              },
-              "port": {
-                "description": "set the cli port",
-                "type": "number"
-              },
-              "run": {
-                "description": "Run a command at startup",
-                "type": "string"
-              },
-              "ssl": {
-                "description": "Serve the app and API over HTTPS",
-                "type": "boolean"
-              },
-              "sslCert": {
-                "description": "SSL certificate (.crt) to use for serving HTTPS",
-                "type": "string"
-              },
-              "sslKey": {
-                "description": "SSL key (.key) to use for serving HTTPS",
-                "type": "string"
-              },
-              "swaConfigFilename": {
-                "enum": ["staticwebapp.config.json"],
-                "type": "string"
-              },
-              "swaConfigFilenameLegacy": {
-                "enum": ["routes.json"],
-                "type": "string"
-              },
-              "swaConfigLocation": {
-                "type": "string"
-              },
-              "verbose": {
-                "type": "string"
-              }
-            },
-            "type": "object"
+            "$ref": "#/$defs/globalParameters"
+          },
+          {
+            "$ref": "#/$defs/startCommandParameters"
+          },
+          {
+            "$ref": "#/$defs/loginCommandParameters"
+          },
+          {
+            "$ref": "#/$defs/loginSharedCommandParameters"
+          },
+          {
+            "$ref": "#/$defs/initCommandParameters"
+          },
+          {
+            "$ref": "#/$defs/deployCommandParameters"
+          },
+          {
+            "$ref": "#/$defs/buildCommandParameters"
           },
           {
             "properties": {
-              "context": {
-                "type": "string"
+              "login": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/globalParameters"
+                  },
+                  {
+                    "$ref": "#/$defs/loginCommandParameters"
+                  },
+                  {
+                    "$ref": "#/$defs/loginSharedCommandParameters"
+                  }
+                ]
               }
-            },
-            "type": "object"
+            }
+          },
+          {
+            "properties": {
+              "start": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/globalParameters"
+                  },
+                  {
+                    "$ref": "#/$defs/startCommandParameters"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "init": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/globalParameters"
+                  },
+                  {
+                    "$ref": "#/$defs/initCommandParameters"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "deploy": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/globalParameters"
+                  },
+                  {
+                    "$ref": "#/$defs/loginSharedCommandParameters"
+                  },
+                  {
+                    "$ref": "#/$defs/deployCommandParameters"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "init": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/globalParameters"
+                  },
+                  {
+                    "$ref": "#/$defs/buildCommandParameters"
+                  }
+                ]
+              }
+            }
           }
         ]
+      },
+      "type": "object"
+    }
+  },
+  "$defs": {
+    "globalParameters": {
+      "properties": {
+        "verbose": {
+          "description": "Enable verbose output. Values are: silly,info,log,silent",
+          "type": "string"
+        },
+        "config": {
+          "description": "Path to swa-cli.config.json file to use",
+          "type": "string",
+          "not": {}
+        },
+        "printConfig": {
+          "description": "Print all resolved options",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "startCommandParameters": {
+      "properties": {
+        "appLocation": {
+          "description": "The folder containing the source code of the front-end application",
+          "type": "string"
+        },
+        "outputLocation": {
+          "description": "The folder containing the built source of the front-end application",
+          "type": "string"
+        },
+        "apiLocation": {
+          "description": "The folder containing the source code of the API application",
+          "type": "string"
+        },
+        "appDevserverUrl": {
+          "description": "Connect to the dev server at this URL instead of using output location",
+          "type": "string"
+        },
+        "apiDevserverUrl": {
+          "description": "Connect to the api server at this URL instead of using api location",
+          "type": "string"
+        },
+        "apiPort": {
+          "description": "The API server port passed to func start",
+          "type": "number"
+        },
+        "open": {
+          "description": "Automatically open the CLI dev server in the default browser",
+          "type": "boolean"
+        },
+        "devserverTimeout": {
+          "description": "The time to wait (in seconds) when connecting to a front-end application's dev server or api server",
+          "type": "number"
+        },
+        "host": {
+          "description": "The host address to use for the CLI dev server",
+          "type": "string"
+        },
+        "port": {
+          "description": "The port value to use for the CLI dev server",
+          "type": "number"
+        },
+        "run": {
+          "description": "Run a custon shell command or file at startup",
+          "type": "string"
+        },
+        "ssl": {
+          "description": "Serve the front-end application and API over HTTPS",
+          "type": "boolean"
+        },
+        "sslCert": {
+          "description": "The SSL certificate (.crt) to use when enabling HTTPS",
+          "type": "string"
+        },
+        "sslKey": {
+          "description": "The SSL key (.key) to use when enabling HTTPS",
+          "type": "string"
+        },
+        "funcArgs": {
+          "description": "Pass additional arguments to the func start command",
+          "type": "string"
+        },
+        "swaConfigLocation": {
+          "description": "The directory where the staticwebapp.config.json file is located",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "loginSharedCommandParameters": {
+      "properties": {
+        "subscription": {
+          "description": "Azure subscription ID used by this project",
+          "type": "string"
+        },
+        "resourceGroup": {
+          "description": "Azure resource group used by this project",
+          "type": "string"
+        },
+        "appName": {
+          "description": "Azure Static Web App application name",
+          "type": "string"
+        },
+        "tenant": {
+          "description": "Azure tenant ID",
+          "type": "string"
+        },
+        "clientId": {
+          "description": "Azure client ID",
+          "type": "string"
+        },
+        "clientSecret": {
+          "description": "Azure client secret",
+          "type": "string"
+        },
+        "useKeychain": {
+          "description": "Enable using the operating system native keychain for persistent credentials",
+          "type": "boolean"
+        },
+        "clearCredentials": {
+          "description": "Clear persisted credentials before login",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "loginCommandParameters": {
+      "properties": {},
+      "type": "object"
+    },
+    "deployCommandParameters": {
+      "properties": {
+        "appLocation": {
+          "description": "The folder containing the source code of the application",
+          "type": "string"
+        },
+        "apiLocation": {
+          "description": "The folder containing the source code of the API application",
+          "type": "string"
+        },
+        "outputLocation": {
+          "description": "The folder where the front-end public files are location",
+          "type": "string"
+        },
+        "swaConfigLocation": {
+          "description": "The directory where the staticwebapp.config.json file is located",
+          "type": "string"
+        },
+        "deploymentToken": {
+          "description": "The secret token used to authenticate with the Static Web Apps",
+          "not": {}
+        },
+        "dryRun": {
+          "description": "Simulate a deploy process without actually running it",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "initCommandParameters": {
+      "properties": {
+        "yes": {
+          "description": "Answer yes to all prompts (disable interactive mode)",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "buildCommandParameters": {
+      "properties": {
+        "appLocation": {
+          "description": "The folder containing the source code of the front-end application",
+          "type": "string"
+        },
+        "apiLocation": {
+          "description": "The folder containing the source code of the API application",
+          "type": "string"
+        },
+        "outputLocation": {
+          "description": "The folder where the front-end public files are location",
+          "type": "string"
+        },
+        "appBuildCommand": {
+          "description": "The command used to build your app",
+          "type": "string"
+        },
+        "apiBuildCommand": {
+          "description": "The command used to build your api",
+          "type": "string"
+        },
+        "auto": {
+          "description": "Automatically detect how to build your app and api",
+          "type": "boolean"
+        }
       },
       "type": "object"
     }

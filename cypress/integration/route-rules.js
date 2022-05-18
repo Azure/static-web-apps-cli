@@ -1,5 +1,9 @@
 /// <reference types="cypress" />
 
+Cypress.Screenshot.defaults({
+  screenshotOnRunFailure: false,
+});
+
 context("route rules engine", { failOnStatusCode: false, defaultCommandTimeout: 20000 /* set this for Windows */ }, () => {
   it("root returns /index.html", () => {
     cy.visit("http://0.0.0.0:1234/").should(() => {
@@ -58,7 +62,6 @@ context("route rules engine", { failOnStatusCode: false, defaultCommandTimeout: 
 
   it("default redirect returns 302 with correct location", () => {
     cy.request("http://0.0.0.0:1234/redirect/foo").should((response) => {
-      console.log(response);
       expect(response.redirects[0]).to.eq("302: http://0.0.0.0:1234/index2.html");
     });
   });

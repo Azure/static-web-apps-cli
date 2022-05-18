@@ -1,5 +1,8 @@
 /// <reference types="cypress" />
 
+Cypress.Screenshot.defaults({
+  screenshotOnRunFailure: false,
+});
 Cypress.Cookies.defaults({
   domain: "0.0.0.0",
 });

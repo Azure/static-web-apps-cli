@@ -92,11 +92,16 @@ export async function processAuth(request: http.IncomingMessage, response: http.
         context.res.body = JSON.stringify(context.res.body) as string;
       }
     } catch (error) {
-      logger.error(error);
+      let errorMessage = `An error occurred while processing the request!`;
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      logger.error(errorMessage);
 
       defaultStatus = 500;
       context.res.body = {
-        error: error.toString(),
+        error: errorMessage,
       };
     }
   } else {

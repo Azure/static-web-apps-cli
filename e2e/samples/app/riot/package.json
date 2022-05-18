@@ -1,0 +1,40 @@
+{
+  "name": "riot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "nyc --require esm --require jsdom-global/register --require @riotjs/register mocha src/**/*.spec.js",
+    "cov": "nyc report --reporter=text-lcov",
+    "cov-html": "nyc report --reporter=html",
+    "build": "webpack --mode production",
+    "prepublishOnly": "npm test",
+    "start": "webpack serve --mode development --hot --port 3000"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@riotjs/compiler": "^6.0.1",
+    "@riotjs/register": "^5.0.0",
+    "@riotjs/webpack-loader": "^6.0.0",
+    "chai": "^4.3.4",
+    "css-loader": "^6.2.0",
+    "esm": "^3.2.25",
+    "html-webpack-plugin": "^5.3.2",
+    "jsdom": "^16.6.0",
+    "jsdom-global": "^3.0.2",
+    "mini-css-extract-plugin": "^2.1.0",
+    "mocha": "^8.4.0",
+    "nyc": "^15.1.0",
+    "webpack": "^5.47.1",
+    "webpack-cli": "^4.7.2",
+    "webpack-dev-server": "^3.11.2"
+  },
+  "dependencies": {
+    "@riotjs/hot-reload": "^6.0.0",
+    "@riotjs/lazy": "^2.0.1",
+    "@riotjs/route": "^8.0.0",
+    "riot": "^6.0.2"
+  }
+}

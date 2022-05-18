@@ -1,0 +1,11 @@
+{
+  "appId": "com.fw.playground",
+  "appName": "capacitor",
+  "bundledWebRuntime": true,
+  "webDir": "www",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  }
+}

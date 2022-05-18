@@ -1,7 +1,7 @@
-import { sep } from "path";
 import { Buffer } from "buffer";
-import { Readable, PassThrough } from "stream";
 import mockFs from "mock-fs";
+import { sep } from "path";
+import { PassThrough, Readable } from "stream";
 import {
   detectTargetCoreToolsVersion,
   downloadCoreTools,
@@ -10,10 +10,16 @@ import {
   isCoreToolsVersionCompatible,
 } from "./func-core-tools";
 
+import { logger } from "../core";
+jest.spyOn(logger, "log").mockImplementation();
+jest.spyOn(logger, "warn").mockImplementation();
+jest.spyOn(logger, "error").mockImplementation();
+
 jest.mock("process", () => ({ versions: { node: "16.0.0" } }));
 jest.mock("os", () => ({ platform: () => "linux", homedir: () => "/home/user" }));
 jest.mock("child_process", () => ({ exec: jest.fn() }));
 jest.mock("node-fetch", () => jest.fn());
+
 jest.mock("unzipper", () => ({
   Extract: () => {
     const fakeStream = new PassThrough() as any;
@@ -28,6 +34,13 @@ jest.mock("unzipper", () => ({
     return fakeStream;
   },
 }));
+
+class HeadersMock {
+  constructor(public headers: Record<string, string>) {}
+  get(key: string): string | undefined {
+    return this.headers[key];
+  }
+}
 
 describe("funcCoreTools", () => {
   afterEach(() => {
@@ -227,6 +240,7 @@ describe("funcCoreTools", () => {
       }
     });
 
+    // Note: this test blocks jest from exiting!
     it("should download core tools and return downloaded binary", async () => {
       const execMock = jest.requireMock("child_process").exec;
       execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: "func does not exist" }));
@@ -259,7 +273,7 @@ describe("funcCoreTools", () => {
       fetchMock.mockImplementationOnce(() =>
         Promise.resolve({
           body: Readable.from(packageZip),
-          headers: new Headers({ "content-length": packageZip.length.toString() }),
+          headers: new HeadersMock({ "content-length": packageZip.length.toString() }),
         })
       );
       mockFs({ ["/home/user/.swa/core-tools/"]: {} }, { createTmp: false, createCwd: false });
@@ -287,6 +301,7 @@ describe("funcCoreTools", () => {
   });
 
   describe("downloadCoreTools", () => {
+    // Note: this test blocks jest from exiting!
     it("should throw an error if the download is corrupted", async () => {
       const execMock = jest.requireMock("child_process").exec;
       execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: "func does not exist" }));
@@ -318,12 +333,12 @@ describe("funcCoreTools", () => {
       fetchMock.mockImplementationOnce(() =>
         Promise.resolve({
           body: Readable.from(packageZip),
-          headers: new Headers({ "content-length": packageZip.length.toString() }),
+          headers: new HeadersMock({ "content-length": packageZip.length.toString() }),
         })
       );
       mockFs({ ["/home/user/.swa/core-tools/"]: {} }, { createTmp: false, createCwd: false });
 
-      await expect(async () => await downloadCoreTools(4)).rejects.toThrowError(/SHA2 mismatch/);
+      expect(async () => await downloadCoreTools(4)).rejects.toThrowError(/SHA2 mismatch/);
     });
   });
 });

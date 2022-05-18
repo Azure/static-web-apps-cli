@@ -2,6 +2,13 @@ import path from "path";
 import { DEFAULT_CONFIG } from "../config";
 import { address, isHttpUrl } from "./utils/net";
 
+export const STATIC_SITE_CLIENT_RELEASE_METADATA_URL = "https://swalocaldeploy.azureedge.net/downloads/versions.json";
+export const SWA_COMMANDS = ["login", "init", "start", "deploy", "build"] as const;
+// Type cannot be in swa.d.ts as it's inferred from SWA_COMMANDS
+export type SWACommand = typeof SWA_COMMANDS[number];
+
+export const SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB = 20; // 20kb
+
 export const SWA_AUTH_COOKIE = `StaticWebAppsAuthCookie`;
 export const ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT = ["GET", "HEAD", "OPTIONS"];
 
@@ -162,32 +169,28 @@ export const HEADER_DELETE_KEYWORD = "@@HEADER_DELETE_KEYWORD@@";
 
 export const CACHE_CONTROL_MAX_AGE = 30;
 
-export const SWA_WORKFLOW_CONFIG_FILE = process.env.SWA_WORKFLOW_CONFIG_FILE as string;
-export const SWA_CLI_HOST = process.env.SWA_CLI_HOST as string;
-export const SWA_CLI_PORT = parseInt((process.env.SWA_CLI_PORT || DEFAULT_CONFIG.port) as string, 10);
-export const SWA_CLI_APP_LOCATION = (process.env.SWA_CLI_APP_LOCATION || DEFAULT_CONFIG.appLocation) as string;
-export const SWA_CLI_ROUTES_LOCATION = (process.env.SWA_CLI_ROUTES_LOCATION || DEFAULT_CONFIG.swaConfigLocation) as string;
-export const SWA_CLI_OUTPUT_LOCATION = (process.env.SWA_CLI_OUTPUT_LOCATION || DEFAULT_CONFIG.outputLocation) as string;
-export const SWA_CLI_API_LOCATION = (process.env.SWA_CLI_API_LOCATION || DEFAULT_CONFIG.apiLocation) as string;
-export const SWA_CLI_APP_SSL = process.env.SWA_CLI_APP_SSL === "true" || DEFAULT_CONFIG.ssl === true;
-export const SWA_CLI_APP_SSL_KEY = process.env.SWA_CLI_APP_SSL_KEY as string;
-export const SWA_CLI_APP_SSL_CERT = process.env.SWA_CLI_APP_SSL_CERT as string;
-export const SWA_CLI_APP_PROTOCOL = SWA_CLI_APP_SSL ? `https` : `http`;
+export const ENV_FILENAME = ".env";
+export const GIT_IGNORE_FILENAME = ".gitignore";
+
+export const SWA_CLI_APP_PROTOCOL = DEFAULT_CONFIG.ssl ? `https` : `http`;
 export const SWA_PUBLIC_DIR = path.resolve(__dirname, "..", "public"); //SWA_PUBLIC_DIR = "../public"
-export const HAS_API = Boolean(SWA_CLI_API_LOCATION && SWA_CLI_API_URI());
-export const SWA_CLI_DEVSERVER_TIMEOUT = parseInt((process.env.SWA_CLI_DEVSERVER_TIMEOUT || DEFAULT_CONFIG.devserverTimeout) as string, 10);
-export const SWA_CLI_OPEN = (process.env.SWA_CLI_OPEN === "true" || DEFAULT_CONFIG.open) as boolean;
+export const HAS_API = Boolean(DEFAULT_CONFIG.apiLocation && SWA_CLI_API_URI());
+
+export const SWA_CONFIG_FILENAME = "staticwebapp.config.json";
+export const SWA_CONFIG_FILENAME_LEGACY = "routes.json";
+export const CUSTOM_URL_SCHEME = "swa://";
+export const OVERRIDABLE_ERROR_CODES = [400, 401, 403, 404];
 
 // --
 // Note: declare these as functions so that their body gets evaluated at runtime!
 // The reason for this is that these function depend on values set by environment variables which are set
 // during the startup of the CLI (see src/cli/commands/start.ts)
 export function IS_APP_DEV_SERVER() {
-  return isHttpUrl(SWA_CLI_OUTPUT_LOCATION);
+  return isHttpUrl(DEFAULT_CONFIG.outputLocation);
 }
 export function IS_API_DEV_SERVER() {
-  return isHttpUrl(SWA_CLI_API_LOCATION);
+  return isHttpUrl(DEFAULT_CONFIG.apiLocation);
 }
 export function SWA_CLI_API_URI() {
-  return IS_API_DEV_SERVER() ? SWA_CLI_API_LOCATION : address(SWA_CLI_HOST, process.env.SWA_CLI_API_PORT);
+  return IS_API_DEV_SERVER() ? DEFAULT_CONFIG.apiLocation : address(DEFAULT_CONFIG.host, DEFAULT_CONFIG.apiPort);
 }

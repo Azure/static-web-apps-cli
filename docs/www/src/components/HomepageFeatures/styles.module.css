@@ -1,0 +1,16 @@
+.features {
+  display: flex;
+  align-items: center;
+  padding: 2rem 0;
+  width: 100%;
+}
+
+.featureSvg {
+  height: 100px;
+  width:  100px;
+  fill: #FF4081;
+}
+
+a {
+  color: #FF4081;
+}

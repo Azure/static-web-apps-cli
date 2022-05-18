@@ -103,7 +103,7 @@ function getPlatform() {
 export async function getLatestCoreToolsRelease(targetVersion: number): Promise<CoreToolsRelease> {
   try {
     const response = await fetch(RELEASES_FEED_URL);
-    const feed = await response.json();
+    const feed = (await response.json()) as { releases: any; tags: any };
     const tag = feed.tags[`v${targetVersion}`];
     if (!tag || tag.hidden) {
       throw new Error(`Cannot find the latest version for v${targetVersion}`);
@@ -132,50 +132,55 @@ export async function getLatestCoreToolsRelease(targetVersion: number): Promise<
 }
 
 async function downloadAndUnzipPackage(release: CoreToolsRelease, dest: string) {
-  const response = await fetch(release.url);
-  const totalSize = Number(response.headers.get("content-length"));
   const progressBar = new cliProgress.Bar(
     {
       format: "{bar} {percentage}% | ETA: {eta}s",
     },
     cliProgress.Presets.shades_classic
   );
-  let downloadedSize = 0;
-  let since = Date.now();
-  progressBar.start(totalSize, downloadedSize);
+  try {
+    const response = await fetch(release.url);
+    const totalSize = Number(response.headers.get("content-length"));
 
-  const bodyStream1 = response.body.pipe(new PassThrough());
-  const bodyStream2 = response.body.pipe(new PassThrough());
+    let downloadedSize = 0;
+    let since = Date.now();
+    progressBar.start(totalSize, downloadedSize);
 
-  bodyStream2.on("data", (chunk) => {
-    downloadedSize += chunk.length;
-    const now = Date.now();
-    if (now - since > 100) {
-      progressBar.update(downloadedSize);
-      since = now;
-    }
-  });
+    const bodyStream1 = response?.body?.pipe(new PassThrough());
+    const bodyStream2 = response?.body?.pipe(new PassThrough());
 
-  const unzipPromise = new Promise((resolve, reject) => {
-    const unzipperInstance = unzipper.Extract({ path: dest });
-    unzipperInstance.promise().then(resolve, reject);
-    bodyStream2.pipe(unzipperInstance);
-  });
-
-  const hash = await new Promise((resolve) => {
-    const hash = crypto.createHash("sha256");
-    hash.setEncoding("hex");
-    bodyStream1.on("end", () => {
-      hash.end();
-      resolve(hash.read());
+    bodyStream2?.on("data", (chunk) => {
+      downloadedSize += chunk.length;
+      const now = Date.now();
+      if (now - since > 100) {
+        progressBar.update(downloadedSize);
+        since = now;
+      }
     });
-    bodyStream1.pipe(hash);
-  });
 
-  await unzipPromise;
+    const unzipPromise = new Promise((resolve, reject) => {
+      const unzipperInstance = unzipper.Extract({ path: dest });
+      unzipperInstance.promise().then(resolve, reject);
+      bodyStream2?.pipe(unzipperInstance);
+    });
 
-  if (hash !== release.sha2) {
-    throw new Error(`Downloaded Core Tools SHA2 mismatch: expected ${hash}, got ${release.sha2}`);
+    const hash = await new Promise((resolve) => {
+      const hash = crypto.createHash("sha256");
+      hash.setEncoding("hex");
+      bodyStream1?.on("end", () => {
+        hash.end();
+        resolve(hash.read());
+      });
+      bodyStream1?.pipe(hash);
+    });
+
+    await unzipPromise;
+
+    if (hash !== release.sha2) {
+      throw new Error(`Downloaded Core Tools SHA2 mismatch: expected ${hash}, got ${release.sha2}`);
+    }
+  } finally {
+    progressBar.stop();
   }
 }
 
@@ -221,7 +226,6 @@ export async function getCoreToolsBinary(): Promise<string | undefined> {
   const downloadedVersion = getDownloadedCoreToolsVersion(targetVersion);
   if (downloadedVersion) {
     // Should we check for newer versions here?
-
     return getCoreToolBinaryPath(targetVersion);
   }
 
@@ -241,6 +245,7 @@ export async function getCoreToolsBinary(): Promise<string | undefined> {
   } catch (error: unknown) {
     logger.error(`Failed to download Functions Core Tools v${targetVersion}.`);
     logger.error(error as Error);
+    console.log(error);
     return undefined;
   }
 }

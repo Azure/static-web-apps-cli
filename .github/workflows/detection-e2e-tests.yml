@@ -1,0 +1,17 @@
+name: E2E Tests for framework detection
+on:
+  push:
+    branches: [main, ga]
+
+jobs:
+  detection-e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 14.x
+    - name: Test framework detection
+      run: |
+        npm ci
+        npm run e2e:detection:test

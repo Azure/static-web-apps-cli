@@ -110,6 +110,10 @@ export function getStorageContent(
   // if the user is connecting to a remote dev server, we skip the following logic.
   if (IS_APP_DEV_SERVER()) {
     logger.silly(`remote dev server detected.`);
+    return {
+      isFunctionFallbackRequest: false,
+      isSuccessfulSiteHit: true,
+    };
   } else {
     requestPath = urlPathnameWithoutQueryParams;
     decodedRequestPath = urlPathnameWithoutQueryParams;
