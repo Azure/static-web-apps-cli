@@ -46,7 +46,7 @@ It will generate a configuration for you, then build your project and ask if you
 
 See [swa](../cli/swa) for more details.
 
-## Advanced usage
+## Extended usage
 
 Here are the currently supported `swa` commands. Use `swa <command> --help` to learn about options and usage for that particular command.
 
