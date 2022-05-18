@@ -1,5 +1,9 @@
 /// <reference types="cypress" />
 
+Cypress.Screenshot.defaults({
+  screenshotOnRunFailure: false,
+});
+
 context("route rules engine", { failOnStatusCode: false, defaultCommandTimeout: 20000 /* set this for Windows */ }, () => {
   it("root returns /index.html", () => {
     cy.visit("http://0.0.0.0:1234/").should(() => {
