@@ -4,7 +4,7 @@
  * work well for content-centric websites.
  */
 
-/* 
+/*
  * SWA CLI Theme Colors
  *  A400 - #F50057
  *  A200 - #FF4081
@@ -12,7 +12,7 @@
  */
 
 /* You can override the default Infima variables here. */
-:root {  
+:root {
   --ifm-color-primary: #f50057;
   --ifm-color-primary-dark: #dd004e;
   --ifm-color-primary-darker: #d0004a;
@@ -20,6 +20,7 @@
   --ifm-color-primary-light: #ff0f64;
   --ifm-color-primary-lighter: #ff1b6c;
   --ifm-color-primary-lightest: #ff4084;
+  --ifm-global-spacing: 2rem;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
