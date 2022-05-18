@@ -46,6 +46,10 @@ Thanks goes to these wonderful people 🎉
     <td align="center"><a href="https://github.com/jeremyVignelles"><img src="https://avatars.githubusercontent.com/u/3399355?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jérémy VIGNELLES</b></sub></a><br /><a href="https://github.com/Azure/static-web-apps-cli/commits?author=jeremyVignelles" title="Code">💻</a></td>
     <td align="center"><a href="http://craigshoemaker.io/"><img src="https://avatars.githubusercontent.com/u/127797?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Craig Shoemaker</b></sub></a><br /><a href="https://github.com/Azure/static-web-apps-cli/commits?author=craigshoemaker" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/anfibiacreativa"><img src="https://avatars.githubusercontent.com/u/4014025?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Natalia Venditto</b></sub></a><br /><a href="#research-anfibiacreativa" title="Research">🔬</a> <a href="#userTesting-anfibiacreativa" title="User Testing">📓</a></td>
+    <td align="center"><a href="https://fhinkel.rocks/"><img src="https://avatars.githubusercontent.com/u/101553?v=4?s=100" width="100px;" alt=""/><br /><sub><b>F. Hinkelmann</b></sub></a><br /><a href="#userTesting-fhinkel" title="User Testing">📓</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/glaucia86"><img src="https://avatars.githubusercontent.com/u/1631477?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Glaucia Lemos</b></sub></a><br /><a href="#userTesting-glaucia86" title="User Testing">📓</a></td>
   </tr>
 </table>
 
@@ -56,7 +60,7 @@ Thanks goes to these wonderful people 🎉
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 
-[![All Contributors](https://img.shields.io/badge/all_contributors-27-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-29-orange.svg?style=flat-square)](#contributors-)
 
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
