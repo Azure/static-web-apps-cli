@@ -7,7 +7,7 @@ sidebar_position: 3
 The SWA Emulator is run by using the `swa start` command.
 
 - It runs on `http://localhost:4280` by default.
-- Read the [docs](/docs/cli/swa-start) for more command details.
+- Read the [docs](https://azure.github.io/static-web-apps-cli/docs/cli/swa-start) for more command details.
 
 ## 2.1 Serve from current folder
 
