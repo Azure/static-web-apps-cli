@@ -23,7 +23,7 @@ export const apiFrameworks: FrameworkDefinition[] = [
     name: ".NET",
     files: ["*.?(csproj|fsproj)", "host.json"],
     config: {
-      apiBuildCommand: "dotnet build",
+      apiBuildCommand: "dotnet publish -c Release",
     },
   },
   {
@@ -416,10 +416,10 @@ export const appFrameworks: FrameworkDefinition[] = [
       "Program.cs": "WebAssemblyHostBuilder.CreateDefault",
     },
     config: {
-      appBuildCommand: "dotnet build",
+      appBuildCommand: "dotnet publish -c Release -o bin",
       appDevserverCommand: "dotnet watch run",
       appDevserverUrl: "http://localhost:8000",
-      outputLocation: "output",
+      outputLocation: "bin/wwwroot",
     },
   },
   {
