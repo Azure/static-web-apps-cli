@@ -19,8 +19,6 @@ This project welcomes contributions and suggestions. Most contributions require 
 - [Coding Rules](https://github.com/Azure/static-web-apps-cli/blob/main/CONTRIBUTING.md#coding-rules)
 - [Commit Message Guidelines](https://github.com/Azure/static-web-apps-cli/blob/main/CONTRIBUTING.md#commit-message-guidelines)
 
-> 🚧 | `TODO:` Update ga links to main.
-
 [cla]: https://cla.opensource.microsoft.com
 [coc]: https://opensource.microsoft.com/codeofconduct/
 [coc-faq]: https://opensource.microsoft.com/codeofconduct/faq/

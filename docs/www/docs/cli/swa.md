@@ -46,7 +46,7 @@ Here are the currently supported `swa` commands. Use `swa <command> --help` to l
 
 ## Usage
 
-Configure, build and deploy your project to Azure Static Web Apps:
+Configure, build, login and deploy your project to Azure Static Web Apps in one single command:
 
 ```bash
 swa
