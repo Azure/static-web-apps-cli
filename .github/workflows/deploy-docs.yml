@@ -9,6 +9,8 @@ jobs:
     name: Build and Deploy Job
     steps:
       - uses: actions/checkout@v2
+      - run: git config --global user.email "github@wassim.dev"
+      - run: git config --global user.name "Wassim Chegham"
       - name: Setup Node.js environment
         uses: actions/setup-node@v3.2.0
         with:
@@ -20,4 +22,4 @@ jobs:
           npm run deploy
         env:
           GITHUB_TOKEN: ${{ secrets.SWA_CLI_DEPLOY_DOCS_GH_PAGES }}
-          GIT_USER: "Azure"
+          GIT_USER: "manekinekko"
