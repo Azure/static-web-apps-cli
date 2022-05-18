@@ -20,3 +20,4 @@ jobs:
           npm run deploy
         env:
           GITHUB_TOKEN: ${{ secrets.SWA_CLI_DEPLOY_DOCS_GH_PAGES }}
+          GIT_USER: "Azure"
