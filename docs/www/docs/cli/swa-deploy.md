@@ -99,13 +99,13 @@ To deploy a Blazor app with (optional) an API to Azure Static Web Apps, use the 
 1. Build your Blazor app in Release mode:
 
 ```bash
-dotnet publish -c Release
+dotnet publish -c Release -o bin/publish
 ```
 
 2. From the root of your project, run the deploy command:
 
 ```bash
-swa deploy ./Client/bin/Release/net6.0/publish/wwwroot --api-location ./Api
+swa deploy ./bin/publish/wwwroot --api-location ./Api
 ```
 
 ### Deploy using the `swa-cli.config.json`
