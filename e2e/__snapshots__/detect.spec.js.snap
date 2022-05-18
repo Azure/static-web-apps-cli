@@ -1,0 +1,456 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`framework detection should detect from root framework angular 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Angular)"
+`;
+
+exports[`framework detection should detect from root framework angular-scully 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Angular, Scully)"
+`;
+
+exports[`framework detection should detect from root framework angular-universal 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Angular)"
+`;
+
+exports[`framework detection should detect from root framework astro 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Astro)"
+`;
+
+exports[`framework detection should detect from root framework astro-alpine 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Astro)"
+`;
+
+exports[`framework detection should detect from root framework astro-lit 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Astro)"
+`;
+
+exports[`framework detection should detect from root framework astro-multiple 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Astro)"
+`;
+
+exports[`framework detection should detect from root framework astro-preact 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Astro)"
+`;
+
+exports[`framework detection should detect from root framework astro-react 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Astro)"
+`;
+
+exports[`framework detection should detect from root framework astro-solid 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Astro)"
+`;
+
+exports[`framework detection should detect from root framework astro-svelte 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Astro)"
+`;
+
+exports[`framework detection should detect from root framework astro-vue 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Astro)"
+`;
+
+exports[`framework detection should detect from root framework aurelia 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Aurelia)"
+`;
+
+exports[`framework detection should detect from root framework blazor-server 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (0):
+- "
+`;
+
+exports[`framework detection should detect from root framework blazor-wasm 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Blazor WASM)"
+`;
+
+exports[`framework detection should detect from root framework brunch 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Brunch)"
+`;
+
+exports[`framework detection should detect from root framework capacitor 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- www (Static HTML)"
+`;
+
+exports[`framework detection should detect from root framework docsify 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Static HTML)"
+`;
+
+exports[`framework detection should detect from root framework docusaurus 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (React, Docusaurus)"
+`;
+
+exports[`framework detection should detect from root framework dotnet 1`] = `
+"Detected api folders (1):
+- . (.NET)
+Detected app folders (0):
+- "
+`;
+
+exports[`framework detection should detect from root framework dotnet-csx 1`] = `
+"Detected api folders (1):
+- . (.NET)
+Detected app folders (0):
+- "
+`;
+
+exports[`framework detection should detect from root framework dotnet-isolated 1`] = `
+"Detected api folders (1):
+- . (.NET)
+Detected app folders (0):
+- "
+`;
+
+exports[`framework detection should detect from root framework eleventy 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Eleventy)"
+`;
+
+exports[`framework detection should detect from root framework elm 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Elm)"
+`;
+
+exports[`framework detection should detect from root framework ember 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Ember.js)"
+`;
+
+exports[`framework detection should detect from root framework flutter 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Flutter)"
+`;
+
+exports[`framework detection should detect from root framework gridsome 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Gridsome)"
+`;
+
+exports[`framework detection should detect from root framework hexo 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Hexo)"
+`;
+
+exports[`framework detection should detect from root framework hugo 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Hugo)"
+`;
+
+exports[`framework detection should detect from root framework ionic-angular 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Angular)"
+`;
+
+exports[`framework detection should detect from root framework ionic-react 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (React)"
+`;
+
+exports[`framework detection should detect from root framework ionic-vue 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Vue.js)"
+`;
+
+exports[`framework detection should detect from root framework jekyll 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Jekyll)"
+`;
+
+exports[`framework detection should detect from root framework lektor 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Lektor)"
+`;
+
+exports[`framework detection should detect from root framework lit 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Lit)"
+`;
+
+exports[`framework detection should detect from root framework marko 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (0):
+- "
+`;
+
+exports[`framework detection should detect from root framework mdbook 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (mdBook)"
+`;
+
+exports[`framework detection should detect from root framework metalsmith 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Metalsmith)"
+`;
+
+exports[`framework detection should detect from root framework meteor 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (0):
+- "
+`;
+
+exports[`framework detection should detect from root framework middleman 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Middleman)"
+`;
+
+exports[`framework detection should detect from root framework mkdocs 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (MkDocs)"
+`;
+
+exports[`framework detection should detect from root framework nextjs 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (React, Next.js)"
+`;
+
+exports[`framework detection should detect from root framework node 1`] = `
+"Detected api folders (1):
+- . (Node.js)
+Detected app folders (0):
+- "
+`;
+
+exports[`framework detection should detect from root framework node-ts 1`] = `
+"Detected api folders (1):
+- . (Node.js, TypeScript)
+Detected app folders (0):
+- "
+`;
+
+exports[`framework detection should detect from root framework nuxtjs 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Vue.js, Nuxt.js)"
+`;
+
+exports[`framework detection should detect from root framework pelican 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Pelican)"
+`;
+
+exports[`framework detection should detect from root framework polymer 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Polymer)"
+`;
+
+exports[`framework detection should detect from root framework preact 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Preact)"
+`;
+
+exports[`framework detection should detect from root framework python 1`] = `
+"Detected api folders (1):
+- . (Python)
+Detected app folders (0):
+- "
+`;
+
+exports[`framework detection should detect from root framework react 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (React)"
+`;
+
+exports[`framework detection should detect from root framework react-static 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (React, React-static)"
+`;
+
+exports[`framework detection should detect from root framework remix 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Remix)"
+`;
+
+exports[`framework detection should detect from root framework riot 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Riot.js)"
+`;
+
+exports[`framework detection should detect from root framework sapper 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Sapper)"
+`;
+
+exports[`framework detection should detect from root framework slate 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Slate)"
+`;
+
+exports[`framework detection should detect from root framework solid 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Solid)"
+`;
+
+exports[`framework detection should detect from root framework static 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Static HTML)"
+`;
+
+exports[`framework detection should detect from root framework stencil 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Stencil.js)"
+`;
+
+exports[`framework detection should detect from root framework svelte 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Svelte)"
+`;
+
+exports[`framework detection should detect from root framework svelte-kit 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (SvelteKit)"
+`;
+
+exports[`framework detection should detect from root framework vitepress 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (VitePress)"
+`;
+
+exports[`framework detection should detect from root framework vue 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Vue.js, Vite)"
+`;
+
+exports[`framework detection should detect from root framework vuepress 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- docs (VuePress)"
+`;
+
+exports[`framework detection should detect from root framework wintersmith 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Wintersmith)"
+`;
+
+exports[`framework detection should detect from root framework zola 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Zola)"
+`;
