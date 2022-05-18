@@ -45,7 +45,7 @@ Don't store the deployment token in a public repository. It should be kept secre
 
 You can deploy a front-end application (without an API) to Azure Static Web Apps by running the following steps:
 
-1. If your front-end application requires a build step, run [`swa build`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-build) or refer to your application build instructions.
+1. If your front-end application requires a build step, run [`swa build`](./swa-build) or refer to your application build instructions.
 
 **Option 1:** From build folder you would like to deploy, run the deploy command:
 
@@ -58,7 +58,7 @@ swa deploy
 
 **Option 2:** You can also deploy a specific folder:
 
-1. If your front-end application requires a build step, run [`swa build`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-build) or refer to your application build instructions.
+1. If your front-end application requires a build step, run [`swa build`](./swa-build) or refer to your application build instructions.
 
 2. Deploy your app:
 
@@ -70,7 +70,7 @@ swa deploy ./my-dist
 
 To deploy both the front-end app and an API to Azure Static Web Apps, use the following steps:
 
-1. If your front-end application requires a build step, run [`swa build`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-build) or refer to your application build instructions.
+1. If your front-end application requires a build step, run [`swa build`](./swa-build) or refer to your application build instructions.
 
 2. Make sure the[ API language runtime version](https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#platform) in the `staticwebapp.config.json` file is set correctly, for example:
 
@@ -110,7 +110,7 @@ swa deploy ./bin/publish/wwwroot --api-location ./Api
 
 ### Deploy using the `swa-cli.config.json`
 
-If you are using a [`swa-cli.config.json`](#swa-cli.config.json) configuration file in your project and have a single configuration entry, for example:
+If you are using a [`swa-cli.config.json`](./swa-config) configuration file in your project and have a single configuration entry, for example:
 
 ```json
 {
@@ -132,7 +132,7 @@ If you are using a [`swa-cli.config.json`](#swa-cli.config.json) configuration f
 
 Then you can deploy your application by running the following steps:
 
-1. If your front-end application requires a build step, run [`swa build`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-build) or refer to your application build instructions.
+1. If your front-end application requires a build step, run [`swa build`](./swa-build) or refer to your application build instructions.
 
 2. Deploy your app:
 
@@ -204,6 +204,6 @@ swa deploy --env production
 
 ## See Also
 
-- [swa](https://azure.github.io/static-web-apps-cli/docs/cli/swa)
-- [swa login](https://azure.github.io/static-web-apps-cli/docs/cli/swa-login)
-- [Environment Variables](https://azure.github.io/static-web-apps-cli/docs/cli/env-vars)
+- [swa](./swa)
+- [swa login](./swa-login)
+- [Environment Variables](./env-vars)

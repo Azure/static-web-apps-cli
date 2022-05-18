@@ -1,6 +1,5 @@
 import React from "react";
 import clsx from "clsx";
-import Link from "@docusaurus/Link";
 import styles from "./styles.module.css";
 
 const FeatureList = [
@@ -13,14 +12,6 @@ const FeatureList = [
         Install the Azure Static Web Apps CLI
         <br />
         using <b>yarn</b> or <b>npm</b>.
-        <br />
-        {/*
-        <Link
-          className="button button--secondary button--sm"
-          to="https://docs.microsoft.com/en-us/azure/static-web-apps/getting-started?tabs=vanilla-javascript">
-          Get Started With SWA
-        </Link>
-     */}
       </>
     ),
   },
@@ -88,7 +79,7 @@ function Feature({ Svg, title, description, link }) {
   return (
     <div className={clsx("col col--4")}>
       <div className="text--center">
-        <a href={link} target="_blank">
+        <a href={link}>
           <Svg className={styles.featureSvg} role="img" />
         </a>
       </div>

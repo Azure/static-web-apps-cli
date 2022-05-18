@@ -21,8 +21,7 @@ function getBuildId() {
 const config = {
   title: "Static Web Apps CLI",
   tagline: "All-in-One Local Development Tool For Azure Static Web Apps",
-  onBrokenLinks: "throw",
-  onBrokenMarkdownLinks: "warn",
+  onBrokenLinks: "error",
   favicon: "img/favicon.ico",
 
   url: "https://azure.github.io",
