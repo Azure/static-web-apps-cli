@@ -15,20 +15,22 @@ title: Environment Variables
 
 ## Emulator Settings
 
-| Environment Variable      | Purpose                                                                          | Read Only? | Default Value |
-| ------------------------- | -------------------------------------------------------------------------------- | ---------- | ------------- |
-| SWA_CLI_API_LOCATION      | Folder containing the source code of the API application                         |            | `./api`       |
-| SWA_CLI_APP_LOCATION      | Folder containing the source code of the front-end application                   |            | `./`          |
-| SWA_CLI_OUTPUT_LOCATION   | Folder containing the front-end public files                                     |            | `./`          |
-| SWA_CLI_HOST              | Host address to use for the CLI dev server                                       |            | `localhost`   |
-| SWA_CLI_PORT              | Host port to use for the CLI dev server                                          |            | `4280`        |
-| SWA_CLI_API_PORT          | API server port to use                                                           |            | `7071`        |
-| SWA_CLI_APP_SSL           | Use HTTPS to serve the front-end application and API (`true` or `false`)         |            | `false`       |
-| SWA_CLI_APP_SSL_KEY       | SSL key (.key) to use when enabling HTTPS                                        |            |               |
-| SWA_CLI_APP_SSL_CERT      | SSL certificate (.crt) to use when enabling HTTPS                                |            |               |
-| SWA_CLI_STARTUP_COMMAND   | Run a custom shell command or script file at startup                             |            |               |
-| SWA_CLI_OPEN_BROWSER      | Automatically open the CLI dev server in the default browser (`true` or `false`) |            | `false`       |
-| SWA_CLI_DEVSERVER_TIMEOUT | The time to wait (in ms) when connecting to a front-end application's dev server |            | `30000`       |
+| Environment Variable      | Purpose                                                                                             | Read Only? | Default Value |
+| ------------------------- | --------------------------------------------------------------------------------------------------- | ---------- | ------------- |
+| SWA_CLI_API_LOCATION      | Folder containing the source code of the API application                                            |            | `./api`       |
+| SWA_CLI_APP_LOCATION      | Folder containing the source code of the front-end application                                      |            | `./`          |
+| SWA_CLI_OUTPUT_LOCATION   | Folder containing the front-end public files                                                        |            | `./`          |
+| SWA_CLI_HOST              | Host address to use for the CLI dev server                                                          |            | `localhost`   |
+| SWA_CLI_PORT              | Host port to use for the CLI dev server                                                             |            | `4280`        |
+| SWA_CLI_API_PORT          | API server port to use                                                                              |            | `7071`        |
+| SWA_CLI_APP_SSL           | Use HTTPS to serve the front-end application and API (`true` or `false`)                            |            | `false`       |
+| SWA_CLI_APP_SSL_KEY       | SSL key (.key) to use when enabling HTTPS                                                           |            |               |
+| SWA_CLI_APP_SSL_CERT      | SSL certificate (.crt) to use when enabling HTTPS                                                   |            |               |
+| SWA_CLI_STARTUP_COMMAND   | Run a custom shell command or script file at startup                                                |            |               |
+| SWA_CLI_OPEN_BROWSER      | Automatically open the CLI dev server in the default browser (`true` or `false`)                    |            | `false`       |
+| SWA_CLI_SERVER_TIMEOUT    | The time to wait (in seconds) when connecting to a front-end application's dev server or api server |            | `60`          |
+| SWA_CLI_APP_DEVSERVER_URL | Connect to the dev server at this URL instead of using output location                              |            |               |
+| SWA_CLI_API_DEVSERVER_URL | Connect to the api server at this URL instead of using output location                              |            |               |
 
 ## Deploy settings
 
@@ -54,8 +56,10 @@ title: Environment Variables
 
 ## Azure Identity
 
-| Environment Variable | Purpose                          | Read Only? | Default Value |
-| -------------------- | -------------------------------- | ---------- | ------------- |
-| AZURE_CLIENT_ID      | Azure Active Directory client ID |            |               |
-| AZURE_CLIENT_SECRET  | Azure Active Directory secret    |            |               |
-| AZURE_TENANT_ID      | Azure Active Directory tenant ID |            |               |
+| Environment Variable            | Purpose                                                                                          | Read Only? | Default Value |
+| ------------------------------- | ------------------------------------------------------------------------------------------------ | ---------- | ------------- |
+| SWA_CLI_LOGIN_USE_KEYCHAIN      | Enable using the operating system native keychain for persistent credentials (`true` or `false`) |            | `true`        |
+| SWA_CLI_LOGIN_CLEAR_CREDENTIALS | Clear clear persisted credentials before login (`true` or `false`)                               |            | `false`       |
+| AZURE_CLIENT_ID                 | Azure Active Directory client ID                                                                 |            |               |
+| AZURE_CLIENT_SECRET             | Azure Active Directory secret                                                                    |            |               |
+| AZURE_TENANT_ID                 | Azure Active Directory tenant ID                                                                 |            |               |
