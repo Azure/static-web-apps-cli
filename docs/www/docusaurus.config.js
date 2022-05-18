@@ -104,7 +104,7 @@ const config = {
         id: "Landing Page Banner",
         content:
           'If you like SWA CLI, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/Azure/static-web-apps-cli/stargazers">GitHub</a> and follow us on <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/AzureStaticApps">Twitter</a>',
-        backgroundColor: "#eb5281",
+        backgroundColor: "#cc4fc2",
         textColor: "#FFFFFF",
         isCloseable: false,
       },
