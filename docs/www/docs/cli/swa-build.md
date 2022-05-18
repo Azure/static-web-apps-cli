@@ -62,6 +62,6 @@ swa build myApp
 
 ## See Also
 
-- [swa](docs/cli/swa) - The Static Web Apps CLI
-- [swa start](swa-start)
-- [swa deploy](swa-deploy)
+- [swa](https://azure.github.io/static-web-apps-cli/docs/cli/swa) - The Static Web Apps CLI
+- [swa start](https://azure.github.io/static-web-apps-cli/docs/cli/swa-start)
+- [swa deploy](https://azure.github.io/static-web-apps-cli/docs/cli/swa-deploy)
