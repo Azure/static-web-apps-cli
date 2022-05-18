@@ -157,7 +157,7 @@ export async function deploy(options: SWACLIConfig) {
         logger.log(`\nChecking project settings...`);
       }
 
-      const { resourceGroupName, staticSiteName } = (await chooseOrCreateProjectDetails(options, credentialChain, subscriptionId)) as {
+      const { resourceGroupName, staticSiteName } = (await chooseOrCreateProjectDetails(options, credentialChain, subscriptionId, printToken)) as {
         resourceGroupName: string;
         staticSiteName: string;
       };

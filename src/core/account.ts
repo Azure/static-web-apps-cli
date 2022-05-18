@@ -252,14 +252,19 @@ async function chooseOrCreateStaticSite(
   return staticSites.find((s) => s.name === staticSite) as StaticSiteARMResource;
 }
 
-export async function chooseOrCreateProjectDetails(options: SWACLIConfig, credentialChain: TokenCredential, subscriptionId: string) {
+export async function chooseOrCreateProjectDetails(
+  options: SWACLIConfig,
+  credentialChain: TokenCredential,
+  subscriptionId: string,
+  shouldPrintToken: boolean | undefined
+) {
   const staticSite = (await chooseOrCreateStaticSite(options, credentialChain, subscriptionId)) as StaticSiteARMResource;
 
   logger.silly("Static site found!");
   logger.silly({ staticSite });
 
   if (staticSite && staticSite.id) {
-    if (staticSite.provider !== "Custom" && staticSite.provider !== "None") {
+    if (shouldPrintToken === false && staticSite.provider !== "Custom" && staticSite.provider !== "None") {
       // TODO: add a temporary warning message until we ship `swa link/unlink`
       logger.error(`The project "${staticSite.name}" is linked to "${staticSite.provider}"!`);
       logger.error(`Unlink the project from the "${staticSite.provider}" provider and try again.`, true);
