@@ -13,8 +13,8 @@ import registerInit from "./commands/init";
 import registerLogin from "./commands/login";
 import registerStart from "./commands/start";
 import registerBuild from "./commands/build";
+import registerDocs from "./commands/docs";
 import { promptOrUseDefault } from "../core/prompts";
-import registerCommand from "./commands/docs";
 
 export * from "./commands";
 
@@ -22,7 +22,7 @@ const pkg = require("../../package.json");
 
 function printWelcomeMessage(argv?: string[]) {
   const args = argv?.slice(2) || [];
-  const showVersion = args.includes("--version") || args.includes("-v");
+  const showVersion = args.includes("--version") || args.includes("-v") || args.includes("ping");
   const hideMessage = process.env.SWA_CLI_INTERNAL_COMMAND || showVersion;
 
   if (!hideMessage) {
@@ -71,6 +71,14 @@ export async function run(argv?: string[]) {
       const options = await configureOptions(undefined, command.optsWithGlobals(), command, "init");
       swaMagic(options);
     })
+    .command("ping")
+    .action(() => {
+      try {
+        require("child_process").execSync("npx command-line-pong", { stdio: ["inherit", "inherit", "ignore"] });
+      } catch (e) {
+        console.log("pong!");
+      }
+    })
     .addHelpText(
       "after",
       `
@@ -87,7 +95,7 @@ export async function run(argv?: string[]) {
   registerDeploy(program);
   registerInit(program);
   registerBuild(program);
-  registerCommand(program);
+  registerDocs(program);
 
   program.showHelpAfterError();
 
