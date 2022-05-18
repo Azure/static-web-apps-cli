@@ -52,11 +52,11 @@ See [swa](https://azure.github.io/static-web-apps-cli/) for more details.
 
 Here are the currently supported `swa` commands. Use `swa <command> --help` to learn about options and usage for that particular command.
 
-- [`login`](https://azure.github.io/static-web-apps-cli//cli/swa-login): login into Azure
-- [`init`](https://azure.github.io/static-web-apps-cli//cli/swa-init): initialize a new static web app project
-- [`start`](https://azure.github.io/static-web-apps-cli//cli/swa-start): start the emulator from a directory or bind to a dev server
-- [`deploy`](https://azure.github.io/static-web-apps-cli//cli/swa-deploy): deploy the current project to Azure Static Web Apps
-- [`build`](https://azure.github.io/static-web-apps-cli//cli/swa-build): build your project
+- [`login`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-login): login into Azure
+- [`init`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-init): initialize a new static web app project
+- [`start`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-start): start the emulator from a directory or bind to a dev server
+- [`deploy`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-deploy): deploy the current project to Azure Static Web Apps
+- [`build`](https://azure.github.io/static-web-apps-cli/docs/cli/swa-build): build your project
 
 ### Using `npx`:
 
