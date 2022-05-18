@@ -44,25 +44,25 @@ Fork and clone the SWA CLI repository:
 
 3. Clone your fork of the SWA CLI repository:
 
-```shell
+```bash
 git clone https://github.com/{YOUR_GITHUB_ACCOUNT}/static-web-apps-cli.git
 ```
 
 4. **OPTIONAL**: Clone a specific feature branch:
 
-```shell
+```bash
 git clone -b BRANCH_NAME https://github.com/{YOUR_GITHUB_ACCOUNT}/static-web-apps-cli.git
 ```
 
 5. Go to the SWA CLI directory:
 
-```shell
+```bash
 cd static-web-apps-cli
 ```
 
 6. Define an `upstream` remote pointing back to the SWA CLI repository that you forked in the first place
 
-```shell
+```bash
 git remote add upstream https://github.com/azure/static-web-apps-cli.git
 ```
 
@@ -70,7 +70,7 @@ git remote add upstream https://github.com/azure/static-web-apps-cli.git
 
 Next, install SWA CLI project dependencies defined in the [`package.json`](../package.json)) file:
 
-```shell
+```bash
 npm install
 ```
 
@@ -78,7 +78,7 @@ npm install
 
 To build SWA CLI, run:
 
-```shell
+```bash
 npm run build
 ```
 
@@ -86,7 +86,7 @@ This step will create a `./dist` folder containing the built project.
 
 Test that the CLI is running as expected using the command:
 
-```shell
+```bash
 node dist/cli/bin.js -h
 ```
 
@@ -102,7 +102,7 @@ Often for developers the best way to ensure the changes they have made work as e
 
 From the root folder of your project (where `package.json` is located), run:
 
-```shell
+```bash
 npm link ./
 ```
 

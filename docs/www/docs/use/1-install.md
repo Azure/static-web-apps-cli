@@ -4,9 +4,9 @@ sidebar_position: 1
 
 # 1. Install the SWA CLI
 
-You can install the Static Web Apps CLI using either [`npm`](https://docs.npmjs.com/cli/v6/commands/npm-install) or [`yarn`](https://classic.yarnpkg.com/lang/en/docs/cli/install/).
+You can install the Static Web Apps CLI using [`npm`](https://docs.npmjs.com/cli/v6/commands/npm-install), [`yarn`](https://classic.yarnpkg.com/lang/en/docs/cli/install/) or [`pnpm`](https://pnpm.io/cli/install).
 
-## Install with npm
+## Installing the CLI
 
 **See: **[@azure/static-web-apps-cli](https://www.npmjs.com/package/@azure/static-web-apps-cli) .
 
@@ -16,51 +16,58 @@ You can install the Static Web Apps CLI using either [`npm`](https://docs.npmjs.
 npm install -g @azure/static-web-apps-cli
 ```
 
-2. The recommended approach is to install this locally, as a devDependency using:
+:::info Note
+You can also install the SWA CLI inside a project (instead of globally) as a development dependency using:
 
 ```bash
 npm install -D @azure/static-web-apps-cli
 ```
 
-## Install with yarn
-
-**See: **[@azure/static-web-apps-cli](hhttps://yarnpkg.com/package/@azure/static-web-apps-cli).
-
-1. To install this globally, use:
-
-```bash
-yarn add global @azure/static-web-apps-cli
-```
-
-2. The recommended approach is to install this locally, as a devDependency, using:
-
-```bash
-yarn add -D @azure/static-web-apps-cli
-```
+:::
 
 ## Validate the install
 
-Installing the package should make the **swa** command available on your development machine. To validate, try using the command with an appropriate option.
-
-For instance, check the installed version.
+Installing the package will make the **`swa`** command available on your development machine. To validate your install, you can check the installed version with:
 
 ```bash
-$ swa --version
-0.8.3
+swa --version
+# Should print out the version number
 ```
+
+## Basic usage
+
+The best way to get started is to run the `swa` command alone and follow the interactive prompts.
+
+```bash
+swa
+```
+
+It will generate a configuration for you, then build your project and ask if you want to deploy it to Azure.
+
+See [swa](../cli/swa) for more details.
+
+## Advanced usage
+
+Here are the currently supported `swa` commands. Use `swa <command> --help` to learn about options and usage for that particular command.
+
+- [`login`](../cli/swa-login): login into Azure
+- [`init`](../cli/swa-init): initialize a new static web app project
+- [`start`](../cli/swa-start): start the emulator from a directory or bind to a dev server
+- [`deploy`](../cli/swa-deploy): deploy the current project to Azure Static Web Apps
+- [`build`](../cli/swa-build): build your project
 
 ## Run using npx
 
 The [npx](https://docs.npmjs.com/cli/v7/commands/npx) command (aka "npm exec") lets you run an arbitrary command from a local or remote npm package. If the command was not installed globally on the device, this installs it for you in a central cache - making it a useful option if you want to use different versions of the same command on the local device.
 
-We can now run any Static Web Apps CLI commands directly using npx - for example: check the version as follows:
+You can run any Static Web Apps CLI commands directly using npx. For example:
 
 ```bash
-$ npx @azure/static-web-apps-cli --version
+npx @azure/static-web-apps-cli --version
 ```
 
-Or use this command to start the emulator on your local device:
+Or use this command to start the emulator:
 
 ```bash
-$ npx @azure/static-web-apps-cli start
+npx @azure/static-web-apps-cli start
 ```

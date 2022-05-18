@@ -1,6 +1,6 @@
 {
-  "name": "docs-www",
-  "version": "0.0.0",
+  "name": "@azure/static-web-apps-cli-docs",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
