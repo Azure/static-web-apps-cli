@@ -8,5 +8,9 @@
 .featureSvg {
   height: 100px;
   width:  100px;
-  fill: #df004c;
+  fill: #FF4081;
+}
+
+a {
+  color: #FF4081;
 }
