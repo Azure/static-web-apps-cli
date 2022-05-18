@@ -328,6 +328,10 @@ function findFile(fileglob: string, files: string[]): string | undefined {
 }
 
 function filesFromRootPath(rootPath: string, files: string[]): string[] {
+  if (rootPath === "." || rootPath === `.${path.sep}`) {
+    return files;
+  }
+
   return files.filter((file) => file.startsWith(rootPath));
 }
 
