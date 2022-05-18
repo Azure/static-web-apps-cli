@@ -320,7 +320,7 @@ export const appFrameworks: FrameworkDefinition[] = [
   {
     id: "flutter",
     name: "Flutter",
-    files: ["pubspec.yaml", "flutterapp.iml"],
+    files: ["pubspec.yaml", "web"],
     config: {
       appBuildCommand: "flutter build web",
       appDevserverCommand: "flutter run --web-port 8080",
