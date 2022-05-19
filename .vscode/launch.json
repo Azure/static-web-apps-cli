@@ -1,7 +1,7 @@
 {
   "configurations": [
     {
-      "command": "npm start",
+      "command": "swa deploy --app-location ./cypress/fixtures/static/app --api-location ../api --api-language node --api-version 14 --verbose=silly",
       "name": "Run npm start",
       "request": "launch",
       "type": "node-terminal"
