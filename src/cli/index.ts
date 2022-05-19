@@ -22,7 +22,7 @@ const pkg = require("../../package.json");
 
 function printWelcomeMessage(argv?: string[]) {
   const args = argv?.slice(2) || [];
-  const showVersion = args.includes("--version") || args.includes("-v") || args.includes("ping");
+  const showVersion = args.includes("--version") || args.includes("-v") || args.includes("--ping");
   const hideMessage = process.env.SWA_CLI_INTERNAL_COMMAND || showVersion;
 
   if (!hideMessage) {
@@ -68,16 +68,17 @@ export async function run(argv?: string[]) {
     .option("-cn, --config-name <name>", "name of the configuration to use", undefined)
     .option("-g, --print-config", "print all resolved options", false)
     .action(async (_options: SWACLIConfig, command: Command) => {
+      if ((_options as any).ping) {
+        try {
+          require("child_process").execSync("npx command-line-pong", { stdio: ["inherit", "inherit", "ignore"] });
+        } catch (e) {
+          console.log("pong!");
+        }
+        return;
+      }
+
       const options = await configureOptions(undefined, command.optsWithGlobals(), command, "init");
       swaMagic(options);
-    })
-    .command("ping")
-    .action(() => {
-      try {
-        require("child_process").execSync("npx command-line-pong", { stdio: ["inherit", "inherit", "ignore"] });
-      } catch (e) {
-        console.log("pong!");
-      }
     })
     .addHelpText(
       "after",
@@ -98,6 +99,7 @@ export async function run(argv?: string[]) {
   registerDocs(program);
 
   program.showHelpAfterError();
+  program.addOption(new Option("--ping").hideHelp());
 
   await program.parseAsync(argv);
 }
