@@ -311,28 +311,27 @@ function printSchemaValidationWarnings(filepath: string, data: SWAConfigFile | u
         sourceCodeWhereErrorHappened += chalk.grey(`${index}:`) + ` ${line}\n`;
       }
     }
-  }
+    logger.warn(`WARNING: Failed to read staticwebapp.config.json configuration from:\n   ${filepath}\n`);
+    let errorMessage = error?.message ?? "Unknown error";
+    switch (error?.keyword) {
+      case "enum":
+        errorMessage = error?.message + " " + error.params.allowedValues.join(", ");
+        break;
+      case "type":
+        errorMessage = error?.message!;
+        break;
+      case "required":
+        errorMessage = `The property "${error?.params.missingProperty}" is required.`;
+        break;
+      case "additionalProperties":
+        errorMessage = `The property "${error.params.additionalProperty}" is not allowed (Line: ${startLine})`;
+        break;
+      //TODO: add more cases
+    }
+    logger.warn(`The following error was encountered: ${errorMessage}`);
 
-  logger.warn(`WARNING: Failed to read staticwebapp.config.json configuration from:\n   ${filepath}\n`);
-  let errorMessage = error?.message ?? "Unknown error";
-  switch (error?.keyword) {
-    case "enum":
-      errorMessage = error?.message + " " + error.params.allowedValues.join(", ");
-      break;
-    case "type":
-      errorMessage = error?.message!;
-      break;
-    case "required":
-      errorMessage = `The property "${error?.params.missingProperty}" is required.`;
-      break;
-    case "additionalProperties":
-      errorMessage = `The property "${error.params.additionalProperty}" is not allowed`;
-      break;
-    //TODO: add more cases
+    logger.warn(sourceCodeWhereErrorHappened);
+    logger.warn(`Please fix the above error and try again to load and use the configuration.`);
+    logger.warn(`Read more: https://aka.ms/swa/config-schema`);
   }
-  logger.error(`The following error was encountered: ${errorMessage}`);
-
-  logger.warn(sourceCodeWhereErrorHappened);
-  logger.warn(`Please fix the above error and try again to load and use the configuration.`);
-  logger.warn(`Read more: https://aka.ms/swa/config-schema`);
 }
