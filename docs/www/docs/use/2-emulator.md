@@ -9,7 +9,7 @@ The SWA Emulator is run by using the `swa start` command.
 - It runs on `http://localhost:4280` by default.
 - Read the [swa start](../cli/swa-start) documentation for more command details.
 
-## 2.1 Serve from current folder
+## 2.1 Serve from the current folder
 
 By default, the CLI starts and serves any the static content from the current working directory:
 
@@ -19,7 +19,7 @@ swa start
 
 ## 2.2 Serve from a specified folder
 
-You can override the behavior to start the emulator with a different staic assets folder. For instance, if your application artifacts are in `./my-dist` then use:
+You can override the behavior to start the emulator with a different static assets folder. For instance, if your application artifacts are in `./my-dist` then use:
 
 ```bash
 swa start ./my-dist
@@ -27,12 +27,12 @@ swa start ./my-dist
 
 ## 2.3 Serve from dev server
 
-When developing your SWA front-end, you may want to use the front-end framework's default dev server (started using its CLI) to get benefits like liverealod and hot module replacement (HMR). <br/> **For Example:** Angular devs may use `ng serve` or `npm start` to run that dev server. <br/>
+When developing your SWA front-end, you may want to use the front-end framework's default dev server (started using its CLI) to get benefits like live reload and hot module replacement (HMR). <br/> **For Example:** Angular devs may use `ng serve` or `npm start` to run that dev server. <br/>
 
-SWA CLI can reverse proxy requests to that dev server, allowing you to retain the above benefits during local development of your SWA. You can achieve this in two steps:
+SWA CLI can reverse proxy requests to that dev server, allowing you to retain the above benefits during the local development of your SWA. You can achieve this in two steps:
 
 1.  Start the local dev server as usual. _Note the URL (localhost:port) the dev server runs on._
-2.  Start the SWA CLI in a new terminal _with dev server URL specified._
+2.  Start the SWA CLI in a new terminal _with the dev server URL specified._
 
 ```bash
 swa start <dev-server-url>

@@ -13,7 +13,7 @@ By using the SWA CLI, we can streamline the local development workflow (across A
 
 - verify that [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local) is installed in your local development environment.
 - download or update the [right version](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local#install-the-azure-functions-core-tools) for you if needed.
-- give you flexibility to have the CLI manage the API server launch if needed.
+- give you the flexibility to have the CLI manage the API server launch if needed.
 
 Let's explore these options.
 
@@ -37,7 +37,7 @@ swa start ./my-dist --api-location http://localhost:7071
 
 ## 4.3 Start API Server Automatically
 
-This assumes you have previously created (and tested) an Azure Functions App project that is now located in an `api` folder in your local development enviroment.
+This assumes you have previously created (and tested) an Azure Functions App project that is now located in an `api` folder in your local development environment.
 
 1. Launch the API server alongside the SWA emulator
 
