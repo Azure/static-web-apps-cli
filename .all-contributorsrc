@@ -282,6 +282,15 @@
       "contributions": [
         "userTesting"
       ]
+    },
+    {
+      "login": "SIkebe",
+      "name": "SIkebe",
+      "avatar_url": "https://avatars.githubusercontent.com/u/17608272?v=4",
+      "profile": "https://github.com/SIkebe",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
