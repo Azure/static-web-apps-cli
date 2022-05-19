@@ -303,5 +303,5 @@
     }
   ],
   "contributorsPerLine": 6,
-  "skipCi": true
+  "skipCi": false
 }
