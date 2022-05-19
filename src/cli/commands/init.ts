@@ -24,7 +24,7 @@ export default function registerCommand(program: Command) {
     .action(async (configName: string | undefined, _options: SWACLIConfig, command: Command) => {
       const options = await configureOptions(undefined, command.optsWithGlobals(), command, "init", false);
       if (configName) {
-        if (isUserOption('configName')) {
+        if (isUserOption("configName")) {
           logger.error(`swa init <configName> cannot be used when --config-name option is also set.`);
           logger.error(`You either have to use the positional argument or option, not both at the same time.`, true);
         }
@@ -71,19 +71,19 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
       name: "app",
       message: "Which app folder do you want to use?",
       choices: detectedFolders.app.map((folder) => ({ title: folder.rootPath, value: folder })),
-      initial: 0
+      initial: 0,
     });
 
     // Workaround for bug https://github.com/terkelg/prompts/issues/205
-    app = typeof response.app === 'number' ? detectedFolders.app[response.app] : response.app
+    app = typeof response.app === "number" ? detectedFolders.app[response.app] : response.app;
   }
 
   // Check if we can find api folders under selected app folder, and filter selection if we found some
   if (app !== undefined) {
-    const childApiFolders = detectedFolders.api.filter(folder => isDescendantPath(folder.rootPath, app!.rootPath));
+    const childApiFolders = detectedFolders.api.filter((folder) => isDescendantPath(folder.rootPath, app!.rootPath));
     if (childApiFolders.length > 0) {
       logger.silly(`Found (${childApiFolders.length}) api folders under the app folder`);
-      logger.silly(`- ${childApiFolders.map(f => `${f.rootPath} (${f.frameworks.map(fr => fr.name).join(', ')})`).join("\n- ")}`);
+      logger.silly(`- ${childApiFolders.map((f) => `${f.rootPath} (${f.frameworks.map((fr) => fr.name).join(", ")})`).join("\n- ")}`);
       detectedFolders.api = childApiFolders;
     }
   }
@@ -96,11 +96,11 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
       name: "api",
       message: "Which api folder do you want to use?",
       choices: detectedFolders.api.map((folder) => ({ title: folder.rootPath, value: folder })),
-      initial: 0
+      initial: 0,
     });
 
     // Workaround for bug https://github.com/terkelg/prompts/issues/205
-    api = typeof response.api === 'number' ? detectedFolders.api[response.api] : response.api
+    api = typeof response.api === "number" ? detectedFolders.api[response.api] : response.api;
   } else {
     api = detectedFolders.api[0];
   }
@@ -117,10 +117,10 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
   printFrameworkConfig(projectConfig);
 
   const { confirmSettings } = await promptOrUseDefault(disablePrompts, {
-    type: 'confirm',
-    name: 'confirmSettings',
-    message: 'Are these settings correct?',
-    initial: true
+    type: "confirm",
+    name: "confirmSettings",
+    message: "Are these settings correct?",
+    initial: true,
   });
   if (!confirmSettings) {
     // Ask for each settings
@@ -231,15 +231,15 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
 }
 
 function printFrameworkConfig(config: FrameworkConfig) {
-  logger.log(chalk.bold('\nDetected configuration for your app:'));
-  logger.log(`- Framework(s): ${chalk.green(config.name ?? 'none')}`);
+  logger.log(chalk.bold("\nDetected configuration for your app:"));
+  logger.log(`- Framework(s): ${chalk.green(config.name ?? "none")}`);
   logger.log(`- App location: ${chalk.green(config.appLocation)}`);
   logger.log(`- Output location: ${chalk.green(config.outputLocation)}`);
-  logger.log(`- API location: ${chalk.green(config.apiLocation ?? '')}`);
-  logger.log(`- App build command: ${chalk.green(config.appBuildCommand ?? '')}`);
-  logger.log(`- API build command: ${chalk.green(config.apiBuildCommand ?? '')}`);
-  logger.log(`- Dev command: ${chalk.green(config.devServerCommand ?? '')}`);
-  logger.log(`- Dev server URL: ${chalk.green(config.devServerUrl ?? '')}\n`);
+  logger.log(`- API location: ${chalk.green(config.apiLocation ?? "")}`);
+  logger.log(`- App build command: ${chalk.green(config.appBuildCommand ?? "")}`);
+  logger.log(`- API build command: ${chalk.green(config.apiBuildCommand ?? "")}`);
+  logger.log(`- Dev command: ${chalk.green(config.devServerCommand ?? "")}`);
+  logger.log(`- Dev server URL: ${chalk.green(config.devServerUrl ?? "")}\n`);
 }
 
 // function isEmptyFolder(path: string) {

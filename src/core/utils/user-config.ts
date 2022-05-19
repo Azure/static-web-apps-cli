@@ -1,15 +1,14 @@
 import Ajv4, { JSONSchemaType, ValidateFunction } from "ajv-draft-04";
 import chalk from "chalk";
-import fs, { promises as fsPromises } from "fs";
+import fs from "fs";
 import type http from "http";
 import jsonMap from "json-source-map";
 import fetch, { RequestInit } from "node-fetch";
 import path from "path";
-import { DEFAULT_CONFIG } from "../../config";
-import { SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB } from "../constants";
+import { SWA_CONFIG_FILENAME, SWA_CONFIG_FILENAME_LEGACY, SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB } from "../constants";
 import { logger } from "./logger";
 import { isHttpUrl } from "./net";
-const { readdir, readFile } = fsPromises;
+const { readdir, readFile, stat } = fs.promises;
 
 /**
  * A utility function to recursively traverse a folder and returns its entries.
@@ -48,26 +47,24 @@ export async function findSWAConfigFile(folder: string): Promise<{ filepath: str
   for await (const filepath of traverseFolder(folder)) {
     const filename = path.basename(filepath) as string;
 
-    if (filename === DEFAULT_CONFIG.swaConfigFilename || filename === DEFAULT_CONFIG.swaConfigFilenameLegacy) {
-      const isLegacyConfigFile = filename === DEFAULT_CONFIG.swaConfigFilenameLegacy;
+    if (filename === SWA_CONFIG_FILENAME || filename === SWA_CONFIG_FILENAME_LEGACY) {
+      const isLegacyConfigFile = filename === SWA_CONFIG_FILENAME_LEGACY;
       configFiles.set(filename, { filepath, isLegacyConfigFile });
     }
   }
 
   // take staticwebapp.config.json if it exists
-  if (configFiles.has(DEFAULT_CONFIG.swaConfigFilename!)) {
-    const file = configFiles.get(DEFAULT_CONFIG.swaConfigFilename!);
+  if (configFiles.has(SWA_CONFIG_FILENAME)) {
+    const file = configFiles.get(SWA_CONFIG_FILENAME);
 
     if (file) {
       const content = await validateRuntimeConfigAndGetData(file.filepath!);
 
       if (content) {
-        const fileSize = (await fsPromises.stat(file.filepath)).size;
+        const fileSize = (await stat(file.filepath)).size;
         const fileSizeInKb = Math.round(fileSize / 1024);
         if (fileSizeInKb > SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB) {
-          logger.warn(
-            `WARNING: ${DEFAULT_CONFIG.swaConfigFilename} is ${fileSizeInKb} bytes. The maximum size is ${SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB} bytes.`
-          );
+          logger.warn(`WARNING: ${SWA_CONFIG_FILENAME} is ${fileSizeInKb} bytes. The maximum size is ${SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB} bytes.`);
         }
 
         logger.silly(`Content parsed successfully`);
@@ -84,8 +81,8 @@ export async function findSWAConfigFile(folder: string): Promise<{ filepath: str
   }
 
   // legacy config file detected. Warn and return null.
-  if (configFiles.has(DEFAULT_CONFIG.swaConfigFilenameLegacy!)) {
-    const file = configFiles.get(DEFAULT_CONFIG.swaConfigFilenameLegacy!);
+  if (configFiles.has(SWA_CONFIG_FILENAME_LEGACY)) {
+    const file = configFiles.get(SWA_CONFIG_FILENAME_LEGACY);
     logger.warn(`Found legacy configuration file: ${file?.filepath}.`);
     logger.warn(
       `   WARNING: Functionality defined in the routes.json file is now deprecated. File will be ignored!\n` +
@@ -95,7 +92,7 @@ export async function findSWAConfigFile(folder: string): Promise<{ filepath: str
   }
 
   // no config file found
-  logger.silly(`No ${DEFAULT_CONFIG.swaConfigFilename} found in current project`);
+  logger.silly(`No ${SWA_CONFIG_FILENAME} found in current project`);
   return null;
 }
 
@@ -246,7 +243,7 @@ export function validateUserWorkflowConfig(userWorkflowConfig: Partial<GithubAct
  * @returns True if the request is accessing the configuration file. False otherwise.
  */
 export function isSWAConfigFileUrl(req: http.IncomingMessage) {
-  return req.url?.endsWith(`/${DEFAULT_CONFIG.swaConfigFilename!}`) || req.url?.endsWith(`/${DEFAULT_CONFIG.swaConfigFilenameLegacy!}`);
+  return req.url?.endsWith(`/${SWA_CONFIG_FILENAME}`) || req.url?.endsWith(`/${SWA_CONFIG_FILENAME_LEGACY}`);
 }
 
 function printJSONValidationWarnings(filepath: string, data: string, errorMessage: string) {

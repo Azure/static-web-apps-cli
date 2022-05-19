@@ -6,13 +6,7 @@
       "apiLocation": "api",
       "outputLocation": "app",
       "appBuildCommand": "npm run build --if-present",
-      "apiBuildCommand": "npm run build --if-present",
-      "start": {
-        "outputLocation": "app"
-      },
-      "deploy": {
-        "outputLocation": "app"
-      }
+      "apiBuildCommand": "npm run build --if-present"
     }
   }
 }

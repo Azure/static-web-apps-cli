@@ -1,6 +1,6 @@
 ---
 id: contributors
-title: Contributors 🌟 
+title: Contributors 🌟
 sidebar_position: 2
 ---
 
@@ -14,12 +14,12 @@ Thanks go to these wonderful people ([emoji key](https://allcontributors.org/doc
 
 ## About: All-Contributors
 
-> 🚧  | TODO: Automate bot
-
+> 🚧 | TODO: Automate bot
 
 This project follows the [all-contributors][ac] specification.
- * Contributions of any kind welcome! 
- * Automatically updated by [the @all-contributors bot 🤖][acbot].
+
+- Contributions of any kind welcome!
+- Automatically updated by [the @all-contributors bot 🤖][acbot].
 
 [acek]: https://allcontributors.org/docs/en/emoji-key
 [ac]: https://github.com/all-contributors/all-contributors

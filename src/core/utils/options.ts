@@ -21,10 +21,12 @@ export async function configureOptions(
   userDefinedOptions = getUserOptions(command);
   const configFileOptions = loadConfigFile ? await getConfigFileOptions(options.configName || configName, options.config!) : {};
   const configFileCommandSpecificOptions = commandName ? configFileOptions[commandName] || {} : {};
-  
+
   // Clean up subcommands overrides before merging
   // to avoid confusing the user when printing options
-  SWA_COMMANDS.forEach((command) => { delete configFileOptions[command]; });
+  SWA_COMMANDS.forEach((command) => {
+    delete configFileOptions[command];
+  });
   configFileDefinedOptions = { ...configFileOptions, ...configFileCommandSpecificOptions };
 
   options = {

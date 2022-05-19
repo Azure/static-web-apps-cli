@@ -33,6 +33,11 @@ export default function registerCommand(program: Command) {
     .option("--output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
     .option("--api-language <apiLanguage>", "the runtime language of the function")
     .option("--api-version <apiVersion>", "version of the function runtime language")
+    .option(
+      "--swa-config-location <swaConfigLocation>",
+      "the directory where the staticwebapp.config.json file is located",
+      DEFAULT_CONFIG.swaConfigLocation
+    )
     .option("--deployment-token <secret>", "the secret token used to authenticate with the Static Web Apps")
     .option("--dry-run", "simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
     .option("--print-token", "print the deployment token", false)
@@ -40,7 +45,7 @@ export default function registerCommand(program: Command) {
     .action(async (positionalArg: string | undefined, _options: SWACLIConfig, command: Command) => {
       const options = await configureOptions(positionalArg, command.optsWithGlobals(), command, "deploy");
       if (positionalArg && !matchLoadedConfigName(positionalArg)) {
-        if (isUserOption('outputLocation')) {
+        if (isUserOption("outputLocation")) {
           logger.error(`swa deploy <outputLocation> cannot be used when --output-location option is also set.`);
           logger.error(`You either have to use the positional argument or option, not both at the same time.`, true);
         }
@@ -108,7 +113,7 @@ export async function deploy(options: SWACLIConfig) {
   // if --api-location is provided, use it as the api folder
   let resolvedApiLocation = undefined;
   if (apiLocation) {
-    resolvedApiLocation = path.resolve(path.join(appLocation!, apiLocation!));
+    resolvedApiLocation = path.resolve(apiLocation!);
     if (!fs.existsSync(resolvedApiLocation)) {
       logger.error(`The provided API folder ${resolvedApiLocation} does not exist. Abort.`, true);
       return;
@@ -122,7 +127,9 @@ export async function deploy(options: SWACLIConfig) {
     const apiFolder = await findApiFolderInPath(appLocation);
     if (apiFolder) {
       logger.warn(
-        `An API folder was found at ".${path.sep + path.basename(apiFolder)}" but the --api-location option was not provided. The API will not be deployed.\n`
+        `An API folder was found at ".${
+          path.sep + path.basename(apiFolder)
+        }" but the --api-location option was not provided. The API will not be deployed.\n`
       );
     }
   }
@@ -201,7 +208,7 @@ export async function deploy(options: SWACLIConfig) {
       return;
     }
   }
-  logger.log(`Deploying to environment: ${chalk.green(options.env)}\n`);
+  logger.log(`\nDeploying to environment: ${chalk.green(options.env)}\n`);
 
   if (printToken) {
     logger.log(`Deployment token:`);
@@ -215,8 +222,8 @@ export async function deploy(options: SWACLIConfig) {
   // Note: CLI args will take precedence over workflow config
   let userWorkflowConfig: Partial<GithubActionWorkflow> | undefined = {
     appLocation,
-    outputLocation,
-    apiLocation,
+    outputLocation: resolvedOutputLocation,
+    apiLocation: resolvedApiLocation,
   };
   try {
     userWorkflowConfig = readWorkflowFile({
@@ -231,11 +238,15 @@ export async function deploy(options: SWACLIConfig) {
     );
   }
 
+  swaConfigLocation = swaConfigLocation || userWorkflowConfig?.appLocation;
+  const swaConfigFilePath = (await findSWAConfigFile(swaConfigLocation!))?.filepath;
+  const resolvedSwaConfigLocation = swaConfigFilePath ? path.dirname(swaConfigFilePath) : undefined;
+
   const cliEnv: SWACLIEnv = {
     SWA_CLI_DEBUG: verbose as DebugFilterLevel,
     SWA_RUNTIME_WORKFLOW_LOCATION: userWorkflowConfig?.files?.[0],
-    SWA_RUNTIME_CONFIG_LOCATION: swaConfigLocation,
-    SWA_RUNTIME_CONFIG: swaConfigLocation ? (await findSWAConfigFile(swaConfigLocation))?.filepath : undefined,
+    SWA_RUNTIME_CONFIG_LOCATION: resolvedSwaConfigLocation,
+    SWA_RUNTIME_CONFIG: swaConfigFilePath,
     SWA_CLI_VERSION: packageInfo.version,
     SWA_CLI_DEPLOY_DRY_RUN: `${dryRun}`,
     SWA_CLI_DEPLOY_BINARY: undefined,
@@ -244,17 +255,19 @@ export async function deploy(options: SWACLIConfig) {
   const deployClientEnv: StaticSiteClientEnv = {
     DEPLOYMENT_ACTION: options.dryRun ? "close" : "upload",
     DEPLOYMENT_PROVIDER: `swa-cli-${packageInfo.version}`,
-    REPOSITORY_BASE: appLocation,
+    REPOSITORY_BASE: userWorkflowConfig?.appLocation,
     SKIP_APP_BUILD: "true",
     SKIP_API_BUILD: "true",
     DEPLOYMENT_TOKEN: deploymentToken,
-    // /!\ Static site client doesn't seem to use OUTPUT_LOCATION at all,
+    // /!\ Static site client doesn't use OUTPUT_LOCATION at all if SKIP_APP_BUILD is set,
     // so you need to provide the output path as the app location
-    APP_LOCATION: resolvedOutputLocation,
+    APP_LOCATION: userWorkflowConfig?.outputLocation,
     // OUTPUT_LOCATION: outputLocation,
-    API_LOCATION: resolvedApiLocation,
     FUNCTION_LANGUAGE: apiLanguage,
     FUNCTION_LANGUAGE_VERSION: apiVersion,
+    API_LOCATION: userWorkflowConfig?.apiLocation,
+    // If config file is not in output location, we need to tell where to find it
+    CONFIG_FILE_LOCATION: resolvedSwaConfigLocation,
     VERBOSE: isVerboseEnabled ? "true" : "false",
   };
 
@@ -349,5 +362,5 @@ export async function deploy(options: SWACLIConfig) {
 
 async function findApiFolderInPath(appPath: string): Promise<string | undefined> {
   const entries = await fs.promises.readdir(appPath, { withFileTypes: true });
-  return entries.find(entry => entry.name.toLowerCase() === 'api' && entry.isDirectory())?.name;
+  return entries.find((entry) => entry.name.toLowerCase() === "api" && entry.isDirectory())?.name;
 }

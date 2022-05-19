@@ -131,7 +131,7 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
   // load user custom rules if running in local mode (non-dev server)
   let userConfig: SWAConfigFile | undefined;
   // load user configuration even when using a dev server
-  userConfig = await handleUserConfig(DEFAULT_CONFIG.appLocation);
+  userConfig = await handleUserConfig(DEFAULT_CONFIG.swaConfigLocation || DEFAULT_CONFIG.appLocation);
 
   const createServer = () => {
     if (DEFAULT_CONFIG.ssl && httpsServerOptions !== null) {
@@ -141,11 +141,11 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
   };
 
   if (IS_APP_DEV_SERVER()) {
-    await validateDevServerConfig(DEFAULT_CONFIG.outputLocation, DEFAULT_CONFIG.devserverTimeout);
+    await validateDevServerConfig(DEFAULT_CONFIG.outputLocation, DEFAULT_CONFIG.serverTimeout);
   }
 
   if (HAS_API) {
-    await validateDevServerConfig(SWA_CLI_API_URI() as string, DEFAULT_CONFIG.devserverTimeout);
+    await validateDevServerConfig(SWA_CLI_API_URI() as string, DEFAULT_CONFIG.serverTimeout);
     await validateFunctionTriggers(SWA_CLI_API_URI() as string);
   }
 

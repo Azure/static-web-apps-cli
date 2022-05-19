@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import type http from "http";
-import { DEFAULT_CONFIG } from "../../../config";
-import { logger } from "../../../core";
+import { logger } from "../../../core/utils/logger";
+import { CUSTOM_URL_SCHEME, OVERRIDABLE_ERROR_CODES } from "../../../core/constants";
 
 function tryGetResponseOverrideForStatusCode(responseOverrides: SWAConfigFileResponseOverrides | undefined, statusCode: number) {
   return responseOverrides?.[statusCode];
@@ -12,7 +12,7 @@ export function responseOverrides(req: http.IncomingMessage, res: http.ServerRes
   const statusCode = res.statusCode;
 
   logger.silly(`checking response overrides for status code ${chalk.yellow(statusCode)}`);
-  if (DEFAULT_CONFIG.overridableErrorCode?.includes(statusCode)) {
+  if (OVERRIDABLE_ERROR_CODES.includes(statusCode)) {
     const rule = tryGetResponseOverrideForStatusCode(responseOverrides, statusCode);
 
     if (rule) {
@@ -38,7 +38,7 @@ export function responseOverrides(req: http.IncomingMessage, res: http.ServerRes
         }
 
         rule.rewrite = rule.rewrite.replace("/", "");
-        req.url = `${DEFAULT_CONFIG.customUrlScheme}${rule.rewrite}`;
+        req.url = `${CUSTOM_URL_SCHEME}${rule.rewrite}`;
 
         logger.silly(` - rewrite: ${chalk.yellow(req.url)}`);
       }

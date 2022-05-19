@@ -13,4 +13,4 @@ You can use the following options to override default values for any `swa` comma
 | `--print-config`        | Print all resolved options                                         | `false`                 | `--print-config` or `--print-config=true` |
 | `--swa-config-location` | The directory where the `staticwebapp.config.json` file is located | `./`                    | `--swa-config-location=./app`             |
 
- |
+|

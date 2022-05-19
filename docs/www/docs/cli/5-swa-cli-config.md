@@ -4,7 +4,6 @@ sidebar_position: 4
 
 # `swa-cli.config.json`
 
-
 The CLI can also load options from a `swa-cli.config.json` file:
 
 ```json

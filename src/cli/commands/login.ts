@@ -2,8 +2,7 @@ import { TokenCredential } from "@azure/identity";
 import chalk from "chalk";
 import { Command } from "commander";
 import dotenv from "dotenv";
-import { existsSync } from "fs";
-import { readFile, writeFile } from "fs/promises";
+import { existsSync, promises as fsPromises } from "fs";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
 import { configureOptions, logger, logGiHubIssueMessageAndExit } from "../../core";
@@ -11,26 +10,28 @@ import { authenticateWithAzureIdentity, listSubscriptions, listTenants } from ".
 import { ENV_FILENAME } from "../../core/constants";
 import { updateGitIgnore } from "../../core/git";
 import { chooseSubscription, chooseTenant } from "../../core/prompts";
+const { readFile, writeFile } = fsPromises;
 
 export function addSharedLoginOptionsToCommand(command: Command) {
   command
-    .option("--subscription-id [subscriptionId]", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
-    .option("--resource-group [resourceGroupName]", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroupName)
-    .option("--tenant-id [tenantId]", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
-    .option("--client-id [clientId]", "Azure client ID", DEFAULT_CONFIG.clientId)
-    .option("--client-secret [clientSecret]", "Azure client secret", DEFAULT_CONFIG.clientSecret)
-    .option("--app-name [appName]", "Azure Static Web App application name", DEFAULT_CONFIG.appName)
-    .option("--use-keychain", "Enable using the operating system native keychain", DEFAULT_CONFIG.useKeychain)
+    .option("--subscription-id <subscriptionId>", "Azure subscription ID used by this project", DEFAULT_CONFIG.subscriptionId)
+    .option("--resource-group <resourceGroupName>", "Azure resource group used by this project", DEFAULT_CONFIG.resourceGroupName)
+    .option("--tenant-id <tenantId>", "Azure tenant ID", DEFAULT_CONFIG.tenantId)
+    .option("--client-id <clientId>", "Azure client ID", DEFAULT_CONFIG.clientId)
+    .option("--client-secret <clientSecret>", "Azure client secret", DEFAULT_CONFIG.clientSecret)
+    .option("--app-name <appName>", "Azure Static Web App application name", DEFAULT_CONFIG.appName)
+    .option("--clear-credentials", "clear persisted credentials before login", DEFAULT_CONFIG.clearCredentials)
 
+    .option("--use-keychain", "enable using the operating system native keychain for persistent credentials", DEFAULT_CONFIG.useKeychain)
     // Note: Commander does not automatically recognize the --no-* option, so we have to explicitly use --no-use-keychain- instead
-    .option("--no-use-keychain", "Disable using the operating system native keychain", !DEFAULT_CONFIG.useKeychain);
+    .option("--no-use-keychain", "disable using the operating system native keychain", !DEFAULT_CONFIG.useKeychain);
 }
 
 export default function registerCommand(program: Command) {
   const loginCommand = program
     .command("login")
     .usage("[options]")
-    .description("login into Azure Static Web Apps")
+    .description("login into Azure")
     .action(async (_options: SWACLIConfig, command: Command) => {
       const options = await configureOptions(undefined, command.optsWithGlobals(), command, "login");
 
@@ -56,7 +57,7 @@ Examples:
   Interactive login
   swa login
 
-  Interactive login without using the native keychain
+  Interactive login without persisting credentials
   swa login --no-use-keychain
 
   Log in into specific tenant
@@ -85,10 +86,10 @@ export async function login(options: SWACLIConfig): Promise<any> {
   let clientId: string | undefined = options.clientId;
   let clientSecret: string | undefined = options.clientSecret;
 
-  credentialChain = await authenticateWithAzureIdentity({ tenantId, clientId, clientSecret }, options.useKeychain);
+  credentialChain = await authenticateWithAzureIdentity({ tenantId, clientId, clientSecret }, options.useKeychain, options.clearCredentials);
 
   if (await credentialChain.getToken("profile")) {
-    logger.log(chalk.green(`✔ Successfully logged into Azure Static Web Apps!`));
+    logger.log(chalk.green(`✔ Successfully logged into Azure!`));
   }
 
   return await setupProjectCredentials(options, credentialChain);
@@ -112,7 +113,11 @@ async function setupProjectCredentials(options: SWACLIConfig, credentialChain: T
       tenantId = tenant?.tenantId;
       // login again with the new tenant
       // TODO: can we silently authenticate the user with the new tenant?
-      credentialChain = await authenticateWithAzureIdentity({ tenantId, clientId, clientSecret }, options.useKeychain);
+      credentialChain = await authenticateWithAzureIdentity({ tenantId, clientId, clientSecret }, options.useKeychain, true);
+
+      if (await credentialChain.getToken("profile")) {
+        logger.log(chalk.green(`✔ Successfully logged into Azure tenant: ${tenantId}`));
+      }
     }
   }
 

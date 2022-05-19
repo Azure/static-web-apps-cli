@@ -14,12 +14,12 @@ export function stripJsonComments(json: string) {
     //    in-between slash-star comments including newlines in a non-greedy way
     // Only the captured group is removed, ignoring comments inside strings as a result
     /\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)/gm,
-    (match, group) => group ? "" : match
+    (match, group) => (group ? "" : match)
   );
 }
 
 export function removeTrailingPathSep(filePath: string): string {
-  return filePath.replace(/[\\/]+$/, '');
+  return filePath.replace(/[\\/]+$/, "");
 }
 
-export const hasSpaces = (str: string): boolean => str.indexOf(' ') !== -1;
+export const hasSpaces = (str: string): boolean => str.indexOf(" ") !== -1;
