@@ -70,6 +70,6 @@ swa <command> myApp
 
 ## See Also
 
-- [swa](docs/cli/swa) - The Static Web Apps CLI
+- [swa](swa)
 - [swa build](swa-build)
 - [swa start](swa-start)
