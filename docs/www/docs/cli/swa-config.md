@@ -25,7 +25,7 @@ The configuration file can contain multiple configurations (e.g., one per projec
 {
   "configurations": {
     "app": {
-      "outputLocation": "http://localhost:3000",
+      "appDevserverUrl": "http://localhost:3000",
       "apiLocation": "api",
       "run": "npm run start",
       "swaConfigLocation": "./my-app-source"
