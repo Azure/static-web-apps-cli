@@ -261,7 +261,8 @@
       "profile": "https://github.com/anfibiacreativa",
       "contributions": [
         "research",
-        "userTesting"
+        "userTesting",
+        "doc"
       ]
     },
     {
@@ -283,5 +284,6 @@
       ]
     }
   ],
-  "contributorsPerLine": 7
+  "contributorsPerLine": 7,
+  "skipCi": true
 }
