@@ -1,8 +1,20 @@
 <p align="center">
-    <h2 align="center">Azure Static Web Apps CLI<img src="https://github.com/azure/static-web-apps-cli/workflows/CI/badge.svg" height="15"> </h2>
+  <h2 align="center">Azure Static Web Apps CLI</h2>
+  <h2 align="center">
+    <a href="https://www.npmjs.com/package/@azure/static-web-apps-cli">
+      <img src="https://img.shields.io/npm/v/@azure/static-web-apps-cli.svg" alt="NPM version">
+    </a>
+    <img src="https://img.shields.io/node/v/@azure/static-web-apps-cli.svg" alt="Node version">
+    <a href="https://github.com/Azure/static-web-apps-cli/actions/workflows/ci.yml">
+      <img src="https://github.com/azure/static-web-apps-cli/workflows/CI/badge.svg" alt="CI status">
+    </a>
+    <a href="https://github.com/azure/static-web-apps-cli/issues">
+      <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg" alt="Contributions welcome">
+    </a>
+  </h2>
 </p>
 <p align="center">
-    <img align="center" src="docs/swa-cli-logo.svg" width="300">
+  <img align="center" src="docs/swa-cli-logo.svg" width="300" alt="logo">
 </p>
 
 The Static Web Apps CLI, also known as SWA CLI, serves as a local development tool for [Azure Static Web Apps](https://docs.microsoft.com/azure/static-web-apps). It can:
@@ -82,6 +94,6 @@ npx @azure/static-web-apps-cli start
 
 See all available [commands and options](https://azure.github.io/static-web-apps-cli/).
 
-## Want to help? [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/azure/static-web-apps-cli/issues)
+## Want to help?
 
 Want to file a bug, contribute some code, or improve the documentation? Excellent! Read up on our guidelines for [contributing](https://github.com/azure/static-web-apps-cli/blob/master/CONTRIBUTING.md) and then check out one of our issues in the list: [community-help](https://github.com/azure/static-web-apps-cli/issues).
