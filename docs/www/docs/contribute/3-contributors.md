@@ -50,6 +50,7 @@ Thanks goes to these wonderful people 🎉
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/glaucia86"><img src="https://avatars.githubusercontent.com/u/1631477?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Glaucia Lemos</b></sub></a><br /><a href="#userTesting-glaucia86" title="User Testing">📓</a></td>
+    <td align="center"><a href="https://github.com/SIkebe"><img src="https://avatars.githubusercontent.com/u/17608272?v=4?s=100" width="100px;" alt=""/><br /><sub><b>SIkebe</b></sub></a><br /><a href="https://github.com/Azure/static-web-apps-cli/commits?author=SIkebe" title="Documentation">📖</a></td>
   </tr>
 </table>
 
@@ -59,7 +60,7 @@ Thanks goes to these wonderful people 🎉
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-29-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-30-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
