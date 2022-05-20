@@ -32,7 +32,7 @@ import { applyRedirectResponse, isRequestMethodValid, isRouteRequiringUserRolesC
 import * as routeModule from "../route-processor";
 import * as cookieModule from "../../../core/utils/cookie";
 
-// btoa is only availble in Node.js >= 16
+// btoa is only available in Node.js >= 16
 const btoa = (str: string) => Buffer.from(str).toString("base64");
 
 describe("route utilities", () => {
