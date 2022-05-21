@@ -51,7 +51,7 @@ Here is a list of the default ports used by some popular dev servers:
 | [Next.js](https://nextjs.org/)                                                     | 3000 | `swa start http://localhost:3000` |
 | [React (Create React App)](https://reactjs.org/docs/create-a-new-react-app.html)   | 3000 | `swa start http://localhost:3000` |
 | [Svelte (sirv-cli)](https://github.com/lukeed/sirv/tree/master/packages/sirv-cli/) | 5000 | `swa start http://localhost:5000` |
-| [Vue](https://cli.vuejs.org/)                                                      | 8080 | `swa start http://localhost:8080` |
+| [Vue](https://github.com/vuejs/create-vue)                                                      | 3000 | `swa start http://localhost:3000` |
 
 Instead of starting a dev server separately, you can provide the startup command to the CLI.
 
