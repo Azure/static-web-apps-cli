@@ -28,7 +28,7 @@ Here are the options you can use with `swa build`:
 
 - `-a, --app-location <path>`: the folder containing the source code of the front-end application (default: ".")
 - `-i, --api-location <path>`: the folder containing the source code of the API application
-- `-O, --output-location <path>`: the folder containing the built source of the front-end application. The path is relative to --app-location (default: ".")
+- `-O, --output-location <path>`: the folder containing the built source of the front-end application. The path is relative to `--app-location` (default: ".")
 - `-A, --app-build-command <command>`: the command used to build your app
 - `-I, --api-build-command <command>`: the command used to build your api
 - `--auto`: automatically detect how to build your app and api (default: false)
