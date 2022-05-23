@@ -106,7 +106,7 @@ Here are the options you can use with `swa login`:
 
 - `-a, --app-location <path>`: the folder containing the source code of the front-end application (default: ".")
 - `-i, --api-location <path>`: the folder containing the source code of the API application
-- `-O, --output-location <path>`: the folder containing the built source of the front-end application (default: ".")
+- `-O, --output-location <path>`: the folder containing the built source of the front-end application. The path is relative to `--app-location` (default: ".")
 - `-D, --app-devserver-url <url>`: connect to the app dev server at this URL instead of using output location
 - `-is, --api-devserver-url <url>`: connect to the api server at this URL instead of using output location
 - `-j, --api-port <apiPort>`: the API server port passed to `func start` (default: 7071)
