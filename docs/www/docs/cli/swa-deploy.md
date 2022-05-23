@@ -156,7 +156,7 @@ Here are the options you can use with `swa deploy`:
 
 - `-a, --app-location <path>`: the folder containing the source code of the front-end application (default: "`.`")
 - `-i, --api-location <path>`: the folder containing the source code of the API application
-- `-O, --output-location <path>`: the folder containing the built source of the front-end application. The path is relative to --app-location (default: "`.`")
+- `-O, --output-location <path>`: the folder containing the built source of the front-end application. The path is relative to `--app-location` (default: "`.`")
 - `-w, --swa-config-location <swaConfigLocation>`: the directory where the staticwebapp.config.json file is located
 - `-d, --deployment-token <secret>`: the secret token used to authenticate with the Static Web Apps
 - `-dr, --dry-run`: simulate a deploy process without actually running it (default: `false`)
