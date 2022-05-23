@@ -19,7 +19,9 @@
     "watch": "tsc --watch",
     "copy-assets": "node ./scripts/copy-assets.js",
     "prepare": "npm run build",
-    "format": "prettier --write 'src/**/*.ts' *.md'' 'docs/**/*.md' 'scripts/**/*.js' 'cypress/**/*.js' 'schema/**/*.json'"
+    "format": "prettier --write 'src/**/*.ts' *.md'' 'docs/**/*.md' 'scripts/**/*.js' 'cypress/**/*.js' 'schema/**/*.json'",
+    "release:check": "semantic-release --dry-run",
+    "release:changelog": "CI=1 semantic-release"
   },
   "bin": {
     "swa": "dist/cli/bin.js"
@@ -63,6 +65,9 @@
   "devDependencies": {
     "@commitlint/cli": "^16.2.3",
     "@commitlint/config-angular": "^16.2.3",
+    "@semantic-release/changelog": "^6.0.1",
+    "@semantic-release/commit-analyzer": "^9.0.2",
+    "@semantic-release/release-notes-generator": "^10.0.3",
     "@types/cli-progress": "^3.9.2",
     "@types/cookie": "^0.5.1",
     "@types/finalhandler": "^1.1.1",
@@ -88,6 +93,7 @@
     "lint-staged": "^12.4.1",
     "mock-fs": "^5.1.2",
     "prettier": "2.6.2",
+    "semantic-release": "^19.0.2",
     "start-server-and-test": "^1.14.0",
     "supertest": "^6.2.3",
     "ts-jest": "^27.0.0",
@@ -135,5 +141,23 @@
   "engines": {
     "node": ">=14.0.0",
     "npm": ">=6.0.0"
+  },
+  "release": {
+    "branches": "main",
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "releaseRules": [
+            {
+              "type": "docs",
+              "release": "patch"
+            }
+          ]
+        }
+      ],
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog"
+    ]
   }
 }
