@@ -1,0 +1,16 @@
+name: Publish Docker image
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Publish to Docker Hub
+        run: ./scripts/publish_docker.sh
+        env:
+          DOCKER_HUB_PUBLISH_TOKEN: ${{ secrets.DOCKER_HUB_PUBLISH_TOKEN }}
