@@ -22,7 +22,7 @@ RUN GROUPS=$(id -Gn vscode | sed "s/ /,/g" | sed -r 's/\<'vscode'\>\b,?//g') \
     && chown -R swa-cli:vscode /home/$USERNAME
 
 RUN bash /tmp/library-scripts/node-debian.sh "${NVM_DIR}" "${NODE_VERSION}" "${USERNAME}" \
-    && apt-get update && apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb \
+    && apt-get update && apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb libsecret-1-0 \
     && if [ $CORE_TOOLS_VERSION != "4" ]; then apt-get remove -y azure-functions-core-tools-4 && apt-get install -y "azure-functions-core-tools-${CORE_TOOLS_VERSION}"; fi \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
