@@ -19,6 +19,7 @@ import { chooseProjectName, chooseStaticSite, wouldYouLikeToCreateStaticSite, wo
 import { swaCliPersistencePlugin } from "./swa-cli-persistence-plugin";
 import { SWACLIPersistenceCachePlugin } from "./swa-cli-persistence-plugin/persistence-cache-plugin";
 import { dasherize, logger } from "./utils";
+import { isRunningInDocker } from "./utils/docker";
 
 const DEFAULT_AZURE_LOCATION = "West US 2";
 
@@ -61,7 +62,8 @@ export async function authenticateWithAzureIdentity(details: LoginDetails = {}, 
 
   const environmentCredential = new EnvironmentCredential();
 
-  const credentials = [environmentCredential, browserCredential, deviceCredential];
+  // Only use interactive browser credential if we're not running in docker
+  const credentials = isRunningInDocker() ? [environmentCredential, deviceCredential] : [environmentCredential, browserCredential, deviceCredential];
 
   if (details.tenantId && details.clientId && details.clientSecret) {
     const clientSecretCredential = new ClientSecretCredential(details.tenantId, details.clientId, details.clientSecret, {
