@@ -18,6 +18,7 @@ if docker manifest inspect ${DOCKER_REPO}:${SWA_CLI_VERSION} > /dev/null; then
   echo "Image for version $SWA_CLI_VERSION already exists. Skipping..."
 else
   echo "Creating new image for version $SWA_CLI_VERSION..."
+  git checkout tags/v${SWA_CLI_VERSION}
   docker build --build-arg SWA_CLI_VERSION=${SWA_CLI_VERSION} -t swacli:${SWA_CLI_VERSION} .devcontainer/
   docker tag swacli:${SWA_CLI_VERSION} ${DOCKER_REPO}:${SWA_CLI_VERSION}
   docker tag swacli:${SWA_CLI_VERSION} ${DOCKER_REPO}:latest
