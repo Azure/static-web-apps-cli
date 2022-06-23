@@ -36,7 +36,7 @@ const {
 export const DEFAULT_CONFIG: SWACLIConfig = {
   // @public
   port: parseInt(SWA_CLI_PORT || "4280", 10),
-  host: SWA_CLI_HOST || isRunningInDocker() ? "0.0.0.0" : "localhost",
+  host: SWA_CLI_HOST || (isRunningInDocker() ? "0.0.0.0" : "localhost"),
   apiPort: parseInt(SWA_CLI_API_PORT || "7071", 10),
   appLocation: SWA_CLI_APP_LOCATION || `.`,
   apiLocation: SWA_CLI_API_LOCATION ? SWA_CLI_API_LOCATION : undefined,
