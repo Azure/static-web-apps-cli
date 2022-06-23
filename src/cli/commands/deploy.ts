@@ -269,7 +269,7 @@ export async function deploy(options: SWACLIConfig) {
 
   // set the DEPLOYMENT_ENVIRONMENT env variable only when the user has provided
   // a deployment environment which is not "production".
-  if (options.env !== "production" && options.env !== "prod") {
+  if (options.env?.toLowerCase() !== "production" && options.env?.toLowerCase() !== "prod") {
     deployClientEnv.DEPLOYMENT_ENVIRONMENT = options.env;
   }
 
