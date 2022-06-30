@@ -22,7 +22,7 @@ In order to be able to automatically deploy your app to your Azure Static Web Ap
 
 ### Solutions
 
-In order to avoid this issue, you have 2 options:
+In order to avoid this issue, you have a few options:
 1. [Manually install](https://www.google.com/search?q=instal+libsecret) `libsecret` by adding it to your Docker image or your system (recommended)
 2. Disable Keychain access using `--no-use-keychain`. Doing so won't store and remember your credentials anymore, and you will have to interactively log in again each time you run `swa login`
 3. Manually provide the Deployment Token for your current project (see [SWA CLI docs](https://azure.github.io/static-web-apps-cli/docs/use/deploy#51-deployment-token)). You will also need to provide `--app-name` and `--resource-group-name`
