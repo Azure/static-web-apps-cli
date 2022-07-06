@@ -31,6 +31,7 @@ const {
   SWA_CLI_LOGIN_CLEAR_CREDENTIALS,
   SWA_CLI_APP_DEVSERVER_URL,
   SWA_CLI_API_DEVSERVER_URL,
+  SWA_CLI_API_DEVSERVER_INSECURE,
 } = swaCLIEnv();
 
 export const DEFAULT_CONFIG: SWACLIConfig = {
@@ -57,6 +58,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   dryRun: useEnvVarOrUseDefault(SWA_CLI_DEPLOY_DRY_RUN, false),
   appDevserverUrl: SWA_CLI_APP_DEVSERVER_URL || undefined,
   apiDevserverUrl: SWA_CLI_API_DEVSERVER_URL || undefined,
+  apiDevserverInsecure: SWA_CLI_API_DEVSERVER_INSECURE === "true",
 
   // swa login options
   subscriptionId: AZURE_SUBSCRIPTION_ID || undefined,

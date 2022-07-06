@@ -194,3 +194,7 @@ export function IS_API_DEV_SERVER() {
 export function SWA_CLI_API_URI() {
   return IS_API_DEV_SERVER() ? DEFAULT_CONFIG.apiLocation : address(DEFAULT_CONFIG.host, DEFAULT_CONFIG.apiPort);
 }
+
+export function SWA_CLI_API_ALLOW_INSECURE(): boolean {
+  return IS_API_DEV_SERVER() && (DEFAULT_CONFIG.apiDevserverInsecure ?? false);
+}

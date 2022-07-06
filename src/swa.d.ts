@@ -45,6 +45,7 @@ declare interface SWACLIEnv extends StaticSiteClientEnv {
   SWA_CLI_OPEN_BROWSER?: string;
   SWA_CLI_APP_DEVSERVER_URL?: string;
   SWA_CLI_API_DEVSERVER_URL?: string;
+  SWA_CLI_API_DEVSERVER_INSECURE?: string;
 
   // swa deploy
   SWA_CLI_DEPLOY_DRY_RUN?: string;
@@ -128,6 +129,7 @@ declare type SWACLIStartOptions = {
   apiLocation?: string;
   appDevserverUrl?: string;
   apiDevserverUrl?: string;
+  apiDevserverInsecure?: boolean;
   apiPort?: number;
   host?: string;
   port?: number;

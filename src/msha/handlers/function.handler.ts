@@ -3,7 +3,7 @@ import type http from "http";
 import httpProxy from "http-proxy";
 import fetch from "node-fetch";
 import { decodeCookie, logger, logRequest, registerProcessExit, validateCookie } from "../../core";
-import { HAS_API, SWA_CLI_API_URI } from "../../core/constants";
+import { HAS_API, SWA_CLI_API_ALLOW_INSECURE, SWA_CLI_API_URI } from "../../core/constants";
 import { onConnectionLost } from "../middlewares/request.middleware";
 
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
@@ -55,6 +55,8 @@ function injectClientPrincipalCookies(req: http.ClientRequest) {
 
 export function handleFunctionRequest(req: http.IncomingMessage, res: http.ServerResponse) {
   const target = SWA_CLI_API_URI();
+  const allowInsecure = SWA_CLI_API_ALLOW_INSECURE();
+
   if (HAS_API) {
     logger.silly(`function request detected. Proxying to Azure Functions emulator`);
     logger.silly(` - target: ${chalk.yellow(target)}`);
@@ -70,6 +72,9 @@ export function handleFunctionRequest(req: http.IncomingMessage, res: http.Serve
     res,
     {
       target,
+      secure: !allowInsecure,
+      // Set the host header to match the function host.
+      changeOrigin: true,
     },
     onConnectionLost(req, res, target, "↳")
   );

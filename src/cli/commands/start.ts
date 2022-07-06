@@ -35,8 +35,21 @@ export default function registerCommand(program: Command) {
     .option("-a, --app-location <path>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
     .option("-i, --api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("-O, --output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
-    .option("-D, --app-devserver-url <url>", "connect to the app dev server at this URL instead of using output location", DEFAULT_CONFIG.appDevserverUrl)
-    .option("-is, --api-devserver-url <url>", "connect to the api server at this URL instead of using output location", DEFAULT_CONFIG.apiDevserverUrl)
+    .option(
+      "-D, --app-devserver-url <url>",
+      "connect to the app dev server at this URL instead of using output location",
+      DEFAULT_CONFIG.appDevserverUrl
+    )
+    .option(
+      "-is, --api-devserver-url <url>",
+      "connect to the api server at this URL instead of using output location",
+      DEFAULT_CONFIG.apiDevserverUrl
+    )
+    .option(
+      "-ik, --api-devserver-insecure",
+      "allow insecure connections to the API server. Useful when HTTPS API server uses wildcard certificates.",
+      DEFAULT_CONFIG.apiDevserverInsecure
+    )
     .option<number>("-j, --api-port <apiPort>", "the API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
     .option("-q, --host <host>", "the host address to use for the CLI dev server", DEFAULT_CONFIG.host)
     .option<number>("-p, --port <port>", "the port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
@@ -108,6 +121,9 @@ swa start http://localhost:3000 --run-build "npm start"
 
 Connect both front-end and the API to running development server
 swa start http://localhost:3000 --api-location http://localhost:7071
+
+Connect the front-end to a local development server and proxy API request to a remote functions host
+swa start http://localhost:3000 --api-location remote --api-devserver-url https://codespacesname-1234567890123-7071.githubpreview.dev --api-devserver-insecure
   `
     );
 }
@@ -124,6 +140,7 @@ export async function start(options: SWACLIConfig) {
     outputLocation,
     appDevserverUrl,
     apiDevserverUrl,
+    apiDevserverInsecure,
     apiPort,
     devserverTimeout,
     ssl,
@@ -309,6 +326,7 @@ export async function start(options: SWACLIConfig) {
     SWA_CLI_APP_LOCATION: userWorkflowConfig?.appLocation as string,
     SWA_CLI_OUTPUT_LOCATION: userWorkflowConfig?.outputLocation as string,
     SWA_CLI_API_LOCATION: userWorkflowConfig?.apiLocation as string,
+    SWA_CLI_API_DEVSERVER_INSECURE: apiDevserverInsecure ? "true" : "false",
     SWA_CLI_HOST: `${host}`,
     SWA_CLI_PORT: `${port}`,
     SWA_CLI_APP_SSL: ssl ? "true" : "false",
