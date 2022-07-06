@@ -127,7 +127,18 @@ export function parseUrl(url: string | undefined) {
     throw new Error(`Address: ${url} is malformed!`);
   }
 
-  const { protocol, port, host, hostname } = new URL(url);
+  let { protocol, port, host, hostname } = new URL(url);
+  if (port === "") {
+    switch (protocol) {
+      case "http:":
+        port = "80";
+        break;
+      case "https:":
+        port = "443";
+        break;
+    }
+  }
+
   return {
     protocol,
     port: Number(port),
