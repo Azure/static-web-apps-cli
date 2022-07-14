@@ -31,8 +31,8 @@ export default function registerCommand(program: Command) {
     .option("--app-location <path>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
     .option("--api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("--output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
-    .option("--api-language <apiLanguage>", "the runtime language of the function")
-    .option("--api-version <apiVersion>", "version of the function runtime language")
+    .option("--api-language <apiLanguage>", "the runtime language of the function", DEFAULT_CONFIG.apiLanguage)
+    .option("--api-version <apiVersion>", "version of the function runtime language", DEFAULT_CONFIG.apiVersion)
     .option(
       "--swa-config-location <swaConfigLocation>",
       "the directory where the staticwebapp.config.json file is located",
@@ -85,7 +85,19 @@ export async function deploy(options: SWACLIConfig) {
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
 
-  let { appLocation, apiLocation, outputLocation, dryRun, deploymentToken, printToken, appName, swaConfigLocation, verbose, apiLanguage, apiVersion } = options;
+  let {
+    appLocation,
+    apiLocation,
+    outputLocation,
+    dryRun,
+    deploymentToken,
+    printToken,
+    appName,
+    swaConfigLocation,
+    verbose,
+    apiLanguage,
+    apiVersion,
+  } = options;
 
   if (dryRun) {
     logger.warn("***********************************************************************");
