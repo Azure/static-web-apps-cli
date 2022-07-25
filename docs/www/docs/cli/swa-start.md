@@ -102,7 +102,7 @@ swa start ./my-dist --api-location http://localhost:7071
 
 ## Options
 
-Here are the options you can use with `swa login`:
+Here are the options you can use with `swa start`:
 
 - `-a, --app-location <path>`: the folder containing the source code of the front-end application (default: ".")
 - `-i, --api-location <path>`: the folder containing the source code of the API application
