@@ -9,6 +9,18 @@ sidebar_position: 99
 :::info
 This page lists frequently-asked questions and solutions to help troubleshoot common issues that may be encountered when building or testing the project.
 :::
+## `swa deploy` - Current Caveat
+
+### Context
+
+`swa deploy` currently has a small bug which is being actively worked on by the team. When a user tries to `swa deploy` from within the `app-location`, the deploy command currently fails with an unknown error. This is being tracked in GitHub issue #[514]((https://github.com/Azure/static-web-apps-cli/issues/514). 
+
+### Solution
+
+While the team is currently working on the fix, we recommend users to use the other methods of deployment, all documented [here](https://azure.github.io/static-web-apps-cli/docs/cli/swa-deploy)). In case the project does not have an `app-location` folder (i.e. main project is in the `root` folder), we'd recommend using the [Azure Static Web Apps portal](https://portal.azure.com) or [VSCode](https://docs.microsoft.com/en-us/azure/static-web-apps/getting-started?tabs=vanilla-javascript) extension meanwhile!
+
+
+
 
 ## `libsecret-1.so.0: cannot open shared object file: No such file or directory`
 
