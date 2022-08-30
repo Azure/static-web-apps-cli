@@ -266,11 +266,11 @@
           "type": "boolean"
         },
         "apiLanguage": {
-          "description": "the runtime language of the function",
+          "description": "The runtime language of the function",
           "type": "string"
         },
         "apiVersion": {
-          "description": "version of the function runtime language",
+          "description": "Version of the function runtime language",
           "type": "string"
         }
       },
