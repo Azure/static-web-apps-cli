@@ -56,6 +56,7 @@ Thanks goes to these wonderful people 🎉
     <td align="center"><a href="http://timdeschryver.dev"><img src="https://avatars.githubusercontent.com/u/28659384?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Tim Deschryver</b></sub></a><br /><a href="https://github.com/Azure/static-web-apps-cli/commits?author=timdeschryver" title="Documentation">📖</a></td>
     <td align="center"><a href="https://k-miyake.github.io/blog/"><img src="https://avatars.githubusercontent.com/u/1104403?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Kazuyuki Miyake</b></sub></a><br /><a href="https://github.com/Azure/static-web-apps-cli/commits?author=k-miyake" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/mathiasi"><img src="https://avatars.githubusercontent.com/u/2315801?v=4?s=100" width="100px;" alt=""/><br /><sub><b>mathiasi</b></sub></a><br /><a href="https://github.com/Azure/static-web-apps-cli/commits?author=mathiasi" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/neilmispelaar"><img src="https://avatars.githubusercontent.com/u/9325038?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Neil Mispelaar</b></sub></a><br /><a href="https://github.com/Azure/static-web-apps-cli/commits?author=neilmispelaar" title="Documentation">📖</a></td>
   </tr>
 </table>
 
@@ -65,7 +66,7 @@ Thanks goes to these wonderful people 🎉
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-33-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-34-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
