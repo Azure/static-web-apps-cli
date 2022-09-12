@@ -84,9 +84,9 @@ export const appFrameworks: FrameworkDefinition[] = [
     packages: ["next"],
     config: {
       appBuildCommand: "npm run build",
-      appDevserverCommand: "npm dev",
+      appDevserverCommand: "npm run dev",
       appDevserverUrl: "http://localhost:3000",
-      outputLocation: ".",
+      outputLocation: ".next",
     },
   },
   {
