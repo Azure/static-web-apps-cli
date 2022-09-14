@@ -1,0 +1,234 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: CI
+
+on:
+  push:
+    branches: [main, ga]
+  pull_request:
+    branches: [main, ga]
+
+jobs:
+
+  format:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
+      - run: npm ci
+      - run: npm run format
+
+  test-macos:
+    needs: [format]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest]
+        node-version: [14.x, 15.x, 16.x, 17.x, '>= 18.x']
+
+    name: "test: use node ${{ matrix.node-version }}"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules-${{ matrix.os }}-${{ matrix.node-version }}
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+
+      - name: "npm test"
+        run: |
+          npm ci
+          npm test
+
+  e2e-deploy-macos:
+    needs: [test-macos]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest]
+        node-version: [14.x, 15.x, 16.x, 17.x, '>= 18.x']
+
+    name: "deploy: use node ${{ matrix.node-version }}"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules-${{ matrix.os }}-${{ matrix.node-version }}
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+
+      - name: "swa deploy"
+        run: |
+          npm ci
+          npm link
+          cd cypress/fixtures/
+          swa deploy app --dry-run --verbose=silly --api-location=./static/api --app-location ./static --deployment-token=00000000000000000000000000000000000000000000000000000000000000000-00000000-0000-0000-0000-00000000000000000000
+
+  test-windows:
+    needs: [format]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+        node-version: [14.x, 15.x, 16.x, 17.x, '>= 18.x']
+
+    name: "test: use node ${{ matrix.node-version }}"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules-${{ matrix.os }}-${{ matrix.node-version }}
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+
+      - name: "npm test"
+        run: |
+          npm ci
+          npm test -- --maxWorkers=1
+
+  e2e-deploy-windows:
+    needs: [test-windows]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+        node-version: [14.x, 15.x, 16.x, 17.x, '>= 18.x']
+
+    name: "deploy: use node ${{ matrix.node-version }}"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules-${{ matrix.os }}-${{ matrix.node-version }}
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+
+      - name: "swa deploy"
+        run: |
+          npm ci
+          npm link
+          cd cypress/fixtures/
+          swa deploy app --dry-run --verbose=silly --api-location=./static/api --app-location ./static --deployment-token=00000000000000000000000000000000000000000000000000000000000000000-00000000-0000-0000-0000-00000000000000000000
+
+  test-linux:
+    needs: [format]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+        node-version: [14.x, 15.x, 16.x, 17.x, '>= 18.x']
+
+    name: "test: use node ${{ matrix.node-version }}"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules-${{ matrix.os }}-${{ matrix.node-version }}
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+
+      - name: "npm test"
+        run: |
+          npm ci
+          npm test
+
+  e2e-deploy-linux:
+    needs: [test-linux]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+        node-version: [14.x, 15.x, 16.x, 17.x, '>= 18.x']
+
+    name: "deploy: use node ${{ matrix.node-version }}"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules-${{ matrix.os }}-${{ matrix.node-version }}
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+
+      - name: "swa deploy"
+        run: |
+          npm ci
+          npm link
+          cd cypress/fixtures/
+          swa deploy app --dry-run --verbose=silly --api-location=./static/api --app-location ./static --deployment-token=00000000000000000000000000000000000000000000000000000000000000000-00000000-0000-0000-0000-00000000000000000000
+
+  package:
+    needs: [e2e-deploy-macos, e2e-deploy-linux, e2e-deploy-windows]
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
+      - run: npm ci
+      - run: npm version prerelease --preid=ci-$GITHUB_RUN_ID --no-git-tag-version
+      - run: npm pack
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: static-web-apps-cli
+          path: "*.tgz"

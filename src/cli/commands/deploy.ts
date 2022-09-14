@@ -28,19 +28,19 @@ export default function registerCommand(program: Command) {
     .command("deploy [configName|outputLocation]")
     .usage("[configName|outputLocation] [options]")
     .description("deploy the current project to Azure Static Web Apps")
-    .option("--app-location <path>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
-    .option("--api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
-    .option("--output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
+    .option("-a, --app-location <path>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
+    .option("-i, --api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
+    .option("-O, --output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
     .option("--api-language <apiLanguage>", "the runtime language of the function", DEFAULT_CONFIG.apiLanguage)
     .option("--api-version <apiVersion>", "version of the function runtime language", DEFAULT_CONFIG.apiVersion)
     .option(
-      "--swa-config-location <swaConfigLocation>",
+      "-w, --swa-config-location <swaConfigLocation>",
       "the directory where the staticwebapp.config.json file is located",
       DEFAULT_CONFIG.swaConfigLocation
     )
-    .option("--deployment-token <secret>", "the secret token used to authenticate with the Static Web Apps")
-    .option("--dry-run", "simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
-    .option("--print-token", "print the deployment token", false)
+    .option("-d, --deployment-token <secret>", "the secret token used to authenticate with the Static Web Apps")
+    .option("-dr, --dry-run", "simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
+    .option("-pt, --print-token", "print the deployment token", false)
     .option("--env [environment]", "the type of deployment environment where to deploy the project", DEFAULT_CONFIG.env)
     .action(async (positionalArg: string | undefined, _options: SWACLIConfig, command: Command) => {
       const options = await configureOptions(positionalArg, command.optsWithGlobals(), command, "deploy");
@@ -171,7 +171,7 @@ export async function deploy(options: SWACLIConfig) {
         logger.log(`\nChecking project settings...`);
       }
 
-      const { resourceGroupName, staticSiteName } = (await chooseOrCreateProjectDetails(options, credentialChain, subscriptionId)) as {
+      const { resourceGroupName, staticSiteName } = (await chooseOrCreateProjectDetails(options, credentialChain, subscriptionId, printToken)) as {
         resourceGroupName: string;
         staticSiteName: string;
       };
@@ -331,7 +331,7 @@ export async function deploy(options: SWACLIConfig) {
             else if (line.includes("[31m")) {
               if (line.includes("Cannot deploy to the function app because Function language info isn't provided.")) {
                 line = chalk.red(
-                  `Cannot deploy to the function app because Function language info isn't provided. Add a "platform.apiRuntime" property to your staticwebapp.config.json file.`
+                  `Cannot deploy to the function app because Function language info isn't provided. Add a "platform.apiRuntime" property to your staticwebapp.config.json file, or create one in ${options.outputLocation!}. Please consult the documentation for more information about staticwebapp.config.json: https://docs.microsoft.com/azure/static-web-apps/configuration`
                 );
               }
 

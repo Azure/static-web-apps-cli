@@ -27,6 +27,8 @@ const {
   SWA_CLI_DEPLOY_DRY_RUN,
   SWA_CLI_DEPLOY_ENV,
   SWA_CLI_LOGIN_CLEAR_CREDENTIALS,
+  SWA_CLI_APP_DEVSERVER_URL,
+  SWA_CLI_API_DEVSERVER_URL,
 } = swaCLIEnv();
 
 export const DEFAULT_CONFIG: SWACLIConfig = {
@@ -45,12 +47,14 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   apiBuildCommand: SWA_CLI_API_BUILD_COMMAND || undefined,
   run: SWA_CLI_STARTUP_COMMAND || undefined,
   verbose: SWA_CLI_DEBUG || "log",
-  serverTimeout: parseInt(SWA_CLI_SERVER_TIMEOUT || "60", 10),
+  devserverTimeout: parseInt(SWA_CLI_SERVER_TIMEOUT || "60", 10),
   open: useEnvVarOrUseDefault(SWA_CLI_OPEN_BROWSER, false),
   githubActionWorkflowLocation: SWA_RUNTIME_WORKFLOW_LOCATION ? SWA_RUNTIME_WORKFLOW_LOCATION : undefined,
   env: SWA_CLI_DEPLOY_ENV || "preview",
   appName: SWA_CLI_APP_NAME || undefined,
   dryRun: useEnvVarOrUseDefault(SWA_CLI_DEPLOY_DRY_RUN, false),
+  appDevserverUrl: SWA_CLI_APP_DEVSERVER_URL || undefined,
+  apiDevserverUrl: SWA_CLI_API_DEVSERVER_URL || undefined,
 
   // swa login options
   subscriptionId: AZURE_SUBSCRIPTION_ID || undefined,

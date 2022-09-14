@@ -21,3 +21,9 @@
   align-items: center;
   justify-content: center;
 }
+
+.rainbow {
+  background-image: linear-gradient(to right, #cc4fc2, #3dbdcf);
+  background-clip: text;
+  color: transparent;
+}

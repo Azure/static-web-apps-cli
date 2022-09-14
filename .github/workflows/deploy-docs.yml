@@ -9,17 +9,17 @@ jobs:
     name: Build and Deploy Job
     steps:
       - uses: actions/checkout@v2
-        with:
-          submodules: true
-      - uses: actions/setup-node@v1
+      - run: git config --global user.email "github@wassim.dev"
+      - run: git config --global user.name "Wassim Chegham"
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3.2.0
         with:
           node-version: '16.x'
-      - name: Build And Deploy
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_SWA_TOKEN }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: 'upload'
-          app_location: docs/www
-          api_location: ''
-          output_location: build
+      - name: "deploy docs"
+        run: |
+          cd docs/www/
+          npm ci
+          npm run deploy
+        env:
+          GIT_PASS: ${{ secrets.SWA_CLI_DEPLOY_DOCS_GH_PAGES }}
+          GIT_USER: "manekinekko"

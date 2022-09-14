@@ -23,7 +23,7 @@ if (!isHttpUrl(SWA_CLI_API_URI())) {
 
 // TODO: handle multiple workflow files (see #32)
 if (DEFAULT_CONFIG.githubActionWorkflowLocation) {
-  logger.log(`\nUsing workflow file:\n    ${chalk.green(DEFAULT_CONFIG.githubActionWorkflowLocation)}`);
+  logger.log(`\nUsing workflow file:\n  ${chalk.green(DEFAULT_CONFIG.githubActionWorkflowLocation)}`);
 }
 
 const httpsServerOptions: Pick<https.ServerOptions, "cert" | "key"> | null =
@@ -72,13 +72,13 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
       // prettier-ignore
       logger.log(
         `\nUsing dev server for static content:\n` +
-        `    ${chalk.green(DEFAULT_CONFIG.outputLocation)}`
+        `  ${chalk.green(DEFAULT_CONFIG.outputLocation)}`
       );
     } else {
       // prettier-ignore
       logger.log(
         `\nServing static content:\n` +
-        `    ${chalk.green(DEFAULT_CONFIG.outputLocation)}`
+        `  ${chalk.green(DEFAULT_CONFIG.outputLocation)}`
       );
     }
 
@@ -87,13 +87,13 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
         // prettier-ignore
         logger.log(
           `\nUsing dev server for API:\n` +
-          `    ${chalk.green(DEFAULT_CONFIG.apiLocation)}`
+          `  ${chalk.green(DEFAULT_CONFIG.apiLocation)}`
         );
       } else {
         // prettier-ignore
         logger.log(
           `\nServing API:\n` +
-          `    ${chalk.green(DEFAULT_CONFIG.apiLocation)}`
+          `  ${chalk.green(DEFAULT_CONFIG.apiLocation)}`
         );
       }
     }
@@ -141,11 +141,11 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
   };
 
   if (IS_APP_DEV_SERVER()) {
-    await validateDevServerConfig(DEFAULT_CONFIG.outputLocation, DEFAULT_CONFIG.serverTimeout);
+    await validateDevServerConfig(DEFAULT_CONFIG.outputLocation, DEFAULT_CONFIG.devserverTimeout);
   }
 
   if (HAS_API) {
-    await validateDevServerConfig(SWA_CLI_API_URI() as string, DEFAULT_CONFIG.serverTimeout);
+    await validateDevServerConfig(SWA_CLI_API_URI() as string, DEFAULT_CONFIG.devserverTimeout);
     await validateFunctionTriggers(SWA_CLI_API_URI() as string);
   }
 

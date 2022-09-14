@@ -25,7 +25,7 @@ $ npm start
 
 Build the website for production - by default this creates the static content in `build/`, which can now be deployed to a relevant hosting service (like GitHub Pages or Azure Static Web Apps) for public access.
 
-```
+```bash
 $ cd docs/www
 $ npm run build
 ```

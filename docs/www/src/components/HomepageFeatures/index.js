@@ -1,16 +1,19 @@
-import React from 'react';
-import clsx from 'clsx';
-import Link from '@docusaurus/Link';
-import styles from './styles.module.css';
+import React from "react";
+import clsx from "clsx";
+import Link from "@docusaurus/Link";
+import styles from "./styles.module.css";
 
 const FeatureList = [
   {
-    title: 'Install SWA CLI',
-    Svg: require('@site/static/img/landing-install.svg').default,
+    title: "Install",
+    Svg: require("@site/static/img/landing-install-icon.svg").default,
+    link: "docs/cli/swa",
     description: (
       <>
-        Get started by installing the Azure Static Web Apps CLI using <b>yarn</b> or <b>npm</b>. 
-        <br/>
+        Install the Azure Static Web Apps CLI
+        <br />
+        using <b>yarn</b> or <b>npm</b>.
+        <br />
         {/*
         <Link
           className="button button--secondary button--sm"
@@ -22,58 +25,72 @@ const FeatureList = [
     ),
   },
   {
-    title: 'Configure SWA CLI',
-    Svg: require('@site/static/img/landing-configure.svg').default,
+    title: "Init",
+    Svg: require("@site/static/img/landing-init-icon.svg").default,
+    link: "docs/cli/swa-init",
     description: (
       <>
-        Explore the <b>environment variables</b> and <b>config settings</b> available for SWA CLI.
+        Setup your project
+        <br />
+        using <b>swa init</b>
       </>
     ),
   },
   {
-    title: 'Login to Azure',
-    Svg: require('@site/static/img/landing-login.svg').default,
+    title: "Login",
+    Svg: require("@site/static/img/landing-login-icon.svg").default,
+    link: "docs/cli/swa-login",
     description: (
       <>
-        Use the <b>swa login</b> command to authenticate with the relevant services.
-        <br/>  
+        Authenticate with Azure services
+        <br /> using <b>swa login </b>
+        <br />
       </>
     ),
   },
   {
-    title: 'Initialize SWA',
-    Svg: require('@site/static/img/landing-init.svg').default,
+    title: "Start",
+    Svg: require("@site/static/img/landing-start-icon.svg").default,
+    link: "docs/cli/swa-start",
     description: (
       <>
-        Use the <b>swa init</b> command to setup a project with a preferred web technology.
+        Preview and debug your static web app
+        <br /> using <b>swa start</b>.
       </>
     ),
   },
   {
-    title: 'Develop SWA (local)',
-    Svg: require('@site/static/img/landing-start.svg').default,
+    title: "Deploy SWA (cloud)",
+    Svg: require("@site/static/img/landing-deploy-icon.svg").default,
+    link: "docs/cli/swa-deploy",
     description: (
       <>
-        Use the <b>swa start</b> command to preview and debug your SWA on a local server.
+        Build/deploy to multiple environments
+        <br /> using <b>swa deploy</b>
       </>
     ),
   },
   {
-    title: 'Deploy SWA (cloud)',
-    Svg: require('@site/static/img/landing-deploy.svg').default,
+    title: "Configure",
+    Svg: require("@site/static/img/landing-configure-icon.svg").default,
+    link: "docs/cli/env-vars",
     description: (
       <>
-        Use the <b>swa deploy</b> command to build and deploy SWA to multiple environments.
+        Setup <b>environment variables</b>
+        <br />
+        and <b>config settings</b>.
       </>
     ),
   },
 ];
 
-function Feature({Svg, title, description}) {
+function Feature({ Svg, title, description, link }) {
   return (
-    <div className={clsx('col col--4')}>
+    <div className={clsx("col col--4")}>
       <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
+        <a href={link} target="_blank">
+          <Svg className={styles.featureSvg} role="img" />
+        </a>
       </div>
       <div className="text--center padding-horiz--md">
         <h3>{title}</h3>

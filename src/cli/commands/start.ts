@@ -4,7 +4,6 @@ import concurrently, { CloseEvent } from "concurrently";
 import { CommandInfo } from "concurrently/dist/src/command";
 import fs from "fs";
 import path from "path";
-import { execSync } from "child_process";
 import { DEFAULT_CONFIG } from "../../config";
 import {
   askNewPort,
@@ -30,47 +29,46 @@ let packageInfo = require("../../../package.json");
 
 export default function registerCommand(program: Command) {
   program
-    .command("start [configName|outputLocation|devServerUrl]")
-    .usage("[configName|outputLocation|devServerUrl] [options]")
+    .command("start [configName|outputLocation|appDevserverUrl]")
+    .usage("[configName|outputLocation|appDevserverUrl] [options]")
     .description("start the emulator from a directory or bind to a dev server")
-    .option("--app-location <path>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
-    .option("--api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
-    .option("--output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
-    .option("--dev-server-url <url>", "connect to the dev server at this URL instead of using output location", undefined)
-    .option("--api-server-url <url>", "connect to the api server at this URL instead of using output location", undefined)
-    .option<number>("--api-port <apiPort>", "the API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
-    .option("--host <host>", "the host address to use for the CLI dev server", DEFAULT_CONFIG.host)
-    .option<number>("--port <port>", "the port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
-    .option("--run-build", 'run "swa build" before starting the emulator', false)
+    .option("-a, --app-location <path>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
+    .option("-i, --api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
+    .option("-O, --output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
+    .option("-D, --app-devserver-url <url>", "connect to the app dev server at this URL instead of using output location", DEFAULT_CONFIG.appDevserverUrl)
+    .option("-is, --api-devserver-url <url>", "connect to the api server at this URL instead of using output location", DEFAULT_CONFIG.apiDevserverUrl)
+    .option<number>("-j, --api-port <apiPort>", "the API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
+    .option("-q, --host <host>", "the host address to use for the CLI dev server", DEFAULT_CONFIG.host)
+    .option<number>("-p, --port <port>", "the port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
 
-    .option("--ssl", "serve the front-end application and API over HTTPS", DEFAULT_CONFIG.ssl)
-    .option("--ssl-cert <sslCertLocation>", "the SSL certificate (.crt) to use when enabling HTTPS", DEFAULT_CONFIG.sslCert)
-    .option("--ssl-key <sslKeyLocation>", "the SSL key (.key) to use when enabling HTTPS", DEFAULT_CONFIG.sslKey)
-    .option("--run <startupScript>", "run a custom shell command or script file at startup", DEFAULT_CONFIG.run)
+    .option("-s, --ssl", "serve the front-end application and API over HTTPS", DEFAULT_CONFIG.ssl)
+    .option("-e, --ssl-cert <sslCertLocation>", "the SSL certificate (.crt) to use when enabling HTTPS", DEFAULT_CONFIG.sslCert)
+    .option("-k, --ssl-key <sslKeyLocation>", "the SSL key (.key) to use when enabling HTTPS", DEFAULT_CONFIG.sslKey)
+    .option("-r, --run <startupScript>", "run a custom shell command or script file at startup", DEFAULT_CONFIG.run)
     .option<number>(
-      "--server-timeout <time>",
+      "-t, --devserver-timeout <time>",
       "the time to wait (in seconds) when connecting to a front-end application's dev server or api server",
       parseServerTimeout,
-      DEFAULT_CONFIG.serverTimeout
+      DEFAULT_CONFIG.devserverTimeout
     )
     .option(
-      "--swa-config-location <swaConfigLocation>",
+      "-w, --swa-config-location <swaConfigLocation>",
       "the directory where the staticwebapp.config.json file is located",
       DEFAULT_CONFIG.swaConfigLocation
     )
-    .option("--open", "open the browser to the dev server", DEFAULT_CONFIG.open)
-    .option("--func-args <funcArgs>", "pass additional arguments to the func start command")
+    .option("-o, --open", "open the browser to the dev server", DEFAULT_CONFIG.open)
+    .option("-f, --func-args <funcArgs>", "pass additional arguments to the func start command")
     .action(async (positionalArg: string | undefined, _options: SWACLIConfig, command: Command) => {
       const options = await configureOptions(positionalArg, command.optsWithGlobals(), command, "start");
       if (positionalArg && !matchLoadedConfigName(positionalArg)) {
         // If it's not the config name, it's either output location or dev server url
         const isUrl = isHttpUrl(positionalArg);
         if (isUrl) {
-          if (isUserOption("devServerUrl")) {
-            logger.error(`swa deploy <devServerUrl> cannot be used when --dev-server-url option is also set.`);
+          if (isUserOption("appDevserverUrl")) {
+            logger.error(`swa deploy <appDevserverUrl> cannot be used when --app-devserver-url option is also set.`);
             logger.error(`You either have to use the positional argument or option, not both at the same time.`, true);
           }
-          options.devServerUrl = positionalArg;
+          options.appDevserverUrl = positionalArg;
         } else {
           if (isUserOption("outputLocation")) {
             logger.error(`swa deploy <outputLocation> cannot be used when --output-location option is also set.`);
@@ -124,14 +122,13 @@ export async function start(options: SWACLIConfig) {
     appLocation,
     apiLocation,
     outputLocation,
-    devServerUrl,
-    apiServerUrl,
+    appDevserverUrl,
+    apiDevserverUrl,
     apiPort,
-    serverTimeout,
+    devserverTimeout,
     ssl,
     sslCert,
     sslKey,
-    runBuild,
     host,
     port,
     run,
@@ -164,10 +161,10 @@ export async function start(options: SWACLIConfig) {
   // resolve the absolute path to the appLocation
   appLocation = path.resolve(appLocation as string);
 
-  if (devServerUrl) {
-    logger.silly(`devServerUrl provided, we will try connect to dev server at ${outputLocation}`);
-    // TODO: properly refactor this after GA to send devServerUrl to the server
-    outputLocation = devServerUrl;
+  if (appDevserverUrl) {
+    logger.silly(`appDevserverUrl provided, we will try connect to dev server at ${outputLocation}`);
+    // TODO: properly refactor this after GA to send appDevserverUrl to the server
+    outputLocation = appDevserverUrl;
   } else {
     logger.silly(`Resolving outputLocation=${outputLocation} full path...`);
     let resolvedOutputLocation = path.resolve(appLocation as string, outputLocation as string);
@@ -190,10 +187,10 @@ export async function start(options: SWACLIConfig) {
     // resolves to the absolute path of the apiLocation
     let resolvedApiLocation = path.resolve(apiLocation);
 
-    if (apiServerUrl) {
-      // TODO: properly refactor this after GA to send apiServerUrl to the server
-      useApiDevServer = apiServerUrl;
-      apiLocation = apiServerUrl;
+    if (apiDevserverUrl) {
+      // TODO: properly refactor this after GA to send apiDevserverUrl to the server
+      useApiDevServer = apiDevserverUrl;
+      apiLocation = apiDevserverUrl;
     }
     // make sure api folder exists
     else if (fs.existsSync(resolvedApiLocation)) {
@@ -319,13 +316,15 @@ export async function start(options: SWACLIConfig) {
     SWA_CLI_APP_SSL_KEY: sslKey,
     SWA_CLI_STARTUP_COMMAND: startupCommand as string,
     SWA_CLI_VERSION: packageInfo.version,
-    SWA_CLI_SERVER_TIMEOUT: `${serverTimeout}`,
+    SWA_CLI_SERVER_TIMEOUT: `${devserverTimeout}`,
     SWA_CLI_OPEN_BROWSER: open ? "true" : "false",
   };
 
   // merge SWA CLI env variables with process.env
   process.env = {
     ...swaCLIEnv(envVarsObj),
+    // Prevent react-scripts from opening browser
+    BROWSER: "none",
   };
 
   // INFO: from here, code may access SWA CLI env vars.
@@ -348,15 +347,6 @@ export async function start(options: SWACLIConfig) {
     let startupPath = userWorkflowConfig?.appLocation;
 
     concurrentlyCommands.push({ command: `cd "${startupPath}" && ${startupCommand}`, name: "run", env, prefixColor: "gray.dim" });
-  }
-
-  if (runBuild) {
-    // run swa build
-    execSync("swa build", {
-      stdio: "inherit",
-      // Set CI to avoid extra NPM logs and potentially unwanted interactive modes
-      env: { ...process.env, CI: "1" },
-    });
   }
 
   logger.silly(`Starting the SWA emulator with the following configuration:`);

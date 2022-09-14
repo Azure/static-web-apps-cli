@@ -1,4 +1,35 @@
+const fs = require("fs");
+const path = require("path");
 const detect = require("./detect");
+
+function findFolders(basePath) {
+  const entries = fs.readdirSync(basePath, { withFileTypes: true });
+  return entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+}
+
+function findSamples() {
+  const folders = ["samples/api", "samples/app", "samples/ssr"];
+  let allSamples = [];
+
+  for (const folder of folders) {
+    let samples = findFolders(path.join(__dirname, folder));
+    samples = samples.map((sample) => path.join(__dirname, folder, sample));
+    allSamples = [...allSamples, ...samples];
+  }
+
+  return allSamples;
+}
+
+function createTest(folderPath, name) {
+  it(`should detect from root framework ${name}`, async () => {
+    process.chdir(folderPath);
+
+    let result = await detect(".");
+    // Fix windows paths
+    result = result.replace(/\\/g, "/");
+    expect(result).toMatchSnapshot();
+  });
+}
 
 describe("framework detection", () => {
   it("should detect frameworks", async () => {
@@ -36,7 +67,7 @@ describe("framework detection", () => {
       - samples/app/eleventy (Eleventy)
       - samples/app/elm (Elm)
       - samples/app/ember (Ember.js)
-      - samples/app/flutter/web (Static HTML)
+      - samples/app/flutter (Flutter)
       - samples/app/gridsome (Gridsome)
       - samples/app/hexo (Hexo)
       - samples/app/hugo (Hugo)
@@ -78,4 +109,6 @@ describe("framework detection", () => {
       - samples/ssr/meteor"
     `);
   });
+
+  findSamples().forEach((sample) => createTest(sample, path.basename(sample)));
 });

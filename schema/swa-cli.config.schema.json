@@ -139,11 +139,11 @@
           "description": "The folder containing the source code of the API application",
           "type": "string"
         },
-        "devServerUrl": {
+        "appDevserverUrl": {
           "description": "Connect to the dev server at this URL instead of using output location",
           "type": "string"
         },
-        "apiServerUrl": {
+        "apiDevserverUrl": {
           "description": "Connect to the api server at this URL instead of using api location",
           "type": "string"
         },
@@ -155,7 +155,7 @@
           "description": "Automatically open the CLI dev server in the default browser",
           "type": "boolean"
         },
-        "serverTimeout": {
+        "devserverTimeout": {
           "description": "The time to wait (in seconds) when connecting to a front-end application's dev server or api server",
           "type": "number"
         },
@@ -186,10 +186,6 @@
         "funcArgs": {
           "description": "Pass additional arguments to the func start command",
           "type": "string"
-        },
-        "runBuild": {
-          "description": "Run \"swa build\" before starting the emulator",
-          "type": "boolean"
         },
         "swaConfigLocation": {
           "description": "The directory where the staticwebapp.config.json file is located",

@@ -1,14 +1,17 @@
 {
-  "$schema": "../../../schema/swa-cli.config.schema.json",
+  "$schema": "https://aka.ms/azure/static-web-apps-cli/schema",
   "configurations": {
-    "app": {
-      "outputLocation": "http://localhost:5000",
-      "appLocation": ".",
-      "apiLocation": "./Api",
-      "run": "dotnet run --project ./cypress/fixtures/blazor-starter/Client",
+    "blazor-starter": {
+      "appLocation": "Client",
+      "apiLocation": "Api",
+      "outputLocation": "output",
+      "appBuildCommand": "dotnet build",
+      "apiBuildCommand": "dotnet build",
+      "run": "dotnet watch run",
+      "devServerUrl": "http://localhost:8000",
       "port": 1234,
       "host": "0.0.0.0",
-      "serverTimeout": 100,
+      "devserverTimeout": 100,
       "verbose": "silly"
     }
   }

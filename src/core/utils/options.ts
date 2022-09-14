@@ -57,7 +57,7 @@ function setLogLevel(verbosity: string | undefined) {
   }
 }
 
-function getUserOptions(command: Command) {
+export function getUserOptions(command: Command) {
   const userOptions: OptionValues = {};
   const options = command.optsWithGlobals();
 

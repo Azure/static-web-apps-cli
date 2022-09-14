@@ -1,5 +1,9 @@
 /// <reference types="cypress" />
 
+Cypress.Screenshot.defaults({
+  screenshotOnRunFailure: false,
+});
+
 context("Error pages", () => {
   describe(`Custom 401 page`, () => {
     it(`should respond with 401 status code`, () => {

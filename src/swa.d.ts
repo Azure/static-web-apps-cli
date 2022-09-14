@@ -5,6 +5,7 @@ declare global {
 }
 
 declare module "json-source-map";
+declare module "pem";
 
 declare interface StaticSiteClientEnv {
   // StaticSitesClient env vars
@@ -44,6 +45,8 @@ declare interface SWACLIEnv extends StaticSiteClientEnv {
   SWA_CLI_STARTUP_COMMAND?: string;
   SWA_CLI_SERVER_TIMEOUT?: string;
   SWA_CLI_OPEN_BROWSER?: string;
+  SWA_CLI_APP_DEVSERVER_URL?: string;
+  SWA_CLI_API_DEVSERVER_URL?: string;
 
   // swa deploy
   SWA_CLI_DEPLOY_DRY_RUN?: string;
@@ -125,8 +128,8 @@ declare type SWACLIStartOptions = {
   appLocation?: string;
   outputLocation?: string;
   apiLocation?: string;
-  devServerUrl?: string;
-  apiServerUrl?: string;
+  appDevserverUrl?: string;
+  apiDevserverUrl?: string;
   apiPort?: number;
   host?: string;
   port?: number;
@@ -134,11 +137,10 @@ declare type SWACLIStartOptions = {
   sslCert?: string;
   sslKey?: string;
   run?: string;
-  serverTimeout?: number;
+  devserverTimeout?: number;
   open?: boolean;
   funcArgs?: string;
   githubActionWorkflowLocation?: string;
-  runBuild?: boolean;
   swaConfigLocation?: string;
 };
 
@@ -276,8 +278,8 @@ declare type SWACLIConfigFile = {
 declare type FrameworkConfig = GithubActionWorkflow & {
   name?: string;
   apiBuildCommand?: string;
-  devServerCommand?: string;
-  devServerUrl?: string;
+  appDevserverCommand?: string;
+  appDevserverUrl?: string;
 };
 
 declare interface CoreToolsRelease {

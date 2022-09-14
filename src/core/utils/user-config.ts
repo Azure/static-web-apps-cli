@@ -24,8 +24,8 @@ const { readdir, readFile, stat } = fs.promises;
 export async function* traverseFolder(folder: string): AsyncGenerator<string> {
   const folders = (await readdir(folder, { withFileTypes: true })) as fs.Dirent[];
   for (const folderEntry of folders) {
-    if (folderEntry.name.includes("node_modules")) {
-      // WARNING: ignore node_modules to avoid perf hits!
+    // WARNING: ignore node_modules and other common folders to avoid perf hits!
+    if (folderEntry.name.includes("node_modules") || folderEntry.name.startsWith(".git")) {
       continue;
     }
     const entryPath = path.resolve(folder, folderEntry.name);
@@ -69,7 +69,7 @@ export async function findSWAConfigFile(folder: string): Promise<{ filepath: str
 
         logger.silly(`Content parsed successfully`);
 
-        logger.log(`\nFound configuration file:\n    ${chalk.green(file.filepath)}\n`);
+        logger.log(`\nFound configuration file:\n  ${chalk.green(file.filepath)}\n`);
         return {
           filepath: file.filepath,
           content,
@@ -96,7 +96,7 @@ export async function findSWAConfigFile(folder: string): Promise<{ filepath: str
   return null;
 }
 
-async function validateRuntimeConfigAndGetData(filepath: string): Promise<SWAConfigFile | null> {
+export async function validateRuntimeConfigAndGetData(filepath: string): Promise<SWAConfigFile | null> {
   const ajv4 = new Ajv4({
     strict: false,
     allErrors: true,

@@ -1,4 +1,4 @@
-name: detection-e2-tests
+name: E2E Tests for framework detection
 on:
   push:
     branches: [main, ga]
@@ -6,7 +6,6 @@ on:
 jobs:
   detection-e2e-tests:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
@@ -15,5 +14,4 @@ jobs:
     - name: Test framework detection
       run: |
         npm ci
-        npm run e2e:detection:prepare-samples
         npm run e2e:detection:test

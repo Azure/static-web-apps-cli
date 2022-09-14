@@ -1,0 +1,35 @@
+name: E2E
+
+on:
+  push:
+    branches: [main, ga]
+  pull_request:
+    branches: [main, ga]
+
+jobs:
+  e2e:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # when one test fails, DO NOT cancel the other
+      # containers, because this will kill Cypress processes
+      # https://github.com/cypress-io/github-action/issues/48
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-20.04]
+        node-version: [14.x, 15.x, 16.x, 17.x]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v2
+        with:
+          record: false
+          video: false
+          start: npm run e2e:static
+          wait-on: "http://0.0.0.0:1234, http://localhost:7071"
+          wait-on-timeout: 120
+        env:
+          DEBUG: "cypress:*"
+          CI: 1

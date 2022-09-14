@@ -19,8 +19,8 @@ const defautResolvedPrompts = {
   outputLocation: convertToNativePaths("./dist"),
   appBuildCommand: "npm run build",
   apiBuildCommand: "npm run build:api",
-  devServerCommand: "npm run dev",
-  devServerUrl: "http://localhost:3000",
+  appDevserverCommand: "npm run dev",
+  appDevserverUrl: "http://localhost:3000",
   confirmOverwrite: true,
 };
 
@@ -148,7 +148,7 @@ describe("swa init", () => {
             \\"appBuildCommand\\": \\"npm run build\\",
             \\"apiBuildCommand\\": \\"npm run build --if-present\\",
             \\"run\\": \\"npm run dev\\",
-            \\"devServerUrl\\": \\"http://localhost:8080\\"
+            \\"appDevserverUrl\\": \\"http://localhost:8080\\"
           }
         }
       }"

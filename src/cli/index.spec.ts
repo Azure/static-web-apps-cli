@@ -1,3 +1,6 @@
+// Avoid FSREQCALLBACK error
+jest.mock("./commands/start");
+
 import { program } from "commander";
 import { UpdateNotifier } from "update-notifier";
 import { run } from "./index";
