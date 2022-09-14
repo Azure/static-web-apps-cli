@@ -202,7 +202,8 @@
           const urlSearch = (metaSearch || location.search).replace("?", "");
           const urlQuery = urlSearch && Object.fromEntries(new Map(urlSearch.split("&").map((query) => query.split("="))));
           const postLoginRedirectUri = urlQuery ? urlQuery["post_login_redirect_uri"] : redirectPath;
-          window.location.href = postLoginRedirectUri || defaultRedirectPath;
+
+          window.location.href = decodeURIComponent(postLoginRedirectUri) || defaultRedirectPath;
         } catch (error) {
           console.warn(error);
           window.location.href = defaultRedirectPath;
