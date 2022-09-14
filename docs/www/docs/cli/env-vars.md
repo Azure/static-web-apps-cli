@@ -45,6 +45,8 @@ title: Environment Variables
 | AZURE_REGION_LOCATION         | Azure region where to deploy the project                                  |            | `West US 2`   |
 | AZURE_RESOURCE_GROUP          | Azure resource group                                                      |            |               |
 | AZURE_SUBSCRIPTION_ID         | Azure subscription ID                                                     |            |               |
+| SWA_CLI_API_LANGUAGE          | Runtime Language of the function                                          |            | `node`        |
+| SWA_CLI_API_VERSION           | Version of the function runtime language                                  |            | `16`          |
 
 ## Runtime settings
 

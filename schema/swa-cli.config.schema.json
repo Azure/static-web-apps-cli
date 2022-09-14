@@ -260,6 +260,14 @@
         "dryRun": {
           "description": "Simulate a deploy process without actually running it",
           "type": "boolean"
+        },
+        "apiLanguage": {
+          "description": "The runtime language of the function",
+          "type": "string"
+        },
+        "apiVersion": {
+          "description": "The version of the function runtime language",
+          "type": "string"
         }
       },
       "type": "object"
