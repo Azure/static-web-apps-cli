@@ -161,6 +161,8 @@ function convertToCliConfig(config: FrameworkConfig): SWACLIConfig {
     appLocation: config.appLocation,
     apiLocation: config.apiLocation,
     outputLocation: config.outputLocation,
+    apiLanguage: config.apiLanguage,
+    apiVersion: config.apiVersion,
     appBuildCommand: config.appBuildCommand,
     apiBuildCommand: config.apiBuildCommand,
     run: config.appDevserverCommand,
@@ -196,6 +198,20 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
       name: "apiLocation",
       message: "What's your API location? (optional)",
       initial: detectedConfig.apiLocation,
+      format: trimValue,
+    },
+    {
+      type: "text",
+      name: "apiLanguage",
+      message: "What's your API language? (optional)",
+      initial: detectedConfig.apiLanguage,
+      format: trimValue,
+    },
+    {
+      type: "text",
+      name: "apiVersion",
+      message: "What's your API version? (optional)",
+      initial: detectedConfig.apiVersion,
       format: trimValue,
     },
     {
@@ -236,6 +252,8 @@ function printFrameworkConfig(config: FrameworkConfig) {
   logger.log(`- App location: ${chalk.green(config.appLocation)}`);
   logger.log(`- Output location: ${chalk.green(config.outputLocation)}`);
   logger.log(`- API location: ${chalk.green(config.apiLocation ?? "")}`);
+  logger.log(`- API language: ${chalk.green(config.apiLanguage ?? "")}`);
+  logger.log(`- API version: ${chalk.green(config.apiVersion ?? "")}`);
   logger.log(`- App build command: ${chalk.green(config.appBuildCommand ?? "")}`);
   logger.log(`- API build command: ${chalk.green(config.apiBuildCommand ?? "")}`);
   logger.log(`- App dev server command: ${chalk.green(config.appDevserverCommand ?? "")}`);

@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import globrex from "globrex";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
+import { DEFAULT_DOTNET_ISOLATED_VERSION, DEFAULT_DOTNET_VERSION, DEFAULT_NODE_VERSION, DEFAULT_PYTHON_VERSION } from "../../core/constants";
 import { hasSpaces, logger, removeTrailingPathSep, safeReadFile, safeReadJson } from "../utils";
 import { apiFrameworks, appFrameworks } from "./frameworks";
 
@@ -42,6 +43,8 @@ export async function generateConfiguration(app?: DetectedFolder, api?: Detected
       logger.silly(`Built API location "${computedApiLocation}" does not match root API location ${api.rootPath}, which is not supported yet`);
     }
     config.apiLocation = removeTrailingPathSep(api.rootPath);
+    config.apiLanguage = api.frameworks[0].name; //todo:check if the detected framework is valid or not
+    config.apiVersion = getDefaultVersion(config.apiLanguage);
   }
 
   const appRootPath = app && removeTrailingPathSep(app.rootPath);
@@ -391,4 +394,26 @@ export function formatDetectedFolders(folders: DetectedFolder[], type: string): 
     `Detected ${type} folders (${folders.length}):\n` +
     `- ${folders.map((f) => `${f.rootPath} (${f.frameworks.map((fr) => fr.name).join(", ")})`).join("\n- ")}`
   );
+}
+function getDefaultVersion(apiLanguage: string): string {
+  let apiVersion = "16";
+  apiLanguage = apiLanguage.toLowerCase();
+  switch (apiLanguage) {
+    case "node.js":
+      apiVersion = DEFAULT_NODE_VERSION;
+      break;
+    case "python":
+      apiVersion = DEFAULT_PYTHON_VERSION;
+      break;
+    case "dotnet":
+      apiVersion = DEFAULT_DOTNET_VERSION;
+      break;
+    case "dotnetisolated" || "dotnet isolated":
+      apiVersion = DEFAULT_DOTNET_ISOLATED_VERSION;
+      break;
+    default:
+      apiVersion = DEFAULT_NODE_VERSION;
+      break;
+  }
+  return apiVersion;
 }

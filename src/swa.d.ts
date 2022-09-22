@@ -279,6 +279,8 @@ declare type SWACLIConfigFile = {
 
 declare type FrameworkConfig = GithubActionWorkflow & {
   name?: string;
+  apiLanguage?: string;
+  apiVersion?: string;
   apiBuildCommand?: string;
   appDevserverCommand?: string;
   appDevserverUrl?: string;

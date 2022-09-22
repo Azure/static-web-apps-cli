@@ -163,7 +163,7 @@ Here are the options you can use with `swa deploy`:
 - `-a, --app-location <path>`: the folder containing the source code of the front-end application (default: "`.`")
 - `-i, --api-location <path>`: the folder containing the source code of the API application
 - `-O, --output-location <path>`: the folder containing the built source of the front-end application. The path is relative to `--app-location` (default: "`.`")
-- `--api-language <apiLanguage>`: the runtime Language of the function (default: "`node`")
+- `--api-language <apiLanguage>`: the runtime language of the function (default: "`node`")
 - `--api-version <apiVersion>`: the version of the function runtime language (default: "`16`")
 - `-w, --swa-config-location <swaConfigLocation>`: the directory where the staticwebapp.config.json file is located
 - `-d, --deployment-token <secret>`: the secret token used to authenticate with the Static Web Apps
@@ -208,7 +208,7 @@ Print the deployment token
 swa deploy --print-token
 ```
 
-Provide Function language and version
+Provide function language and version
 
 ```bash
 swa deploy ./my-dist --api-location ./api --api-language "node" --api-version "16"

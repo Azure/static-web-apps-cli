@@ -32,8 +32,8 @@ export default function registerCommand(program: Command) {
     .option("-a, --app-location <path>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
     .option("-i, --api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("-O, --output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
-    .option("--api-language <apiLanguage>", "the runtime language of the function/api")
-    .option("--api-version <apiVersion>", "the version of the function runtime language")
+    .option("-l, --api-language <apiLanguage>", "the runtime language of the function/api")
+    .option("-v, --api-version <apiVersion>", "the version of the function runtime language")
     .option(
       "-w, --swa-config-location <swaConfigLocation>",
       "the directory where the staticwebapp.config.json file is located",
@@ -141,7 +141,7 @@ export async function deploy(options: SWACLIConfig) {
     if (!apiLanguage) {
       apiLanguage = DEFAULT_CONFIG.apiLanguage;
       apiVersion = DEFAULT_CONFIG.apiVersion;
-      logger.silly(`Consider providing api-language and version using --api-language and --api-version flags,
+      logger.log(`Consider providing api-language and version using --api-language and --api-version flags,
       otherwise default values apiLanguage: ${apiLanguage} and apiVersion: ${apiVersion} will apply`);
     } else if (apiLanguage && !apiVersion) {
       switch (apiLanguage) {
@@ -162,8 +162,8 @@ export async function deploy(options: SWACLIConfig) {
           apiVersion = DEFAULT_CONFIG.apiVersion;
           break;
       }
-      logger.silly(`Api language ${apiLanguage} is provided but api version is not provided.
-      Assuming default version ${apiVersion}`);
+      logger.silly(`Api language "${apiLanguage}" is provided but api version is not provided.
+      Assuming default version "${apiVersion}"`);
     }
   } else {
     // otherwise, check if the default api folder exists and print a warning
