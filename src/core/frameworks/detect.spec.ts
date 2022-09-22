@@ -30,6 +30,8 @@ describe("framework detection", () => {
         appBuildCommand: "npm run build",
         appLocation: "e2e/fixtures/astro-node/astro preact",
         appDevserverCommand: "npm run dev",
+        apiLanguage: "Node.js",
+        apiVersion: "16",
         appDevserverUrl: "http://localhost:8080",
         name: "Astro, with API: Node.js",
         outputLocation: "_site",
@@ -44,6 +46,8 @@ describe("framework detection", () => {
         apiLocation: "e2e/fixtures/static-node-ts/node-ts",
         appLocation: "e2e/fixtures/static-node-ts",
         name: "Static HTML, with API: Node.js, TypeScript",
+        apiLanguage: "Node.js",
+        apiVersion: "16",
         outputLocation: ".",
       });
     });
