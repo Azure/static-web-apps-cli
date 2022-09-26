@@ -83,3 +83,4 @@ Here are some of the default ports used by dev servers in popular front-end fram
 | [React (Create React App)](https://reactjs.org/docs/create-a-new-react-app.html)   | 3000 | `swa start http://localhost:3000` |
 | [Svelte (sirv-cli)](https://github.com/lukeed/sirv/tree/master/packages/sirv-cli/) | 5000 | `swa start http://localhost:5000` |
 | [Vue](https://cli.vuejs.org/)                                                      | 8080 | `swa start http://localhost:8080` |
+| [Vite-based frameworks](https://vitejs.dev/)                                       | 5173 | `swa start http://localhost:5173` |
