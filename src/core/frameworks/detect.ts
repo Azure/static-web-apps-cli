@@ -43,7 +43,7 @@ export async function generateConfiguration(app?: DetectedFolder, api?: Detected
       logger.silly(`Built API location "${computedApiLocation}" does not match root API location ${api.rootPath}, which is not supported yet`);
     }
     config.apiLocation = removeTrailingPathSep(api.rootPath);
-    config.apiLanguage = api.frameworks[0].name; //todo:check if the detected framework is valid or not
+    // config.apiLanguage = api.frameworks[0].name; //todo:check if the detected framework is valid or not
     config.apiVersion = getDefaultVersion(config.apiLanguage);
   }
 
