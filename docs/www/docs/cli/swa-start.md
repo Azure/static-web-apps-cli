@@ -51,7 +51,7 @@ Here is a list of the default ports used by some popular dev servers:
 | [Next.js](https://nextjs.org/)                                                     | 3000 | `swa start http://localhost:3000` |
 | [React (Create React App)](https://reactjs.org/docs/create-a-new-react-app.html)   | 3000 | `swa start http://localhost:3000` |
 | [Svelte (sirv-cli)](https://github.com/lukeed/sirv/tree/master/packages/sirv-cli/) | 5000 | `swa start http://localhost:5000` |
-| [Vue](https://github.com/vuejs/create-vue)                                                      | 3000 | `swa start http://localhost:3000` |
+| [Vue](https://github.com/vuejs/create-vue)                                         | 3000 | `swa start http://localhost:3000` |
 
 Instead of starting a dev server separately, you can provide the startup command to the CLI.
 
@@ -75,7 +75,7 @@ Then access the application with the emulated services from `http://localhost:42
 
 If your project includes API functions, the CLI will check if the Azure Functions Core Tools are installed and available. If not, the CLI will download and install the right version of the Azure Functions Core Tools.
 
-#### Start the API server automatically
+#### Start the local API server automatically
 
 Run the CLI and provide the folder that contains the API backend (a valid Azure Functions App project):
 
@@ -87,7 +87,7 @@ swa start ./my-dist --api-location ./api
 swa start http://localhost:3000 --api-location ./api
 ```
 
-#### Start API server manually
+#### Start local API server manually
 
 When developing your backend locally, sometimes it's useful to run Azure Functions Core Tools separately to serve your API. This allows you to use built-in features like debugging and rich editor support.
 
@@ -98,6 +98,14 @@ To use the CLI with your local API backend dev server, follow these two steps:
 
 ```bash
 swa start ./my-dist --api-location http://localhost:7071
+```
+
+#### Connect to a remote API server
+
+SWA CLI supports connecting to APIs hosted remotely, using services such as Azure and AWS. You can also connect to APIs hosted in a debug session in a GitHub Codespace.
+
+```bash
+swa start http://localhost:3000 --api-location https://my-api-host.example.com
 ```
 
 ## Options
@@ -158,6 +166,12 @@ Connect both front-end and the API to running development server
 
 ```bash
 swa start http://localhost:3000 --api-location http://localhost:7071
+```
+
+Connect to a local front-end development server and a remote API server
+
+```bash
+swa start http://localhost:3000 --api-location https://remote-api-host.example.com
 ```
 
 ## See Also

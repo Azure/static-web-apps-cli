@@ -18,6 +18,8 @@ Start the development server - this has built-in hot reload so you can preview c
 
 ```bash
 $ cd docs/www
+# If needed, run npm install to install dependencies.
+$ npm install
 $ npm start
 ```
 
