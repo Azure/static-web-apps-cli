@@ -70,6 +70,8 @@ export function handleFunctionRequest(req: http.IncomingMessage, res: http.Serve
     res,
     {
       target,
+      // Set the host header to match the remote API host.
+      changeOrigin: true,
     },
     onConnectionLost(req, res, target, "↳")
   );
