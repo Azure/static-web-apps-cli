@@ -5,7 +5,8 @@ export const apiFrameworks: FrameworkDefinition[] = [
     files: ["package.json", "host.json"],
     config: {
       apiBuildCommand: "npm run build --if-present",
-      apiLanguage: "",
+      apiLanguage: "node.js",
+      apiVersion: "16",
     },
   },
   {
@@ -25,6 +26,17 @@ export const apiFrameworks: FrameworkDefinition[] = [
     files: ["*.?(csproj|fsproj)", "host.json"],
     config: {
       apiBuildCommand: "dotnet publish -c Release",
+      apiLanguage: "dotnet",
+      apiVersion: "6.0",
+    },
+  },
+  {
+    id: "dotnet-isolated",
+    name: ".NET",
+    files: ["*.?(csproj|fsproj)", "host.json"],
+    config: {
+      apiLanguage: "dotnet-isolated",
+      apiVersion: "6.0",
     },
   },
   {
@@ -33,6 +45,8 @@ export const apiFrameworks: FrameworkDefinition[] = [
     files: ["?(requirements.txt|pyproject.toml|runtime.txt|setup.py)", "host.json"],
     config: {
       // Nothing to setup, but we need to know the apiLocation (rootPath)
+      apiLanguage: "python",
+      apiVersion: "3.9",
     },
   },
 ];

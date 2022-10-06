@@ -43,8 +43,6 @@ export async function generateConfiguration(app?: DetectedFolder, api?: Detected
       logger.silly(`Built API location "${computedApiLocation}" does not match root API location ${api.rootPath}, which is not supported yet`);
     }
     config.apiLocation = removeTrailingPathSep(api.rootPath);
-    // config.apiLanguage = api.frameworks[0].name; //todo:check if the detected framework is valid or not
-    config.apiVersion = getDefaultVersion(config.apiLanguage);
   }
 
   const appRootPath = app && removeTrailingPathSep(app.rootPath);
@@ -163,7 +161,6 @@ export async function detectFrameworks(projectFiles: string[], frameworks: Frame
       detectedFrameworks.push({ ...framework, rootPaths });
     }
   }
-
   detectedFrameworks = await asyncFilter(
     detectedFrameworks,
     async (framework) => (await matchPackages(framework)) && (await matchContains(framework, projectFiles))
@@ -395,11 +392,12 @@ export function formatDetectedFolders(folders: DetectedFolder[], type: string): 
     `- ${folders.map((f) => `${f.rootPath} (${f.frameworks.map((fr) => fr.name).join(", ")})`).join("\n- ")}`
   );
 }
-function getDefaultVersion(apiLanguage: string): string {
+export function getDefaultVersion(apiLanguage: string | undefined): string {
   let apiVersion = "16";
-  apiLanguage = apiLanguage.toLowerCase();
+  if (!apiLanguage) apiLanguage = "node";
+  // apiLanguage = apiLanguage.toLowerCase();
   switch (apiLanguage) {
-    case "node.js":
+    case "node":
       apiVersion = DEFAULT_NODE_VERSION;
       break;
     case "python":
@@ -408,7 +406,7 @@ function getDefaultVersion(apiLanguage: string): string {
     case "dotnet":
       apiVersion = DEFAULT_DOTNET_VERSION;
       break;
-    case "dotnetisolated" || "dotnet isolated":
+    case "dotnetisolated" || "dotnet isolated" || "dotnet-isolated":
       apiVersion = DEFAULT_DOTNET_ISOLATED_VERSION;
       break;
     default:

@@ -2,6 +2,7 @@ import chalk from "chalk";
 import { Command } from "commander";
 import path from "path";
 import process from "process";
+import prompts from "prompts";
 import { promptOrUseDefault } from "../../core/prompts";
 import {
   configureOptions,
@@ -175,7 +176,8 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
     value = value.trim();
     return value === "" ? undefined : value;
   };
-  const response = await promptOrUseDefault(disablePrompts, [
+
+  let response = await promptOrUseDefault(disablePrompts, [
     {
       type: "text",
       name: "appLocation",
@@ -198,20 +200,6 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
       name: "apiLocation",
       message: "What's your API location? (optional)",
       initial: detectedConfig.apiLocation,
-      format: trimValue,
-    },
-    {
-      type: "text",
-      name: "apiLanguage",
-      message: "What's your API language? (optional)",
-      initial: detectedConfig.apiLanguage,
-      format: trimValue,
-    },
-    {
-      type: "text",
-      name: "apiVersion",
-      message: "What's your API version? (optional)",
-      initial: detectedConfig.apiVersion,
       format: trimValue,
     },
     {
@@ -242,8 +230,83 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
       initial: detectedConfig.appDevserverUrl,
       format: trimValue,
     },
+    {
+      type: null,
+      name: "apiLanguage",
+    },
+    {
+      type: null,
+      name: "apiVersion",
+    },
   ]);
+
+  if (response.apiLocation) {
+    const apiLanguagePrompt = await prompts([
+      {
+        type: "select",
+        name: "apiLanguage",
+        message: "What's your API language? (optional)",
+        choices: [
+          { title: "Node.js", value: "node" },
+          { title: "Python", value: "python" },
+          { title: "Dotnet", value: "dotnet" },
+          { title: "Dotnet isolated", value: "dotnet-isolated" },
+        ],
+      },
+    ]);
+
+    response.apiLanguage = apiLanguagePrompt.apiLanguage;
+
+    const apiVersionPrompt = await prompts([
+      {
+        type: "select",
+        name: "apiVersion",
+        message: "What's your API version? (optional)",
+        choices: getChoicesForApiLanguage(response.apiLanguage),
+      },
+    ]);
+
+    response.apiVersion = apiVersionPrompt.apiVersion;
+  }
+
   return response;
+}
+
+function getChoicesForApiLanguage(apiLanguage: string) {
+  // Refer to this for functions and versions - https://learn.microsoft.com/en-us/azure/static-web-apps/configuration#selecting-the-api-language-runtime-version
+  let choices = [];
+  switch (apiLanguage) {
+    case "node":
+      choices = [
+        { title: "16", value: "16" },
+        { title: "14", value: "14" },
+        { title: "12", value: "12" },
+      ];
+      break;
+    case "python":
+      choices = [
+        { title: "3.8", value: "3.8" },
+        { title: "3.9", value: "3.9" },
+      ];
+      break;
+    case "dotnet":
+      choices = [
+        { title: "6.0", value: "6.0" },
+        { title: "3.1", value: "3.1" },
+      ];
+      break;
+    case "dotnet-isolated":
+      choices = [{ title: "6.0", value: "6.0" }];
+      break;
+    default:
+      choices = [
+        { title: "16", value: "16" },
+        { title: "14", value: "14" },
+        { title: "12", value: "12" },
+      ];
+      break;
+  }
+  return choices;
 }
 
 function printFrameworkConfig(config: FrameworkConfig) {

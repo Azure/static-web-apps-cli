@@ -9,7 +9,9 @@ import {
   configureOptions,
   findSWAConfigFile,
   getCurrentSwaCliConfigFromFile,
+  getDefaultVersion,
   isUserOption,
+  isUserOrConfigOption,
   logger,
   logGiHubIssueMessageAndExit,
   matchLoadedConfigName,
@@ -17,7 +19,6 @@ import {
   updateSwaCliConfigFile,
 } from "../../core";
 import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../core/account";
-import { DEFAULT_DOTNET_ISOLATED_VERSION, DEFAULT_DOTNET_VERSION, DEFAULT_NODE_VERSION, DEFAULT_PYTHON_VERSION } from "../../core/constants";
 import { cleanUp, getDeployClientPath } from "../../core/deploy-client";
 import { swaCLIEnv } from "../../core/env";
 import { addSharedLoginOptionsToCommand, login } from "./login";
@@ -32,8 +33,8 @@ export default function registerCommand(program: Command) {
     .option("-a, --app-location <path>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
     .option("-i, --api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("-O, --output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
-    .option("-l, --api-language <apiLanguage>", "the runtime language of the function/api")
-    .option("-v, --api-version <apiVersion>", "the version of the function runtime language")
+    .option("-l, --api-language <apiLanguage>", "the runtime language of the function/api", DEFAULT_CONFIG.apiLanguage)
+    .option("-f, --api-version <apiVersion>", "the version of the function runtime language", DEFAULT_CONFIG.apiVersion)
     .option(
       "-w, --swa-config-location <swaConfigLocation>",
       "the directory where the staticwebapp.config.json file is located",
@@ -138,33 +139,6 @@ export async function deploy(options: SWACLIConfig) {
       logger.log(`  ${chalk.green(resolvedApiLocation)}`);
       logger.log(``);
     }
-    if (!apiLanguage) {
-      apiLanguage = DEFAULT_CONFIG.apiLanguage;
-      apiVersion = DEFAULT_CONFIG.apiVersion;
-      logger.log(`Consider providing api-language and version using --api-language and --api-version flags,
-      otherwise default values apiLanguage: ${apiLanguage} and apiVersion: ${apiVersion} will apply`);
-    } else if (apiLanguage && !apiVersion) {
-      switch (apiLanguage) {
-        case "node":
-          apiVersion = DEFAULT_NODE_VERSION;
-          break;
-        case "python":
-          apiVersion = DEFAULT_PYTHON_VERSION;
-          break;
-        case "dotnet":
-          apiVersion = DEFAULT_DOTNET_VERSION;
-          break;
-        case "dotnetisolated":
-          apiVersion = DEFAULT_DOTNET_ISOLATED_VERSION;
-          break;
-        default:
-          apiLanguage = DEFAULT_CONFIG.apiLanguage;
-          apiVersion = DEFAULT_CONFIG.apiVersion;
-          break;
-      }
-      logger.silly(`Api language "${apiLanguage}" is provided but api version is not provided.
-      Assuming default version "${apiVersion}"`);
-    }
   } else {
     // otherwise, check if the default api folder exists and print a warning
     const apiFolder = await findApiFolderInPath(appLocation);
@@ -175,6 +149,15 @@ export async function deploy(options: SWACLIConfig) {
         }" but the --api-location option was not provided. The API will not be deployed.\n`
       );
     }
+  }
+
+  if (!isUserOrConfigOption("apiLanguage")) {
+    logger.log(`Consider providing api-language and version using --api-language and --api-version flags,
+    otherwise default values apiLanguage: ${apiLanguage} and apiVersion: ${apiVersion} will apply`);
+  } else if (!isUserOrConfigOption("apiVersion")) {
+    apiVersion = getDefaultVersion(apiLanguage);
+    logger.log(`Api language "${apiLanguage}" is provided but api version is not provided.
+      Assuming default version "${apiVersion}"`);
   }
 
   // resolve the deployment token
@@ -362,7 +345,7 @@ export async function deploy(options: SWACLIConfig) {
             else if (line.includes("[31m")) {
               if (line.includes("Cannot deploy to the function app because Function language info isn't provided.")) {
                 line = chalk.red(
-                  `Cannot deploy to the function app because Function language info isn't provided, use flags "--api-language" and "--api-version" or add a "platform.apiRuntime" property to your staticwebapp.config.json file, or create one in ${options.outputLocation!}. Please consult the documentation for more information about staticwebapp.config.json: https://docs.microsoft.com/azure/static-web-apps/configuration`
+                  `Cannot deploy to the function app because Function language info isn't provided, use flags "--api-language" and "--api-version" or add a "platform.apiRuntime" property to your staticwebapp.config.json file, or create one in ${options.outputLocation!}. Please consult the documentation for more information about staticwebapp.config.json: https://learn.microsoft.com/en-us/azure/static-web-apps/build-configuration?tabs=github-actions#skip-building-the-api`
                 );
               }
 
