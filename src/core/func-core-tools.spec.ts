@@ -66,9 +66,12 @@ describe("funcCoreTools", () => {
       expect(isCoreToolsVersionCompatible(4, 16)).toBe(true);
       expect(isCoreToolsVersionCompatible(3, 16)).toBe(false);
       expect(isCoreToolsVersionCompatible(2, 16)).toBe(false);
-      expect(isCoreToolsVersionCompatible(4, 17)).toBe(false);
+      expect(isCoreToolsVersionCompatible(4, 17)).toBe(true);
       expect(isCoreToolsVersionCompatible(3, 17)).toBe(false);
       expect(isCoreToolsVersionCompatible(2, 17)).toBe(false);
+      expect(isCoreToolsVersionCompatible(4, 18)).toBe(true);
+      expect(isCoreToolsVersionCompatible(3, 18)).toBe(false);
+      expect(isCoreToolsVersionCompatible(2, 18)).toBe(false);
     });
   });
 
