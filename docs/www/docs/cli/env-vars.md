@@ -42,7 +42,7 @@ title: Environment Variables
 | SWA_CLI_DEPLOY_BINARY_VERSION | Deployment binary version to use                                                                                               |            | `stable`      |
 | SWA_CLI_DEPLOY_BINARY         | Absoluate path to the deploy binary                                                                                            | Yes        |               |
 | SWA_CLI_DEPLOY_ENV            | the type of deployment environment where to deploy the project                                                                 |            | `preview`     |
-| AZURE_REGION_LOCATION         | Azure region where to deploy the project. Available regions are: `westus2,centralus,eastus2,westeurope,eastasia,eastasiastage` |            | `westus2`     |
+| AZURE_REGION_LOCATION         | Azure region where to deploy the project. Available regions are: `westus2,centralus,eastus2,westeurope,eastasia` |            | `westus2`     |
 | AZURE_RESOURCE_GROUP          | Azure resource group                                                                                                           |            |               |
 | AZURE_SUBSCRIPTION_ID         | Azure subscription ID                                                                                                          |            |               |
 
