@@ -5,7 +5,7 @@ export const apiFrameworks: FrameworkDefinition[] = [
     files: ["package.json", "host.json"],
     config: {
       apiBuildCommand: "npm run build --if-present",
-      apiLanguage: "node.js",
+      apiLanguage: "node",
       apiVersion: "16",
     },
   },
