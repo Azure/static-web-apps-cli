@@ -130,7 +130,7 @@ describe("deploy", () => {
     expect(child_process.spawn).toBeCalledWith("mock-binary", [], {
       env: {
         DEPLOYMENT_ACTION: "upload",
-        DEPLOYMENT_PROVIDER: `swa-cli-${pkg.version}`,
+        DEPLOYMENT_PROVIDER: "SwaCli",
         REPOSITORY_BASE: "./",
         SKIP_APP_BUILD: "true",
         SKIP_API_BUILD: "true",
@@ -166,7 +166,7 @@ describe("deploy", () => {
     expect(child_process.spawn).toBeCalledWith("mock-binary", [], {
       env: {
         DEPLOYMENT_ACTION: "upload",
-        DEPLOYMENT_PROVIDER: `swa-cli-${pkg.version}`,
+        DEPLOYMENT_PROVIDER: "SwaCli",
         REPOSITORY_BASE: "./",
         SKIP_APP_BUILD: "true",
         SKIP_API_BUILD: "true",

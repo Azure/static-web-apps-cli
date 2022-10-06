@@ -252,7 +252,7 @@ export async function deploy(options: SWACLIConfig) {
 
   const deployClientEnv: StaticSiteClientEnv = {
     DEPLOYMENT_ACTION: options.dryRun ? "close" : "upload",
-    DEPLOYMENT_PROVIDER: `swa-cli-${packageInfo.version}`,
+    DEPLOYMENT_PROVIDER: "SwaCli",
     REPOSITORY_BASE: userWorkflowConfig?.appLocation,
     SKIP_APP_BUILD: "true",
     SKIP_API_BUILD: "true",
