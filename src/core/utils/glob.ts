@@ -16,6 +16,11 @@ export function globToRegExp(glob: string | undefined) {
     return "";
   }
 
+  if (glob === "*") {
+    logger.silly(` - glob is ${chalk.yellow("*")}, return ${chalk.yellow(".*")}`);
+    return ".*";
+  }
+
   const filesExtensionMatch = glob.match(/{.*}/);
   if (filesExtensionMatch) {
     const filesExtensionExpression = filesExtensionMatch[0];
