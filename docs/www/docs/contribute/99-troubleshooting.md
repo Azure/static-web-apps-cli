@@ -9,7 +9,7 @@ sidebar_position: 99
 :::info
 This page lists frequently-asked questions and solutions to help troubleshoot common issues that may be encountered when building or testing the project.
 :::
-## `swa deploy` - Current Caveat
+## `swa deploy` fails with no logs
 
 ### Context
 
@@ -40,5 +40,84 @@ In order to avoid this issue, you have a few options:
 3. Manually provide the Deployment Token for your current project (see [SWA CLI docs](https://azure.github.io/static-web-apps-cli/docs/use/deploy#51-deployment-token)). You will also need to provide `--app-name` and `--resource-group`
 4. Manually provide `--client-id`, `--client-secret`, `--app-name` and `--resource-group`.
 
+
+## `Unable to download StaticSitesClient binary (File Not Found 404 - 403)`
+
+### Context
+
+SWA CLI uses an external binary `StaticSitesClient` to deploy apps to Azure Static Web Apps. This binary is downloaded on demand when users run `swa deploy` for the first time. SWA CLI then detects the host OS in order to download the right binary version from https://swalocaldeploy.azureedge.net/downloads/versions.json.
+
+It can happen that the host firewall can block downloading these binaries. If users can't configure the firewall rules to allow SWA CLI accessing https://swalocaldeploy.azureedge.net/, as a workaround, they can manually download `StaticSitesClient`.
+
+### Solution
+
+1. Visit https://swalocaldeploy.azureedge.net/downloads/versions.json
+2. Copy the `stable` JSON content, for eg:
+```json
+{
+    "version": "stable",
+    "buildId": "1.0.020761",
+    "publishDate": "2022-09-07T17:34:35.4261936Z",
+    "files": {
+      "linux-x64": {
+        "url": "https://swalocaldeploy.azureedge.net/downloads/1.0.020761/linux/StaticSitesClient",
+        "sha": "871ae9f154ddb8123e24c507e39dfc11c99f34815e59b178051a6e44a870e308"
+      },
+      "win-x64": {
+        "url": "https://swalocaldeploy.azureedge.net/downloads/1.0.020761/windows/StaticSitesClient.exe",
+        "sha": "360b76959c68cc0865b1aea144c8eb2aa413f4856e55c781a83bd7e1ad352362"
+      },
+      "osx-x64": {
+        "url": "https://swalocaldeploy.azureedge.net/downloads/1.0.020761/macOS/StaticSitesClient",
+        "sha": "1a90511003609af378ff3628feaf3115f9d7e335085a925045e9f206359fdb90"
+      }
+    }
+  }
+```
+3. Based on your operating system, download the right binary from the provided URLs:
+   1. Linux: https://swalocaldeploy.azureedge.net/downloads/1.0.020761/linux/StaticSitesClient
+   2. Windows: https://swalocaldeploy.azureedge.net/downloads/1.0.020761/windows/StaticSitesClient.exe
+   3. macOS: https://swalocaldeploy.azureedge.net/downloads/1.0.020761/macOS/StaticSitesClient
+1. Copy this binary to `$HOME/.swa/deploy/VERSION/StaticSiteClient` (add `.exe` for Windows). For eg:
+   `/home/USER/.swa/deploy/1.0.020761/StaticSiteClient`
+1. Create a file at `$HOME/.swa/deploy/StaticSitesClient.json` with the following content:
+```json
+{
+   "metadata": PASTE STABLE JSON CONTENT,
+   "binary": ABSOLUTE PATH TO STATIC SITE CLIENT BINARY,
+   "checksum": SH256 CHECKSUM OF THE BINARY SEE BELOW
+}
+```
+For eg: 
+```json
+{
+   "metadata": {
+    "version": "stable",
+    "buildId": "1.0.020761",
+    ...
+  },
+   "binary":"/home/USER/.swa/deploy/1.0.020761/StaticSitesClient",
+   "checksum": SH256 CHECKSUM OF THE BINARY SEE BELOW
+}
+```
+
+**IMPORTANT: Make sure the `StaticSitesClient.json#checksum` and `StaticSitesClient.json#metadata.files.[OS].sha` values match!**
+6. For Linux and macOS, run `chmod +x /home/USER/.swa/deploy/1.0.020761/StaticSitesClient`
+7. Run `swa deploy --verbose silly` and make sure `SWA_CLI_DEPLOY_BINARY` is set correctly. If everything was configured correctly, the deploy should work.
+
+
+How to compute SHA256 checksum:
+1. On Windows using Powershell: 
+```
+PS C:\Users\USER> (Get-fileHash -Algorithm SHA256 .\.swa\deploy\VERSION\StaticSitesClient.exe).Hash.ToLower()
+```
+2. On Linux:
+```
+➜ sha256sum ~/.swa/deploy/VERSION/StaticSitesClient | head -c 64
+```
+3. On macOS:
+```
+➜ openssl sha256 ~/.swa/deploy/VERSION/StaticSitesClient | awk '{print $2}'
+```
 
 ---
