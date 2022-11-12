@@ -87,6 +87,7 @@ function getDownloadedCoreToolsVersion(targetVersion: number): string | undefine
   return fs.readFileSync(versionFile, "utf8");
 }
 
+// todo: re-use this function in client, func, dab
 function getPlatform() {
   switch (os.platform()) {
     case "win32":

@@ -293,3 +293,46 @@ declare interface CoreToolsZipInfo {
 }
 
 declare type NpmPackageManager = "npm" | "yarn" | "pnpm";
+
+declare type BinaryMetadata = {
+  version: "stable" | "latest";
+  files: {
+    ["linux-x64"]: {
+      url: string;
+      sha: string;
+    };
+    ["win-x64"]: {
+      url: string;
+      sha: string;
+    };
+    ["osx-x64"]: {
+      url: string;
+      sha: string;
+    };
+  };
+};
+
+declare type StaticSiteClientReleaseMetadata = BinaryMetadata & {
+  buildId: string;
+  publishDate: string;
+};
+
+declare type DataApiBuilderReleaseMetadata = BinaryMetadata & {
+  versionId: string;
+  releaseType: string;
+  releaseDate: string;
+};
+
+declare type LocalBinaryMetadata = {
+  metadata: BinaryMetadata;
+  binary: string;
+  checksum: string;
+};
+
+declare type StaticSiteClientLocalMetadata = LocalBinaryMetadata;
+declare type DataApiBuilderLocalMetadata = LocalBinaryMetadata;
+
+const binaryType = {
+  StaticSiteClient: 1,
+  DataApiBuilder: 2,
+};
