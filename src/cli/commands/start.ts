@@ -23,6 +23,7 @@ import {
   parseUrl,
   readWorkflowFile,
 } from "../../core";
+import { getDataApiBuilderBinary } from "../../core/dataApiBuilder/dab-main";
 import { swaCLIEnv } from "../../core/env";
 import { getCertificate } from "../../core/ssl";
 let packageInfo = require("../../../package.json");
@@ -34,9 +35,19 @@ export default function registerCommand(program: Command) {
     .description("start the emulator from a directory or bind to a dev server")
     .option("-a, --app-location <path>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
     .option("-i, --api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
+    .option("-db, --data-api-location <path>", "the path to the dab-config file", DEFAULT_CONFIG.dataApiLocation)
     .option("-O, --output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
-    .option("-D, --app-devserver-url <url>", "connect to the app dev server at this URL instead of using output location", DEFAULT_CONFIG.appDevserverUrl)
-    .option("-is, --api-devserver-url <url>", "connect to the api server at this URL instead of using output location", DEFAULT_CONFIG.apiDevserverUrl)
+    .option(
+      "-D, --app-devserver-url <url>",
+      "connect to the app dev server at this URL instead of using output location",
+      DEFAULT_CONFIG.appDevserverUrl
+    )
+    .option(
+      "-is, --api-devserver-url <url>",
+      "connect to the api server at this URL instead of using output location",
+      DEFAULT_CONFIG.apiDevserverUrl
+    )
+    .option("-ds, --data-api-devserver-url <url>", "connect to the data-api server at this URL", DEFAULT_CONFIG.dataApiDevserverUrl)
     .option<number>("-j, --api-port <apiPort>", "the API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
     .option("-q, --host <host>", "the host address to use for the CLI dev server", DEFAULT_CONFIG.host)
     .option<number>("-p, --port <port>", "the port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
@@ -121,9 +132,11 @@ export async function start(options: SWACLIConfig) {
   let {
     appLocation,
     apiLocation,
+    dataApiLocation,
     outputLocation,
     appDevserverUrl,
     apiDevserverUrl,
+    dataApiDevserverUrl,
     apiPort,
     devserverTimeout,
     ssl,
@@ -139,6 +152,7 @@ export async function start(options: SWACLIConfig) {
   } = options;
 
   let useApiDevServer: string | undefined | null = undefined;
+  let useDataApiDevServer: string | undefined | null = undefined;
   let startupCommand: string | undefined | null = undefined;
 
   let resolvedPortNumber = await isAcceptingTcpConnections({ host, port });
@@ -183,6 +197,7 @@ export async function start(options: SWACLIConfig) {
     logger.silly(`  ${outputLocation}`);
   }
 
+  // todo:re-use this code
   if (apiLocation) {
     // resolves to the absolute path of the apiLocation
     let resolvedApiLocation = path.resolve(apiLocation);
@@ -197,6 +212,20 @@ export async function start(options: SWACLIConfig) {
       apiLocation = resolvedApiLocation;
     } else {
       logger.info(`Skipping API because folder "${resolvedApiLocation}" is missing`, "swa");
+    }
+  }
+
+  if (dataApiLocation) {
+    let resolvedDataApiLocation = path.resolve(dataApiLocation);
+
+    if (dataApiDevserverUrl) {
+      useDataApiDevServer = dataApiDevserverUrl;
+      dataApiLocation = dataApiDevserverUrl;
+    } else if (fs.existsSync(resolvedDataApiLocation)) {
+      dataApiLocation = resolvedDataApiLocation;
+      logger.silly(`Data Api Folder found: ${dataApiLocation}`);
+    } else {
+      logger.info(`Skipping Data API because folder "${resolvedDataApiLocation}" is missing`, "swa");
     }
   }
 
@@ -270,6 +299,25 @@ export async function start(options: SWACLIConfig) {
     }
   }
 
+  let serveDataApiCommand = "echo 'No Data API found'. Skipping";
+  let startDataApiBuilderNeeded = false;
+  if (useDataApiDevServer) {
+    serveDataApiCommand = `echo using DATA API server at ${useApiDevServer}`;
+  } else {
+    if (dataApiLocation) {
+      const dabBinary = await getDataApiBuilderBinary();
+
+      if (!dabBinary) {
+        logger.error(`Could not find or install Dab.exe`, true); // todo: improve error msg
+      } else {
+        serveDataApiCommand = `cd "${dataApiLocation}" && ${dabBinary} start`;
+        startDataApiBuilderNeeded = true;
+      }
+    }
+
+    logger.silly(serveDataApiCommand);
+  }
+
   if (ssl) {
     if (sslCert === undefined && sslKey === undefined) {
       logger.warn(`WARNING: Using built-in UNSIGNED certificate. DO NOT USE IN PRODUCTION!`);
@@ -309,6 +357,7 @@ export async function start(options: SWACLIConfig) {
     SWA_CLI_APP_LOCATION: userWorkflowConfig?.appLocation as string,
     SWA_CLI_OUTPUT_LOCATION: userWorkflowConfig?.outputLocation as string,
     SWA_CLI_API_LOCATION: userWorkflowConfig?.apiLocation as string,
+    SWA_CLI_DATA_API_LOCATION: dataApiLocation,
     SWA_CLI_HOST: `${host}`,
     SWA_CLI_PORT: `${port}`,
     SWA_CLI_APP_SSL: ssl ? "true" : "false",
@@ -342,6 +391,10 @@ export async function start(options: SWACLIConfig) {
     );
   }
 
+  if (startDataApiBuilderNeeded) {
+    concurrentlyCommands.push({ command: serveDataApiCommand, name: "dataApi", env });
+  }
+
   // run an external script, if it's available
   if (startupCommand) {
     let startupPath = userWorkflowConfig?.appLocation;
@@ -356,6 +409,7 @@ export async function start(options: SWACLIConfig) {
     commands: {
       swa: concurrentlyCommands.find((c) => c.name === "swa")?.command,
       api: concurrentlyCommands.find((c) => c.name === "api")?.command,
+      dataApi: concurrentlyCommands.find((c) => c.name == "dataApi")?.command,
       run: concurrentlyCommands.find((c) => c.name === "run")?.command,
     },
   });
@@ -381,6 +435,9 @@ export async function start(options: SWACLIConfig) {
             break;
           case "api":
             commandMessage = `API server exited with code ${exitCode}`;
+            break;
+          case "dataApi":
+            commandMessage = `Data API server exited with code ${exitCode}`;
             break;
           case "run":
             commandMessage = `the --run command exited with code ${exitCode}`;
