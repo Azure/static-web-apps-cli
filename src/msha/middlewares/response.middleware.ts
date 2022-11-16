@@ -2,6 +2,7 @@ import chalk from "chalk";
 import type http from "http";
 import { isHttpUrl, isSWAConfigFileUrl, logger } from "../../core";
 import { IS_APP_DEV_SERVER } from "../../core/constants";
+import { handleDataApiRequest } from "../handlers/dab.handler";
 import { handleErrorPage } from "../handlers/error-page.handler";
 import { handleFunctionRequest, isFunctionRequest } from "../handlers/function.handler";
 import {
@@ -19,7 +20,8 @@ export function getResponse(
   res: http.ServerResponse,
   matchedRoute: SWAConfigFileRoute | undefined,
   userConfig: SWAConfigFile | undefined,
-  isFunctionRequest: boolean
+  isFunctionRequest: boolean,
+  isDataApiRequest: boolean
 ): boolean {
   const statusCodeToServe = parseInt(`${matchedRoute?.statusCode}`, 10);
   const redirect = matchedRoute?.redirect;
@@ -48,6 +50,14 @@ export function getResponse(
 
   if (isFunctionRequest) {
     handleFunctionRequest(req, res);
+    return true;
+  }
+
+  if (isDataApiRequest) {
+    if (req.url?.startsWith("/data-api")) {
+      req.url = req.url?.replace("/data-api", "");
+    }
+    handleDataApiRequest(req, res);
     return true;
   }
 

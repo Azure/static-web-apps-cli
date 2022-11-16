@@ -138,6 +138,7 @@ export async function start(options: SWACLIConfig) {
     apiDevserverUrl,
     dataApiDevserverUrl,
     apiPort,
+    dataApiPort,
     devserverTimeout,
     ssl,
     sslCert,
@@ -302,7 +303,8 @@ export async function start(options: SWACLIConfig) {
   let serveDataApiCommand = "echo 'No Data API found'. Skipping";
   let startDataApiBuilderNeeded = false;
   if (useDataApiDevServer) {
-    serveDataApiCommand = `echo using DATA API server at ${useApiDevServer}`;
+    serveDataApiCommand = `echo using DATA API server at ${useDataApiDevServer}`;
+    dataApiPort = parseUrl(useDataApiDevServer)?.port;
   } else {
     if (dataApiLocation) {
       const dabBinary = await getDataApiBuilderBinary();
@@ -311,6 +313,7 @@ export async function start(options: SWACLIConfig) {
         logger.error(`Could not find or install Dab.exe`, true); // todo: improve error msg
       } else {
         serveDataApiCommand = `cd "${dataApiLocation}" && ${dabBinary} start`;
+        dataApiPort = DEFAULT_CONFIG.dataApiPort;
         startDataApiBuilderNeeded = true;
       }
     }
@@ -358,6 +361,7 @@ export async function start(options: SWACLIConfig) {
     SWA_CLI_OUTPUT_LOCATION: userWorkflowConfig?.outputLocation as string,
     SWA_CLI_API_LOCATION: userWorkflowConfig?.apiLocation as string,
     SWA_CLI_DATA_API_LOCATION: dataApiLocation,
+    SWA_CLI_DATA_API_PORT: `${dataApiPort}`,
     SWA_CLI_HOST: `${host}`,
     SWA_CLI_PORT: `${port}`,
     SWA_CLI_APP_SSL: ssl ? "true" : "false",

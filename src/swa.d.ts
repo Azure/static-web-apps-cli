@@ -31,11 +31,12 @@ declare interface SWACLIEnv extends StaticSiteClientEnv {
   SWA_RUNTIME_WORKFLOW_LOCATION?: string;
 
   // swa start
-  SWA_CLI_API_PORT?: string;
   SWA_CLI_APP_LOCATION?: string;
   SWA_CLI_OUTPUT_LOCATION?: string;
   SWA_CLI_API_LOCATION?: string;
   SWA_CLI_DATA_API_LOCATION?: string;
+  SWA_CLI_API_PORT?: string;
+  SWA_CLI_DATA_API_PORT?: string;
   SWA_CLI_HOST?: string;
   SWA_CLI_PORT?: string;
   SWA_CLI_APP_SSL?: string;
@@ -132,6 +133,7 @@ declare type SWACLIStartOptions = {
   appDevserverUrl?: string;
   apiDevserverUrl?: string;
   dataApiDevserverUrl?: string;
+  dataApiPort?: number;
   apiPort?: number;
   host?: string;
   port?: number;

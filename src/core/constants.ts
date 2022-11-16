@@ -195,3 +195,11 @@ export function IS_API_DEV_SERVER() {
 export function SWA_CLI_API_URI() {
   return IS_API_DEV_SERVER() ? DEFAULT_CONFIG.apiLocation : address(DEFAULT_CONFIG.host, DEFAULT_CONFIG.apiPort);
 }
+
+export function IS_DATA_API_DEV_SERVER() {
+  return isHttpUrl(DEFAULT_CONFIG.dataApiLocation);
+}
+
+export function SWA_CLI_DATA_API_URI() {
+  return IS_DATA_API_DEV_SERVER() ? DEFAULT_CONFIG.dataApiLocation : address(DEFAULT_CONFIG.host, DEFAULT_CONFIG.dataApiPort, "http");
+}

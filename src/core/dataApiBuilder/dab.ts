@@ -4,7 +4,7 @@ import { promisify } from "util";
 import { exec } from "child_process";
 import os from "os";
 import { logger } from "../utils";
-import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_FOLDER, downloadAndValidateBinary, getPlatform } from "../downloadBinary";
+import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_FOLDER, downloadAndValidateBinary, getPlatform } from "../download-binary-helper";
 
 const DEFAULT_DAB_BINARY = "dab.exe";
 

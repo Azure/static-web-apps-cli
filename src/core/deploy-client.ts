@@ -3,7 +3,7 @@ import fetch from "node-fetch";
 import os from "os";
 import path from "path";
 import { STATIC_SITE_CLIENT_RELEASE_METADATA_URL } from "./constants";
-import { DEPLOY_BINARY_NAME, DEPLOY_FOLDER, downloadAndValidateBinary, getPlatform } from "./downloadBinary";
+import { DEPLOY_BINARY_NAME, DEPLOY_FOLDER, downloadAndValidateBinary, getPlatform } from "./download-binary-helper";
 import { swaCLIEnv } from "./env";
 import { logger } from "./utils";
 
