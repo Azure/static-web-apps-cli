@@ -168,7 +168,7 @@ Here are the options you can use with `swa deploy`:
 - `-C, --client-id <clientId>`: Azure client ID
 - `-CS, --client-secret <clientSecret>`: Azure client secret
 - `-n, --app-name <appName>`: Azure Static Web App application name
-- `-cc, --clear-credentials`: clear persisted credentials before login (default: `false`)
+- `-CC, --clear-credentials`: clear persisted credentials before login (default: `false`)
 - `-u, --use-keychain`: enable using the operating system native keychain for persistent credentials (default: `true`)
 - `-nu, --no-use-keychain`: disable using the operating system native keychain
 - `-h, --help`: display help for command
