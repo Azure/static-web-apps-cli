@@ -41,7 +41,7 @@ jest.spyOn(loginModule, "login").mockImplementation(() => {
   return Promise.resolve({
     credentialChain: {} as any,
     subscriptionId: "mock-subscription-id",
-    resourceGroupName: "mock-resource-group-name",
+    resourceGroup: "mock-resource-group-name",
     staticSiteName: "mock-static-site-name",
   });
 });

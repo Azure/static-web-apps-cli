@@ -83,7 +83,7 @@ Options:
  - appName: <undefined>
  - dryRun: false
  - subscriptionId: <undefined>
- - resourceGroupName: <undefined>
+ - resourceGroup: <undefined>
  - tenantId: <undefined>
  - clientId: <undefined>
  - clientSecret: <undefined>
