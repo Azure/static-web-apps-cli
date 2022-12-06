@@ -20,7 +20,7 @@ export function addSharedLoginOptionsToCommand(command: Command) {
     .option("-C, --client-id <clientId>", "Azure client ID", DEFAULT_CONFIG.clientId)
     .option("-CS, --client-secret <clientSecret>", "Azure client secret", DEFAULT_CONFIG.clientSecret)
     .option("-n, --app-name <appName>", "Azure Static Web App application name", DEFAULT_CONFIG.appName)
-    .option("-cc, --clear-credentials", "clear persisted credentials before login", DEFAULT_CONFIG.clearCredentials)
+    .option("-CC, --clear-credentials", "clear persisted credentials before login", DEFAULT_CONFIG.clearCredentials)
 
     .option("-u, --use-keychain", "enable using the operating system native keychain for persistent credentials", DEFAULT_CONFIG.useKeychain)
     // Note: Commander does not automatically recognize the --no-* option, so we have to explicitly use --no-use-keychain- instead
