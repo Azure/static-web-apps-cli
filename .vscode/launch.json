@@ -1,16 +1,17 @@
 {
   "configurations": [
     {
-      "command": "npm start",
-      "name": "Run npm start",
+      "command": "cd C:/Users/sgollapudi/Documents/'SWA-CLI Projects'/swa-hawaii ; swa start --data-api-location . --verbose=silly",
+      "name": "SWA Hawaii Debugging",
       "request": "launch",
-      "type": "node-terminal"
+      "type": "node-terminal",
+      "preLaunchTask": "build"
     },
     {
       "type": "node-terminal",
       "request": "launch",
-      "name": "Jest Tests",
-      "command": "node ${workspaceRoot}/node_modules/jest/bin/jest.js -i",
+      "name": "Build",
+      "command": "cd ",
       // "args": ["-i"],
       "preLaunchTask": "build",
       "internalConsoleOptions": "openOnSessionStart"

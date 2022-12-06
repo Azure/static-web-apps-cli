@@ -24,13 +24,12 @@ export const DATA_API_BUILDER_FOLDER = path.join(os.homedir(), ".swa", "dab");
  */
 export async function downloadAndValidateBinary(
   releaseMetadata: BinaryMetadata,
-  binaryType: "StaticSiteClient" | "DataApiBuilder",
+  binaryType: "StaticSiteClient" | "DataApiBuilder", // todo: move these strings to constants
   outputFolder: string,
   id: string,
-  platform: "win-x64" | "osx-x64" | "linux-x64"
+  platform: "win-x64" | "osx-x64" | "linux-x64" // todo: same here
 ) {
-  const downloadUrl = releaseMetadata.files[platform!].url; //todo : can we remove downloadUrl and just use url
-  const downloadFilename = path.basename(downloadUrl);
+  const downloadFilename = path.basename(releaseMetadata.files[platform!].url);
   const binaryName = binaryType == "StaticSiteClient" ? DEPLOY_BINARY_NAME : DATA_API_BUILDER_BINARY_NAME;
   const url = releaseMetadata.files[platform].url;
 
@@ -60,7 +59,7 @@ export async function downloadAndValidateBinary(
       bodyStream?.end();
     });
 
-    writableStream.on("finish", () => {
+    writableStream.on("finish", async () => {
       const computedHash = computeChecksumfromFile(outputFile).toLowerCase();
       const releaseChecksum = releaseMetadata.files[platform].sha.toLocaleLowerCase();
       if (computedHash !== releaseChecksum) {

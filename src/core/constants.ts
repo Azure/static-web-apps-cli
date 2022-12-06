@@ -4,6 +4,7 @@ import { address, isHttpUrl } from "./utils/net";
 
 export const STATIC_SITE_CLIENT_RELEASE_METADATA_URL = "https://swalocaldeploy.azureedge.net/downloads/versions.json";
 export const DATA_API_BUILDER_RELEASE_METADATA_URL = "https://dataapibuilder.azureedge.net/releases/dab-manifest.json";
+export const DATA_API_BUILDER_RELEASE_TAG = "released";
 export const SWA_COMMANDS = ["login", "init", "start", "deploy", "build"] as const;
 // Type cannot be in swa.d.ts as it's inferred from SWA_COMMANDS
 export type SWACommand = typeof SWA_COMMANDS[number];
