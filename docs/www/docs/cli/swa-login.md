@@ -20,7 +20,7 @@ This command is used to authenticate with Azure and get a deployment token that 
 Here are the options you can use with `swa login`:
 
 - `-S, --subscription-id <subscriptionId>`: Azure subscription ID used by this project (default: `process.env.AZURE_SUBSCRIPTION_ID`)
-- `-R, --resource-group <resourceGroupName>`: Azure resource group used by this project
+- `-R, --resource-group <resourceGroup>`: Azure resource group used by this project
 - `-T, --tenant-id <tenantId>`: Azure tenant ID (default: `process.env.AZURE_TENANT_ID`)
 - `-C, --client-id <clientId>`: Azure client ID
 - `-CS, --client-secret <clientSecret>`: Azure client secret
