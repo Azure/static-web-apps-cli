@@ -266,7 +266,7 @@ export async function chooseOrCreateProjectDetails(
   logger.silly({ staticSite });
 
   if (staticSite && staticSite.id) {
-    if (!shouldPrintToken && staticSite.provider !== "Custom" && staticSite.provider !== "None") {
+    if (!shouldPrintToken && staticSite.provider !== "Custom" && staticSite.provider !== "None" && staticSite.provider !== "SwaCli") {
       // TODO: add a temporary warning message until we ship `swa link/unlink`
       logger.error(`The project "${staticSite.name}" is linked to "${staticSite.provider}"!`);
       logger.error(`Unlink the project from the "${staticSite.provider}" provider and try again.`, true);
