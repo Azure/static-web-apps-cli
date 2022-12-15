@@ -398,19 +398,19 @@ describe("route utilities", () => {
       function test(method: string, isFunctionRequest: boolean, isAuth: boolean, expectedValue: boolean) {
         return () => {
           req.method = method;
-          const isValid = isRequestMethodValid(req as http.IncomingMessage, isFunctionRequest, isAuth);
+          const isValid = isRequestMethodValid(req as http.IncomingMessage, isFunctionRequest, isAuth, false); // temp fix before writing tests
           expect(isValid).toBe(expectedValue);
         };
       }
 
       it("should return false when no method is provided", () => {
-        const isValid = isRequestMethodValid(req as http.IncomingMessage, false, false);
+        const isValid = isRequestMethodValid(req as http.IncomingMessage, false, false, false);
         expect(isValid).toBe(false);
       });
 
       it("should return false when method is not valid", () => {
         req.method = "FOO";
-        const isValid = isRequestMethodValid(req as http.IncomingMessage, false, false);
+        const isValid = isRequestMethodValid(req as http.IncomingMessage, false, false, false);
         expect(isValid).toBe(false);
       });
 

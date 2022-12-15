@@ -251,7 +251,7 @@ export async function requestMiddleware(
     logger.silly(` - not a data Api request`);
   }
 
-  if (!isRequestMethodValid(req, isFunctionReq, isAuthReq)) {
+  if (!isRequestMethodValid(req, isFunctionReq, isAuthReq, isDataApiReq)) {
     res.statusCode = 405;
     return res.end();
   }

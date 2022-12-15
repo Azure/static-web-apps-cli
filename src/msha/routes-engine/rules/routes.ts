@@ -164,11 +164,11 @@ export function tryGetMatchingRoute(req: http.IncomingMessage, userConfig: SWACo
   return;
 }
 
-export function isRequestMethodValid(req: http.IncomingMessage, isFunctionRequest: boolean, isAuth: boolean) {
+export function isRequestMethodValid(req: http.IncomingMessage, isFunctionRequest: boolean, isAuth: boolean, isDataApiReq: boolean) {
   logger.silly(`checking HTTP method: ${chalk.yellow(req.method)}`);
 
-  if (isFunctionRequest || isAuth) {
-    logger.silly(` - function or auth request detected, method is valid`);
+  if (isFunctionRequest || isAuth || isDataApiReq) {
+    logger.silly(` - function or auth or data-api request detected, method is valid`);
     return true;
   }
 

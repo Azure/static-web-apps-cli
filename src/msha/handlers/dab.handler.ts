@@ -21,6 +21,7 @@ registerProcessExit(() => {
  */
 export function handleDataApiRequest(req: http.IncomingMessage, res: http.ServerResponse) {
   const target = SWA_CLI_DATA_API_URI();
+
   console.log(target);
 
   proxyApi.web(
@@ -45,7 +46,7 @@ export function handleDataApiRequest(req: http.IncomingMessage, res: http.Server
 }
 
 function injectHeaders(req: http.ClientRequest, host: string | undefined) {
-  logger.silly(`injecting headers to Functions request:`);
+  logger.silly(`injecting headers to Data-api request:`);
   if (!req.getHeader("x-ms-original-url")) {
     req.setHeader("x-ms-original-url", encodeURI(new URL(req.path!, host).toString()));
     logger.silly(` - x-ms-original-url: ${chalk.yellow(req.getHeader("x-ms-original-url"))}`);
@@ -61,7 +62,7 @@ function injectHeaders(req: http.ClientRequest, host: string | undefined) {
  * @param rewritePath
  * @returns true if the request is data-api Request else false
  */
-export function isDataApiRequest(req: http.IncomingMessage, rewritePath?: string) {
-  let path = rewritePath || req.url;
+export function isDataApiRequest(req: http.IncomingMessage, rewritePath?: string): boolean {
+  const path = rewritePath || req.url;
   return Boolean(path?.toLowerCase().startsWith(`/data-api`));
 }

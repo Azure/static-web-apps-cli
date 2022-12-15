@@ -7,6 +7,7 @@ import { getDataApiBuilderPath } from "./dab";
 
 export async function getDataApiBuilderBinary(): Promise<string> {
   const binaryPath = await getDataApiBuilderPath();
-  logger.silly(binaryPath.binary);
-  return binaryPath.binary;
+  logger.silly(binaryPath.binaryPath);
+
+  return binaryPath.binaryPath;
 }
