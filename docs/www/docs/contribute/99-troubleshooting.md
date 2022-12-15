@@ -41,6 +41,16 @@ In order to avoid this issue, you have a few options:
 4. Manually provide `--client-id`, `--client-secret`, `--app-name` and `--resource-group`.
 
 
+## SWA CLI - Domains that need Firewall access
+
+### Context
+
+For SWA CLI to operate perfectly, the following domains need to be allowed an access in your firewall:
+- blob.core.windows.net
+- azurestaticapps.net
+- swalocaldeploy.azureedge.net
+
+
 ## `Unable to download StaticSitesClient binary (File Not Found 404 - 403)`
 
 ### Context
