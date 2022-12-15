@@ -44,8 +44,7 @@ In order to avoid this issue, you have a few options:
 ## SWA CLI - Domains that need Firewall access
 
 ### Context
-
-For SWA CLI to operate perfectly, the following domains need to be allowed an access in your firewall:
+If you are having trouble accessing SWA CLI, the following domains need to be allowed an access in your firewall:
 - blob.core.windows.net
 - azurestaticapps.net
 - swalocaldeploy.azureedge.net
