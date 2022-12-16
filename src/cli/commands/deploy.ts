@@ -9,7 +9,6 @@ import {
   configureOptions,
   findSWAConfigFile,
   getCurrentSwaCliConfigFromFile,
-  getDefaultVersion,
   isUserOption,
   isUserOrConfigOption,
   logger,
@@ -21,6 +20,7 @@ import {
 import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../core/account";
 import { cleanUp, getDeployClientPath } from "../../core/deploy-client";
 import { swaCLIEnv } from "../../core/env";
+import { getDefaultVersion } from "../../core/functions-versions";
 import { addSharedLoginOptionsToCommand, login } from "./login";
 
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "package.json"));
@@ -345,7 +345,7 @@ export async function deploy(options: SWACLIConfig) {
             else if (line.includes("[31m")) {
               if (line.includes("Cannot deploy to the function app because Function language info isn't provided.")) {
                 line = chalk.red(
-                  `Cannot deploy to the function app because Function language info isn't provided, use flags "--api-language" and "--api-version" or add a "platform.apiRuntime" property to your staticwebapp.config.json file, or create one in ${options.outputLocation!}. Please consult the documentation for more information about staticwebapp.config.json: https://learn.microsoft.com/en-us/azure/static-web-apps/build-configuration?tabs=github-actions#skip-building-the-api`
+                  `Cannot deploy to the function app because Function language info isn't provided, use flags "--api-language" and "--api-version" or add a "platform.apiRuntime" property to your staticwebapp.config.json file, or create one in ${options.outputLocation!}. Please consult the documentation for more information about staticwebapp.config.json: https://learn.microsoft.com/azure/static-web-apps/build-configuration?tabs=github-actions#skip-building-the-api`
                 );
               }
 

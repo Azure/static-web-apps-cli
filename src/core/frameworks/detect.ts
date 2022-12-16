@@ -2,7 +2,6 @@ import { promises as fs } from "fs";
 import globrex from "globrex";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../config";
-import { DEFAULT_DOTNET_ISOLATED_VERSION, DEFAULT_DOTNET_VERSION, DEFAULT_NODE_VERSION, DEFAULT_PYTHON_VERSION } from "../../core/constants";
 import { hasSpaces, logger, removeTrailingPathSep, safeReadFile, safeReadJson } from "../utils";
 import { apiFrameworks, appFrameworks } from "./frameworks";
 
@@ -391,27 +390,4 @@ export function formatDetectedFolders(folders: DetectedFolder[], type: string): 
     `Detected ${type} folders (${folders.length}):\n` +
     `- ${folders.map((f) => `${f.rootPath} (${f.frameworks.map((fr) => fr.name).join(", ")})`).join("\n- ")}`
   );
-}
-export function getDefaultVersion(apiLanguage: string | undefined): string {
-  let apiVersion = "16";
-  if (!apiLanguage) apiLanguage = "node";
-  // apiLanguage = apiLanguage.toLowerCase();
-  switch (apiLanguage) {
-    case "node":
-      apiVersion = DEFAULT_NODE_VERSION;
-      break;
-    case "python":
-      apiVersion = DEFAULT_PYTHON_VERSION;
-      break;
-    case "dotnet":
-      apiVersion = DEFAULT_DOTNET_VERSION;
-      break;
-    case "dotnetisolated" || "dotnet isolated" || "dotnet-isolated":
-      apiVersion = DEFAULT_DOTNET_ISOLATED_VERSION;
-      break;
-    default:
-      apiVersion = DEFAULT_NODE_VERSION;
-      break;
-  }
-  return apiVersion;
 }
