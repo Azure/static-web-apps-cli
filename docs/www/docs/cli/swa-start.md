@@ -51,7 +51,7 @@ Here is a list of the default ports used by some popular dev servers:
 | [Next.js](https://nextjs.org/)                                                     | 3000 | `swa start http://localhost:3000` |
 | [React (Create React App)](https://reactjs.org/docs/create-a-new-react-app.html)   | 3000 | `swa start http://localhost:3000` |
 | [Svelte (sirv-cli)](https://github.com/lukeed/sirv/tree/master/packages/sirv-cli/) | 5000 | `swa start http://localhost:5000` |
-| [Vue](https://github.com/vuejs/create-vue)                                                      | 3000 | `swa start http://localhost:3000` |
+| [Vue](https://github.com/vuejs/create-vue)                                         | 3000 | `swa start http://localhost:3000` |
 
 Instead of starting a dev server separately, you can provide the startup command to the CLI.
 
@@ -94,10 +94,10 @@ When developing your backend locally, sometimes it's useful to run Azure Functio
 To use the CLI with your local API backend dev server, follow these two steps:
 
 1. Start your API using Azure Functions Core Tools: `func host start` or start debugging in VS Code.
-2. In a separate terminal, run the SWA CLI with the `--api-location` flag and the URI of the local API server, in the following format:
+2. In a separate terminal, run the SWA CLI with the `--api-devserver-url` flag and the URI of the local API server, in the following format:
 
 ```bash
-swa start ./my-dist --api-location http://localhost:7071
+swa start ./my-dist --api-devserver-url http://localhost:7071
 ```
 
 ## Options
@@ -108,7 +108,7 @@ Here are the options you can use with `swa start`:
 - `-i, --api-location <path>`: the folder containing the source code of the API application
 - `-O, --output-location <path>`: the folder containing the built source of the front-end application. The path is relative to `--app-location` (default: ".")
 - `-D, --app-devserver-url <url>`: connect to the app dev server at this URL instead of using output location
-- `-is, --api-devserver-url <url>`: connect to the api server at this URL instead of using output location
+- `-is, --api-devserver-url <url>`: connect to the api server at this URL instead of using api location
 - `-j, --api-port <apiPort>`: the API server port passed to `func start` (default: 7071)
 - `-q, --host <host>`: the host address to use for the CLI dev server (default: "localhost")
 - `-p, --port <port>`: the port value to use for the CLI dev server (default: 4280)
@@ -157,7 +157,7 @@ swa start http://localhost:3000 --run-build "npm start"
 Connect both front-end and the API to running development server
 
 ```bash
-swa start http://localhost:3000 --api-location http://localhost:7071
+swa start http://localhost:3000 --api-devserver-url http://localhost:7071
 ```
 
 ## See Also

@@ -29,10 +29,10 @@ To use the SWA emulator services alongside the API server:
 func host start
 ```
 
-2. Start SWA CLI in a separate terminal and use the `--api-location` option to pass it the relevant local API Server URI. _For example:_
+2. Start SWA CLI in a separate terminal and use the `--api-devserver-url` option to pass it the relevant local API Server URI. _For example:_
 
 ```bash
-swa start ./my-dist --api-location http://localhost:7071
+swa start ./my-dist --api-devserver-url http://localhost:7071
 ```
 
 ## 4.3 Start API Server Automatically
