@@ -66,7 +66,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
 
   // swa login options
   subscriptionId: AZURE_SUBSCRIPTION_ID || undefined,
-  resourceGroupName: AZURE_RESOURCE_GROUP || undefined,
+  resourceGroup: AZURE_RESOURCE_GROUP || undefined,
   tenantId: AZURE_TENANT_ID || undefined,
   clientId: AZURE_CLIENT_ID || undefined,
   clientSecret: AZURE_CLIENT_SECRET || undefined,

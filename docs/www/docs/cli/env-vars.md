@@ -34,19 +34,19 @@ title: Environment Variables
 
 ## Deploy settings
 
-| Environment Variable          | Purpose                                                                   | Read Only? | Default Value |
-| ----------------------------- | ------------------------------------------------------------------------- | ---------- | ------------- |
-| SWA_CLI_APP_NAME              | Project name                                                              |            |               |
-| SWA_CLI_DEPLOYMENT_TOKEN      | Secret token used to authenticate with the Static Web Apps                |            |               |
-| SWA_CLI_DEPLOY_DRY_RUN        | Simulate a deploy process without actually running it (`true` or `false`) |            | `false`       |
-| SWA_CLI_DEPLOY_BINARY_VERSION | Deployment binary version to use                                          |            | `stable`      |
-| SWA_CLI_DEPLOY_BINARY         | Absoluate path to the deploy binary                                       | Yes        |               |
-| SWA_CLI_DEPLOY_ENV            | the type of deployment environment where to deploy the project            |            | `preview`     |
-| AZURE_REGION_LOCATION         | Azure region where to deploy the project                                  |            | `West US 2`   |
-| AZURE_RESOURCE_GROUP          | Azure resource group                                                      |            |               |
-| AZURE_SUBSCRIPTION_ID         | Azure subscription ID                                                     |            |               |
-| SWA_CLI_API_LANGUAGE          | Runtime Language of the function                                          |            | `node`        |
-| SWA_CLI_API_VERSION           | Version of the function runtime language                                  |            | `16`          |
+| Environment Variable          | Purpose                                                                                                          | Read Only? | Default Value |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------- | ---------- | ------------- |
+| SWA_CLI_APP_NAME              | Project name                                                                                                     |            |               |
+| SWA_CLI_DEPLOYMENT_TOKEN      | Secret token used to authenticate with the Static Web Apps                                                       |            |               |
+| SWA_CLI_DEPLOY_DRY_RUN        | Simulate a deploy process without actually running it (`true` or `false`)                                        |            | `false`       |
+| SWA_CLI_DEPLOY_BINARY_VERSION | Deployment binary version to use                                                                                 |            | `stable`      |
+| SWA_CLI_DEPLOY_BINARY         | Absoluate path to the deploy binary                                                                              | Yes        |               |
+| SWA_CLI_DEPLOY_ENV            | the type of deployment environment where to deploy the project                                                   |            | `preview`     |
+| AZURE_REGION_LOCATION         | Azure region where to deploy the project. Available regions are: `westus2,centralus,eastus2,westeurope,eastasia` |            | `westus2`     |
+| AZURE_RESOURCE_GROUP          | Azure resource group                                                                                             |            |               |
+| AZURE_SUBSCRIPTION_ID         | Azure subscription ID                                                                                            |            |               |
+| SWA_CLI_API_LANGUAGE          | Runtime Language of the function                                                                                 |            | `node`        |
+| SWA_CLI_API_VERSION           | Version of the function runtime language                                                                         |            | `16`          |
 
 ## Runtime settings
 

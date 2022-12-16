@@ -185,14 +185,14 @@ export async function deploy(options: SWACLIConfig) {
         logger.log(`\nChecking project settings...`);
       }
 
-      const { resourceGroupName, staticSiteName } = (await chooseOrCreateProjectDetails(options, credentialChain, subscriptionId, printToken)) as {
-        resourceGroupName: string;
+      const { resourceGroup, staticSiteName } = (await chooseOrCreateProjectDetails(options, credentialChain, subscriptionId, printToken)) as {
+        resourceGroup: string;
         staticSiteName: string;
       };
 
       logger.silly(`Project settings:`);
       logger.silly({
-        resourceGroupName,
+        resourceGroup,
         staticSiteName,
         subscriptionId,
       });
@@ -200,7 +200,7 @@ export async function deploy(options: SWACLIConfig) {
       const deploymentTokenResponse = await getStaticSiteDeployment(
         credentialChain,
         subscriptionId,
-        resourceGroupName as string,
+        resourceGroup as string,
         staticSiteName as string
       );
 
@@ -219,7 +219,7 @@ export async function deploy(options: SWACLIConfig) {
 
             const newConfig = { ...currentSwaCliConfig?.config };
             newConfig.appName = staticSiteName;
-            newConfig.resourceGroupName = resourceGroupName;
+            newConfig.resourceGroup = resourceGroup;
             updateSwaCliConfigFile(newConfig);
           } else {
             logger.silly(`No swa-cli.config.json file found. Skipping saving project settings.`);
@@ -280,7 +280,7 @@ export async function deploy(options: SWACLIConfig) {
 
   const deployClientEnv: StaticSiteClientEnv = {
     DEPLOYMENT_ACTION: options.dryRun ? "close" : "upload",
-    DEPLOYMENT_PROVIDER: `swa-cli-${packageInfo.version}`,
+    DEPLOYMENT_PROVIDER: "SwaCli",
     REPOSITORY_BASE: userWorkflowConfig?.appLocation,
     SKIP_APP_BUILD: "true",
     SKIP_API_BUILD: "true",

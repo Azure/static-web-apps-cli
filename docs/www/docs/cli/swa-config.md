@@ -1,6 +1,6 @@
 ---
 sidebar_position: 8
-title: Configuring file
+title: Configuration file
 ---
 
 ## `swa-cli.config.json`
@@ -83,7 +83,7 @@ Options:
  - appName: <undefined>
  - dryRun: false
  - subscriptionId: <undefined>
- - resourceGroupName: <undefined>
+ - resourceGroup: <undefined>
  - tenantId: <undefined>
  - clientId: <undefined>
  - clientSecret: <undefined>

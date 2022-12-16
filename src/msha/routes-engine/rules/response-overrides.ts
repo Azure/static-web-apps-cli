@@ -27,7 +27,16 @@ export function responseOverrides(req: http.IncomingMessage, res: http.ServerRes
       if (rule.redirect) {
         const statusCodeToServe = parseInt(`${rule?.statusCode}`, 10) === 301 ? 301 : 302;
         res.statusCode = statusCodeToServe;
-        res.setHeader("Location", rule.redirect);
+
+        if (rule.redirect.indexOf(".referrer") !== -1) {
+          // The Production SWA service supports replacing `.referrer` with the current route, so that the user can redirected to a deep link after the authentication flow.
+          // Since the route can contain a path with a query we will want to encode it and the `auth.html` page will need to decode it before changing the page.
+          const redirectWithReferrerReplaced = rule.redirect.replace(".referrer", encodeURIComponent(req.url || ""));
+          res.setHeader("Location", redirectWithReferrerReplaced);
+        } else {
+          // No `.referrer` param is used, just use user-provided rule redirect as-is
+          res.setHeader("Location", rule.redirect);
+        }
 
         logger.silly(` - redirect: ${chalk.yellow(rule.redirect)}`);
       }

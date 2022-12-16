@@ -226,12 +226,12 @@ describe("Testing aliases for each of the commands and their options", () => {
     const command = await new Command()
       .name("swa")
       .option("-S, --subscription-id [subscriptionId]")
-      .option("-R, --resource-group [resourceGroupName]")
+      .option("-R, --resource-group [resourceGroup]")
       .option("-T, --tenant-id [tenantId]")
       .option("-C, --client-id [clientId]")
       .option("-CS, --client-secret [clientSecret]")
       .option("-n, --app-name [appName]")
-      .option("-cc, --clear-credentials")
+      .option("-CC, --clear-credentials")
       .option("-u, --use-keychain")
       .option("-nu, --no-use-keychain")
       .parseAsync([
@@ -249,7 +249,7 @@ describe("Testing aliases for each of the commands and their options", () => {
         "clientSecret",
         "-n",
         "appName",
-        "-cc",
+        "-CC",
         "-nu",
       ]);
 

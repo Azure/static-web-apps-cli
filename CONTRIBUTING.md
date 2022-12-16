@@ -8,7 +8,7 @@ As a contributor, here are the guidelines we would like you to follow:
   - [Signing the CLA](#signing-the-cla)
   - [Code of Conduct](#code-of-conduct)
   - [Got a Question or Problem?](#got-a-question-or-problem)
-  - [Found an Bug?](#found-an-bug)
+  - [Found a Bug?](#found-a-bug)
   - [Missing a Feature?](#missing-a-feature)
   - [Submission Guidelines](#submission-guidelines)
     - [Submitting an Issue](#submitting-an-issue)
@@ -66,7 +66,7 @@ To save your and our time, we will systematically close all issues that are requ
 
 If you would like to chat about the question in real-time, you can reach out via [our Twitter][twitter].
 
-## Found an Bug?
+## Found a Bug?
 
 If you find a bug in the source code or a mistake or a typo in the documentation, you can help us by [submitting an issue][github-issues] to our [GitHub Repository][github]. Even better, you can [submit a Pull Request][github-pull-request] with a fix.
 

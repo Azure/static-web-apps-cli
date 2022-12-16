@@ -181,7 +181,7 @@ declare type LoginDetails = {
 
 declare type SWACLISharedLoginOptions = LoginDetails & {
   subscriptionId?: string;
-  resourceGroupName?: string;
+  resourceGroup?: string;
   appName?: string;
   useKeychain?: boolean;
   clearCredentials?: boolean;

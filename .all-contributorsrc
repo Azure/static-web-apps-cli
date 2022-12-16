@@ -327,6 +327,24 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "thsackos",
+      "name": "thsackos",
+      "avatar_url": "https://avatars.githubusercontent.com/u/47867435?v=4",
+      "profile": "https://github.com/thsackos",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "rupareddy5-21",
+      "name": "Rupa Reddy",
+      "avatar_url": "https://avatars.githubusercontent.com/u/85722799?v=4",
+      "profile": "https://github.com/rupareddy5-21",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 6,

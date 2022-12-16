@@ -171,12 +171,12 @@ Here are the options you can use with `swa deploy`:
 - `-pt, --print-token`: print the deployment token (default: `false`)
 - `--env [environment]`: the type of deployment environment where to deploy the project (default: "`preview`")
 - `-S, --subscription-id <subscriptionId>`: Azure subscription ID used by this project (default: `process.env.AZURE_SUBSCRIPTION_ID`)
-- `-R, --resource-group <resourceGroupName>`: Azure resource group used by this project
+- `-R, --resource-group <resourceGroup>`: Azure resource group used by this project
 - `-T, --tenant-id <tenantId>`: Azure tenant ID (default: `process.env.AZURE_TENANT_ID`)
 - `-C, --client-id <clientId>`: Azure client ID
 - `-CS, --client-secret <clientSecret>`: Azure client secret
 - `-n, --app-name <appName>`: Azure Static Web App application name
-- `-cc, --clear-credentials`: clear persisted credentials before login (default: `false`)
+- `-CC, --clear-credentials`: clear persisted credentials before login (default: `false`)
 - `-u, --use-keychain`: enable using the operating system native keychain for persistent credentials (default: `true`)
 - `-nu, --no-use-keychain`: disable using the operating system native keychain
 - `-h, --help`: display help for command

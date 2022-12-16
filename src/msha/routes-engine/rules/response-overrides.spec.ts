@@ -56,6 +56,32 @@ describe("responseOverrides()", () => {
     expect(req.url).toBe(`${CUSTOM_URL_SCHEME}foo`);
   });
 
+  it("should override redirect rule with .referrer replacement and query string", () => {
+    req.url = "/foo";
+    res.statusCode = 404;
+    userConfig = {
+      "404": {
+        redirect: "/.auth/login/aad/post_login_redirect_uri=.referrer",
+      },
+    };
+    responseOverrides(req, res, userConfig);
+
+    expect(res.setHeader).toHaveBeenCalledWith("Location", "/.auth/login/aad/post_login_redirect_uri=%2Ffoo");
+  });
+
+  it("should override redirect rule with .referrer replacement", () => {
+    req.url = "/foo?with=query&params=1-1";
+    res.statusCode = 404;
+    userConfig = {
+      "404": {
+        redirect: "/.auth/login/aad/post_login_redirect_uri=.referrer",
+      },
+    };
+    responseOverrides(req, res, userConfig);
+
+    expect(res.setHeader).toHaveBeenCalledWith("Location", "/.auth/login/aad/post_login_redirect_uri=%2Ffoo%3Fwith%3Dquery%26params%3D1-1");
+  });
+
   it("should override redirect rule", () => {
     res.statusCode = 404;
     userConfig = {
