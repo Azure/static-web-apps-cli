@@ -1,3 +1,5 @@
+import { DEFAULT_DOTNET_ISOLATED_VERSION, DEFAULT_DOTNET_VERSION, DEFAULT_NODE_VERSION, DEFAULT_PYTHON_VERSION } from "../constants";
+
 export const apiFrameworks: FrameworkDefinition[] = [
   {
     id: "nodejs",
@@ -6,7 +8,7 @@ export const apiFrameworks: FrameworkDefinition[] = [
     config: {
       apiBuildCommand: "npm run build --if-present",
       apiLanguage: "node",
-      apiVersion: "16",
+      apiVersion: DEFAULT_NODE_VERSION,
     },
   },
   {
@@ -27,7 +29,7 @@ export const apiFrameworks: FrameworkDefinition[] = [
     config: {
       apiBuildCommand: "dotnet publish -c Release",
       apiLanguage: "dotnet",
-      apiVersion: "6.0",
+      apiVersion: DEFAULT_DOTNET_VERSION,
     },
   },
   {
@@ -36,7 +38,7 @@ export const apiFrameworks: FrameworkDefinition[] = [
     files: ["*.?(csproj|fsproj)", "host.json"],
     config: {
       apiLanguage: "dotnet-isolated",
-      apiVersion: "6.0",
+      apiVersion: DEFAULT_DOTNET_ISOLATED_VERSION,
     },
   },
   {
@@ -46,7 +48,7 @@ export const apiFrameworks: FrameworkDefinition[] = [
     config: {
       // Nothing to setup, but we need to know the apiLocation (rootPath)
       apiLanguage: "python",
-      apiVersion: "3.9",
+      apiVersion: DEFAULT_PYTHON_VERSION,
     },
   },
 ];
