@@ -14,7 +14,7 @@ import { swaCLIEnv } from "../../../core/env";
 export function navigationFallback(req: http.IncomingMessage, res: http.ServerResponse, navigationFallback: SWAConfigFileNavigationFallback) {
   let originlUrl = req.url;
 
-  logger.silly("checking navigation fallback...");
+  logger.silly(" navigation fallback...");
 
   // don't process .auth requests
   if (originlUrl?.startsWith("/.auth")) {
