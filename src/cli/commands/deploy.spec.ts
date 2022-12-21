@@ -41,7 +41,7 @@ jest.spyOn(loginModule, "login").mockImplementation(() => {
   return Promise.resolve({
     credentialChain: {} as any,
     subscriptionId: "mock-subscription-id",
-    resourceGroupName: "mock-resource-group-name",
+    resourceGroup: "mock-resource-group-name",
     staticSiteName: "mock-static-site-name",
   });
 });
@@ -130,7 +130,7 @@ describe("deploy", () => {
     expect(child_process.spawn).toBeCalledWith("mock-binary", [], {
       env: {
         DEPLOYMENT_ACTION: "upload",
-        DEPLOYMENT_PROVIDER: `swa-cli-${pkg.version}`,
+        DEPLOYMENT_PROVIDER: "SwaCli",
         REPOSITORY_BASE: "./",
         SKIP_APP_BUILD: "true",
         SKIP_API_BUILD: "true",
@@ -166,7 +166,7 @@ describe("deploy", () => {
     expect(child_process.spawn).toBeCalledWith("mock-binary", [], {
       env: {
         DEPLOYMENT_ACTION: "upload",
-        DEPLOYMENT_PROVIDER: `swa-cli-${pkg.version}`,
+        DEPLOYMENT_PROVIDER: "SwaCli",
         REPOSITORY_BASE: "./",
         SKIP_APP_BUILD: "true",
         SKIP_API_BUILD: "true",

@@ -7,7 +7,7 @@ import { getDataApiBuilderPath } from "./dab";
 
 export async function getDataApiBuilderBinary(): Promise<string> {
   const binaryPath = await getDataApiBuilderPath();
-  logger.silly(binaryPath.binaryPath);
+  logger.silly(`DAB.exe found at ${binaryPath.binaryPath}`);
 
   return binaryPath.binaryPath;
 }

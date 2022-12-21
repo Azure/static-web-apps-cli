@@ -110,15 +110,23 @@ function doesRequestPathMatchWildcardRoute(requestPath: string, requestPathFileW
     return false;
   }
 
-  // we don't support full globs in the config file.
-  // add this little utility to convert a wildcard into a valid glob pattern
-  const regexp = new RegExp(`^${globToRegExp(requestPathFileWithWildcard)}$`);
-  logger.silly(` - regexp: ${chalk.yellow(regexp)}`);
+  try {
+    logger.silly(` - route regexp: ${chalk.yellow(requestPathFileWithWildcard)}`);
+    // we don't support full globs in the config file.
+    // add this little utility to convert a wildcard into a valid glob pattern
+    const regexp = new RegExp(`^${globToRegExp(requestPathFileWithWildcard)}$`);
+    logger.silly(` - regexp: ${chalk.yellow(regexp)}`);
 
-  const isMatch = regexp.test(requestPath);
-  logger.silly(` - isMatch: ${chalk.yellow(isMatch)}`);
+    const isMatch = regexp.test(requestPath);
+    logger.silly(` - isMatch: ${chalk.yellow(isMatch)}`);
 
-  return isMatch;
+    return isMatch;
+  } catch (error) {
+    logger.silly(` - ERROR: IGNORING REGEXP!!!`);
+    logger.silly(` - read: ${chalk.yellow("https://learn.microsoft.com/en-us/azure/static-web-apps/configuration#wildcards")}`);
+    logger.silly(` - error: ${chalk.yellow(error)}`);
+    return false;
+  }
 }
 
 export function isCustomUrl(req: http.IncomingMessage) {

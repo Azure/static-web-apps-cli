@@ -42,7 +42,7 @@ export function isCoreToolsVersionCompatible(coreToolsVersion: number, nodeVersi
   // Runtime support reference: https://docs.microsoft.com/azure/azure-functions/functions-versions?pivots=programming-language-javascript#languages
   switch (coreToolsVersion) {
     case 4:
-      return nodeVersion >= 14 && nodeVersion <= 16;
+      return nodeVersion >= 14 && nodeVersion <= 18;
     case 3:
       return nodeVersion >= 10 && nodeVersion <= 14;
     case 2:
@@ -54,7 +54,7 @@ export function isCoreToolsVersionCompatible(coreToolsVersion: number, nodeVersi
 
 export function detectTargetCoreToolsVersion(nodeVersion: number): number {
   // Pick the highest version that is compatible with the specified Node version
-  if (nodeVersion >= 14 && nodeVersion <= 16) return 4;
+  if (nodeVersion >= 14 && nodeVersion <= 18) return 4;
   if (nodeVersion >= 10 && nodeVersion < 14) return 3;
   if (nodeVersion >= 8 && nodeVersion < 10) return 2;
 

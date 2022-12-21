@@ -2,9 +2,7 @@ import chalk from "chalk";
 import type http from "http";
 import { SWA_CLI_DATA_API_URI } from "../../core/constants";
 import httpProxy from "http-proxy";
-// import fetch from "node-fetch";
 import { logger, logRequest, registerProcessExit } from "../../core";
-// import { HAS_API, SWA_CLI_API_URI } from "../../core/constants";
 import { onConnectionLost } from "../middlewares/request.middleware";
 
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });

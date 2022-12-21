@@ -42,12 +42,7 @@ export default function registerCommand(program: Command) {
       "connect to the app dev server at this URL instead of using output location",
       DEFAULT_CONFIG.appDevserverUrl
     )
-    .option(
-      "-is, --api-devserver-url <url>",
-      "connect to the api server at this URL instead of using output location",
-      DEFAULT_CONFIG.apiDevserverUrl
-    )
-    .option("-ds, --data-api-devserver-url <url>", "connect to the data-api server at this URL", DEFAULT_CONFIG.dataApiDevserverUrl)
+    .option("-is, --api-devserver-url <url>", "connect to the api server at this URL instead of using api location", DEFAULT_CONFIG.apiDevserverUrl)
     .option<number>("-j, --api-port <apiPort>", "the API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
     .option("-q, --host <host>", "the host address to use for the CLI dev server", DEFAULT_CONFIG.host)
     .option<number>("-p, --port <port>", "the port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
@@ -118,7 +113,7 @@ Use a custom command to run framework development server at startup
 swa start http://localhost:3000 --run-build "npm start"
 // todo: add data-api documentation here
 Connect both front-end and the API to running development server
-swa start http://localhost:3000 --api-location http://localhost:7071
+swa start http://localhost:3000 --api-devserver-url http://localhost:7071
   `
     );
 }
@@ -198,31 +193,32 @@ export async function start(options: SWACLIConfig) {
     logger.silly(`  ${outputLocation}`);
   }
 
-  // todo:re-use this code
-  if (apiLocation) {
+  if (apiDevserverUrl) {
+    // TODO: properly refactor this after GA to send apiDevserverUrl to the server
+    useApiDevServer = apiDevserverUrl;
+    apiLocation = apiDevserverUrl;
+    logger.silly(`Api Dev Server found: ${apiDevserverUrl}`);
+  } else if (apiLocation) {
     // resolves to the absolute path of the apiLocation
     let resolvedApiLocation = path.resolve(apiLocation);
 
-    if (apiDevserverUrl) {
-      // TODO: properly refactor this after GA to send apiDevserverUrl to the server
-      useApiDevServer = apiDevserverUrl;
-      apiLocation = apiDevserverUrl;
-    }
     // make sure api folder exists
-    else if (fs.existsSync(resolvedApiLocation)) {
+    if (fs.existsSync(resolvedApiLocation)) {
       apiLocation = resolvedApiLocation;
+      logger.silly(`Api Folder found: ${apiLocation}`);
     } else {
       logger.info(`Skipping API because folder "${resolvedApiLocation}" is missing`, "swa");
     }
   }
 
-  if (dataApiLocation) {
+  if (dataApiDevserverUrl) {
+    useDataApiDevServer = dataApiDevserverUrl;
+    dataApiLocation = dataApiDevserverUrl;
+    logger.silly(`Data Api Dev Server found: ${dataApiDevserverUrl}`);
+  } else if (dataApiLocation) {
     let resolvedDataApiLocation = path.resolve(dataApiLocation);
 
-    if (dataApiDevserverUrl) {
-      useDataApiDevServer = dataApiDevserverUrl;
-      dataApiLocation = dataApiDevserverUrl;
-    } else if (fs.existsSync(resolvedDataApiLocation)) {
+    if (fs.existsSync(resolvedDataApiLocation)) {
       dataApiLocation = resolvedDataApiLocation;
       logger.silly(`Data Api Folder found: ${dataApiLocation}`);
     } else {
@@ -294,7 +290,7 @@ export async function start(options: SWACLIConfig) {
 
         // serve the api if and only if the user provides a folder via the --api-location flag
         if (isApiLocationExistsOnDisk) {
-          serveApiCommand = `cd "${userWorkflowConfig.apiLocation}" && ${funcBinary} start --cors "*" --port ${apiPort} ${funcArgs ?? ""}`;
+          serveApiCommand = `cd "${userWorkflowConfig.apiLocation}" && "${funcBinary}" start --cors "*" --port ${apiPort} ${funcArgs ?? ""}`;
         }
       }
     }
@@ -318,7 +314,7 @@ export async function start(options: SWACLIConfig) {
       }
     }
 
-    logger.silly(serveDataApiCommand);
+    logger.silly(`Running ${serveDataApiCommand}`);
   }
 
   if (ssl) {

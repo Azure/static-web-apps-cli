@@ -15,7 +15,7 @@ describe("glob functions", () => {
     });
 
     it("glob = *", () => {
-      expect(globToRegExp("*")).toBe("*");
+      expect(globToRegExp("*")).toBe(".*");
     });
     it("glob = /*", () => {
       expect(globToRegExp("/*")).toBe("\\/.*");
