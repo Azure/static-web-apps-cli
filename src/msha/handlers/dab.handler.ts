@@ -1,14 +1,14 @@
 import chalk from "chalk";
 import type http from "http";
-import { SWA_CLI_DATA_API_URI } from "../../core/constants";
 import httpProxy from "http-proxy";
 import { logger, logRequest, registerProcessExit } from "../../core";
+import { SWA_CLI_DATA_API_URI } from "../../core/constants";
 import { onConnectionLost } from "../middlewares/request.middleware";
 
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 registerProcessExit(() => {
   logger.silly(`killing SWA CLI`);
-  proxyApi.close(() => logger.log("Api proxy stopped."));
+  proxyApi.close(() => logger.log("Data-Api proxy stopped."));
   process.exit(0);
 });
 
@@ -19,8 +19,6 @@ registerProcessExit(() => {
  */
 export function handleDataApiRequest(req: http.IncomingMessage, res: http.ServerResponse) {
   const target = SWA_CLI_DATA_API_URI();
-
-  console.log(target);
 
   proxyApi.web(
     req,
@@ -62,5 +60,5 @@ function injectHeaders(req: http.ClientRequest, host: string | undefined) {
  */
 export function isDataApiRequest(req: http.IncomingMessage, rewritePath?: string): boolean {
   const path = rewritePath || req.url;
-  return Boolean(path?.toLowerCase().startsWith(`/data-api`));
+  return Boolean(path?.toLowerCase().startsWith(`/data-api/`));
 }

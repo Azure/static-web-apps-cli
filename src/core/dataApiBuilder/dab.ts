@@ -28,7 +28,7 @@ export async function getDataApiBuilderPath(): Promise<{ binaryPath: string }> {
     throw new Error(`Unsupported platform: ${os.platform()}`); // todo: can we write custom error messages
   }
 
-  const releaseMetadata = (await getLatestDataApiBuilderMetadata()).releaseMetadata;
+  const releaseMetadata = (await getReleaseDataApiBuilderMetadata()).releaseMetadata;
   if (releaseMetadata === undefined) {
     throw new Error(`Could not load ${DATA_API_BUILDER_BINARY_NAME} metadata from remote. Please check your internet connection.`); // should we throw error and stop or can we allow users to use local version
   }
@@ -84,7 +84,7 @@ async function downloadAndUnzipBinary(releaseMetadata: DataApiBuilderReleaseMeta
  * Fetches the latest version, metadata of DAB.exe from DATA_API_BUILDER_RELEASE_METADATA_URL
  * @returns DataApiBuilderReleaseMetadata
  */
-async function getLatestDataApiBuilderMetadata(): Promise<{ releaseMetadata: DataApiBuilderReleaseMetadata | undefined }> {
+async function getReleaseDataApiBuilderMetadata(): Promise<{ releaseMetadata: DataApiBuilderReleaseMetadata | undefined }> {
   const response = await fetch(DATA_API_BUILDER_RELEASE_METADATA_URL);
   const responseMetadata = (await response.json()) as DataApiBuilderReleaseMetadata;
 

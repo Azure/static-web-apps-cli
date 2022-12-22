@@ -115,21 +115,21 @@ function computeChecksumfromFile(filePath: string | undefined): string {
 /**
  *
  * @param release binary Metadata
- * @param binaryFilename binary file location
+ * @param binaryFileName binary file location
  * @param sha hash value
  * @param binaryType StaticSiteClient or DataApiBuilder
  */
-function saveMetadata(release: BinaryMetadata, binaryFilename: string, sha: string, binaryType: string) {
+function saveMetadata(release: BinaryMetadata, binaryFileName: string, sha: string, binaryType: string) {
   const downloadFolder = binaryType == "StaticSiteClient" ? DEPLOY_FOLDER : DATA_API_BUILDER_FOLDER;
   const binaryName = binaryType == "StaticSiteClient" ? DEPLOY_BINARY_NAME : DATA_API_BUILDER_BINARY_NAME;
-  const metadataFilename = path.join(downloadFolder, `${binaryName}.json`);
+  const metadataFileName = path.join(downloadFolder, `${binaryName}.json`);
   const metdata: LocalBinaryMetadata = {
     metadata: release,
-    binary: binaryFilename,
+    binary: binaryFileName,
     checksum: sha,
   };
-  fs.writeFileSync(metadataFilename, JSON.stringify(metdata));
-  logger.silly(`Saved metadata to ${metadataFilename}`);
+  fs.writeFileSync(metadataFileName, JSON.stringify(metdata));
+  logger.silly(`Saved metadata to ${metadataFileName}`);
 }
 
 /**
