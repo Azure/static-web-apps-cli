@@ -22,7 +22,7 @@ const DEFAULT_DAB_BINARY = "dab.exe";
  *
  * @returns binaryPath
  */
-export async function getDataApiBuilderPath(): Promise<{ binaryPath: string }> {
+export async function installAndGetDataApiBuilder(): Promise<{ binaryPath: string }> {
   const platform = getPlatform();
   if (!platform) {
     throw new Error(`Unsupported platform: ${os.platform()}`); // todo: can we write custom error messages
@@ -90,6 +90,7 @@ async function getReleaseDataApiBuilderMetadata(): Promise<{ releaseMetadata: Da
 
   if (Array.isArray(responseMetadata)) {
     const releaseMetadata = responseMetadata.find((c) => c.releaseType === DATA_API_BUILDER_RELEASE_TAG);
+
     return {
       releaseMetadata: releaseMetadata,
     };
@@ -110,6 +111,7 @@ async function isLocalVersionInstalledAndLatest(releaseVersion: string): Promise
   try {
     // todo: fix this
     const { stdout, stderr } = await promisify(exec)(`${DEFAULT_DAB_BINARY} --version`);
+
     if (stderr) {
       logger.silly(stderr);
     }

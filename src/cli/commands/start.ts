@@ -23,7 +23,8 @@ import {
   parseUrl,
   readWorkflowFile,
 } from "../../core";
-import { getDataApiBuilderBinary } from "../../core/dataApiBuilder/dab-main";
+import { DATA_API_BUILDER_DEFAULT_CONFIG_FILENAME } from "../../core/constants";
+import { getDataApiBuilderBinaryPath } from "../../core/dataApiBuilder/dab-main";
 import { swaCLIEnv } from "../../core/env";
 import { getCertificate } from "../../core/ssl";
 let packageInfo = require("../../../package.json");
@@ -300,15 +301,16 @@ export async function start(options: SWACLIConfig) {
   let startDataApiBuilderNeeded = false;
   if (useDataApiDevServer) {
     serveDataApiCommand = `echo using DATA API server at ${useDataApiDevServer}`;
+
     dataApiPort = parseUrl(useDataApiDevServer)?.port;
   } else {
     if (dataApiLocation) {
-      const dabBinary = await getDataApiBuilderBinary();
+      const dabBinary = await getDataApiBuilderBinaryPath();
 
       if (!dabBinary) {
         logger.error(`Could not find or install Dab.exe`, true); // todo: improve error msg
       } else {
-        serveDataApiCommand = `cd "${dataApiLocation}" && ${dabBinary} start`;
+        serveDataApiCommand = `cd "${dataApiLocation}" && "${dabBinary}" start -c ${DATA_API_BUILDER_DEFAULT_CONFIG_FILENAME}`;
         dataApiPort = DEFAULT_CONFIG.dataApiPort;
         startDataApiBuilderNeeded = true;
       }
