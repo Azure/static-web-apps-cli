@@ -1,14 +1,11 @@
-// Avoid FSREQCALLBACK error
-jest.mock("./commands/start");
-
-jest.mock("child_process", () => ({
-  execSync: jest.fn(),
-}));
-
 import { program } from "commander";
 import { UpdateNotifier } from "update-notifier";
 import mockFs from "mock-fs";
 import { run } from "./index";
+
+jest.mock("child_process", () => ({
+  execSync: jest.fn(),
+}));
 
 const pkg = require("../../package.json");
 
@@ -30,8 +27,6 @@ describe("cli", () => {
 
   afterAll(() => {
     console.error = originalConsoleError;
-    jest.resetModules();
-    jest.restoreAllMocks();
   });
 
   it("should print version", async () => {
