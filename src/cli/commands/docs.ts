@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import open from "open";
 
-export default function registerDocs(program: Command) {
+export function registerDocs(program: Command) {
   program
     .command("docs")
     .description("open Azure Static Web Apps CLI documentations")

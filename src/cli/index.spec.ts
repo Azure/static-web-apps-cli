@@ -3,8 +3,8 @@ import { UpdateNotifier } from "update-notifier";
 import mockFs from "mock-fs";
 import { run } from "./index";
 
-jest.mock("child_process", () => ({
-  execSync: jest.fn(),
+jest.mock("./commands/build/build", () => ({
+  build: jest.fn(),
 }));
 
 const pkg = require("../../package.json");
@@ -21,8 +21,8 @@ describe("cli", () => {
 
   afterEach(() => {
     mockFs.restore();
-    const execSyncMock = jest.requireMock("child_process").execSync;
-    execSyncMock.mockReset();
+    const buildMock = jest.requireMock("./commands/build/build").build;
+    buildMock.mockReset();
   });
 
   afterAll(() => {
@@ -64,16 +64,16 @@ describe("cli", () => {
   });
 
   it("should ignore empty spaces when using positional argument", async () => {
-    const execSyncMock = jest.requireMock("child_process").execSync;
+    const build = jest.requireMock("./commands/build/build").build;
     mockFs();
     await run(["node", "swa", "build", "   app  ", "--app-build-command", "npm run something"]);
-    expect(execSyncMock.mock.calls[0][1].cwd).toBe("app");
+    expect(build.mock.calls[0][0].appLocation).toBe("app");
   });
 
   it("should not interpret empty spaces as a positional argument", async () => {
-    const execSyncMock = jest.requireMock("child_process").execSync;
+    const build = jest.requireMock("./commands/build/build").build;
     mockFs();
     await run(["node", "swa", "build", "    ", "--app-build-command", "npm run something", "   "]);
-    expect(execSyncMock.mock.calls[0][1].cwd).toBe(".");
+    expect(build.mock.calls[0][0].appLocation).toBe(".");
   });
 });
