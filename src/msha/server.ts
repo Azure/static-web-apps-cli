@@ -6,6 +6,7 @@ import https from "https";
 import internalIp from "internal-ip";
 import net from "net";
 import open from "open";
+import { isSSL } from "../cli/commands/start";
 import { DEFAULT_CONFIG } from "../config";
 import { address, hostnameToIpAdress, isHttpUrl, logger, logRequest, registerProcessExit, validateDevServerConfig } from "../core";
 import { HAS_API, IS_API_DEV_SERVER, IS_APP_DEV_SERVER, SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../core/constants";
@@ -15,16 +16,30 @@ import { handleUserConfig, onConnectionLost, requestMiddleware } from "./middlew
 
 const { SWA_CLI_PORT } = swaCLIEnv();
 
-const proxyApp = httpProxy.createProxyServer({
-  autoRewrite: true,
-  agent: new http.Agent({
-    keepAlive: true,
-    keepAliveMsecs: 5000,
-  }),
-});
+var proxyApp: any;
 
-if (!isHttpUrl(SWA_CLI_API_URI())) {
-  logger.error(`The provided API URI ${SWA_CLI_API_URI} is not a valid. Exiting.`, true);
+if (isSSL) {
+  proxyApp = httpProxy.createProxyServer({
+    autoRewrite: true,
+    agent: new https.Agent({
+      keepAlive: true,
+      keepAliveMsecs: 5000,
+    }),
+  });
+  if (isHttpUrl(SWA_CLI_API_URI())) {
+    logger.warn(`Please make sure you want to hit the http proxy server.`);
+  }
+} else {
+  proxyApp = httpProxy.createProxyServer({
+    autoRewrite: true,
+    agent: new http.Agent({
+      keepAlive: true,
+      keepAliveMsecs: 5000,
+    }),
+  });
+  if (isHttpsUrl(SWA_CLI_API_URI())) {
+    logger.error(`Your connection is not secure. Please start the CLI using the flag --ssl. Exiting`, true);
+  }
 }
 
 // TODO: handle multiple workflow files (see #32)
@@ -39,6 +54,19 @@ const httpsServerOptions: Pick<https.ServerOptions, "cert" | "key"> | null =
         key: DEFAULT_CONFIG.sslKey.startsWith("-----BEGIN") ? DEFAULT_CONFIG.sslKey : fs.readFileSync(DEFAULT_CONFIG.sslKey, "utf8"),
       }
     : null;
+
+function isHttpsUrl(url: string | undefined) {
+  if (!url) {
+    return false;
+  }
+
+  try {
+    const uri = new URL(url);
+    return uri.protocol.startsWith("https");
+  } catch {
+    return false;
+  }
+}
 
 function requestHandler(userConfig: SWAConfigFile | undefined) {
   return async function (req: http.IncomingMessage, res: http.ServerResponse) {
