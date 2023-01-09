@@ -28,6 +28,7 @@ export default function registerCommand(program: Command) {
     .option("-I, --api-build-command <command>", "the command used to build your api", DEFAULT_CONFIG.apiBuildCommand)
     .option("--auto", "automatically detect how to build your app and api", false)
     .action(async (positionalArg: string | undefined, _options: SWACLIConfig, command: Command) => {
+      positionalArg = positionalArg?.trim();
       const options = await configureOptions(positionalArg, command.optsWithGlobals(), command, "build");
       if (positionalArg && !matchLoadedConfigName(positionalArg)) {
         if (isUserOption("appLocation")) {
