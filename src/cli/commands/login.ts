@@ -10,7 +10,10 @@ import { authenticateWithAzureIdentity, listSubscriptions, listTenants } from ".
 import { ENV_FILENAME } from "../../core/constants";
 import { updateGitIgnore } from "../../core/git";
 import { chooseSubscription, chooseTenant } from "../../core/prompts";
+import { Environment } from "../../core/swa-cli-persistence-plugin/impl/azure-environment";
 const { readFile, writeFile } = fsPromises;
+
+const defaultScope = `${Environment.AzureCloud.resourceManagerEndpointUrl}/.default`;
 
 export function addSharedLoginOptionsToCommand(command: Command) {
   command
@@ -88,7 +91,7 @@ export async function login(options: SWACLIConfig): Promise<any> {
 
   credentialChain = await authenticateWithAzureIdentity({ tenantId, clientId, clientSecret }, options.useKeychain, options.clearCredentials);
 
-  if (await credentialChain.getToken("profile")) {
+  if (await credentialChain.getToken(defaultScope)) {
     logger.log(chalk.green(`✔ Successfully logged into Azure!`));
   }
 
@@ -115,7 +118,7 @@ async function setupProjectCredentials(options: SWACLIConfig, credentialChain: T
       // TODO: can we silently authenticate the user with the new tenant?
       credentialChain = await authenticateWithAzureIdentity({ tenantId, clientId, clientSecret }, options.useKeychain, true);
 
-      if (await credentialChain.getToken("profile")) {
+      if (await credentialChain.getToken(defaultScope)) {
         logger.log(chalk.green(`✔ Successfully logged into Azure tenant: ${tenantId}`));
       }
     }
