@@ -1,9 +1,15 @@
 // Avoid FSREQCALLBACK error
 jest.mock("./commands/start");
 
+jest.mock("child_process", () => ({
+  execSync: jest.fn(),
+}));
+
 import { program } from "commander";
 import { UpdateNotifier } from "update-notifier";
+import mockFs from "mock-fs";
 import { run } from "./index";
+
 const pkg = require("../../package.json");
 
 const originalConsoleError = console.error;
@@ -16,8 +22,16 @@ describe("cli", () => {
     console.error = jest.fn();
   });
 
+  afterEach(() => {
+    mockFs.restore();
+    const execSyncMock = jest.requireMock("child_process").execSync;
+    execSyncMock.mockReset();
+  });
+
   afterAll(() => {
     console.error = originalConsoleError;
+    jest.resetModules();
+    jest.restoreAllMocks();
   });
 
   it("should print version", async () => {
@@ -52,5 +66,19 @@ describe("cli", () => {
          ╰────────────────────────────────────────────────────╯
       "
     `);
+  });
+
+  it("should ignore empty spaces when using positional argument", async () => {
+    const execSyncMock = jest.requireMock("child_process").execSync;
+    mockFs();
+    await run(["node", "swa", "build", "   app  ", "--app-build-command", "npm run something"]);
+    expect(execSyncMock.mock.calls[0][1].cwd).toBe("app");
+  });
+
+  it("should not interpret empty spaces as a positional argument", async () => {
+    const execSyncMock = jest.requireMock("child_process").execSync;
+    mockFs();
+    await run(["node", "swa", "build", "    ", "--app-build-command", "npm run something", "   "]);
+    expect(execSyncMock.mock.calls[0][1].cwd).toBe(".");
   });
 });
