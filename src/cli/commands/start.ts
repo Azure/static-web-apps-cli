@@ -116,7 +116,6 @@ swa start http://localhost:3000 --api-devserver-url http://localhost:7071
     );
 }
 
-export var isSSL: boolean = false;
 export async function start(options: SWACLIConfig) {
   // WARNING:
   // environment variables are populated using values provided by the user to the CLI.
@@ -275,7 +274,6 @@ export async function start(options: SWACLIConfig) {
   }
 
   if (ssl) {
-    isSSL = ssl;
     if (sslCert === undefined && sslKey === undefined) {
       logger.warn(`WARNING: Using built-in UNSIGNED certificate. DO NOT USE IN PRODUCTION!`);
       const pemFilepath = await getCertificate({
