@@ -2,10 +2,10 @@ import fs from "fs";
 import fetch from "node-fetch";
 import os from "os";
 import path from "path";
-import { STATIC_SITE_CLIENT_RELEASE_METADATA_URL } from "./constants";
-import { DEPLOY_BINARY_NAME, DEPLOY_FOLDER, downloadAndValidateBinary, getPlatform } from "./download-binary-helper";
+import { STATIC_SITE_CLIENT_RELEASE_METADATA_URL, DEPLOY_BINARY_NAME } from "./constants";
+import { DEPLOY_FOLDER, downloadAndValidateBinary } from "./download-binary-helper";
 import { swaCLIEnv } from "./env";
-import { logger } from "./utils";
+import { getPlatform, logger } from "./utils";
 
 type StaticSiteClientLocalMetadata = {
   metadata: StaticSiteClientReleaseMetadata;
@@ -57,7 +57,7 @@ export async function getDeployClientPath(): Promise<{ binary: string; buildId: 
   }
 
   return {
-    binary: await downloadAndValidateBinary(remoteClientMetadata, "StaticSiteClient", DEPLOY_FOLDER, remoteClientMetadata.buildId, platform),
+    binary: await downloadAndValidateBinary(remoteClientMetadata, DEPLOY_BINARY_NAME, DEPLOY_FOLDER, remoteClientMetadata.buildId, platform),
     buildId: remoteClientMetadata.buildId,
   };
 }

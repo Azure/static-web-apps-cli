@@ -1,4 +1,4 @@
-import { DATA_API_BUILDER_RELEASE_METADATA_URL, DATA_API_BUILDER_RELEASE_TAG } from "../constants";
+import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_RELEASE_METADATA_URL, DATA_API_BUILDER_RELEASE_TAG } from "../constants";
 import fetch from "node-fetch";
 import { promisify } from "util";
 import { exec } from "child_process";
@@ -7,8 +7,8 @@ import os from "os";
 import unzipper from "unzipper";
 import path from "path";
 import { PassThrough } from "stream";
-import { logger } from "../utils";
-import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_FOLDER, downloadAndValidateBinary, getPlatform } from "../download-binary-helper";
+import { getPlatform, logger } from "../utils";
+import { DATA_API_BUILDER_FOLDER, downloadAndValidateBinary } from "../download-binary-helper";
 
 const DEFAULT_DAB_BINARY = "dab.exe";
 
@@ -64,14 +64,14 @@ async function downloadAndUnzipBinary(releaseMetadata: DataApiBuilderReleaseMeta
       logger.silly(`Downloading the newer version`);
       const zipFilePath = await downloadAndValidateBinary(
         releaseMetadata,
-        "DataApiBuilder",
+        DATA_API_BUILDER_BINARY_NAME,
         DATA_API_BUILDER_FOLDER,
         releaseMetadata?.versionId,
         platform
       );
 
       await extractBinary(zipFilePath, destDirectory);
-      // todo: delete zip file and delete older versions of dab-files??
+      // todo: delete zip file and delete older versions of dab-files
     }
     return binaryPath;
   } catch (ex) {

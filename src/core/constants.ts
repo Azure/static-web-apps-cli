@@ -2,10 +2,13 @@ import path from "path";
 import { DEFAULT_CONFIG } from "../config";
 import { address, isHttpUrl } from "./utils/net";
 
+export const DEPLOY_BINARY_NAME = "StaticSitesClient";
+export const DATA_API_BUILDER_BINARY_NAME = "DataApiBuilder";
 export const STATIC_SITE_CLIENT_RELEASE_METADATA_URL = "https://swalocaldeploy.azureedge.net/downloads/versions.json";
 export const DATA_API_BUILDER_RELEASE_METADATA_URL = "https://dataapibuilder.azureedge.net/releases/dab-manifest.json";
 export const DATA_API_BUILDER_RELEASE_TAG = "released";
-export const DATA_API_BUILDER_DEFAULT_CONFIG_FILENAME = "staticwebapp.db.config.json";
+export const DATA_API_BUILDER_DEFAULT_CONFIG_FILENAME = "staticwebapp.database.config.json";
+export const DATA_API_BUILDER_DEFAULT_SCHEMA_FILENAME = "staticwebapp.database.schema.gql";
 export const SWA_COMMANDS = ["login", "init", "start", "deploy", "build"] as const;
 // Type cannot be in swa.d.ts as it's inferred from SWA_COMMANDS
 export type SWACommand = typeof SWA_COMMANDS[number];

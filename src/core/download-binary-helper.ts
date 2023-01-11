@@ -6,11 +6,10 @@ import ora from "ora";
 import os from "os";
 import path from "path";
 import { PassThrough } from "stream";
+import { DATA_API_BUILDER_BINARY_NAME, DEPLOY_BINARY_NAME } from "./constants";
 import { logger } from "./utils";
 
-export const DEPLOY_BINARY_NAME = "StaticSitesClient";
 export const DEPLOY_FOLDER = path.join(os.homedir(), ".swa", "deploy");
-export const DATA_API_BUILDER_BINARY_NAME = "DataApiBuilder";
 export const DATA_API_BUILDER_FOLDER = path.join(os.homedir(), ".swa", "dab");
 
 /**
@@ -24,15 +23,13 @@ export const DATA_API_BUILDER_FOLDER = path.join(os.homedir(), ".swa", "dab");
  */
 export async function downloadAndValidateBinary(
   releaseMetadata: BinaryMetadata,
-  binaryType: "StaticSiteClient" | "DataApiBuilder", // todo: move these strings to constants
+  binaryName: string,
   outputFolder: string,
   id: string,
-  platform: "win-x64" | "osx-x64" | "linux-x64" // todo: same here
+  platform: "win-x64" | "osx-x64" | "linux-x64"
 ) {
   const downloadFilename = path.basename(releaseMetadata.files[platform!].url);
-  const binaryName = binaryType == "StaticSiteClient" ? DEPLOY_BINARY_NAME : DATA_API_BUILDER_BINARY_NAME;
   const url = releaseMetadata.files[platform].url;
-
   const spinner = ora({ prefixText: chalk.dim.gray(`[swa]`) });
 
   spinner.start(`Downloading ${url}@${id}`);
@@ -41,7 +38,7 @@ export async function downloadAndValidateBinary(
 
   if (response.status !== 200) {
     spinner.fail();
-    throw new Error(`Failed to download ${binaryName} binary. File not found (${response.status})`);
+    throw new Error(`Failed to download ${binaryName} binary from url ${url}. File not found (${response.status})`);
   }
 
   const bodyStream = response?.body?.pipe(new PassThrough());
@@ -50,7 +47,7 @@ export async function downloadAndValidateBinary(
 
   return await new Promise<string>((resolve, reject) => {
     const isPosix = platform === "linux-x64" || platform === "osx-x64";
-    let outputFile = path.join(outputFolder, id, downloadFilename);
+    const outputFile = path.join(outputFolder, id, downloadFilename);
 
     const writableStream = fs.createWriteStream(outputFile, { mode: isPosix ? 0o755 : undefined });
     bodyStream?.pipe(writableStream);
@@ -66,17 +63,19 @@ export async function downloadAndValidateBinary(
         try {
           // in case of a failure, we remove the file
           fs.unlinkSync(outputFile);
-        } catch {}
+        } catch {
+          logger.silly(`Not able to delete ${downloadFilename}, please delete manually.`);
+        }
 
         spinner.fail();
-        reject(new Error(`Checksum mismatch! Expected ${computedHash}, got ${releaseChecksum}.`));
+        reject(new Error(`Checksum mismatch for ${binaryName}! Expected ${releaseChecksum}, got ${computedHash}.`));
       } else {
         spinner.succeed();
 
         logger.silly(`Checksum match: ${computedHash}`);
         logger.silly(`Saved binary to ${outputFile}`);
 
-        saveMetadata(releaseMetadata, outputFile, computedHash, binaryType);
+        saveMetadata(releaseMetadata, outputFile, computedHash, binaryName);
 
         resolve(outputFile);
       }
@@ -109,6 +108,7 @@ function computeChecksumfromFile(filePath: string | undefined): string {
   const buffer = fs.readFileSync(filePath);
   const hash = crypto.createHash("sha256");
   hash.update(buffer);
+
   return hash.digest("hex");
 }
 
@@ -119,35 +119,32 @@ function computeChecksumfromFile(filePath: string | undefined): string {
  * @param sha hash value
  * @param binaryType StaticSiteClient or DataApiBuilder
  */
-function saveMetadata(release: BinaryMetadata, binaryFileName: string, sha: string, binaryType: string) {
-  const downloadFolder = binaryType == "StaticSiteClient" ? DEPLOY_FOLDER : DATA_API_BUILDER_FOLDER;
-  const binaryName = binaryType == "StaticSiteClient" ? DEPLOY_BINARY_NAME : DATA_API_BUILDER_BINARY_NAME;
-  const metadataFileName = path.join(downloadFolder, `${binaryName}.json`);
-  const metdata: LocalBinaryMetadata = {
-    metadata: release,
-    binary: binaryFileName,
-    checksum: sha,
-  };
-  fs.writeFileSync(metadataFileName, JSON.stringify(metdata));
-  logger.silly(`Saved metadata to ${metadataFileName}`);
+function saveMetadata(release: BinaryMetadata, binaryFileName: string, sha: string, binaryName: string) {
+  const downloadFolder = getFolderForSavingMetadata(binaryName);
+
+  if (downloadFolder != null) {
+    const metadataFileName = path.join(downloadFolder, `${binaryName}.json`);
+    const metdata: LocalBinaryMetadata = {
+      metadata: release,
+      binary: binaryFileName,
+      checksum: sha,
+    };
+    fs.writeFileSync(metadataFileName, JSON.stringify(metdata));
+    logger.silly(`Saved metadata to ${metadataFileName}`);
+  }
 }
 
 /**
- * Returns the os of the platform
- * @returns current os
+ * Returns folder for saving binary metadata
+ * @param binaryName
+ * @returns folder
  */
-export function getPlatform(): "win-x64" | "osx-x64" | "linux-x64" | null {
-  switch (os.platform()) {
-    case "win32":
-      return "win-x64";
-    case "darwin":
-      return "osx-x64";
-    case "aix":
-    case "freebsd":
-    case "openbsd":
-    case "sunos":
-    case "linux":
-      return "linux-x64";
+function getFolderForSavingMetadata(binaryName: string): string | null {
+  switch (binaryName) {
+    case DEPLOY_BINARY_NAME:
+      return DEPLOY_FOLDER;
+    case DATA_API_BUILDER_BINARY_NAME:
+      return DATA_API_BUILDER_FOLDER;
     default:
       return null;
   }

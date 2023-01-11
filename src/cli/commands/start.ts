@@ -38,8 +38,13 @@ export default function registerCommand(program: Command) {
     .option("-i, --api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("-db, --data-api-location <path>", "the path to the dab-config file", DEFAULT_CONFIG.dataApiLocation)
     .option("-O, --output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
-    .option("-D, --app-devserver-url <url>", "connect to the app dev server at this URL instead of using output location", DEFAULT_CONFIG.appDevserverUrl)
+    .option(
+      "-D, --app-devserver-url <url>",
+      "connect to the app dev server at this URL instead of using output location",
+      DEFAULT_CONFIG.appDevserverUrl
+    )
     .option("-is, --api-devserver-url <url>", "connect to the api server at this URL instead of using api location", DEFAULT_CONFIG.apiDevserverUrl)
+    .option("-ds, --data-api-devserver-url <url>", "connect to the data-api server at this URL", DEFAULT_CONFIG.dataApiDevserverUrl)
     .option<number>("-j, --api-port <apiPort>", "the API server port passed to `func start`", parsePort, DEFAULT_CONFIG.apiPort)
     .option("-q, --host <host>", "the host address to use for the CLI dev server", DEFAULT_CONFIG.host)
     .option<number>("-p, --port <port>", "the port value to use for the CLI dev server", parsePort, DEFAULT_CONFIG.port)
@@ -108,7 +113,13 @@ swa start ./output-folder --api-location ./api
 
 Use a custom command to run framework development server at startup
 swa start http://localhost:3000 --run-build "npm start"
-// todo: add data-api documentation here
+
+Serve static content from a folder and start data-api-server from another folder
+swa start ./output-folder ----data-api-location ./dab
+
+Connect front-end to the data-api-dev-server running
+swa start ./output-folder --data-api-devserver-url http://localhost:5000
+
 Connect both front-end and the API to running development server
 swa start http://localhost:3000 --api-devserver-url http://localhost:7071
   `
@@ -197,7 +208,7 @@ export async function start(options: SWACLIConfig) {
     logger.silly(`Api Dev Server found: ${apiDevserverUrl}`);
   } else if (apiLocation) {
     // resolves to the absolute path of the apiLocation
-    let resolvedApiLocation = path.resolve(apiLocation);
+    const resolvedApiLocation = path.resolve(apiLocation);
 
     // make sure api folder exists
     if (fs.existsSync(resolvedApiLocation)) {
@@ -213,7 +224,7 @@ export async function start(options: SWACLIConfig) {
     dataApiLocation = dataApiDevserverUrl;
     logger.silly(`Data Api Dev Server found: ${dataApiDevserverUrl}`);
   } else if (dataApiLocation) {
-    let resolvedDataApiLocation = path.resolve(dataApiLocation);
+    const resolvedDataApiLocation = path.resolve(dataApiLocation);
 
     if (fs.existsSync(resolvedDataApiLocation)) {
       dataApiLocation = resolvedDataApiLocation;
@@ -304,10 +315,15 @@ export async function start(options: SWACLIConfig) {
       const dabBinary = await getDataApiBuilderBinaryPath();
 
       if (!dabBinary) {
-        logger.error(`Could not find or install Dab.exe`, true); // todo: improve error msg
+        logger.error(
+          `Could not find or install data-api-builder binary.
+        If you already have dab installed, try connecting using --data-api-devserver-url by
+        starting dab engine separately. Exiting!!`,
+          true
+        );
       } else {
         serveDataApiCommand = `cd "${dataApiLocation}" && "${dabBinary}" start -c ${DATA_API_BUILDER_DEFAULT_CONFIG_FILENAME}`;
-        dataApiPort = DEFAULT_CONFIG.dataApiPort;
+        dataApiPort = DEFAULT_CONFIG.dataApiPort; // we can't customize this port (DAB Limitation)
         startDataApiBuilderNeeded = true;
       }
     }

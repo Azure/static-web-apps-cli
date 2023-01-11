@@ -1,8 +1,10 @@
 import mockFs from "mock-fs";
 import os from "os";
 import path from "path";
+import { DEPLOY_BINARY_NAME } from "./constants";
 import { fetchClientVersionDefinition, getLocalClientMetadata } from "./deploy-client";
-import { DEPLOY_BINARY_NAME, DEPLOY_FOLDER, getPlatform } from "./download-binary-helper";
+import { DEPLOY_FOLDER } from "./download-binary-helper";
+import { getPlatform } from "./utils";
 
 jest.mock("node-fetch", () => jest.fn());
 jest.mock("os", () => ({ platform: () => "linux", homedir: () => "/home/user", tmpdir: () => "/tmp", release: () => "4.4.0-1-amd64" }));
