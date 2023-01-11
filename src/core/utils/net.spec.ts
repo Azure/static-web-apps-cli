@@ -1,6 +1,6 @@
 jest.mock("../constants", () => {});
 import { logger } from "./logger";
-import { address, hostnameToIpAdress, parsePort, parseUrl, response } from "./net";
+import { address, hostnameToIpAdress, isHttpsUrl, parsePort, parseUrl, response } from "./net";
 
 describe("net utilities", () => {
   describe("response()", () => {
@@ -308,6 +308,15 @@ describe("net utilities", () => {
     });
     it("should parse the port given in the URL", () => {
       expect(parseUrl("https://foo.com:9999")).toMatchObject({ port: 9999 });
+    });
+  });
+
+  describe("isHttpsUrl()", () => {
+    it("https url should be valid", () => {
+      expect(isHttpsUrl("https://foo.com")).toBeTrue();
+    });
+    it("http url should be invalid", () => {
+      expect(isHttpsUrl("http://foo.com")).toBeFalse();
     });
   });
 });
