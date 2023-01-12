@@ -7,24 +7,38 @@ import internalIp from "internal-ip";
 import net from "net";
 import open from "open";
 import { DEFAULT_CONFIG } from "../config";
-import { address, hostnameToIpAdress, isHttpUrl, logger, logRequest, registerProcessExit, validateDevServerConfig } from "../core";
+import { address, hostnameToIpAdress, isHttpUrl, isHttpsUrl, logger, logRequest, registerProcessExit, validateDevServerConfig } from "../core";
 import { HAS_API, IS_API_DEV_SERVER, IS_APP_DEV_SERVER, SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../core/constants";
 import { swaCLIEnv } from "../core/env";
 import { validateFunctionTriggers } from "./handlers/function.handler";
 import { handleUserConfig, onConnectionLost, requestMiddleware } from "./middlewares/request.middleware";
 
-const { SWA_CLI_PORT } = swaCLIEnv();
+const { SWA_CLI_PORT, SWA_CLI_APP_SSL } = swaCLIEnv();
 
-const proxyApp = httpProxy.createProxyServer({
-  autoRewrite: true,
-  agent: new http.Agent({
-    keepAlive: true,
-    keepAliveMsecs: 5000,
-  }),
-});
+var proxyApp: any;
 
-if (!isHttpUrl(SWA_CLI_API_URI())) {
-  logger.error(`The provided API URI ${SWA_CLI_API_URI} is not a valid. Exiting.`, true);
+if (SWA_CLI_APP_SSL === "true") {
+  proxyApp = httpProxy.createProxyServer({
+    autoRewrite: true,
+    agent: new https.Agent({
+      keepAlive: true,
+      keepAliveMsecs: 5000,
+    }),
+  });
+  if (isHttpUrl(SWA_CLI_API_URI())) {
+    logger.warn(`Please make sure you want to hit the http proxy server.`);
+  }
+} else if (SWA_CLI_APP_SSL === "false") {
+  proxyApp = httpProxy.createProxyServer({
+    autoRewrite: true,
+    agent: new http.Agent({
+      keepAlive: true,
+      keepAliveMsecs: 5000,
+    }),
+  });
+  if (isHttpsUrl(SWA_CLI_API_URI())) {
+    logger.error(`Your connection is not secure. Please start the CLI using the flag --ssl. Exiting`, true);
+  }
 }
 
 // TODO: handle multiple workflow files (see #32)

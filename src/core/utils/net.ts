@@ -67,6 +67,24 @@ export function isHttpUrl(url: string | undefined) {
 }
 
 /**
+ * Check if a given URL string is a valid https URL.
+ * @param url The URL string to check.
+ * @returns True if the URL string is a valid https URL. False otherwise.
+ */
+export function isHttpsUrl(url: string | undefined) {
+  if (!url) {
+    return false;
+  }
+
+  try {
+    const uri = new URL(url);
+    return uri.protocol.startsWith("https");
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Checks if a given server is up and accepting connection.
  * @param url An HTTP URL.
  * @param timeout Maximum time in ms to wait before exiting with failure (1) code,

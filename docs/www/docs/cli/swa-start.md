@@ -160,6 +160,10 @@ Connect both front-end and the API to running development server
 swa start http://localhost:3000 --api-devserver-url http://localhost:7071
 ```
 
+:::info Note
+To make a secure connection, hit a https dev server only if you start the CLI using the flag --ssl.
+:::
+
 ## See Also
 
 - [swa](./swa)
