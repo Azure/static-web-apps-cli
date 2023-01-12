@@ -318,5 +318,14 @@ describe("net utilities", () => {
     it("http url should be invalid", () => {
       expect(isHttpsUrl("http://foo.com")).toBeFalse();
     });
+    it("empty url should be invalid", () => {
+      expect(isHttpsUrl(undefined)).toBeFalse();
+    });
+    it("wrong Url should be invalid", () => {
+      expect(isHttpsUrl("foo.com")).toBeFalse();
+    });
+    it("url should not be case sensitive", () => {
+      expect(isHttpsUrl("HTTPS://foo.com")).toBeTrue();
+    });
   });
 });
