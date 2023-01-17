@@ -145,11 +145,13 @@ export const appFrameworks: FrameworkDefinition[] = [
   {
     id: "vite",
     name: "Vite",
-    parent: "vue",
+    overrides: ["vue", "react", "preact", "lit", "svelte", "solid"],
     packages: ["vite"],
     config: {
+      appBuildCommand: "npm run build",
       appDevserverCommand: "npm run dev",
-      appDevserverUrl: "http://localhost:3000",
+      appDevserverUrl: "http://localhost:5173",
+      outputLocation: "dist",
     },
   },
   {
@@ -440,14 +442,14 @@ export const appFrameworks: FrameworkDefinition[] = [
     config: {
       appBuildCommand: "npm run build",
       appDevserverCommand: "npm run dev",
-      appDevserverUrl: "http://localhost:3000",
+      appDevserverUrl: "http://localhost:5173",
       outputLocation: "dist",
     },
   },
   {
     id: "remix",
     name: "Remix",
-    overrides: ["react"],
+    overrides: ["react", "vite"],
     packages: ["@remix-run/node", "@remix-run/server-runtime"],
     config: {
       appBuildCommand: "npm run build",
