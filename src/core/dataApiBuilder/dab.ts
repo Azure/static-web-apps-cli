@@ -25,7 +25,7 @@ const DEFAULT_DAB_BINARY = "dab.exe";
 export async function installAndGetDataApiBuilder(): Promise<{ binaryPath: string }> {
   const platform = getPlatform();
   if (!platform) {
-    throw new Error(`Unsupported platform: ${os.platform()}`); // todo: can we write custom error messages
+    throw new Error(`Unsupported platform: ${os.platform()}`);
   }
 
   const releaseMetadata = (await getReleaseDataApiBuilderMetadata()).releaseMetadata;
@@ -71,7 +71,6 @@ async function downloadAndUnzipBinary(releaseMetadata: DataApiBuilderReleaseMeta
       );
 
       await extractBinary(zipFilePath, destDirectory);
-      // todo: delete zip file and delete older versions of dab-files
     }
     return binaryPath;
   } catch (ex) {
