@@ -141,6 +141,7 @@ function convertToCliConfig(config: FrameworkConfig): SWACLIConfig {
     apiBuildCommand: config.apiBuildCommand,
     run: config.appDevserverCommand,
     appDevserverUrl: config.appDevserverUrl,
+    apiDevserverUrl: config.apiDevserverUrl,
   };
 }
 
@@ -198,8 +199,15 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
     {
       type: "text",
       name: "appDevserverUrl",
-      message: "What is your development server url (optional)",
+      message: "What's your app development server URL (optional)",
       initial: detectedConfig.appDevserverUrl,
+      format: trimValue,
+    },
+    {
+      type: "text",
+      name: "apiDevserverUrl",
+      message: "What's your API development server URL (optional)",
+      initial: detectedConfig.apiDevserverUrl,
       format: trimValue,
     },
   ]);
@@ -216,9 +224,5 @@ function printFrameworkConfig(config: FrameworkConfig) {
   logger.log(`- API build command: ${chalk.green(config.apiBuildCommand ?? "")}`);
   logger.log(`- App dev server command: ${chalk.green(config.appDevserverCommand ?? "")}`);
   logger.log(`- App dev server URL: ${chalk.green(config.appDevserverUrl ?? "")}\n`);
+  logger.log(`- API dev server URL: ${chalk.green(config.apiDevserverUrl ?? "")}\n`);
 }
-
-// function isEmptyFolder(path: string) {
-//   const files = fs.readdirSync(path);
-//   return files.length === 0;
-// }
