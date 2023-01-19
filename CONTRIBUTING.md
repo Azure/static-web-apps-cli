@@ -362,7 +362,7 @@ Breaking Change section should start with the phrase "BREAKING CHANGE: " followe
 Similarly, a Deprecation section should start with "DEPRECATED: " followed by a short description of what is deprecated, a blank line, and a detailed description of the deprecation that also mentions the recommended update path.
 
 ### Merging Pull requests (For Code owners)
-While merging the pull requests the following guidelines should be followed
+While merging pull requests, the following guidelines should be followed:
 
 - Before merging make sure there is atleast one approval from the Code-owners.
 - While merging the changes, it is advised to "Squash and Merge" instead of "Merge" otherwise all the commits (including chore commits, nit commits, and commits to resolving conflicts) will be shown in the history of the `main` branch of the repo which makes it difficult for anyone who is using the repo to track the commits.
