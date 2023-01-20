@@ -16,7 +16,8 @@ import {
 } from "../../../core";
 import { swaCLIEnv } from "../../../core/env";
 import { getCertificate } from "../../../core/ssl";
-let packageInfo = require("../../../../package.json");
+const packageInfo = require("../../../../package.json");
+const mshaPath = require.resolve("../../../msha/server");
 
 export async function start(options: SWACLIConfig) {
   // WARNING:
@@ -237,7 +238,7 @@ export async function start(options: SWACLIConfig) {
   const env = swaCLIEnv();
   const concurrentlyCommands: CommandInfo[] = [
     // start the reverse proxy
-    { command: `node "${path.join(__dirname, "..", "..", "msha", "server.js")}"`, name: "swa", env, prefixColor: "gray.dim" },
+    { command: `node "${mshaPath}"`, name: "swa", env, prefixColor: "gray.dim" },
   ];
 
   if (isApiLocationExistsOnDisk) {
