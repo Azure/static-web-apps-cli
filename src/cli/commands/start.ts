@@ -115,7 +115,7 @@ Use a custom command to run framework development server at startup
 swa start http://localhost:3000 --run-build "npm start"
 
 Serve static content from a folder and start data-api-server from another folder
-swa start ./output-folder ----data-api-location ./dab
+swa start ./output-folder --data-api-location ./dab
 
 Connect front-end to the data-api-dev-server running
 swa start ./output-folder --data-api-devserver-url http://localhost:5000
