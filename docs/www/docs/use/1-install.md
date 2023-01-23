@@ -9,6 +9,7 @@ You can install the Static Web Apps CLI using [`npm`](https://docs.npmjs.com/cli
 :::info Note
 SWA CLI currently only supports runtime Node versions 16 and below. Kindly check and set your runtime to the same in order to have a smooth SWA CLI experience. 
 
+:::
 
 ## Installing the CLI
 
