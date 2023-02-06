@@ -3,14 +3,10 @@ import crypto from "crypto";
 import fs from "fs";
 import fetch from "node-fetch";
 import ora from "ora";
-import os from "os";
 import path from "path";
 import { PassThrough } from "stream";
-import { DATA_API_BUILDER_BINARY_NAME, DEPLOY_BINARY_NAME } from "./constants";
+import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_FOLDER, DEPLOY_BINARY_NAME, DEPLOY_FOLDER } from "./constants";
 import { logger } from "./utils";
-
-export const DEPLOY_FOLDER = path.join(os.homedir(), ".swa", "deploy");
-export const DATA_API_BUILDER_FOLDER = path.join(os.homedir(), ".swa", "dab");
 
 /**
  * Downloads the binary to the given output folder
@@ -28,7 +24,7 @@ export async function downloadAndValidateBinary(
   id: string,
   platform: "win-x64" | "osx-x64" | "linux-x64"
 ) {
-  const downloadFilename = path.basename(releaseMetadata.files[platform!].url);
+  const downloadFilename = path.basename(releaseMetadata.files[platform].url);
   const url = releaseMetadata.files[platform].url;
   const spinner = ora({ prefixText: chalk.dim.gray(`[swa]`) });
 
@@ -58,7 +54,7 @@ export async function downloadAndValidateBinary(
 
     writableStream.on("finish", async () => {
       const computedHash = computeChecksumfromFile(outputFile).toLowerCase();
-      const releaseChecksum = releaseMetadata.files[platform].sha.toLocaleLowerCase();
+      const releaseChecksum = releaseMetadata.files[platform].sha.toLowerCase();
       if (computedHash !== releaseChecksum) {
         try {
           // in case of a failure, we remove the file
@@ -80,6 +76,8 @@ export async function downloadAndValidateBinary(
         resolve(outputFile);
       }
     });
+
+    writableStream.close();
   });
 }
 

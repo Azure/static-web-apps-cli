@@ -1,12 +1,18 @@
 import path from "path";
 import { DEFAULT_CONFIG } from "../config";
 import { address, isHttpUrl } from "./utils/net";
+import os from "os";
 
 export const DEPLOY_BINARY_NAME = "StaticSitesClient";
 export const DATA_API_BUILDER_BINARY_NAME = "DataApiBuilder";
+export const DEFAULT_DAB_BINARY_WINDOWS = "dab.exe";
+export const DEFAULT_DAB_BINARY_LINUX = "dab";
+export const DEFAULT_DAB_BINARY_OSX = "dab";
 export const STATIC_SITE_CLIENT_RELEASE_METADATA_URL = "https://swalocaldeploy.azureedge.net/downloads/versions.json";
 // export const DATA_API_BUILDER_RELEASE_METADATA_URL = "https://dataapibuilder.azureedge.net/releases/dab-manifest.json";
 export const DATA_API_BUILDER_RELEASE_METADATA_URL = "https://dataapibuildertest.azureedge.net/releases/dab-manifest.json";
+export const DEPLOY_FOLDER = path.join(os.homedir(), ".swa", "deploy");
+export const DATA_API_BUILDER_FOLDER = path.join(os.homedir(), ".swa", "dab");
 export const DATA_API_BUILDER_RELEASE_TAG = "released";
 export const DATA_API_BUILDER_DEFAULT_CONFIG_FILENAME = "staticwebapp.database.config.json";
 export const DATA_API_BUILDER_DEFAULT_SCHEMA_FILENAME = "staticwebapp.database.schema.gql";

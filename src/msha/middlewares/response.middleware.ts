@@ -54,7 +54,7 @@ export function getResponse(
   }
 
   if (isDataApiRequest) {
-    if (req.url?.startsWith("/data-api")) {
+    if (req.url?.startsWith("/data-api/")) {
       req.url = req.url?.replace("/data-api", "");
     }
     handleDataApiRequest(req, res);

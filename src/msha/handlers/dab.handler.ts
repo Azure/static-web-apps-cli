@@ -43,14 +43,17 @@ export function handleDataApiRequest(req: http.IncomingMessage, res: http.Server
 }
 
 function injectHeaders(req: http.ClientRequest, host: string | undefined) {
+  const X_MS_ORIGINAL_URL_HEADER = "x-ms-original-url";
+  const X_MS_REQUEST_ID_HEADER = "x-ms-request-id";
+
   logger.silly(`injecting headers to Data-api request:`);
-  if (!req.getHeader("x-ms-original-url")) {
-    req.setHeader("x-ms-original-url", encodeURI(new URL(req.path!, host).toString()));
-    logger.silly(` - x-ms-original-url: ${chalk.yellow(req.getHeader("x-ms-original-url"))}`);
+  if (!req.getHeader(X_MS_ORIGINAL_URL_HEADER)) {
+    req.setHeader(X_MS_ORIGINAL_URL_HEADER, encodeURI(new URL(req.path!, host).toString()));
+    logger.silly(` - x-ms-original-url: ${chalk.yellow(req.getHeader(X_MS_ORIGINAL_URL_HEADER))}`);
   }
   // generate a fake correlation ID
-  req.setHeader("x-ms-request-id", `SWA-CLI-${Math.random().toString(36).substring(2).toUpperCase()}`);
-  logger.silly(` - x-ms-request-id: ${chalk.yellow(req.getHeader("x-ms-request-id"))}`);
+  req.setHeader(X_MS_REQUEST_ID_HEADER, `SWA-CLI-${Math.random().toString(36).substring(2).toUpperCase()}`);
+  logger.silly(` - x-ms-request-id: ${chalk.yellow(req.getHeader(X_MS_REQUEST_ID_HEADER))}`);
 }
 
 /**
@@ -65,28 +68,33 @@ export function isDataApiRequest(req: http.IncomingMessage, rewritePath?: string
 }
 
 function injectClientPrincipalCookies(req: http.ClientRequest) {
+  const X_MS_CLIENT_PRINCIPAL_HEADER = "X-MS-CLIENT-PRINCIPAL";
+  const AUTH_HEADER = "authorization";
+  const COOKIE_HEADER = "cookie";
+  const CLAIMS_HEADER = "claims";
+
   logger.silly(`injecting client principal to Functions request:`);
 
-  const cookie = req.getHeader("cookie") as string;
+  const cookie = req.getHeader(COOKIE_HEADER) as string;
   if (cookie && validateCookie(cookie)) {
     const user = decodeCookie(cookie);
 
     // Remove claims from client principal to match SWA behaviour. See https://github.com/MicrosoftDocs/azure-docs/issues/86803.
     // The following property deletion can be removed depending on outcome of the above issue.
     if (user) {
-      delete user["claims"];
+      delete user[CLAIMS_HEADER];
     }
 
     const buff = Buffer.from(JSON.stringify(user), "utf-8");
     const token = buff.toString("base64");
-    req.setHeader("X-MS-CLIENT-PRINCIPAL", token);
-    logger.silly(` - X-MS-CLIENT-PRINCIPAL: ${chalk.yellow(req.getHeader("X-MS-CLIENT-PRINCIPAL"))}`);
+    req.setHeader(X_MS_CLIENT_PRINCIPAL_HEADER, token);
+    logger.silly(` - X-MS-CLIENT-PRINCIPAL: ${chalk.yellow(req.getHeader(X_MS_CLIENT_PRINCIPAL_HEADER))}`);
 
     // locally, we set the JWT bearer token to be the same as the cookie value because we are not using the real auth flow.
     // Note: on production, SWA uses a valid encrypted JWT token!
-    if (!req.getHeader("authorization")) {
-      req.setHeader("authorization", `Bearer ${token}`);
-      logger.silly(` - Authorization: ${chalk.yellow(req.getHeader("authorization"))}`);
+    if (!req.getHeader(AUTH_HEADER)) {
+      req.setHeader(AUTH_HEADER, `Bearer ${token}`);
+      logger.silly(` - Authorization: ${chalk.yellow(req.getHeader(AUTH_HEADER))}`);
     }
   } else {
     logger.silly(` - no valid cookie found`);

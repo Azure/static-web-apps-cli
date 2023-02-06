@@ -2,8 +2,8 @@ import fs from "fs";
 import fetch from "node-fetch";
 import os from "os";
 import path from "path";
-import { STATIC_SITE_CLIENT_RELEASE_METADATA_URL, DEPLOY_BINARY_NAME } from "./constants";
-import { DEPLOY_FOLDER, downloadAndValidateBinary } from "./download-binary-helper";
+import { STATIC_SITE_CLIENT_RELEASE_METADATA_URL, DEPLOY_BINARY_NAME, DEPLOY_FOLDER } from "./constants";
+import { downloadAndValidateBinary } from "./download-binary-helper";
 import { swaCLIEnv } from "./env";
 import { getPlatform, logger } from "./utils";
 
