@@ -77,7 +77,7 @@ export async function downloadAndValidateBinary(
       }
     });
 
-    writableStream.close();
+    // writableStream.close();
   });
 }
 
