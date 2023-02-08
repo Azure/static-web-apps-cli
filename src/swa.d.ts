@@ -31,10 +31,12 @@ declare interface SWACLIEnv extends StaticSiteClientEnv {
   SWA_RUNTIME_WORKFLOW_LOCATION?: string;
 
   // swa start
-  SWA_CLI_API_PORT?: string;
   SWA_CLI_APP_LOCATION?: string;
   SWA_CLI_OUTPUT_LOCATION?: string;
   SWA_CLI_API_LOCATION?: string;
+  SWA_CLI_DATA_API_LOCATION?: string;
+  SWA_CLI_API_PORT?: string;
+  SWA_CLI_DATA_API_PORT?: string;
   SWA_CLI_HOST?: string;
   SWA_CLI_PORT?: string;
   SWA_CLI_APP_SSL?: string;
@@ -45,6 +47,7 @@ declare interface SWACLIEnv extends StaticSiteClientEnv {
   SWA_CLI_OPEN_BROWSER?: string;
   SWA_CLI_APP_DEVSERVER_URL?: string;
   SWA_CLI_API_DEVSERVER_URL?: string;
+  SWA_CLI_DATA_API_DEVSERVER_URL?: string;
 
   // swa deploy
   SWA_CLI_DEPLOY_DRY_RUN?: string;
@@ -126,8 +129,11 @@ declare type SWACLIStartOptions = {
   appLocation?: string;
   outputLocation?: string;
   apiLocation?: string;
+  dataApiLocation?: string;
   appDevserverUrl?: string;
   apiDevserverUrl?: string;
+  dataApiDevserverUrl?: string;
+  dataApiPort?: number;
   apiPort?: number;
   host?: string;
   port?: number;
@@ -293,3 +299,46 @@ declare interface CoreToolsZipInfo {
 }
 
 declare type NpmPackageManager = "npm" | "yarn" | "pnpm";
+
+declare type BinaryMetadata = {
+  version: "stable" | "latest";
+  files: {
+    ["linux-x64"]: {
+      url: string;
+      sha: string;
+    };
+    ["win-x64"]: {
+      url: string;
+      sha: string;
+    };
+    ["osx-x64"]: {
+      url: string;
+      sha: string;
+    };
+  };
+};
+
+declare type StaticSiteClientReleaseMetadata = BinaryMetadata & {
+  buildId: string;
+  publishDate: string;
+};
+
+declare type DataApiBuilderReleaseMetadata = BinaryMetadata & {
+  versionId: string;
+  releaseType: string;
+  releaseDate: string;
+};
+
+declare type LocalBinaryMetadata = {
+  metadata: BinaryMetadata;
+  binary: string;
+  checksum: string;
+};
+
+declare type StaticSiteClientLocalMetadata = LocalBinaryMetadata;
+declare type DataApiBuilderLocalMetadata = LocalBinaryMetadata;
+
+const binaryType = {
+  StaticSiteClient: 1,
+  DataApiBuilder: 2,
+};

@@ -395,43 +395,49 @@ describe("route utilities", () => {
     describe("isRequestMethodValid()", () => {
       const testHttpMethods = ["GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"];
       const req: Partial<http.IncomingMessage> = {};
-      function test(method: string, isFunctionRequest: boolean, isAuth: boolean, expectedValue: boolean) {
+      function test(method: string, isFunctionRequest: boolean, isAuth: boolean, isDataApiRequest: boolean, expectedValue: boolean) {
         return () => {
           req.method = method;
-          const isValid = isRequestMethodValid(req as http.IncomingMessage, isFunctionRequest, isAuth);
+          const isValid = isRequestMethodValid(req as http.IncomingMessage, isFunctionRequest, isAuth, isDataApiRequest);
           expect(isValid).toBe(expectedValue);
         };
       }
 
       it("should return false when no method is provided", () => {
-        const isValid = isRequestMethodValid(req as http.IncomingMessage, false, false);
+        const isValid = isRequestMethodValid(req as http.IncomingMessage, false, false, false);
         expect(isValid).toBe(false);
       });
 
       it("should return false when method is not valid", () => {
         req.method = "FOO";
-        const isValid = isRequestMethodValid(req as http.IncomingMessage, false, false);
+        const isValid = isRequestMethodValid(req as http.IncomingMessage, false, false, false);
         expect(isValid).toBe(false);
       });
 
       describe("when request is for static", () => {
         ["GET", "HEAD", "OPTIONS"].forEach((method) => {
-          it(`should return true when for valid method ${method}`, test(method, false, false, true));
+          it(`should return true when for valid method ${method}`, test(method, false, false, false, true));
         });
         ["POST", "DELETE", "PUT", "PATCH"].forEach((method) => {
-          it(`should return true when for invalid method ${method}`, test(method, false, false, false));
+          it(`should return true when for invalid method ${method}`, test(method, false, false, false, false));
         });
       });
 
       describe("when request is for Functions", () => {
         testHttpMethods.forEach((method) => {
-          it(`should return true when method is ${method}`, test(method, true, false, true));
+          it(`should return true when method is ${method}`, test(method, true, false, false, true));
+        });
+      });
+
+      describe("when request is for Data-api", () => {
+        testHttpMethods.forEach((method) => {
+          it(`should return true when method is ${method}`, test(method, false, false, true, true));
         });
       });
 
       describe("when request is for auth", () => {
         testHttpMethods.forEach((method) => {
-          it(`should return true when method is ${method}`, test(method, false, true, true));
+          it(`should return true when method is ${method}`, test(method, false, true, false, true));
         });
       });
     });

@@ -4,6 +4,7 @@ import { isRunningInDocker } from "./core/utils/docker";
 const {
   SWA_CLI_APP_LOCATION,
   SWA_CLI_API_LOCATION,
+  SWA_CLI_DATA_API_LOCATION,
   SWA_CLI_SERVER_TIMEOUT,
   SWA_CLI_OUTPUT_LOCATION,
   SWA_CLI_OPEN_BROWSER,
@@ -13,6 +14,7 @@ const {
   SWA_CLI_PORT,
   SWA_CLI_HOST,
   SWA_CLI_API_PORT,
+  SWA_CLI_DATA_API_PORT,
   SWA_CLI_DEBUG,
   SWA_RUNTIME_CONFIG_LOCATION,
   SWA_RUNTIME_WORKFLOW_LOCATION,
@@ -31,6 +33,7 @@ const {
   SWA_CLI_LOGIN_CLEAR_CREDENTIALS,
   SWA_CLI_APP_DEVSERVER_URL,
   SWA_CLI_API_DEVSERVER_URL,
+  SWA_CLI_DATA_API_DEVSERVER_URL,
 } = swaCLIEnv();
 
 export const DEFAULT_CONFIG: SWACLIConfig = {
@@ -38,8 +41,10 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   port: parseInt(SWA_CLI_PORT || "4280", 10),
   host: SWA_CLI_HOST || (isRunningInDocker() ? "0.0.0.0" : "localhost"),
   apiPort: parseInt(SWA_CLI_API_PORT || "7071", 10),
+  dataApiPort: parseInt(SWA_CLI_DATA_API_PORT || "5000", 10),
   appLocation: SWA_CLI_APP_LOCATION || `.`,
   apiLocation: SWA_CLI_API_LOCATION ? SWA_CLI_API_LOCATION : undefined,
+  dataApiLocation: SWA_CLI_DATA_API_LOCATION ? SWA_CLI_DATA_API_LOCATION : undefined,
   outputLocation: SWA_CLI_OUTPUT_LOCATION || `.`,
   swaConfigLocation: SWA_RUNTIME_CONFIG_LOCATION || undefined,
   ssl: useEnvVarOrUseDefault(SWA_CLI_APP_SSL, false),
@@ -57,6 +62,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   dryRun: useEnvVarOrUseDefault(SWA_CLI_DEPLOY_DRY_RUN, false),
   appDevserverUrl: SWA_CLI_APP_DEVSERVER_URL || undefined,
   apiDevserverUrl: SWA_CLI_API_DEVSERVER_URL || undefined,
+  dataApiDevserverUrl: SWA_CLI_DATA_API_DEVSERVER_URL || undefined,
 
   // swa login options
   subscriptionId: AZURE_SUBSCRIPTION_ID || undefined,
