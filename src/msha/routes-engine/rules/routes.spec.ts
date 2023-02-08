@@ -398,7 +398,7 @@ describe("route utilities", () => {
       function test(method: string, isFunctionRequest: boolean, isAuth: boolean, isDataApiRequest: boolean, expectedValue: boolean) {
         return () => {
           req.method = method;
-          const isValid = isRequestMethodValid(req as http.IncomingMessage, isFunctionRequest, isAuth, isDataApiRequest); // temp fix before writing tests
+          const isValid = isRequestMethodValid(req as http.IncomingMessage, isFunctionRequest, isAuth, isDataApiRequest);
           expect(isValid).toBe(expectedValue);
         };
       }

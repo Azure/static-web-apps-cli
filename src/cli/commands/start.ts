@@ -36,7 +36,7 @@ export default function registerCommand(program: Command) {
     .description("start the emulator from a directory or bind to a dev server")
     .option("-a, --app-location <path>", "the folder containing the source code of the front-end application", DEFAULT_CONFIG.appLocation)
     .option("-i, --api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
-    .option("-db, --data-api-location <path>", "the path to the dab-config file", DEFAULT_CONFIG.dataApiLocation)
+    .option("-db, --data-api-location <path>", "the path to the data-api config file", DEFAULT_CONFIG.dataApiLocation)
     .option("-O, --output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
     .option(
       "-D, --app-devserver-url <url>",
@@ -115,7 +115,7 @@ Use a custom command to run framework development server at startup
 swa start http://localhost:3000 --run-build "npm start"
 
 Serve static content from a folder and start data-api-server from another folder
-swa start ./output-folder --data-api-location ./dab
+swa start ./output-folder --data-api-location ./swa-db-connections
 
 Connect front-end to the data-api-dev-server running
 swa start ./output-folder --data-api-devserver-url http://localhost:5000
@@ -215,7 +215,7 @@ export async function start(options: SWACLIConfig) {
       apiLocation = resolvedApiLocation;
       logger.silly(`Api Folder found: ${apiLocation}`);
     } else {
-      logger.info(`Skipping API because folder "${resolvedApiLocation}" is missing`, "swa");
+      logger.info(`Skipping Api because folder "${resolvedApiLocation}" is missing`, "swa");
     }
   }
 
@@ -230,7 +230,7 @@ export async function start(options: SWACLIConfig) {
       dataApiLocation = resolvedDataApiLocation;
       logger.silly(`Data Api Folder found: ${dataApiLocation}`);
     } else {
-      logger.info(`Skipping Data API because folder "${resolvedDataApiLocation}" is missing`, "swa");
+      logger.info(`Skipping Data Api because folder "${resolvedDataApiLocation}" is missing`, "swa");
     }
   }
 
@@ -307,7 +307,7 @@ export async function start(options: SWACLIConfig) {
   let serveDataApiCommand = "echo 'No Data API found'. Skipping";
   let startDataApiBuilderNeeded = false;
   if (useDataApiDevServer) {
-    serveDataApiCommand = `echo using DATA API server at ${useDataApiDevServer}`;
+    serveDataApiCommand = `echo using Data API server at ${useDataApiDevServer}`;
 
     dataApiPort = parseUrl(useDataApiDevServer)?.port;
   } else {
@@ -323,7 +323,7 @@ export async function start(options: SWACLIConfig) {
         );
       } else {
         serveDataApiCommand = `cd "${dataApiLocation}" && "${dabBinary}" start -c ${DATA_API_BUILDER_DEFAULT_CONFIG_FILENAME}`;
-        dataApiPort = DEFAULT_CONFIG.dataApiPort; // we can't customize this port (DAB Limitation)
+        dataApiPort = DEFAULT_CONFIG.dataApiPort;
         startDataApiBuilderNeeded = true;
       }
     }
