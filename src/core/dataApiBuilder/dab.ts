@@ -76,9 +76,14 @@ async function downloadAndUnzipBinary(releaseMetadata: DataApiBuilderReleaseMeta
         platform
       );
 
-      // todo: check if we need to add executable permissions for Linux/mac after the dab is downloaded
       await extractBinary(zipFilePath, destDirectory);
     }
+
+    if (platform == "linux-x64" || platform == "osx-x64") {
+      logger.silly(`Setting executable permissions for data-api-builder binary`);
+      fs.chmodSync(binaryPath, 0o755);
+    }
+
     return binaryPath;
   } catch (ex) {
     logger.error(`Unable to download/extract ${DATA_API_BUILDER_BINARY_NAME} binary. Exception ${ex}`);
