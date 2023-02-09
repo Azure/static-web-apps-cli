@@ -3,9 +3,9 @@ import {
   DATA_API_BUILDER_FOLDER,
   DATA_API_BUILDER_RELEASE_METADATA_URL,
   DATA_API_BUILDER_RELEASE_TAG,
-  DEFAULT_DAB_BINARY_LINUX,
-  DEFAULT_DAB_BINARY_OSX,
-  DEFAULT_DAB_BINARY_WINDOWS,
+  DEFAULT_DATA_API_BUILDER_BINARY_LINUX,
+  DEFAULT_DATA_API_BUILDER_BINARY_OSX,
+  DEFAULT_DATA_API_BUILDER_BINARY_WINDOWS,
 } from "../constants";
 import fetch from "node-fetch";
 import { promisify } from "util";
@@ -19,7 +19,7 @@ import { getPlatform, logger } from "../utils";
 import { downloadAndValidateBinary } from "../download-binary-helper";
 
 /**
- * Gets the filepath where the dab.exe is located
+ * Gets the filepath where the Microsoft.DataApiBuilder.exe is located
  *  - Gets the latest version from the manifest file
  *  - Checks if it is installed and is latest or not already
  *  - Gets the installed path if it is already present
@@ -51,7 +51,7 @@ export async function installAndGetDataApiBuilder(): Promise<{ binaryPath: strin
   }
 
   return {
-    binaryPath: getDefaultDabBinaryForOS(platform),
+    binaryPath: getDefaultDataApiBuilderBinaryForOS(platform),
   };
 }
 
@@ -64,7 +64,7 @@ export async function installAndGetDataApiBuilder(): Promise<{ binaryPath: strin
 async function downloadAndUnzipBinary(releaseMetadata: DataApiBuilderReleaseMetadata, platform: "win-x64" | "osx-x64" | "linux-x64") {
   try {
     const destDirectory = path.join(DATA_API_BUILDER_FOLDER, releaseMetadata.versionId);
-    const binaryPath = path.join(destDirectory, getDefaultDabBinaryForOS(platform));
+    const binaryPath = path.join(destDirectory, getDefaultDataApiBuilderBinaryForOS(platform));
 
     if (!fs.existsSync(binaryPath)) {
       logger.silly(`Downloading the version ${releaseMetadata.versionId}`);
@@ -81,13 +81,13 @@ async function downloadAndUnzipBinary(releaseMetadata: DataApiBuilderReleaseMeta
     }
     return binaryPath;
   } catch (ex) {
-    logger.error(`Unable to download/extract dab binary. Exception ${ex}`);
+    logger.error(`Unable to download/extract ${DATA_API_BUILDER_BINARY_NAME} binary. Exception ${ex}`);
     return undefined;
   }
 }
 
 /**
- * Fetches the latest version, metadata of DAB.exe from DATA_API_BUILDER_RELEASE_METADATA_URL
+ * Fetches the latest version, metadata of Microsoft.DataApiBuilder.exe from DATA_API_BUILDER_RELEASE_METADATA_URL
  * @returns DataApiBuilderReleaseMetadata
  */
 async function getReleaseDataApiBuilderMetadata(): Promise<{ releaseMetadata: DataApiBuilderReleaseMetadata | undefined }> {
@@ -109,17 +109,17 @@ async function getReleaseDataApiBuilderMetadata(): Promise<{ releaseMetadata: Da
 
 /**
  * Returns if the version installed locally is latest or not
- * @param releaseVersion current released Version of the DAB.exe
+ * @param releaseVersion current released Version of the Microsoft.DataApiBuilder.exe
  * @param platform current OS
- * @returns true if latest Version of dab is installed else false
+ * @returns true if latest Version of data-api-builder is installed else false
  */
 async function isLocalVersionInstalledAndLatest(releaseVersion: string, platform: string): Promise<boolean | undefined> {
-  logger.silly(`Running dab --version ${platform}`);
-  const DEFAULT_DAB_BINARY = getDefaultDabBinaryForOS(platform);
+  logger.silly(`Running Microsoft.DataApiBuilder --version ${platform}`);
+  const DEFAULT_DATA_API_BUILDER_BINARY = getDefaultDataApiBuilderBinaryForOS(platform);
 
   try {
     // todo: fix this
-    const { stdout, stderr } = await promisify(exec)(`${DEFAULT_DAB_BINARY} --version`);
+    const { stdout, stderr } = await promisify(exec)(`${DEFAULT_DATA_API_BUILDER_BINARY} --version`);
 
     if (stderr) {
       logger.silly(stderr);
@@ -160,19 +160,19 @@ async function extractBinary(zipFilePath: string, destDirectory: string) {
 }
 
 /**
- * the DAB binary for given OS
+ * the Data-api-builder binary for given OS
  * @param platform current OS
- * @returns the DAB binary for given OS
+ * @returns the Data-api-builder binary for given OS
  */
-function getDefaultDabBinaryForOS(platform: string): string {
+function getDefaultDataApiBuilderBinaryForOS(platform: string): string {
   switch (platform) {
     case "win-x64":
-      return DEFAULT_DAB_BINARY_WINDOWS;
+      return DEFAULT_DATA_API_BUILDER_BINARY_WINDOWS;
     case "osx-x64":
-      return DEFAULT_DAB_BINARY_OSX;
+      return DEFAULT_DATA_API_BUILDER_BINARY_OSX;
     case "linux-x64":
-      return DEFAULT_DAB_BINARY_LINUX;
+      return DEFAULT_DATA_API_BUILDER_BINARY_LINUX;
     default:
-      return DEFAULT_DAB_BINARY_WINDOWS;
+      return DEFAULT_DATA_API_BUILDER_BINARY_WINDOWS;
   }
 }

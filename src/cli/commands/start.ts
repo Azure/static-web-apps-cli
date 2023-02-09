@@ -312,17 +312,17 @@ export async function start(options: SWACLIConfig) {
     dataApiPort = parseUrl(useDataApiDevServer)?.port;
   } else {
     if (dataApiLocation) {
-      const dabBinary = await getDataApiBuilderBinaryPath();
+      const dataApiBinary = await getDataApiBuilderBinaryPath();
 
-      if (!dabBinary) {
+      if (!dataApiBinary) {
         logger.error(
           `Could not find or install data-api-builder binary.
-        If you already have dab installed, try connecting using --data-api-devserver-url by
-        starting dab engine separately. Exiting!!`,
+        If you already have data-api-builder installed, try connecting using --data-api-devserver-url by
+        starting data-api-builder engine separately. Exiting!!`,
           true
         );
       } else {
-        serveDataApiCommand = `cd "${dataApiLocation}" && "${dabBinary}" start -c ${DATA_API_BUILDER_DEFAULT_CONFIG_FILENAME}`;
+        serveDataApiCommand = `cd "${dataApiLocation}" && "${dataApiBinary}" start -c ${DATA_API_BUILDER_DEFAULT_CONFIG_FILENAME}`;
         dataApiPort = DEFAULT_CONFIG.dataApiPort;
         startDataApiBuilderNeeded = true;
       }
