@@ -9,8 +9,6 @@ import { ENV_FILENAME } from "../../../core/constants";
 import { updateGitIgnore } from "../../../core/git";
 import { chooseSubscription, chooseTenant } from "../../../core/prompts";
 import { Environment } from "../../../core/swa-cli-persistence-plugin/impl/azure-environment";
-import { collectTelemetryEvent } from "../../../core/telemetry/utils";
-
 const { readFile, writeFile } = fsPromises;
 
 const defaultScope = `${Environment.AzureCloud.resourceManagerEndpointUrl}/.default`;
@@ -18,7 +16,6 @@ const defaultScope = `${Environment.AzureCloud.resourceManagerEndpointUrl}/.defa
 export async function loginCommand(options: SWACLIConfig) {
   try {
     const { credentialChain, subscriptionId } = await login(options);
-    collectTelemetryEvent("login", { subscriptionId: subscriptionId });
 
     if (credentialChain && subscriptionId) {
       logger.log(chalk.green(`✔ Successfully setup project!`));

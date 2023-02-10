@@ -52,11 +52,11 @@ export class BaseTelemetryReporter {
    * @param measurements The measurements (numeric values) to send with the event
    */
   private internalSendTelemetryException(
-    error: Error,
+    exception: Error,
     properties: TelemetryEventProperties | undefined,
     measurements: TelemetryEventMeasurements | undefined
   ): void {
-    this.telemetrySender.sendErrorData(error, { properties, measurements });
+    this.telemetrySender.sendExceptionData(exception, { properties, measurements });
   }
 
   /**
@@ -65,7 +65,7 @@ export class BaseTelemetryReporter {
    * @param properties The properties to send with the event
    * @param measurements The measurements (numeric values) to send with the event
    */
-  public sendTelemetryException(error: Error, properties?: TelemetryEventProperties, measurements?: TelemetryEventMeasurements): void {
-    this.internalSendTelemetryException(error, properties, measurements);
+  public sendTelemetryException(exception: Error, properties?: TelemetryEventProperties, measurements?: TelemetryEventMeasurements): void {
+    this.internalSendTelemetryException(exception, properties, measurements);
   }
 }

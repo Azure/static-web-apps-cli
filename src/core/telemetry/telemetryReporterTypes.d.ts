@@ -39,7 +39,7 @@ export default class TelemetryReporter {
    * @param properties The set of properties to add to the event in the form of a string key value pair
    * @param measurements The set of measurements to add to the event in the form of a string key  number value pair
    */
-  sendTelemetryException(error: Error, properties?: TelemetryEventProperties, measurements?: TelemetryEventMeasurements): void;
+  sendTelemetryException(exception: Error, properties?: TelemetryEventProperties, measurements?: TelemetryEventMeasurements): void;
 
   /**
    * Disposes of the telemetry reporter. This flushes the remaining events and disposes of the telemetry client.

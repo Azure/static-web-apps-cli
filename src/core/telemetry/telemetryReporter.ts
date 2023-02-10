@@ -17,7 +17,6 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
       appInsightsClient = new appInsights.TelemetryClient(key);
       appInsightsClient.channel.setUseDiskRetryCaching(true);
     } else {
-      console.log("setup");
       appInsights
         .setup(key)
         .setAutoCollectRequests(false)
@@ -31,7 +30,6 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
         .start();
       appInsightsClient = appInsights.defaultClient;
     }
-    console.log("created");
   } catch (e: any) {
     return Promise.reject("Failed to initialize app insights!\n" + e.message);
   }
@@ -39,7 +37,6 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
   const telemetryClient: BaseTelemetryClient = {
     logEvent: (eventName: string, data?: SenderData) => {
       try {
-        console.log("log?");
         appInsightsClient?.trackEvent({
           name: eventName,
           properties: data?.properties,
@@ -49,16 +46,15 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
         throw new Error("Failed to log event to app insights!\n" + e.message);
       }
     },
-    logError: (exceptionName: Error, data?: SenderData) => {
+    logException: (exceptionName: Error, data?: SenderData) => {
       try {
-        console.log("log?");
         appInsightsClient?.trackException({
           exception: exceptionName,
           properties: data?.properties,
           measurements: data?.measurements,
         });
       } catch (e: any) {
-        throw new Error("Failed to log event to app insights!\n" + e.message);
+        throw new Error("Failed to log exception to app insights!\n" + e.message);
       }
     },
     flush: async () => {

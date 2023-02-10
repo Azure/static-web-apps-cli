@@ -2,7 +2,7 @@ import { SenderData } from "./baseTelemetryReporter";
 
 export interface BaseTelemetryClient {
   logEvent(eventName: string, data?: SenderData): void;
-  logError(exceptionName: Error, data?: SenderData): void;
+  logException(exceptionName: Error, data?: SenderData): void;
   flush(): void | Promise<void>;
 }
 
@@ -54,14 +54,14 @@ export class BaseTelemetrySender implements TelemetrySender {
    * @param exception The exception to collect
    * @param data Data associated with the exception
    */
-  sendErrorData(exception: Error, data?: SenderData): void {
+  sendExceptionData(exception: Error, data?: SenderData): void {
     if (!this._telemetryClient) {
       if (this._instantiationStatus !== InstantiationStatus.INSTANTIATED) {
         this._exceptionQueue.push({ exception, data });
       }
       return;
     }
-    this._telemetryClient.logError(exception, data);
+    this._telemetryClient.logException(exception, data);
   }
 
   /**
@@ -81,7 +81,7 @@ export class BaseTelemetrySender implements TelemetrySender {
   private _flushQueues(): void {
     this._eventQueue.forEach(({ eventName, data }) => this.sendEventData(eventName, data));
     this._eventQueue = [];
-    this._exceptionQueue.forEach(({ exception, data }) => this.sendErrorData(exception, data));
+    this._exceptionQueue.forEach(({ exception, data }) => this.sendExceptionData(exception, data));
     this._exceptionQueue = [];
   }
 
