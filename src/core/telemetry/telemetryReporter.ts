@@ -75,6 +75,8 @@ export default class TelemetryReporter extends BaseTelemetryReporter {
       let clientFactory = (key: string) => appInsightsClientFactory(key);
       const sender = new BaseTelemetrySender(key, clientFactory);
       super(sender);
+    } else {
+      throw new Error("Please provide aiKey of your AppInsights instance!\n");
     }
   }
 }

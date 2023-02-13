@@ -10,19 +10,6 @@ export class BaseTelemetryReporter {
   constructor(private telemetrySender: BaseTelemetrySender) {
     this.telemetrySender.instantiateSender();
   }
-  /**
-   * Internal function which logs telemetry events and takes extra options.
-   * @param eventName The name of the event
-   * @param properties The properties of the event
-   * @param measurements The measurements (numeric values) to send with the event
-   */
-  private internalSendTelemetryEvent(
-    eventName: string,
-    properties: TelemetryEventProperties | undefined,
-    measurements: TelemetryEventMeasurements | undefined
-  ): void {
-    this.telemetrySender.sendEventData(eventName, { properties, measurements });
-  }
 
   /**
    * Given an event name, some properties, and measurements sends a telemetry event.
@@ -46,6 +33,30 @@ export class BaseTelemetryReporter {
   }
 
   /**
+   * Given an error, properties, and measurements. Sends an exception event
+   * @param error The error to send
+   * @param properties The properties to send with the event
+   * @param measurements The measurements (numeric values) to send with the event
+   */
+  public sendTelemetryException(exception: Error, properties?: TelemetryEventProperties, measurements?: TelemetryEventMeasurements): void {
+    this.internalSendTelemetryException(exception, properties, measurements);
+  }
+
+  /**
+   * Internal function which logs telemetry events and takes extra options.
+   * @param eventName The name of the event
+   * @param properties The properties of the event
+   * @param measurements The measurements (numeric values) to send with the event
+   */
+  private internalSendTelemetryEvent(
+    eventName: string,
+    properties: TelemetryEventProperties | undefined,
+    measurements: TelemetryEventMeasurements | undefined
+  ): void {
+    this.telemetrySender.sendEventData(eventName, { properties, measurements });
+  }
+
+  /**
    * Internal function which logs telemetry exceptions and takes extra options
    * @param error: The error to send
    * @param properties The properties of the event
@@ -57,15 +68,5 @@ export class BaseTelemetryReporter {
     measurements: TelemetryEventMeasurements | undefined
   ): void {
     this.telemetrySender.sendExceptionData(exception, { properties, measurements });
-  }
-
-  /**
-   * Given an error, properties, and measurements. Sends an exception event
-   * @param error The error to send
-   * @param properties The properties to send with the event
-   * @param measurements The measurements (numeric values) to send with the event
-   */
-  public sendTelemetryException(exception: Error, properties?: TelemetryEventProperties, measurements?: TelemetryEventMeasurements): void {
-    this.internalSendTelemetryException(exception, properties, measurements);
   }
 }

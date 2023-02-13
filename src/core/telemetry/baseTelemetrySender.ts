@@ -76,16 +76,6 @@ export class BaseTelemetrySender implements TelemetrySender {
   }
 
   /**
-   * Flushes the queued events that existed before the client was instantiated
-   */
-  private _flushQueues(): void {
-    this._eventQueue.forEach(({ eventName, data }) => this.sendEventData(eventName, data));
-    this._eventQueue = [];
-    this._exceptionQueue.forEach(({ exception, data }) => this.sendExceptionData(exception, data));
-    this._exceptionQueue = [];
-  }
-
-  /**
    * Instantiates the telemetry client to make the sender "active"
    */
   instantiateSender(): void {
@@ -103,5 +93,15 @@ export class BaseTelemetrySender implements TelemetrySender {
       .catch((err) => {
         throw new Error("Failed to instantiate app insights client factory!\n" + err.message);
       });
+  }
+
+  /**
+   * Flushes the queued events that existed before the client was instantiated
+   */
+  private _flushQueues(): void {
+    this._eventQueue.forEach(({ eventName, data }) => this.sendEventData(eventName, data));
+    this._eventQueue = [];
+    this._exceptionQueue.forEach(({ exception, data }) => this.sendExceptionData(exception, data));
+    this._exceptionQueue = [];
   }
 }
