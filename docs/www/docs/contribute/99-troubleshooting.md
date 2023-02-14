@@ -66,7 +66,7 @@ It can happen that the host firewall can block downloading these binaries. If us
 ```json
 {
   "version": "stable",
-  "buildId": "<Version of the StaticSiteClient>",
+  "buildId": "<StaticSiteClient version>",
   "publishDate": "<publishDate>",
   "files": {
     "linux-x64": {
@@ -115,7 +115,7 @@ For example:
 }
 ```
 
-**IMPORTANT: Make sure the `StaticSitesClient.json#checksum` and `StaticSitesClient.json#metadata.files.[OS].sha` values match!** 6. For Linux and macOS, run `chmod +x /home/USER/.swa/deploy/<Version of the StaticSiteClient>/StaticSitesClient` 7. Run `swa deploy --verbose silly` and make sure `SWA_CLI_DEPLOY_BINARY` is set correctly. If everything was configured correctly, the deploy should work.
+**IMPORTANT: Make sure the `StaticSitesClient.json#checksum` and `StaticSitesClient.json#metadata.files.[OS].sha` values match!** 6. For Linux and macOS, run `chmod +x /home/USER/.swa/deploy/<StaticSiteClient version>/StaticSitesClient` 7. Run `swa deploy --verbose silly` and make sure `SWA_CLI_DEPLOY_BINARY` is set correctly. If everything was configured correctly, the deploy should work.
 
 How to compute SHA256 checksum:
 
