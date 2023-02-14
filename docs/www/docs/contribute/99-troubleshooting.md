@@ -66,31 +66,31 @@ It can happen that the host firewall can block downloading these binaries. If us
 ```json
 {
   "version": "stable",
-  "buildId": "1.0.020761",
-  "publishDate": "2022-09-07T17:34:35.4261936Z",
+  "buildId": "<StaticSiteClient version>",
+  "publishDate": "<publishDate>",
   "files": {
     "linux-x64": {
-      "url": "https://swalocaldeploy.azureedge.net/downloads/1.0.020761/linux/StaticSitesClient",
-      "sha": "871ae9f154ddb8123e24c507e39dfc11c99f34815e59b178051a6e44a870e308"
+      "url": "https://swalocaldeploy.azureedge.net/downloads/<StaticSitesClient version>/linux/StaticSitesClient",
+      "sha": "<Hash value of the StaticSitesClient Linux Binary>"
     },
     "win-x64": {
-      "url": "https://swalocaldeploy.azureedge.net/downloads/1.0.020761/windows/StaticSitesClient.exe",
-      "sha": "360b76959c68cc0865b1aea144c8eb2aa413f4856e55c781a83bd7e1ad352362"
+      "url": "https://swalocaldeploy.azureedge.net/downloads/<StaticSitesClient version>/windows/StaticSitesClient.exe",
+      "sha": "<Hash value of the StaticSitesClient Windows Binary>"
     },
     "osx-x64": {
-      "url": "https://swalocaldeploy.azureedge.net/downloads/1.0.020761/macOS/StaticSitesClient",
-      "sha": "1a90511003609af378ff3628feaf3115f9d7e335085a925045e9f206359fdb90"
+      "url": "https://swalocaldeploy.azureedge.net/downloads/<StaticSitesClient version>/macOS/StaticSitesClient",
+      "sha": "<Hash value of the StaticSitesClient MacOS Binary>"
     }
   }
 }
 ```
 
 3. Based on your operating system, download the right binary from the provided URLs:
-   1. Linux: https://swalocaldeploy.azureedge.net/downloads/1.0.020761/linux/StaticSitesClient
-   2. Windows: https://swalocaldeploy.azureedge.net/downloads/1.0.020761/windows/StaticSitesClient.exe
-   3. macOS: https://swalocaldeploy.azureedge.net/downloads/1.0.020761/macOS/StaticSitesClient
+   1. Linux: https://swalocaldeploy.azureedge.net/downloads/<StaticSitesClient version>/linux/StaticSitesClient
+   2. Windows: https://swalocaldeploy.azureedge.net/downloads/<StaticSitesClient version>/windows/StaticSitesClient.exe
+   3. macOS: https://swalocaldeploy.azureedge.net/downloads/<StaticSitesClient version>/macOS/StaticSitesClient
 1. Copy this binary to `$HOME/.swa/deploy/VERSION/StaticSiteClient` (add `.exe` for Windows). For eg:
-   `/home/USER/.swa/deploy/1.0.020761/StaticSiteClient`
+   `/home/USER/.swa/deploy/<StaticSitesClient version>/StaticSiteClient`
 1. Create a file at `$HOME/.swa/deploy/StaticSitesClient.json` with the following content:
 
 ```json
@@ -101,7 +101,7 @@ It can happen that the host firewall can block downloading these binaries. If us
 }
 ```
 
-For eg:
+For example:
 
 ```json
 {
@@ -111,11 +111,11 @@ For eg:
     ...
   },
    "binary":"/home/USER/.swa/deploy/1.0.020761/StaticSitesClient",
-   "checksum": SH256 CHECKSUM OF THE BINARY SEE BELOW
+   "checksum": "360b76959c68cc0865b1aea144c8eb2aa413f4856e55c781a83bd7e1ad352362"
 }
 ```
 
-**IMPORTANT: Make sure the `StaticSitesClient.json#checksum` and `StaticSitesClient.json#metadata.files.[OS].sha` values match!** 6. For Linux and macOS, run `chmod +x /home/USER/.swa/deploy/1.0.020761/StaticSitesClient` 7. Run `swa deploy --verbose silly` and make sure `SWA_CLI_DEPLOY_BINARY` is set correctly. If everything was configured correctly, the deploy should work.
+**IMPORTANT: Make sure the `StaticSitesClient.json#checksum` and `StaticSitesClient.json#metadata.files.[OS].sha` values match!** 6. For Linux and macOS, run `chmod +x /home/USER/.swa/deploy/<StaticSiteClient version>/StaticSitesClient` 7. Run `swa deploy --verbose silly` and make sure `SWA_CLI_DEPLOY_BINARY` is set correctly. If everything was configured correctly, the deploy should work.
 
 How to compute SHA256 checksum:
 
