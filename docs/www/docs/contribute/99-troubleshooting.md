@@ -70,27 +70,27 @@ It can happen that the host firewall can block downloading these binaries. If us
   "publishDate": "<publishDate>",
   "files": {
     "linux-x64": {
-      "url": "https://swalocaldeploy.azureedge.net/downloads/<Version of the StaticSiteClient>/linux/StaticSitesClient",
-      "sha": "<Hash value of the Linux Binary>"
+      "url": "https://swalocaldeploy.azureedge.net/downloads/<StaticSitesClient version>/linux/StaticSitesClient",
+      "sha": "<Hash value of the StaticSitesClient Linux Binary>"
     },
     "win-x64": {
-      "url": "https://swalocaldeploy.azureedge.net/downloads/<Version of the StaticSiteClient>/windows/StaticSitesClient.exe",
-      "sha": "<Hash value of the Windows Binary>"
+      "url": "https://swalocaldeploy.azureedge.net/downloads/<StaticSitesClient version>/windows/StaticSitesClient.exe",
+      "sha": "<Hash value of the StaticSitesClient Windows Binary>"
     },
     "osx-x64": {
-      "url": "https://swalocaldeploy.azureedge.net/downloads/<Version of the StaticSiteClient>/macOS/StaticSitesClient",
-      "sha": "<Hash value of the MacOS Binary>"
+      "url": "https://swalocaldeploy.azureedge.net/downloads/<StaticSitesClient version>/macOS/StaticSitesClient",
+      "sha": "<Hash value of the StaticSitesClient MacOS Binary>"
     }
   }
 }
 ```
 
 3. Based on your operating system, download the right binary from the provided URLs:
-   1. Linux: https://swalocaldeploy.azureedge.net/downloads/<Version of the StaticSiteClient>/linux/StaticSitesClient
-   2. Windows: https://swalocaldeploy.azureedge.net/downloads/<Version of the StaticSiteClient>/windows/StaticSitesClient.exe
-   3. macOS: https://swalocaldeploy.azureedge.net/downloads/<Version of the StaticSiteClient>/macOS/StaticSitesClient
+   1. Linux: https://swalocaldeploy.azureedge.net/downloads/<StaticSitesClient version>/linux/StaticSitesClient
+   2. Windows: https://swalocaldeploy.azureedge.net/downloads/<StaticSitesClient version>/windows/StaticSitesClient.exe
+   3. macOS: https://swalocaldeploy.azureedge.net/downloads/<StaticSitesClient version>/macOS/StaticSitesClient
 1. Copy this binary to `$HOME/.swa/deploy/VERSION/StaticSiteClient` (add `.exe` for Windows). For eg:
-   `/home/USER/.swa/deploy/<Version of the StaticSiteClient>/StaticSiteClient`
+   `/home/USER/.swa/deploy/<StaticSitesClient version>/StaticSiteClient`
 1. Create a file at `$HOME/.swa/deploy/StaticSitesClient.json` with the following content:
 
 ```json
