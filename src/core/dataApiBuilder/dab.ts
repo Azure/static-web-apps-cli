@@ -1,5 +1,6 @@
 import {
   DATA_API_BUILDER_BINARY_NAME,
+  DATA_API_BUILDER_COMMAND,
   DATA_API_BUILDER_FOLDER,
   DATA_API_BUILDER_RELEASE_METADATA_URL,
   DATA_API_BUILDER_RELEASE_TAG,
@@ -38,7 +39,7 @@ export async function installAndGetDataApiBuilder(): Promise<{ binaryPath: strin
   if (releaseMetadata === undefined) {
     throw new Error(`Could not load ${DATA_API_BUILDER_BINARY_NAME} metadata from remote. Please check your internet connection.`); // should we throw error and stop or can we allow users to use local version
   }
-  const isLatestVersionInstalled = await isLocalVersionInstalledAndLatest(releaseMetadata.versionId, platform);
+  const isLatestVersionInstalled = await isLocalVersionInstalledAndLatest(releaseMetadata.versionId);
 
   if (!isLatestVersionInstalled) {
     const binaryPath = await downloadAndUnzipBinary(releaseMetadata, platform);
@@ -51,7 +52,7 @@ export async function installAndGetDataApiBuilder(): Promise<{ binaryPath: strin
   }
 
   return {
-    binaryPath: getDefaultDataApiBuilderBinaryForOS(platform),
+    binaryPath: DATA_API_BUILDER_COMMAND,
   };
 }
 
@@ -118,32 +119,18 @@ async function getReleaseDataApiBuilderMetadata(): Promise<{ releaseMetadata: Da
  * @param platform current OS
  * @returns true if latest Version of data-api-builder is installed else false
  */
-async function isLocalVersionInstalledAndLatest(releaseVersion: string, platform: string): Promise<boolean | undefined> {
-  logger.silly(`Running Microsoft.DataApiBuilder --version ${platform}`);
-  const DEFAULT_DATA_API_BUILDER_BINARY = getDefaultDataApiBuilderBinaryForOS(platform);
+async function isLocalVersionInstalledAndLatest(releaseVersion: string): Promise<boolean | undefined> {
+  logger.silly(`Running ${DATA_API_BUILDER_COMMAND} --version`);
 
-  try {
-    // todo: fix this
-    const { stdout, stderr } = await promisify(exec)(`${DEFAULT_DATA_API_BUILDER_BINARY} --version`);
+  const versionInstalled = await getInstalledVersion(DATA_API_BUILDER_COMMAND);
 
-    if (stderr) {
-      logger.silly(stderr);
-      return undefined;
-    }
-    logger.silly(stdout);
-    const version = stdout.split(" ")[1].split("\r")[0];
-
-    return version === releaseVersion;
-  } catch (ex: any) {
-    logger.silly(ex.stdout);
-    // currently we're catching the version from this exception here
-    try {
-      const version = ex.stdout.split(" ")[1].split("\r")[0];
-      return version === releaseVersion;
-    } catch (ex) {
-      return false;
-    }
+  if (versionInstalled) {
+    logger.silly(`Installed version: ${versionInstalled}`);
+    return versionInstalled == releaseVersion;
   }
+
+  logger.silly(`${DATA_API_BUILDER_COMMAND} is not installed.`);
+  return undefined;
 }
 
 /**
@@ -179,5 +166,22 @@ function getDefaultDataApiBuilderBinaryForOS(platform: string): string {
       return DEFAULT_DATA_API_BUILDER_BINARY_LINUX;
     default:
       return DEFAULT_DATA_API_BUILDER_BINARY_WINDOWS;
+  }
+}
+
+/**
+ * Returns installed version if installed else undefined
+ * @param command package to know the version
+ * @returns installed version
+ */
+async function getInstalledVersion(command: string): Promise<string | undefined> {
+  // todo: refactor this and put at a common place to be usable for both functions and dab
+  try {
+    const { stdout } = await promisify(exec)(`${command} --version`);
+    const version = stdout.split(" ")[1].split("\r")[0];
+
+    return version;
+  } catch {
+    return undefined;
   }
 }

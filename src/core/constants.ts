@@ -5,6 +5,7 @@ import os from "os";
 
 export const DEPLOY_BINARY_NAME = "StaticSitesClient";
 export const DATA_API_BUILDER_BINARY_NAME = "DataApiBuilder";
+export const DATA_API_BUILDER_COMMAND = "dab";
 export const DEFAULT_DATA_API_BUILDER_BINARY_WINDOWS = "Microsoft.DataApiBuilder.exe";
 export const DEFAULT_DATA_API_BUILDER_BINARY_LINUX = "Microsoft.DataApiBuilder";
 export const DEFAULT_DATA_API_BUILDER_BINARY_OSX = "Microsoft.DataApiBuilder";
