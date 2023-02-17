@@ -49,9 +49,9 @@ export async function telemetry(options: SWACLIConfig) {
     }
   } else if (!disable && !enable && status) {
     if (process.env.SWA_DISABLE_TELEMETRY == "true") {
-      logger.log("You are currently opted out of sending telemetry!");
+      logger.log("Telemetry capturing is disabled.");
     } else {
-      logger.log("You opted to send the telemetry!");
+      logger.log("Telemetry capturing is enabled.");
     }
   }
 }

@@ -6,7 +6,7 @@ export default function registerCommand(program: Command) {
   program
     .command("telemetry")
     .usage("[options]")
-    .description("telemetry")
+    .description("enable/disable SWA CLI telemetry capturing")
     .option("-dt, --disable", "opt out of telemetry", undefined)
     .option("-et, --enable", "opt in telemetry", undefined)
     .option("-st, --status", "status of telemetry", undefined)
