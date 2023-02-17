@@ -24,7 +24,7 @@ import {
   readWorkflowFile,
 } from "../../core";
 import { DATA_API_BUILDER_DEFAULT_CONFIG_FILENAME } from "../../core/constants";
-import { getDataApiBuilderBinaryPath } from "../../core/dataApiBuilder/dab-main";
+import { getDataApiBuilderBinaryPath } from "../../core/dataApiBuilder";
 import { swaCLIEnv } from "../../core/env";
 import { getCertificate } from "../../core/ssl";
 let packageInfo = require("../../../package.json");

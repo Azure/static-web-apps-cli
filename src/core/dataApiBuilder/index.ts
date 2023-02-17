@@ -8,7 +8,7 @@ import { installAndGetDataApiBuilder } from "./dab";
 
 export async function getDataApiBuilderBinaryPath(): Promise<string> {
   const binary = await installAndGetDataApiBuilder();
-  logger.silly(`${DATA_API_BUILDER_BINARY_NAME} found at ${binary.binaryPath}`);
+  logger.silly(`${DATA_API_BUILDER_BINARY_NAME} found: ${binary.binaryPath}. Using this to start data-api server`);
 
   return binary.binaryPath;
 }
