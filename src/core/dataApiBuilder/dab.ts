@@ -120,8 +120,6 @@ async function getReleaseDataApiBuilderMetadata(): Promise<{ releaseMetadata: Da
  * @returns true if latest Version of data-api-builder is installed else false
  */
 async function isLocalVersionInstalledAndLatest(releaseVersion: string): Promise<boolean | undefined> {
-  logger.silly(`Running ${DATA_API_BUILDER_COMMAND} --version`);
-
   const versionInstalled = await getInstalledVersion(DATA_API_BUILDER_COMMAND);
 
   if (versionInstalled) {
@@ -174,11 +172,12 @@ function getDefaultDataApiBuilderBinaryForOS(platform: string): string {
  * @param command package to know the version
  * @returns installed version
  */
-async function getInstalledVersion(command: string): Promise<string | undefined> {
-  // todo: refactor this and put at a common place to be usable for both functions and dab
+async function getInstalledVersion(command: "dab"): Promise<string | undefined> {
+  logger.silly(`Running ${DATA_API_BUILDER_COMMAND} --version`);
+
   try {
     const { stdout } = await promisify(exec)(`${command} --version`);
-    const version = stdout.split(" ")[1].split("\r")[0];
+    const version = stdout.split(" ")[1].split("\r")[0]; // parsing output which looks like this "Microsoft.DataApiBuilder 0.5.0" (specific to dab)
 
     return version;
   } catch {
