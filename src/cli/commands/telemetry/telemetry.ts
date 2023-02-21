@@ -1,14 +1,15 @@
-import { logger } from "../../../core";
-import path from "path";
+import chalk from "chalk";
 import dotenv from "dotenv";
+import os from "os";
+import path from "path";
+import { logger } from "../../../core";
 import { ENV_FILENAME } from "../../../core/constants";
-import { updateGitIgnore } from "../../../core/git";
 import { existsSync, promises as fsPromises } from "fs";
 const { readFile, writeFile } = fsPromises;
 
 export async function telemetry(options: SWACLIConfig) {
-  let { disable, enable, status } = options;
-  const envFile = path.join(process.cwd(), ENV_FILENAME);
+  const { disable, enable, status } = options;
+  const envFile = path.join(os.homedir(), ".swa", ENV_FILENAME);
   const envFileExists = existsSync(envFile);
   const envFileContent = envFileExists ? await readFile(envFile, "utf8") : "";
   const buf = Buffer.from(envFileContent);
@@ -19,7 +20,8 @@ export async function telemetry(options: SWACLIConfig) {
   const newEnvFileLines = [];
 
   if ((disable || enable) && !status) {
-    let disableTelemetryStatus = undefined;
+    //telemetry capturing is enabled by default
+    let disableTelemetryStatus = "false";
     if (disable && enable == undefined) {
       disableTelemetryStatus = "true";
     } else if (disable == undefined && enable) {
@@ -28,27 +30,24 @@ export async function telemetry(options: SWACLIConfig) {
       logger.warn("The flags --disable and --enable can't be used at the same time!");
     }
 
-    let entry = `SWA_DISABLE_TELEMETRY=${disableTelemetryStatus}`;
+    const entry = `SWA_DISABLE_TELEMETRY=${disableTelemetryStatus}`;
 
-    if (disableTelemetryStatus) {
-      if (!envFileContent.includes("SWA_DISABLE_TELEMETRY")) {
-        newEnvFileLines.push(entry);
-      } else {
-        const index = oldEnvFileLines.indexOf(`SWA_DISABLE_TELEMETRY=${process.env.SWA_DISABLE_TELEMETRY}`);
-        oldEnvFileLines.splice(index, 1);
-        newEnvFileLines.push(entry);
-      }
+    if (!envFileContent.includes("SWA_DISABLE_TELEMETRY")) {
+      newEnvFileLines.push(entry);
+    } else {
+      const index = oldEnvFileLines.indexOf(`SWA_DISABLE_TELEMETRY=${config["SWA_DISABLE_TELEMETRY"]}`);
+      oldEnvFileLines.splice(index, 1);
+      newEnvFileLines.push(entry);
     }
 
     // write file if we have at least one new env line
     if (newEnvFileLines.length > 0) {
       const envFileContentWithProjectDetails = [...oldEnvFileLines, ...newEnvFileLines].join("\n");
       await writeFile(envFile, envFileContentWithProjectDetails);
-
-      await updateGitIgnore(ENV_FILENAME);
+      logger.log(chalk.green(`✔ Saved Telemetry setting in ${ENV_FILENAME} file at ${path.join(os.homedir(), ".swa")}`));
     }
   } else if (!disable && !enable && status) {
-    if (process.env.SWA_DISABLE_TELEMETRY == "true") {
+    if (config["SWA_DISABLE_TELEMETRY"] == "true") {
       logger.log("Telemetry capturing is disabled.");
     } else {
       logger.log("Telemetry capturing is enabled.");
