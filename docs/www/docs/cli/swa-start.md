@@ -151,7 +151,7 @@ swa start ./output-folder --api-location ./api
 Use a custom command to run framework development server at startup
 
 ```bash
-swa start http://localhost:3000 --run-build "npm start"
+swa start http://localhost:3000 --run "npm start"
 ```
 
 Connect both front-end and the API to running development server
