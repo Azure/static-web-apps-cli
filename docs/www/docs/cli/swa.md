@@ -62,4 +62,4 @@ That's it!
 - [swa login](../cli/swa-login)
 - [swa deploy](../cli/swa-deploy)
 - [Configuring CLI](../cli/swa-config)
-- [Environment Vars](../cli/swa-deploy)
+- [Environment Vars](../cli/env-vars)
