@@ -187,7 +187,7 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
         { title: "Node.js", value: "node" },
         { title: "Python", value: "python" },
         { title: "Dotnet", value: "dotnet" },
-        { title: "Dotnet isolated", value: "dotnet-isolated" },
+        { title: "Dotnet isolated", value: "dotnetisolated" },
       ],
     },
     {
