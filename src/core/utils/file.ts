@@ -1,7 +1,11 @@
-import { promises as fs } from "fs";
+import dotenv from "dotenv";
+import { existsSync, promises as fs } from "fs";
+import os from "os";
 import path from "path";
 import { logger } from "./logger";
+import { ENV_FILENAME } from "./../constants";
 import { stripJsonComments } from "./strings";
+const { readFile } = fs;
 
 export async function safeReadJson(path: string): Promise<JsonData | undefined> {
   try {
@@ -59,4 +63,15 @@ export async function findUpPackageJsonDir(rootPath: string, startPath: string):
 
   const components = startPath.split(/[/\\]/).filter((c) => c);
   return find(components);
+}
+
+export async function readCLIEnvFile() {
+  const envFile = path.join(os.homedir(), ".swa", ENV_FILENAME);
+  const envFileExists = existsSync(envFile);
+  const envFileContent = envFileExists ? await readFile(envFile, "utf8") : "";
+
+  // in case the .env file format changes in the future, we can use the following to parse the file
+  const buf = Buffer.from(envFileContent);
+  const config = dotenv.parse(buf);
+  return config;
 }
