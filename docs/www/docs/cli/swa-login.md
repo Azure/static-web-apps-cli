@@ -53,7 +53,7 @@ swa login --tenant-id 00000000-0000-0000-0000-000000000000
 Log in using a specific subscription, resource group or an application
 
 ```bash
-swa login --subscription my-subscription \
+swa login --subscription-id my-subscription \
           --resource-group my-resource-group \
           --app-name my-static-site
 ```

@@ -1,6 +1,6 @@
 {
   "name": "@azure/static-web-apps-cli",
-  "version": "1.0.4-alpha",
+  "version": "1.0.7-alpha",
   "description": "Azure Static Web Apps CLI",
   "scripts": {
     "test": "jest --detectOpenHandles --silent --verbose",
@@ -31,7 +31,7 @@
     "@azure/arm-appservice": "^12.0.0",
     "@azure/arm-resources": "^5.0.1",
     "@azure/arm-subscriptions": "^5.0.0",
-    "@azure/identity": "^2.0.4",
+    "@azure/identity": "^3.1.2",
     "@azure/msal-common": "^6.2.0",
     "ajv": "^8.11.0",
     "ajv-draft-04": "^1.0.0",

@@ -1,19 +1,19 @@
 import child_process from "child_process";
 import mockFs from "mock-fs";
 import path from "path";
-import { logger } from "../../core";
-import * as accountModule from "../../core/account";
-import * as deployClientModule from "../../core/deploy-client";
+import { logger } from "../../../core";
+import * as accountModule from "../../../core/account";
+import * as deployClientModule from "../../../core/deploy-client";
 import { deploy } from "./deploy";
-import * as loginModule from "./login";
+import * as loginModule from "../login/login";
 
-const pkg = require(path.join(__dirname, "..", "..", "..", "package.json"));
+const pkg = require(path.join(__dirname, "..", "..", "..", "..", "package.json"));
 
 jest.mock("ora", () => {
   return jest.fn();
 });
 
-jest.mock("../../core/utils/logger", () => {
+jest.mock("../../../core/utils/logger", () => {
   return {
     logger: {
       error: jest.fn(),
