@@ -3,7 +3,7 @@ import chalk from "chalk";
 import dotenv from "dotenv";
 import { existsSync, promises as fsPromises } from "fs";
 import path from "path";
-import { logger, logGiHubIssueMessageAndExit } from "../../../core";
+import { logger, logGitHubIssueMessageAndExit } from "../../../core";
 import { authenticateWithAzureIdentity, listSubscriptions, listTenants } from "../../../core/account";
 import { ENV_FILENAME } from "../../../core/constants";
 import { updateGitIgnore } from "../../../core/git";
@@ -21,11 +21,11 @@ export async function loginCommand(options: SWACLIConfig) {
       logger.log(chalk.green(`✔ Successfully setup project!`));
     } else {
       logger.log(chalk.red(`✘ Failed to setup project!`));
-      logGiHubIssueMessageAndExit();
+      logGitHubIssueMessageAndExit();
     }
   } catch (error) {
     logger.error(`Failed to setup project: ${(error as any).message}`);
-    logGiHubIssueMessageAndExit();
+    logGitHubIssueMessageAndExit();
   }
 }
 

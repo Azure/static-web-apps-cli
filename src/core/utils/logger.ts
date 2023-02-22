@@ -133,7 +133,7 @@ export function logRequest(req: http.IncomingMessage, target: string = "", statu
   }
 }
 
-export function logGiHubIssueMessageAndExit() {
+export function logGitHubIssueMessageAndExit() {
   logger.log(``);
   logger.error(
     "If you believe this behavior is unexpected, please raise a GitHub issue at:\n  https://github.com/Azure/static-web-apps-cli/issues/new/choose",

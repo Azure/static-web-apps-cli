@@ -21,7 +21,7 @@ jest.mock("../../../core/utils/logger", () => {
       warn: jest.fn(),
       silly: jest.fn(),
     },
-    logGiHubIssueMessageAndExit: jest.fn(),
+    logGitHubIssueMessageAndExit: jest.fn(),
   };
 });
 
