@@ -49,6 +49,6 @@ export async function telemetry(options: SWACLIConfig) {
       logger.log("Telemetry capturing is enabled.");
     }
   } else {
-    logger.warn("The flags --disable and --enable can't be used alongside the flag --status!");
+    logger.warn("The flag --status can't be used alongside the flags --disable and --enable!");
   }
 }

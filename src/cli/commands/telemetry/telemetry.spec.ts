@@ -77,18 +77,18 @@ describe("swa telemetry", () => {
   it("should warn when both --enable and --status flags are used", async () => {
     mockFs();
     await telemetry({ enable: true, status: true });
-    expect(logger.warn).toHaveBeenNthCalledWith(1, "The flags --disable and --enable can't be used alongside the flag --status!");
+    expect(logger.warn).toHaveBeenNthCalledWith(1, "The flag --status can't be used alongside the flags --disable and --enable!");
   });
 
   it("should warn when both --disable and --status flags are used", async () => {
     mockFs();
     await telemetry({ disable: true, status: true });
-    expect(logger.warn).toHaveBeenNthCalledWith(1, "The flags --disable and --enable can't be used alongside the flag --status!");
+    expect(logger.warn).toHaveBeenNthCalledWith(1, "The flag --status can't be used alongside the flags --disable and --enable!");
   });
 
   it("should warn when all 3 --disable, --enable and --status flags are used", async () => {
     mockFs();
     await telemetry({ enable: true, disable: true, status: true });
-    expect(logger.warn).toHaveBeenNthCalledWith(1, "The flags --disable and --enable can't be used alongside the flag --status!");
+    expect(logger.warn).toHaveBeenNthCalledWith(1, "The flag --status can't be used alongside the flags --disable and --enable!");
   });
 });
