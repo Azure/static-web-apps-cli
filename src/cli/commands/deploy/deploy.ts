@@ -7,7 +7,7 @@ import {
   findSWAConfigFile,
   getCurrentSwaCliConfigFromFile,
   logger,
-  logGiHubIssueMessageAndExit,
+  logGitHubIssueMessageAndExit,
   readWorkflowFile,
   updateSwaCliConfigFile,
 } from "../../../core";
@@ -289,7 +289,7 @@ export async function deploy(options: SWACLIConfig) {
     logger.error(
       `For further information, please visit the Azure Static Web Apps documentation at https://docs.microsoft.com/azure/static-web-apps/`
     );
-    logGiHubIssueMessageAndExit();
+    logGitHubIssueMessageAndExit();
   } finally {
     cleanUp();
   }
