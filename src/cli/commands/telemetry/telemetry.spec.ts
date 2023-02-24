@@ -35,7 +35,7 @@ describe("swa telemetry", () => {
     const envFileContent = fs.readFileSync(envFile, "utf-8");
 
     expect(envFileContent).toMatchSnapshot(`
-        "SWA_DISABLE_TELEMETRY=true"
+        "SWA_CLI_CAPTURE_TELEMETRY=false"
         `);
   });
 
@@ -50,7 +50,7 @@ describe("swa telemetry", () => {
     const envFileContent = fs.readFileSync(envFile, "utf-8");
 
     expect(envFileContent).toMatchSnapshot(`
-        "SWA_DISABLE_TELEMETRY=false"
+        "SWA_CLI_CAPTURE_TELEMETRY=true"
         `);
   });
 
@@ -59,36 +59,23 @@ describe("swa telemetry", () => {
     expect(logger.log).toHaveBeenNthCalledWith(5, "Telemetry capturing is enabled.");
   });
 
-  it("should disable telemetry when both --enable and --disable flags are used", async () => {
+  it("should warn when both --enable and --disable flags are used", async () => {
     await telemetry({ disable: true, enable: true });
-    const envFile = path.join(os.homedir(), ".swa", ENV_FILENAME);
-    const envFileContent = fs.readFileSync(envFile, "utf-8");
-
-    expect(envFileContent).toMatchSnapshot(`
-        "SWA_DISABLE_TELEMETRY=true"
-        `);
-  });
-
-  it("should log the telemetry setting as disabled", async () => {
-    await telemetry({ status: true });
-    expect(logger.log).toHaveBeenNthCalledWith(7, "Telemetry capturing is disabled.");
+    expect(logger.warn).toHaveBeenNthCalledWith(1, "Using the flags --disable and --enable together is not supported!");
   });
 
   it("should warn when both --enable and --status flags are used", async () => {
-    mockFs();
     await telemetry({ enable: true, status: true });
-    expect(logger.warn).toHaveBeenNthCalledWith(1, "The flag --status can't be used alongside the flags --disable and --enable!");
+    expect(logger.warn).toHaveBeenNthCalledWith(2, "The flag --status can't be used alongside the flags --disable and --enable!");
   });
 
   it("should warn when both --disable and --status flags are used", async () => {
-    mockFs();
     await telemetry({ disable: true, status: true });
-    expect(logger.warn).toHaveBeenNthCalledWith(1, "The flag --status can't be used alongside the flags --disable and --enable!");
+    expect(logger.warn).toHaveBeenNthCalledWith(3, "The flag --status can't be used alongside the flags --disable and --enable!");
   });
 
   it("should warn when all 3 --disable, --enable and --status flags are used", async () => {
-    mockFs();
     await telemetry({ enable: true, disable: true, status: true });
-    expect(logger.warn).toHaveBeenNthCalledWith(1, "The flag --status can't be used alongside the flags --disable and --enable!");
+    expect(logger.warn).toHaveBeenNthCalledWith(4, "The flag --status can't be used alongside the flags --disable and --enable!");
   });
 });
