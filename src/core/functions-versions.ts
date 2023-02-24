@@ -1,9 +1,8 @@
 import { DEFAULT_DOTNET_ISOLATED_VERSION, DEFAULT_DOTNET_VERSION, DEFAULT_NODE_VERSION, DEFAULT_PYTHON_VERSION } from "./constants";
 import { logger } from "./utils/logger";
 
-export function getDefaultVersion(apiLanguage: string | undefined): string {
-  let apiVersion = "16";
-  if (!apiLanguage) apiLanguage = "node";
+export function getDefaultVersion(apiLanguage: string): string {
+  let apiVersion;
   // apiLanguage = apiLanguage.toLowerCase();
   switch (apiLanguage) {
     case "node":

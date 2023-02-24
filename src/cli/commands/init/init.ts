@@ -154,7 +154,7 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
     return value === "" ? undefined : value;
   };
 
-  let response = await promptOrUseDefault(disablePrompts, [
+  const response = await promptOrUseDefault(disablePrompts, [
     {
       type: "text",
       name: "appLocation",
@@ -223,14 +223,6 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
       message: "What's your app development server URL (optional)",
       initial: detectedConfig.appDevserverUrl,
       format: trimValue,
-    },
-    {
-      type: null,
-      name: "apiLanguage",
-    },
-    {
-      type: null,
-      name: "apiVersion",
     },
     {
       type: "text",

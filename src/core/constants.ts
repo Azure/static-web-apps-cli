@@ -184,6 +184,7 @@ export const DEFAULT_NODE_VERSION = "16";
 export const DEFAULT_DOTNET_VERSION = "6.0";
 export const DEFAULT_DOTNET_ISOLATED_VERSION = "6.0";
 export const DEFAULT_PYTHON_VERSION = "3.8";
+export const DEFAULT_RUNTIME_LANGUAGE = "node";
 
 // --
 // Note: declare these as functions so that their body gets evaluated at runtime!

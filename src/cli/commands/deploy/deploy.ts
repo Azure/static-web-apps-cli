@@ -13,6 +13,7 @@ import {
   updateSwaCliConfigFile,
 } from "../../../core";
 import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../../core/account";
+import { DEFAULT_RUNTIME_LANGUAGE } from "../../../core/constants";
 import { cleanUp, getDeployClientPath } from "../../../core/deploy-client";
 import { swaCLIEnv } from "../../../core/env";
 import { getDefaultVersion } from "../../../core/functions-versions";
@@ -89,6 +90,9 @@ export async function deploy(options: SWACLIConfig) {
     logger.log(`Consider providing api-language and version using --api-language and --api-version flags,
     otherwise default values apiLanguage: ${apiLanguage} and apiVersion: ${apiVersion} will apply`);
   } else if (!isUserOrConfigOption("apiVersion")) {
+    if (!apiLanguage) {
+      apiLanguage = DEFAULT_RUNTIME_LANGUAGE;
+    }
     apiVersion = getDefaultVersion(apiLanguage);
     logger.log(`Api language "${apiLanguage}" is provided but api version is not provided.
       Assuming default version "${apiVersion}"`);

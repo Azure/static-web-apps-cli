@@ -1,13 +1,7 @@
 {
   "configurations": [
     {
-      "command": "cd C:/Users/sgollapudi/Downloads/hagrid/HawaiiBugbash/SWA_Template/'SwaCli Demo'; swa start -db ./azure-cosmos-db -V=silly",
-      "name": "Run swa start",
-      "request": "launch",
-      "type": "node-terminal"
-    },
-    {
-      "command": "cd C:/Users/sgollapudi/Downloads/hagrid/HawaiiBugbash/SWA_Template/'SwaCli Demo'; swa start -db ./azure-cosmos-db -V=silly",
+      "command": "npm start",
       "name": "Run npm start",
       "request": "launch",
       "type": "node-terminal"
