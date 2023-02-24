@@ -31,11 +31,11 @@ export const apiFrameworks: FrameworkDefinition[] = [
     },
   },
   {
-    id: "dotnet-isolated",
+    id: "dotnetisolated",
     name: ".NET",
     files: ["*.?(csproj|fsproj)", "host.json"],
     config: {
-      apiLanguage: "dotnet-isolated",
+      apiLanguage: "dotnetisolated",
       apiVersion: "6.0",
     },
   },
