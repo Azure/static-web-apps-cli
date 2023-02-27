@@ -71,6 +71,9 @@ declare interface SWACLIEnv extends StaticSiteClientEnv {
   AZURE_TENANT_ID?: string;
   AZURE_CLIENT_ID?: string;
   AZURE_CLIENT_SECRET?: string;
+
+  // swa telemetry
+  SWA_DISABLE_TELEMETRY?: string;
 }
 
 declare interface Context {
@@ -183,6 +186,11 @@ declare type SWACLISharedLoginOptions = LoginDetails & {
 
 declare type SWACLILoginOptions = SWACLISharedLoginOptions;
 
+declare type SWACLITelemetryOptions = {
+  disable?: boolean;
+  enable?: boolean;
+  status?: boolean;
+};
 // -- CLI Config options -----------------------------------------------------
 
 declare type SWACLIConfig = SWACLIGlobalOptions &
@@ -191,12 +199,14 @@ declare type SWACLIConfig = SWACLIGlobalOptions &
   SWACLIBuildOptions &
   SWACLIStartOptions &
   SWACLIDeployOptions &
-  SWACLIBuildOptions & {
+  SWACLIBuildOptions &
+  SWACLITelemetryOptions & {
     login?: SWACLIGlobalOptions & SWACLILoginOptions;
     init?: SWACLIGlobalOptions & SWACLIInitOptions;
     start?: SWACLIGlobalOptions & SWACLIStartOptions;
     deploy?: SWACLIGlobalOptions & SWACLIDeployOptions;
     build?: SWACLIGlobalOptions & SWACLIBuildOptions;
+    telemetry?: SWACLIGlobalOptions & SWACLITelemetryOptions;
   };
 
 // Information about the loaded config

@@ -15,6 +15,7 @@ import { registerStart } from "./commands/start";
 import { registerBuild } from "./commands/build";
 import { registerDocs } from "./commands/docs";
 import { promptOrUseDefault } from "../core/prompts";
+import { registerTelemetry } from "./commands";
 
 export * from "./commands";
 
@@ -97,6 +98,7 @@ export async function run(argv?: string[]) {
   registerInit(program);
   registerBuild(program);
   registerDocs(program);
+  registerTelemetry(program);
 
   program.showHelpAfterError();
   program.addOption(new Option("--ping").hideHelp());
