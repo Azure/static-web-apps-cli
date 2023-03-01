@@ -14,7 +14,7 @@ import { registerLogin } from "./commands/login";
 import { registerStart } from "./commands/start";
 import { registerBuild } from "./commands/build";
 import { registerDocs } from "./commands/docs";
-import registerDb from "./commands/db/index";
+import { registerDb } from "./commands/db";
 import { promptOrUseDefault } from "../core/prompts";
 
 export * from "./commands";
