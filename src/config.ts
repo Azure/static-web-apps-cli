@@ -34,6 +34,7 @@ const {
   SWA_CLI_APP_DEVSERVER_URL,
   SWA_CLI_API_DEVSERVER_URL,
   SWA_CLI_DATA_API_DEVSERVER_URL,
+  SWA_CLI_DATA_API_FOLDER,
 } = swaCLIEnv();
 
 export const DEFAULT_CONFIG: SWACLIConfig = {
@@ -72,4 +73,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   clientSecret: AZURE_CLIENT_SECRET || undefined,
   useKeychain: useEnvVarOrUseDefault(SWA_CLI_LOGIN_USE_KEYCHAIN, true),
   clearCredentials: useEnvVarOrUseDefault(SWA_CLI_LOGIN_CLEAR_CREDENTIALS, false),
+
+  // swa db options
+  folderName: SWA_CLI_DATA_API_FOLDER || "swa-db-connections",
 };

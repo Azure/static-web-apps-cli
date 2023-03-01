@@ -74,6 +74,9 @@ declare interface SWACLIEnv extends StaticSiteClientEnv {
   AZURE_TENANT_ID?: string;
   AZURE_CLIENT_ID?: string;
   AZURE_CLIENT_SECRET?: string;
+
+  // swa db
+  SWA_CLI_DATA_API_FOLDER?: string;
 }
 
 declare interface Context {
@@ -159,6 +162,16 @@ declare type SWACLIBuildOptions = {
   auto?: boolean;
 };
 
+// -- CLI DB init options
+
+declare type SWACLIDBInitOptions = {
+  databaseType?: "mssql" | "postgresql" | "cosmosdb_nosql" | "mysql" | "cosmosdb_postgresql";
+  connectionString?: string;
+  cosmosdb_nosqlDatabase?: string;
+  cosmosdb_nosqlContainer?: string;
+  folderName?: string;
+};
+
 // -- CLI Deploy options -----------------------------------------------------
 
 declare type SWACLIDeployOptions = SWACLISharedLoginOptions & {
@@ -197,12 +210,14 @@ declare type SWACLIConfig = SWACLIGlobalOptions &
   SWACLIBuildOptions &
   SWACLIStartOptions &
   SWACLIDeployOptions &
-  SWACLIBuildOptions & {
+  SWACLIBuildOptions &
+  SWACLIDBInitOptions & {
     login?: SWACLIGlobalOptions & SWACLILoginOptions;
     init?: SWACLIGlobalOptions & SWACLIInitOptions;
     start?: SWACLIGlobalOptions & SWACLIStartOptions;
     deploy?: SWACLIGlobalOptions & SWACLIDeployOptions;
     build?: SWACLIGlobalOptions & SWACLIBuildOptions;
+    "db init"?: SWACLIGlobalOptions & SWACLIDBInitOptions;
   };
 
 // Information about the loaded config

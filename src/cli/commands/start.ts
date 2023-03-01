@@ -23,7 +23,7 @@ import {
   parseUrl,
   readWorkflowFile,
 } from "../../core";
-import { DATA_API_BUILDER_DEFAULT_CONFIG_FILENAME } from "../../core/constants";
+import { DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME } from "../../core/constants";
 import { getDataApiBuilderBinaryPath } from "../../core/dataApiBuilder";
 import { swaCLIEnv } from "../../core/env";
 import { getCertificate } from "../../core/ssl";
@@ -322,7 +322,7 @@ export async function start(options: SWACLIConfig) {
           true
         );
       } else {
-        serveDataApiCommand = `cd "${dataApiLocation}" && "${dataApiBinary}" start -c ${DATA_API_BUILDER_DEFAULT_CONFIG_FILENAME}`;
+        serveDataApiCommand = `cd "${dataApiLocation}" && "${dataApiBinary}" start -c ${DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME}`;
         dataApiPort = DEFAULT_CONFIG.dataApiPort;
         startDataApiBuilderNeeded = true;
       }

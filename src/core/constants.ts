@@ -14,10 +14,11 @@ export const DATA_API_BUILDER_RELEASE_METADATA_URL = "https://dataapibuilder.azu
 export const DEPLOY_FOLDER = path.join(os.homedir(), ".swa", "deploy");
 export const DATA_API_BUILDER_FOLDER = path.join(os.homedir(), ".swa", "dataApiBuilder");
 export const DATA_API_BUILDER_RELEASE_TAG = "released";
-export const DATA_API_BUILDER_DEFAULT_CONFIG_FILENAME = "staticwebapp.database.config.json";
-export const DATA_API_BUILDER_DEFAULT_SCHEMA_FILENAME = "staticwebapp.database.schema.gql";
+export const DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME = "staticwebapp.database.config.json";
+export const DATA_API_BUILDER_DEFAULT_SCHEMA_FILE_NAME = "staticwebapp.database.schema.gql";
 export const DATA_API_BUILDER_DEFAULT_FOLDER = "swa-db-connections";
-export const SWA_COMMANDS = ["login", "init", "start", "deploy", "build"] as const;
+export const DATA_API_BUILDER_DEFAULT_REST_PATH = "/rest";
+export const SWA_COMMANDS = ["login", "init", "start", "deploy", "build", "db init"] as const;
 // Type cannot be in swa.d.ts as it's inferred from SWA_COMMANDS
 export type SWACommand = typeof SWA_COMMANDS[number];
 
@@ -25,6 +26,14 @@ export const SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB = 20; // 20kb
 
 export const SWA_AUTH_COOKIE = `StaticWebAppsAuthCookie`;
 export const ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT = ["GET", "HEAD", "OPTIONS"];
+
+export const DATA_API_BUILDER_DATABASE_TYPES = {
+  MsSql: "mssql",
+  CosmosDbNoSql: "cosmosdb_nosql",
+  CosmosDbPostGreSql: "cosmosdb_postgresql",
+  MySql: "mysql",
+  PostGreSql: "postgresql",
+};
 
 export const AUTH_STATUS = {
   NoAuth: 0,
@@ -177,6 +186,20 @@ export const MIME_TYPE_LIST: { [key: string]: string } = {
   ".3g2": "video/3gpp2",
   ".7z": "application/x-7z-compressed",
 };
+
+export const DEFAULT_DATA_API_BUILDER_SCHEMA_CONTENT = `
+"""
+Add your CosmosDB NoSQL database schema in this file
+
+For example:
+
+type Book @model {
+  id: ID
+  title: String
+}
+
+"""
+`;
 
 export const DEFAULT_MIME_TYPE = "application/octet-stream";
 export const HEADER_DELETE_KEYWORD = "@@HEADER_DELETE_KEYWORD@@";
