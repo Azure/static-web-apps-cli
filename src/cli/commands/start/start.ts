@@ -2,7 +2,7 @@ import concurrently, { CloseEvent } from "concurrently";
 import { CommandInfo } from "concurrently/dist/src/command";
 import fs from "fs";
 import path from "path";
-import { DEFAULT_CONFIG } from "../../config";
+import { DEFAULT_CONFIG } from "../../../config";
 import {
   askNewPort,
   createStartupScriptCommand,
@@ -15,8 +15,8 @@ import {
   parseUrl,
   readWorkflowFile,
 } from "../../../core";
-import { DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME } from "../../core/constants";
-import { getDataApiBuilderBinaryPath } from "../../core/dataApiBuilder";
+import { DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME } from "../../../core/constants";
+import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder";
 import { swaCLIEnv } from "../../../core/env";
 import { getCertificate } from "../../../core/ssl";
 const packageInfo = require("../../../../package.json");
