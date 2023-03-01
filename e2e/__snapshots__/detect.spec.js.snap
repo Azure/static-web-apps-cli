@@ -389,7 +389,7 @@ exports[`framework detection should detect from root framework solid 1`] = `
 "Detected api folders (0):
 - 
 Detected app folders (1):
-- . (Solid)"
+- . (Vite)"
 `;
 
 exports[`framework detection should detect from root framework static 1`] = `
@@ -420,6 +420,48 @@ Detected app folders (1):
 - . (SvelteKit)"
 `;
 
+exports[`framework detection should detect from root framework vite-lit 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Vite)"
+`;
+
+exports[`framework detection should detect from root framework vite-preact 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Vite)"
+`;
+
+exports[`framework detection should detect from root framework vite-react 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Vite)"
+`;
+
+exports[`framework detection should detect from root framework vite-svelte 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Vite)"
+`;
+
+exports[`framework detection should detect from root framework vite-vanilla 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Vite)"
+`;
+
+exports[`framework detection should detect from root framework vite-vue 1`] = `
+"Detected api folders (0):
+- 
+Detected app folders (1):
+- . (Vite)"
+`;
+
 exports[`framework detection should detect from root framework vitepress 1`] = `
 "Detected api folders (0):
 - 
@@ -431,7 +473,7 @@ exports[`framework detection should detect from root framework vue 1`] = `
 "Detected api folders (0):
 - 
 Detected app folders (1):
-- . (Vue.js, Vite)"
+- . (Vite)"
 `;
 
 exports[`framework detection should detect from root framework vuepress 1`] = `

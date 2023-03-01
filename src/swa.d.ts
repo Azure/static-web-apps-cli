@@ -297,6 +297,7 @@ declare type FrameworkConfig = GithubActionWorkflow & {
   apiBuildCommand?: string;
   appDevserverCommand?: string;
   appDevserverUrl?: string;
+  apiDevserverUrl?: string;
 };
 
 declare interface CoreToolsRelease {

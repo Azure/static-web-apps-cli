@@ -1,40 +1,16 @@
 import chalk from "chalk";
-import { Command } from "commander";
 import path from "path";
 import process from "process";
-import { promptOrUseDefault } from "../../core/prompts";
+import { promptOrUseDefault } from "../../../core/prompts";
 import {
-  configureOptions,
   dasherize,
   hasConfigurationNameInConfigFile,
-  isUserOption,
   logger,
   swaCliConfigFileExists,
   swaCliConfigFilename,
   writeConfigFile,
-} from "../../core/utils";
-import { detectProjectFolders, generateConfiguration, isDescendantPath } from "../../core/frameworks";
-
-export default function registerCommand(program: Command) {
-  program
-    .command("init [configName]")
-    .usage("[configName] [options]")
-    .description("initialize a new static web app project")
-    .option("-y, --yes", "answer yes to all prompts (disable interactive mode)", false)
-    .action(async (configName: string | undefined, _options: SWACLIConfig, command: Command) => {
-      const options = await configureOptions(undefined, command.optsWithGlobals(), command, "init", false);
-      if (configName) {
-        if (isUserOption("configName")) {
-          logger.error(`swa init <configName> cannot be used when --config-name option is also set.`);
-          logger.error(`You either have to use the positional argument or option, not both at the same time.`, true);
-        }
-
-        options.configName = configName;
-      }
-
-      await init(options, !process.env.SWA_CLI_INTERNAL_COMMAND);
-    });
-}
+} from "../../../core/utils";
+import { detectProjectFolders, generateConfiguration, isDescendantPath } from "../../../core/frameworks";
 
 export async function init(options: SWACLIConfig, showHints: boolean = true) {
   const configFilePath = options.config!;
@@ -165,6 +141,7 @@ function convertToCliConfig(config: FrameworkConfig): SWACLIConfig {
     apiBuildCommand: config.apiBuildCommand,
     run: config.appDevserverCommand,
     appDevserverUrl: config.appDevserverUrl,
+    apiDevserverUrl: config.apiDevserverUrl,
   };
 }
 
@@ -222,8 +199,15 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
     {
       type: "text",
       name: "appDevserverUrl",
-      message: "What is your development server url (optional)",
+      message: "What's your app development server URL (optional)",
       initial: detectedConfig.appDevserverUrl,
+      format: trimValue,
+    },
+    {
+      type: "text",
+      name: "apiDevserverUrl",
+      message: "What's your API development server URL (optional)",
+      initial: detectedConfig.apiDevserverUrl,
       format: trimValue,
     },
   ]);
@@ -240,9 +224,5 @@ function printFrameworkConfig(config: FrameworkConfig) {
   logger.log(`- API build command: ${chalk.green(config.apiBuildCommand ?? "")}`);
   logger.log(`- App dev server command: ${chalk.green(config.appDevserverCommand ?? "")}`);
   logger.log(`- App dev server URL: ${chalk.green(config.appDevserverUrl ?? "")}\n`);
+  logger.log(`- API dev server URL: ${chalk.green(config.apiDevserverUrl ?? "")}\n`);
 }
-
-// function isEmptyFolder(path: string) {
-//   const files = fs.readdirSync(path);
-//   return files.length === 0;
-// }

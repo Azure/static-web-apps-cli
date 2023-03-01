@@ -1,9 +1,9 @@
 import fs from "fs";
 import mockFs from "mock-fs";
 import { init } from "./init";
-import { DEFAULT_CONFIG } from "../../config";
-import { swaCliConfigFilename } from "../../core/utils";
-import { convertToNativePaths, convertToUnixPaths } from "../../jest.helpers.";
+import { DEFAULT_CONFIG } from "../../../config";
+import { swaCliConfigFilename } from "../../../core/utils";
+import { convertToNativePaths, convertToUnixPaths } from "../../../jest.helpers.";
 
 jest.mock("prompts", () => jest.fn());
 
@@ -21,6 +21,7 @@ const defautResolvedPrompts = {
   apiBuildCommand: "npm run build:api",
   appDevserverCommand: "npm run dev",
   appDevserverUrl: "http://localhost:3000",
+  apiDevserverUrl: "http://localhost:4040",
   confirmOverwrite: true,
 };
 
@@ -149,6 +150,36 @@ describe("swa init", () => {
             \\"apiBuildCommand\\": \\"npm run build --if-present\\",
             \\"run\\": \\"npm run dev\\",
             \\"appDevserverUrl\\": \\"http://localhost:8080\\"
+          }
+        }
+      }"
+    `);
+  });
+
+  it("should detect frameworks and let user override config options", async () => {
+    mockFs({ src: mockFs.load("e2e/fixtures/static-node-ts") });
+    const promptsMock = jest.requireMock("prompts");
+    promptsMock.mockResolvedValue({
+      ...defautResolvedPrompts,
+      confirmSettings: false,
+    });
+
+    await init({ ...defaultCliConfig, configName: "test" });
+    const configFile = convertToUnixPaths(fs.readFileSync(defaultCliConfig.config, "utf-8"));
+
+    expect(configFile).toMatchInlineSnapshot(`
+      "{
+        \\"$schema\\": \\"https://aka.ms/azure/static-web-apps-cli/schema\\",
+        \\"configurations\\": {
+          \\"test\\": {
+            \\"appLocation\\": \\"./app\\",
+            \\"apiLocation\\": \\"./api\\",
+            \\"outputLocation\\": \\"./dist\\",
+            \\"appBuildCommand\\": \\"npm run build\\",
+            \\"apiBuildCommand\\": \\"npm run build:api\\",
+            \\"run\\": \\"npm run dev\\",
+            \\"appDevserverUrl\\": \\"http://localhost:3000\\",
+            \\"apiDevserverUrl\\": \\"http://localhost:4040\\"
           }
         }
       }"

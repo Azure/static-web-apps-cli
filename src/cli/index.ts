@@ -8,12 +8,12 @@ import path from "path";
 import updateNotifier from "update-notifier";
 import { DEFAULT_CONFIG } from "../config";
 import { configureOptions, getCurrentSwaCliConfigFromFile, getNodeMajorVersion, logger, runCommand, swaCliConfigFilename } from "../core";
-import registerDeploy from "./commands/deploy";
-import registerInit from "./commands/init";
-import registerLogin from "./commands/login";
-import registerStart from "./commands/start";
-import registerBuild from "./commands/build";
-import registerDocs from "./commands/docs";
+import { registerDeploy } from "./commands/deploy";
+import { registerInit } from "./commands/init";
+import { registerLogin } from "./commands/login";
+import { registerStart } from "./commands/start";
+import { registerBuild } from "./commands/build";
+import { registerDocs } from "./commands/docs";
 import registerDb from "./commands/db/index";
 import { promptOrUseDefault } from "../core/prompts";
 
