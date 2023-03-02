@@ -2,9 +2,9 @@ import {
   DATA_API_BUILDER_BINARY_NAME,
   DATA_API_BUILDER_COMMAND,
   DATA_API_BUILDER_FOLDER,
-  // DATA_API_BUILDER_LATEST_TAG,
+  DATA_API_BUILDER_LATEST_TAG,
   DATA_API_BUILDER_RELEASE_METADATA_URL,
-  DATA_API_BUILDER_VERSION_ID,
+  // DATA_API_BUILDER_VERSION_ID,
   DEFAULT_DATA_API_BUILDER_BINARY,
 } from "../constants";
 import fetch from "node-fetch";
@@ -100,8 +100,8 @@ async function getReleaseDataApiBuilderMetadata(): Promise<{ releaseMetadata: Da
   const responseMetadata = (await response.json()) as DataApiBuilderReleaseMetadata;
 
   if (Array.isArray(responseMetadata)) {
-    // const releaseMetadata = responseMetadata.find((c) => c.version === DATA_API_BUILDER_LATEST_TAG); // If we want to proceed with downloading the latest tag
-    const releaseMetadata = responseMetadata.find((c) => c.versionId === DATA_API_BUILDER_VERSION_ID); // If we want to pin a specific version
+    const releaseMetadata = responseMetadata.find((c) => c.version === DATA_API_BUILDER_LATEST_TAG); // If we want to proceed with downloading the latest tag
+    // const releaseMetadata = responseMetadata.find((c) => c.versionId === DATA_API_BUILDER_VERSION_ID); // If we want to pin a specific version
 
     return {
       releaseMetadata: releaseMetadata,
