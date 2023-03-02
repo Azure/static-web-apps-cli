@@ -2,7 +2,7 @@ import fs from "fs";
 import fetch from "node-fetch";
 import os from "os";
 import path from "path";
-import { STATIC_SITE_CLIENT_RELEASE_METADATA_URL, DEPLOY_BINARY_NAME, DEPLOY_FOLDER } from "./constants";
+import { STATIC_SITE_CLIENT_RELEASE_METADATA_URL, DEPLOY_BINARY_NAME, DEPLOY_FOLDER, DEPLOY_BINARY_STABLE_TAG } from "./constants";
 import { downloadAndValidateBinary } from "./download-binary-helper";
 import { swaCLIEnv } from "./env";
 import { getPlatform, logger } from "./utils";
@@ -20,7 +20,7 @@ export async function getDeployClientPath(): Promise<{ binary: string; buildId: 
   }
 
   const localClientMetadata = getLocalClientMetadata() as StaticSiteClientLocalMetadata;
-  const binaryVersion = swaCLIEnv().SWA_CLI_DEPLOY_BINARY_VERSION || "stable";
+  const binaryVersion = swaCLIEnv().SWA_CLI_DEPLOY_BINARY_VERSION || DEPLOY_BINARY_STABLE_TAG;
   const remoteClientMetadata = await fetchClientVersionDefinition(binaryVersion);
   if (remoteClientMetadata === undefined) {
     throw new Error(`Could not load ${DEPLOY_BINARY_NAME} metadata from remote. Please check your internet connection.`);

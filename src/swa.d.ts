@@ -317,7 +317,7 @@ declare interface CoreToolsZipInfo {
 declare type NpmPackageManager = "npm" | "yarn" | "pnpm";
 
 declare type BinaryMetadata = {
-  version: "stable" | "latest";
+  version: "stable" | "latest" | "old";
   files: {
     ["linux-x64"]: {
       url: string;

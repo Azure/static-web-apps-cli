@@ -2,11 +2,10 @@ import {
   DATA_API_BUILDER_BINARY_NAME,
   DATA_API_BUILDER_COMMAND,
   DATA_API_BUILDER_FOLDER,
+  // DATA_API_BUILDER_LATEST_TAG,
   DATA_API_BUILDER_RELEASE_METADATA_URL,
-  DATA_API_BUILDER_RELEASE_TAG,
-  DEFAULT_DATA_API_BUILDER_BINARY_LINUX,
-  DEFAULT_DATA_API_BUILDER_BINARY_OSX,
-  DEFAULT_DATA_API_BUILDER_BINARY_WINDOWS,
+  DATA_API_BUILDER_VERSION_ID,
+  DEFAULT_DATA_API_BUILDER_BINARY,
 } from "../constants";
 import fetch from "node-fetch";
 import { promisify } from "util";
@@ -101,7 +100,8 @@ async function getReleaseDataApiBuilderMetadata(): Promise<{ releaseMetadata: Da
   const responseMetadata = (await response.json()) as DataApiBuilderReleaseMetadata;
 
   if (Array.isArray(responseMetadata)) {
-    const releaseMetadata = responseMetadata.find((c) => c.releaseType === DATA_API_BUILDER_RELEASE_TAG);
+    // const releaseMetadata = responseMetadata.find((c) => c.version === DATA_API_BUILDER_LATEST_TAG); // If we want to proceed with downloading the latest tag
+    const releaseMetadata = responseMetadata.find((c) => c.versionId === DATA_API_BUILDER_VERSION_ID); // If we want to pin a specific version
 
     return {
       releaseMetadata: releaseMetadata,
@@ -157,13 +157,13 @@ async function extractBinary(zipFilePath: string, destDirectory: string) {
 function getDefaultDataApiBuilderBinaryForOS(platform: string): string {
   switch (platform) {
     case "win-x64":
-      return DEFAULT_DATA_API_BUILDER_BINARY_WINDOWS;
+      return DEFAULT_DATA_API_BUILDER_BINARY.Windows;
     case "osx-x64":
-      return DEFAULT_DATA_API_BUILDER_BINARY_OSX;
+      return DEFAULT_DATA_API_BUILDER_BINARY.MacOs;
     case "linux-x64":
-      return DEFAULT_DATA_API_BUILDER_BINARY_LINUX;
+      return DEFAULT_DATA_API_BUILDER_BINARY.Linux;
     default:
-      return DEFAULT_DATA_API_BUILDER_BINARY_WINDOWS;
+      return DEFAULT_DATA_API_BUILDER_BINARY.Windows;
   }
 }
 
