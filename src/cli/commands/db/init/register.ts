@@ -1,7 +1,7 @@
 import { Command } from "commander";
-import { configureOptions } from "../../../core/utils";
+import { configureOptions } from "../../../../core/utils";
 import { init } from "./init";
-import { DEFAULT_CONFIG } from "../../../config";
+import { DEFAULT_CONFIG } from "../../../../config";
 
 export default function registerCommand(program: Command) {
   const dbCommand = program.command("db [command] [options]").description("Manage your database");

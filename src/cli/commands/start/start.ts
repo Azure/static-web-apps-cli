@@ -218,7 +218,7 @@ export async function start(options: SWACLIConfig) {
           true
         );
       } else {
-        serveDataApiCommand = `cd "${dataApiLocation}" && "${dataApiBinary}" start -c ${DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME}`;
+        serveDataApiCommand = `cd "${dataApiLocation}" && "${dataApiBinary}" start -c ${DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME} --no-https-redirect`;
         dataApiPort = DEFAULT_CONFIG.dataApiPort;
         startDataApiBuilderNeeded = true;
       }
