@@ -15,7 +15,7 @@ import {
   parseUrl,
   readWorkflowFile,
 } from "../../../core";
-import { DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME } from "../../../core/constants";
+import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME } from "../../../core/constants";
 import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder";
 import { swaCLIEnv } from "../../../core/env";
 import { getCertificate } from "../../../core/ssl";
@@ -212,7 +212,7 @@ export async function start(options: SWACLIConfig) {
 
       if (!dataApiBinary) {
         logger.error(
-          `Could not find or install data-api-builder binary.
+          `Could not find or install ${DATA_API_BUILDER_BINARY_NAME} binary.
         If you already have data-api-builder installed, try connecting using --data-api-devserver-url by
         starting data-api-builder engine separately. Exiting!!`,
           true

@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import {
+  DATA_API_BUILDER_BINARY_NAME,
   DATA_API_BUILDER_DATABASE_TYPES,
   DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME,
   DATA_API_BUILDER_DEFAULT_FOLDER,
@@ -45,7 +46,7 @@ export async function init(options: SWACLIConfig) {
   const dataApiBinary = await getDataApiBuilderBinaryPath();
   if (!dataApiBinary) {
     logger.error(
-      `Could not find or install data-api-builder binary.
+      `Could not find or install ${DATA_API_BUILDER_BINARY_NAME} binary.
     If you already have data-api-builder installed, try running "dab init" directly to generate the config file. Exiting!!`,
       true
     );

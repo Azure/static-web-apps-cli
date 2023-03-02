@@ -155,7 +155,7 @@ export async function deploy(options: SWACLIConfig) {
 
   // TODO: do that in options
   // mix CLI args with the project's build workflow configuration (if any)
-  // use any specific workflow config that the user might provide undef ".github/workflows/"
+  // use any specific workflow config that the user might provide under ".github/workflows/"
   // Note: CLI args will take precedence over workflow config
   let userWorkflowConfig: Partial<GithubActionWorkflow> | undefined = {
     appLocation,
