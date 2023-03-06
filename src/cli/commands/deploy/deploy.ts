@@ -22,7 +22,7 @@ export async function deploy(options: SWACLIConfig) {
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
 
-  let { appLocation, apiLocation, outputLocation, dryRun, deploymentToken, printToken, appName, swaConfigLocation, verbose } = options;
+  let { appLocation, apiLocation, dataApiLocation, outputLocation, dryRun, deploymentToken, printToken, appName, swaConfigLocation, verbose } = options;
 
   if (dryRun) {
     logger.warn("***********************************************************************");
@@ -33,6 +33,11 @@ export async function deploy(options: SWACLIConfig) {
 
   // make sure appLocation is set
   appLocation = path.resolve(appLocation || process.cwd());
+
+  // make sure dataApiLocation is set
+  if(dataApiLocation) {
+    dataApiLocation = path.resolve(dataApiLocation);
+  }
 
   // make sure outputLocation is set
   const resolvedOutputLocation = path.resolve(appLocation, outputLocation || process.cwd());
@@ -161,6 +166,7 @@ export async function deploy(options: SWACLIConfig) {
     appLocation,
     outputLocation: resolvedOutputLocation,
     apiLocation: resolvedApiLocation,
+    dataApiLocation
   };
   try {
     userWorkflowConfig = readWorkflowFile({
@@ -201,6 +207,7 @@ export async function deploy(options: SWACLIConfig) {
     APP_LOCATION: userWorkflowConfig?.outputLocation,
     // OUTPUT_LOCATION: outputLocation,
     API_LOCATION: userWorkflowConfig?.apiLocation,
+    DATA_API_LOCATION: userWorkflowConfig?.dataApiLocation,
     // If config file is not in output location, we need to tell where to find it
     CONFIG_FILE_LOCATION: resolvedSwaConfigLocation,
     VERBOSE: isVerboseEnabled ? "true" : "false",

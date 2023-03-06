@@ -139,6 +139,10 @@
           "description": "The folder containing the source code of the API application",
           "type": "string"
         },
+        "dataApiLocation": {
+          "description": "The folder containing configurations for database connections",
+          "type": "string"
+        },
         "appDevserverUrl": {
           "description": "Connect to the dev server at this URL instead of using output location",
           "type": "string"
