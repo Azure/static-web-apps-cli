@@ -113,6 +113,15 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
     data_api_location = userWorkflowConfig?.dataApiLocation || DEFAULT_CONFIG.dataApiLocation,
   } = swaBuildConfig.with;
 
+  logger.silly({
+    app_build_command,
+    api_build_command,
+    app_location,
+    output_location,
+    api_location,
+    data_api_location
+  });
+
   // the following locations (extracted from the config) should be under the user's project folder:
   // - app_location
   // - api_location
@@ -123,7 +132,8 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
   if (typeof api_location !== "undefined") {
     api_location = path.normalize(path.join(process.cwd(), api_location || path.sep));
   }
-  output_location = path.normalize(path.join(process.cwd(), output_location));
+  output_location = path.normalize(output_location);
+  output_location = path.join(app_location, output_location);
   if(typeof data_api_location !== "undefined") {
     data_api_location = path.normalize(path.join(process.cwd(), data_api_location || path.sep));
   }
@@ -132,10 +142,10 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
   // if the user provides different app location, app artifact location or api location, use that information
   if (userWorkflowConfig) {
     userWorkflowConfig = validateUserWorkflowConfig(userWorkflowConfig);
-    app_location = app_location || userWorkflowConfig?.appLocation;
-    output_location = output_location || userWorkflowConfig?.outputLocation;
-    api_location = api_location || userWorkflowConfig?.apiLocation;
-    data_api_location = data_api_location || userWorkflowConfig?.dataApiLocation;
+    app_location = userWorkflowConfig?.appLocation;
+    output_location = userWorkflowConfig?.outputLocation;
+    api_location = userWorkflowConfig?.apiLocation;
+    data_api_location = userWorkflowConfig?.dataApiLocation;
   }
 
   const files = isAppDevServer && isApiDevServer ? undefined : [githubActionFile];
