@@ -249,6 +249,10 @@
           "description": "The folder containing the source code of the API application",
           "type": "string"
         },
+        "dataApiLocation":{
+          "description": "The folder containing configurations for database connections",
+          "type": "string"
+        },
         "outputLocation": {
           "description": "The folder where the front-end public files are location",
           "type": "string"
