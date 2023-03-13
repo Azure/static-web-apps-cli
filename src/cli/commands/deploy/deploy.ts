@@ -35,7 +35,7 @@ export async function deploy(options: SWACLIConfig) {
   appLocation = path.resolve(appLocation || process.cwd());
 
   // make sure dataApiLocation is set
-  if(dataApiLocation) {
+  if (dataApiLocation) {
     dataApiLocation = path.resolve(dataApiLocation);
     if (!fs.existsSync(dataApiLocation)) {
       logger.error(`The provided API folder ${dataApiLocation} does not exist. Abort.`, true);
