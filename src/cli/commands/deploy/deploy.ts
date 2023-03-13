@@ -35,7 +35,7 @@ export async function deploy(options: SWACLIConfig) {
   appLocation = path.resolve(appLocation || process.cwd());
 
   // make sure dataApiLocation is set
-  if(dataApiLocation) {
+  if (dataApiLocation) {
     dataApiLocation = path.resolve(dataApiLocation);
   }
 
