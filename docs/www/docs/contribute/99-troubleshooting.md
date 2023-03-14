@@ -48,6 +48,7 @@ If you are having trouble accessing SWA CLI, the following domains need to be al
 - blob.core.windows.net
 - azurestaticapps.net
 - swalocaldeploy.azureedge.net
+- dataapibuilder.azureedge.net
 - functionscdn.azureedge.net
 
 ## `Unable to download StaticSitesClient binary (File Not Found 404 - 403)`

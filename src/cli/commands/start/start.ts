@@ -2,6 +2,7 @@ import concurrently, { CloseEvent } from "concurrently";
 import { CommandInfo } from "concurrently/dist/src/command";
 import fs from "fs";
 import path from "path";
+import { DEFAULT_CONFIG } from "../../../config";
 import {
   askNewPort,
   createStartupScriptCommand,
@@ -14,6 +15,8 @@ import {
   parseUrl,
   readWorkflowFile,
 } from "../../../core";
+import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME } from "../../../core/constants";
+import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder";
 import { swaCLIEnv } from "../../../core/env";
 import { getCertificate } from "../../../core/ssl";
 const packageInfo = require("../../../../package.json");
@@ -28,10 +31,13 @@ export async function start(options: SWACLIConfig) {
   let {
     appLocation,
     apiLocation,
+    dataApiLocation,
     outputLocation,
     appDevserverUrl,
     apiDevserverUrl,
+    dataApiDevserverUrl,
     apiPort,
+    dataApiPort,
     devserverTimeout,
     ssl,
     sslCert,
@@ -46,6 +52,7 @@ export async function start(options: SWACLIConfig) {
   } = options;
 
   let useApiDevServer: string | undefined | null = undefined;
+  let useDataApiDevServer: string | undefined | null = undefined;
   let startupCommand: string | undefined | null = undefined;
 
   let resolvedPortNumber = await isAcceptingTcpConnections({ host, port });
@@ -94,15 +101,32 @@ export async function start(options: SWACLIConfig) {
     // TODO: properly refactor this after GA to send apiDevserverUrl to the server
     useApiDevServer = apiDevserverUrl;
     apiLocation = apiDevserverUrl;
+    logger.silly(`Api Dev Server found: ${apiDevserverUrl}`);
   } else if (apiLocation) {
     // resolves to the absolute path of the apiLocation
-    let resolvedApiLocation = path.resolve(apiLocation);
+    const resolvedApiLocation = path.resolve(apiLocation);
 
     // make sure api folder exists
     if (fs.existsSync(resolvedApiLocation)) {
       apiLocation = resolvedApiLocation;
+      logger.silly(`Api Folder found: ${apiLocation}`);
     } else {
-      logger.info(`Skipping API because folder "${resolvedApiLocation}" is missing`, "swa");
+      logger.info(`Skipping Api because folder "${resolvedApiLocation}" is missing`, "swa");
+    }
+  }
+
+  if (dataApiDevserverUrl) {
+    useDataApiDevServer = dataApiDevserverUrl;
+    dataApiLocation = dataApiDevserverUrl;
+    logger.silly(`Data Api Dev Server found: ${dataApiDevserverUrl}`);
+  } else if (dataApiLocation) {
+    const resolvedDataApiLocation = path.resolve(dataApiLocation);
+
+    if (fs.existsSync(resolvedDataApiLocation)) {
+      dataApiLocation = resolvedDataApiLocation;
+      logger.silly(`Data Api Folder found: ${dataApiLocation}`);
+    } else {
+      logger.info(`Skipping Data Api because folder "${resolvedDataApiLocation}" is missing`, "swa");
     }
   }
 
@@ -176,6 +200,32 @@ export async function start(options: SWACLIConfig) {
     }
   }
 
+  let serveDataApiCommand = "echo 'No Data API found'. Skipping";
+  let startDataApiBuilderNeeded = false;
+  if (useDataApiDevServer) {
+    serveDataApiCommand = `echo using Data API server at ${useDataApiDevServer}`;
+
+    dataApiPort = parseUrl(useDataApiDevServer)?.port;
+  } else {
+    if (dataApiLocation) {
+      const dataApiBinary = await getDataApiBuilderBinaryPath();
+      if (!dataApiBinary) {
+        logger.error(
+          `Could not find or install ${DATA_API_BUILDER_BINARY_NAME} binary.
+        If you already have data-api-builder installed, try connecting using --data-api-devserver-url by
+        starting data-api-builder engine separately. Exiting!!`,
+          true
+        );
+      } else {
+        serveDataApiCommand = `cd "${dataApiLocation}" && "${dataApiBinary}" start -c ${DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME} --no-https-redirect`;
+        dataApiPort = DEFAULT_CONFIG.dataApiPort;
+        startDataApiBuilderNeeded = true;
+      }
+    }
+
+    logger.silly(`Running ${serveDataApiCommand}`);
+  }
+
   if (ssl) {
     if (sslCert === undefined && sslKey === undefined) {
       logger.warn(`WARNING: Using built-in UNSIGNED certificate. DO NOT USE IN PRODUCTION!`);
@@ -215,6 +265,8 @@ export async function start(options: SWACLIConfig) {
     SWA_CLI_APP_LOCATION: userWorkflowConfig?.appLocation as string,
     SWA_CLI_OUTPUT_LOCATION: userWorkflowConfig?.outputLocation as string,
     SWA_CLI_API_LOCATION: userWorkflowConfig?.apiLocation as string,
+    SWA_CLI_DATA_API_LOCATION: dataApiLocation,
+    SWA_CLI_DATA_API_PORT: `${dataApiPort}`,
     SWA_CLI_HOST: `${host}`,
     SWA_CLI_PORT: `${port}`,
     SWA_CLI_APP_SSL: ssl ? "true" : "false",
@@ -248,6 +300,10 @@ export async function start(options: SWACLIConfig) {
     );
   }
 
+  if (startDataApiBuilderNeeded) {
+    concurrentlyCommands.push({ command: serveDataApiCommand, name: "dataApi", env });
+  }
+
   // run an external script, if it's available
   if (startupCommand) {
     let startupPath = userWorkflowConfig?.appLocation;
@@ -262,6 +318,7 @@ export async function start(options: SWACLIConfig) {
     commands: {
       swa: concurrentlyCommands.find((c) => c.name === "swa")?.command,
       api: concurrentlyCommands.find((c) => c.name === "api")?.command,
+      dataApi: concurrentlyCommands.find((c) => c.name == "dataApi")?.command,
       run: concurrentlyCommands.find((c) => c.name === "run")?.command,
     },
   });
@@ -287,6 +344,9 @@ export async function start(options: SWACLIConfig) {
             break;
           case "api":
             commandMessage = `API server exited with code ${exitCode}`;
+            break;
+          case "dataApi":
+            commandMessage = `Data API server exited with code ${exitCode}`;
             break;
           case "run":
             commandMessage = `the --run command exited with code ${exitCode}`;
