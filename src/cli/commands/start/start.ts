@@ -209,7 +209,6 @@ export async function start(options: SWACLIConfig) {
   } else {
     if (dataApiLocation) {
       const dataApiBinary = await getDataApiBuilderBinaryPath();
-
       if (!dataApiBinary) {
         logger.error(
           `Could not find or install ${DATA_API_BUILDER_BINARY_NAME} binary.
