@@ -353,6 +353,15 @@
       "profile": "https://stuartleeks.com",
       "contributions": [
         "doc"
+        ]
+    },
+    {
+      "login": "BeardInASuit",
+      "name": "BeardinaSuit",
+      "avatar_url": "https://avatars.githubusercontent.com/u/27794078?v=4",
+      "profile": "https://github.com/BeardInASuit",
+      "contributions": [
+        "code"
       ]
     }
   ],

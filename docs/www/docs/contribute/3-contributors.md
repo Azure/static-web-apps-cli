@@ -63,6 +63,7 @@ Thanks goes to these wonderful people 🎉
     </tr>
     <tr>
       <td align="center" valign="top" width="16.66%"><a href="https://stuartleeks.com"><img src="https://avatars.githubusercontent.com/u/1824461?v=4?s=100" width="100px;" alt="Stuart Leeks"/><br /><sub><b>Stuart Leeks</b></sub></a><br /><a href="https://github.com/Azure/static-web-apps-cli/commits?author=stuartleeks" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="16.66%"><a href="https://github.com/BeardInASuit"><img src="https://avatars.githubusercontent.com/u/27794078?v=4?s=100" width="100px;" alt="BeardinaSuit"/><br /><sub><b>BeardinaSuit</b></sub></a><br /><a href="https://github.com/Azure/static-web-apps-cli/commits?author=BeardInASuit" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
