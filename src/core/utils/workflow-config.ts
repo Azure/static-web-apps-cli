@@ -134,7 +134,7 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
   }
   output_location = path.normalize(output_location);
   output_location = path.join(app_location, output_location);
-  if(typeof data_api_location !== "undefined") {
+  if (typeof data_api_location !== "undefined") {
     data_api_location = path.normalize(path.join(process.cwd(), data_api_location || path.sep));
   }
 
