@@ -110,6 +110,7 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
     app_location = userWorkflowConfig?.appLocation || DEFAULT_CONFIG.appLocation,
     output_location = userWorkflowConfig?.outputLocation || DEFAULT_CONFIG.outputLocation,
     api_location = userWorkflowConfig?.apiLocation || DEFAULT_CONFIG.apiLocation,
+    data_api_location = userWorkflowConfig?.dataApiLocation || DEFAULT_CONFIG.dataApiLocation,
   } = swaBuildConfig.with;
 
   logger.silly({
@@ -118,12 +119,14 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
     app_location,
     output_location,
     api_location,
+    data_api_location
   });
 
   // the following locations (extracted from the config) should be under the user's project folder:
   // - app_location
   // - api_location
   // - output_location
+  // - data_api_location
 
   app_location = path.normalize(path.join(process.cwd(), app_location));
   if (typeof api_location !== "undefined") {
@@ -131,6 +134,9 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
   }
   output_location = path.normalize(output_location);
   output_location = path.join(app_location, output_location);
+  if (typeof data_api_location !== "undefined") {
+    data_api_location = path.normalize(path.join(process.cwd(), data_api_location || path.sep));
+  }
 
   // override SWA config with user's config (if provided):
   // if the user provides different app location, app artifact location or api location, use that information
@@ -139,6 +145,7 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
     app_location = userWorkflowConfig?.appLocation;
     output_location = userWorkflowConfig?.outputLocation;
     api_location = userWorkflowConfig?.apiLocation;
+    data_api_location = userWorkflowConfig?.dataApiLocation;
   }
 
   const files = isAppDevServer && isApiDevServer ? undefined : [githubActionFile];
@@ -150,6 +157,7 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
     appLocation: app_location,
     apiLocation: api_location,
     outputLocation: output_location,
+    dataApiLocation: data_api_location,
     files,
   };
 
