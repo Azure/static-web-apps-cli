@@ -345,6 +345,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "georgeOsdDev",
+      "name": "Takeharu.Oshida",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1381907?v=4",
+      "profile": "https://blog.toshida.org/",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 6,
