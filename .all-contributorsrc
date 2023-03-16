@@ -345,6 +345,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "stuartleeks",
+      "name": "Stuart Leeks",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1824461?v=4",
+      "profile": "https://stuartleeks.com",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 6,
