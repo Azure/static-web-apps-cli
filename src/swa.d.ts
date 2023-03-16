@@ -18,6 +18,7 @@ declare interface StaticSiteClientEnv {
   APP_LOCATION?: string;
   OUTPUT_LOCATION?: string;
   API_LOCATION?: string;
+  DATA_API_LOCATION?: string;
   VERBOSE?: string;
   DEPLOYMENT_ENVIRONMENT?: string;
   CONFIG_FILE_LOCATION?: string;
@@ -107,6 +108,7 @@ declare type GithubActionWorkflow = {
   apiBuildCommand?: string;
   appLocation?: string;
   apiLocation?: string;
+  dataApiLocation?: string;
   outputLocation?: string;
   files?: string[];
 };
@@ -156,6 +158,7 @@ declare type SWACLIStartOptions = {
 declare type SWACLIBuildOptions = {
   appLocation?: string;
   apiLocation?: string;
+  dataApiLocation?: string;
   outputLocation?: string;
   appBuildCommand?: string;
   apiBuildCommand?: string;
@@ -177,6 +180,7 @@ declare type SWACLIDBInitOptions = {
 declare type SWACLIDeployOptions = SWACLISharedLoginOptions & {
   apiLocation?: string;
   outputLocation?: string;
+  dataApiLocation?: string;
   deploymentToken?: string;
   swaConfigLocation?: string;
   dryRun?: boolean;
