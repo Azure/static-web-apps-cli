@@ -345,6 +345,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "thomasgauvin",
+      "name": "Thomas Gauvin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/35609369?v=4",
+      "profile": "https://thomasgauvin.com/",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 6,
