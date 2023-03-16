@@ -187,6 +187,7 @@ export function validateUserWorkflowConfig(userWorkflowConfig: Partial<GithubAct
   let appLocation = undefined;
   let apiLocation = undefined;
   let outputLocation = undefined;
+  let dataApiLocation = undefined;
 
   logger.silly(`Validating user workflow config (BEFORE):`);
   logger.silly(userWorkflowConfig!);
@@ -211,6 +212,13 @@ export function validateUserWorkflowConfig(userWorkflowConfig: Partial<GithubAct
     }
   }
 
+  if (userWorkflowConfig?.dataApiLocation) {
+    dataApiLocation = path.resolve(userWorkflowConfig.dataApiLocation);
+    if(path.isAbsolute(userWorkflowConfig.dataApiLocation)) {
+      dataApiLocation = userWorkflowConfig.dataApiLocation;
+    }
+  }
+
   if (userWorkflowConfig?.outputLocation) {
     // is dev server url?
     if (isHttpUrl(userWorkflowConfig.outputLocation)) {
@@ -228,12 +236,14 @@ export function validateUserWorkflowConfig(userWorkflowConfig: Partial<GithubAct
     appLocation,
     apiLocation,
     outputLocation,
+    dataApiLocation,
   });
 
   return {
     appLocation,
     apiLocation,
     outputLocation,
+    dataApiLocation
   };
 }
 
