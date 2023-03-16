@@ -5,6 +5,7 @@ import os from "os";
 
 export const DEPLOY_BINARY_NAME = "StaticSitesClient";
 export const DEPLOY_BINARY_STABLE_TAG = "stable";
+export const DEPLOY_BINARY_LATEST_TAG = "latest";
 export const DATA_API_BUILDER_BINARY_NAME = "DataApiBuilder";
 export const DATA_API_BUILDER_COMMAND = "dab";
 export const STATIC_SITE_CLIENT_RELEASE_METADATA_URL = "https://swalocaldeploy.azureedge.net/downloads/versions.json";
@@ -13,11 +14,12 @@ export const DEPLOY_FOLDER = path.join(os.homedir(), ".swa", "deploy");
 export const DATA_API_BUILDER_FOLDER = path.join(os.homedir(), ".swa", "dataApiBuilder");
 export const DATA_API_BUILDER_RELEASE_TAG = "released";
 export const DATA_API_BUILDER_LATEST_TAG = "latest";
+export const DATA_API_BUILDER_OLD_TAG = "old";
 export const DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME = "staticwebapp.database.config.json";
 export const DATA_API_BUILDER_DEFAULT_SCHEMA_FILE_NAME = "staticwebapp.database.schema.gql";
 export const DATA_API_BUILDER_DEFAULT_FOLDER = "swa-db-connections";
 export const DATA_API_BUILDER_DEFAULT_REST_PATH = "/rest";
-export const DATA_API_BUILDER_VERSION_ID = "0.5.32";
+export const DATA_API_BUILDER_VERSION_ID = "0.5.32"; // to pin to a specific version, change this value
 export const SWA_COMMANDS = ["login", "init", "start", "deploy", "build", "db init"] as const;
 // Type cannot be in swa.d.ts as it's inferred from SWA_COMMANDS
 export type SWACommand = typeof SWA_COMMANDS[number];
