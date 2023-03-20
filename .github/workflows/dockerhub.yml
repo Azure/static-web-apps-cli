@@ -12,9 +12,13 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      
+  
+      - run: export YARNKEY=yarn-keyring.gpg
+      - run: curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo gpg --dearmour -o /usr/share/keyrings/$YARNKEY
+      - run: echo "deb [signed-by=/usr/share/keyrings/$YARNKEY] https://dl.yarnpkg.com/debian stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+        
       - name: Refresh key
-        run: curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/yarnkey.gpg >/dev/null
+        run: sudo gpg --refresh-keys
       
       - name: Publish to Docker Hub
         run: ./scripts/publish_docker.sh
