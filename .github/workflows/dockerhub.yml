@@ -13,8 +13,8 @@ jobs:
         with:
           fetch-depth: 0
       
-      - name: Refresh Keys
-        run: sudo apt-key adv --refresh-keys --keyserver keyserver.ubuntu.com
+      - name: Get latest signature
+        run: curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
       
       - name: Publish to Docker Hub
         run: ./scripts/publish_docker.sh
