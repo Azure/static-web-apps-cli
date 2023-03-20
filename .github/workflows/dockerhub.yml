@@ -14,7 +14,7 @@ jobs:
           fetch-depth: 0
       
       - name: Refresh key
-        run: sudo gpg --refresh-keys 23E7166788B63E1E
+        run: curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/yarnkey.gpg >/dev/null
       
       - name: Publish to Docker Hub
         run: ./scripts/publish_docker.sh
