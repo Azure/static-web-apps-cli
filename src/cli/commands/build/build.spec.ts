@@ -4,7 +4,7 @@ import { DEFAULT_CONFIG } from "../../../config";
 import { convertToNativePaths } from "../../../jest.helpers.";
 
 jest.mock("child_process", () => ({
-  spawn: jest.fn(),
+  ...jest.requireActual("child_process"),
   execSync: jest.fn(),
 }));
 
