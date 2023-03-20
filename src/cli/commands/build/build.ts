@@ -10,8 +10,13 @@ import {
   runCommand,
   swaCliConfigFilename,
 } from "../../../core/utils";
+import { collectTelemetryEvent } from "../../../core/telemetry/utils";
+import { DEFAULT_CONFIG } from "../../../config";
+import { pkg } from "../..";
+import os from "os";
 
 export async function build(options: SWACLIConfig) {
+  const start = new Date().getTime();
   const workflowConfig = readWorkflowFile();
 
   logger.silly({
@@ -37,9 +42,11 @@ export async function build(options: SWACLIConfig) {
     return;
   }
 
+  let projectConfig;
+  const detectedFolders = await detectProjectFolders(appLocation);
+  projectConfig = await generateConfiguration(detectedFolders.app[0], detectedFolders.api[0]);
   if (options.auto) {
     logger.log("Detecting build configuration...");
-    const detectedFolders = await detectProjectFolders(appLocation);
 
     if (detectedFolders.app.length === 0 && detectedFolders.api.length === 0) {
       logger.error(`Your app configuration could not be detected.`);
@@ -49,9 +56,7 @@ export async function build(options: SWACLIConfig) {
       return showAutoErrorMessageAndExit();
     }
 
-    let projectConfig;
     try {
-      projectConfig = await generateConfiguration(detectedFolders.app[0], detectedFolders.api[0]);
       appLocation = projectConfig.appLocation;
       apiLocation = projectConfig.apiLocation;
       outputLocation = projectConfig.outputLocation;
@@ -104,6 +109,19 @@ export async function build(options: SWACLIConfig) {
     logger.log(`Building api with ${chalk.green(apiBuildCommand)} in ${chalk.dim(apiLocation)} ...`);
     runCommand(apiBuildCommand, apiLocation!);
   }
+  const end = new Date().getTime();
+  collectTelemetryEvent(
+    "build",
+    {
+      subscriptionId: DEFAULT_CONFIG.subscriptionId!,
+      CLIVersion: pkg.version,
+      OSType: os.platform(),
+      OSVersion: os.version(),
+      duration: (end - start).toLocaleString(),
+      appFramework: projectConfig?.name?.split(", with")[0]!,
+    },
+    { PID: process.pid }
+  );
 }
 
 function hasBuildOptionsDefined(options: SWACLIConfig): boolean {

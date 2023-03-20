@@ -11,8 +11,13 @@ import {
   writeConfigFile,
 } from "../../../core/utils";
 import { detectProjectFolders, generateConfiguration, isDescendantPath } from "../../../core/frameworks";
+import { collectTelemetryEvent } from "../../../core/telemetry/utils";
+import { DEFAULT_CONFIG } from "../../../config";
+import { pkg } from "../..";
+import os from "os";
 
 export async function init(options: SWACLIConfig, showHints: boolean = true) {
+  const start = new Date().getTime();
   const configFilePath = options.config!;
   const disablePrompts = options.yes ?? false;
   const outputFolder = process.cwd();
@@ -130,6 +135,19 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
 
     logger.log(`- Use ${chalk.cyan("swa deploy")} to deploy your app to Azure.\n`);
   }
+  const end = new Date().getTime();
+  await collectTelemetryEvent(
+    "init",
+    {
+      subscriptionId: DEFAULT_CONFIG.subscriptionId!,
+      CLIVersion: pkg.version,
+      OSType: os.platform(),
+      OSVersion: os.version(),
+      duration: (end - start).toLocaleString(),
+      appFramework: projectConfig?.name?.split(", with")[0]!,
+    },
+    { PID: process.pid }
+  );
 }
 
 function convertToCliConfig(config: FrameworkConfig): SWACLIConfig {

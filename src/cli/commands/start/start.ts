@@ -13,9 +13,14 @@ import {
   logger,
   parseUrl,
   readWorkflowFile,
+  findSWAConfigFile,
 } from "../../../core";
 import { swaCLIEnv } from "../../../core/env";
 import { getCertificate } from "../../../core/ssl";
+import { collectTelemetryEvent } from "../../../core/telemetry/utils";
+import { DEFAULT_CONFIG } from "../../../config";
+import { pkg } from "../..";
+import os from "os";
 const packageInfo = require("../../../../package.json");
 const mshaPath = require.resolve("../../../msha/server");
 
@@ -25,6 +30,7 @@ export async function start(options: SWACLIConfig) {
   // Code below doesn't have access to these environment variables which are defined later below.
   // Make sure this code (or code from utils) does't depend on environment variables!
 
+  const start = new Date().getTime();
   let {
     appLocation,
     apiLocation,
@@ -134,6 +140,7 @@ export async function start(options: SWACLIConfig) {
   }
 
   const isApiLocationExistsOnDisk = fs.existsSync(userWorkflowConfig?.apiLocation!);
+  const nodeMajorVersion = getNodeMajorVersion();
 
   // handle the API location config
   let serveApiCommand = "echo 'No API found. Skipping'";
@@ -147,7 +154,6 @@ export async function start(options: SWACLIConfig) {
     if (apiLocation && userWorkflowConfig?.apiLocation) {
       // check if the func binary is globally available and if not, download it
       const funcBinary = await getCoreToolsBinary();
-      const nodeMajorVersion = getNodeMajorVersion();
       const targetVersion = detectTargetCoreToolsVersion(nodeMajorVersion);
 
       if (!funcBinary) {
@@ -204,6 +210,7 @@ export async function start(options: SWACLIConfig) {
   // note: the server will perform a search starting from this path
   swaConfigLocation = path.resolve(swaConfigLocation || userWorkflowConfig?.appLocation || process.cwd());
 
+  const swaConfigFileContent = (await findSWAConfigFile(swaConfigLocation!))?.content;
   // WARNING: code from above doesn't have access to env vars which are only defined below
 
   // set env vars for current command
@@ -298,4 +305,18 @@ export async function start(options: SWACLIConfig) {
     .catch((err) => {
       logger.error(err.message, true);
     });
+
+  const end = new Date().getTime();
+  collectTelemetryEvent(
+    "start",
+    {
+      subscriptionId: DEFAULT_CONFIG.subscriptionId!,
+      CLIVersion: pkg.version,
+      OSType: os.platform(),
+      OSVersion: os.version(),
+      duration: (end - start).toLocaleString(),
+      apiRuntime: swaConfigFileContent?.platform.apiRuntime!,
+    },
+    { PID: process.pid, appRuntime: nodeMajorVersion }
+  );
 }

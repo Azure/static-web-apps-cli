@@ -7,6 +7,14 @@ jest.mock("child_process", () => ({
   execSync: jest.fn(),
 }));
 
+jest.mock("../../../core/telemetry/utils", () => {
+  return {
+    collectTelemetryEvent: jest.fn(),
+    collectTelemetryException: jest.fn(),
+    getTelemetryReporter: jest.fn(),
+  };
+});
+
 describe("swa build", () => {
   afterEach(() => {
     mockFs.restore();

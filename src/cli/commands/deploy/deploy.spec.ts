@@ -13,6 +13,14 @@ jest.mock("ora", () => {
   return jest.fn();
 });
 
+jest.mock("../../../core/telemetry/utils", () => {
+  return {
+    collectTelemetryEvent: jest.fn(),
+    collectTelemetryException: jest.fn(),
+    getTelemetryReporter: jest.fn(),
+  };
+});
+
 jest.mock("../../../core/utils/logger", () => {
   return {
     logger: {

@@ -9,11 +9,16 @@ import { ENV_FILENAME } from "../../../core/constants";
 import { updateGitIgnore } from "../../../core/git";
 import { chooseSubscription, chooseTenant } from "../../../core/prompts";
 import { Environment } from "../../../core/swa-cli-persistence-plugin/impl/azure-environment";
+import { collectTelemetryEvent } from "../../../core/telemetry/utils";
+import { pkg } from "../..";
+import os from "os";
+import { DEFAULT_CONFIG } from "../../../config";
 const { readFile, writeFile } = fsPromises;
 
 const defaultScope = `${Environment.AzureCloud.resourceManagerEndpointUrl}/.default`;
 
 export async function loginCommand(options: SWACLIConfig) {
+  const start = new Date().getTime();
   try {
     const { credentialChain, subscriptionId } = await login(options);
 
@@ -27,6 +32,18 @@ export async function loginCommand(options: SWACLIConfig) {
     logger.error(`Failed to setup project: ${(error as any).message}`);
     logGiHubIssueMessageAndExit();
   }
+  const end = new Date().getTime();
+  collectTelemetryEvent(
+    "login",
+    {
+      subscriptionId: DEFAULT_CONFIG.subscriptionId!,
+      CLIVersion: pkg.version,
+      OSType: os.platform(),
+      OSVersion: os.version(),
+      duration: (end - start).toLocaleString(),
+    },
+    { PID: process.pid }
+  );
 }
 
 export async function login(options: SWACLIConfig): Promise<any> {

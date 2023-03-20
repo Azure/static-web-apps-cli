@@ -7,6 +7,14 @@ import { convertToNativePaths, convertToUnixPaths } from "../../../jest.helpers.
 
 jest.mock("prompts", () => jest.fn());
 
+jest.mock("../../../core/telemetry/utils", () => {
+  return {
+    collectTelemetryEvent: jest.fn(),
+    collectTelemetryException: jest.fn(),
+    getTelemetryReporter: jest.fn(),
+  };
+});
+
 const defaultCliConfig = {
   ...DEFAULT_CONFIG,
   config: swaCliConfigFilename,
