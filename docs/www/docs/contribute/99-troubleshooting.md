@@ -87,9 +87,9 @@ It can happen that the host firewall can block downloading these binaries. If us
 ```
 
 3. Based on your operating system, download the right binary from the provided URLs:
-   1. Linux: https://swalocaldeploy.azureedge.net/downloads/<StaticSitesClient version>/linux/StaticSitesClient
-   2. Windows: https://swalocaldeploy.azureedge.net/downloads/<StaticSitesClient version>/windows/StaticSitesClient.exe
-   3. macOS: https://swalocaldeploy.azureedge.net/downloads/<StaticSitesClient version>/macOS/StaticSitesClient
+   1. Linux: https://swalocaldeploy.azureedge.net/downloads/{StaticSitesClient version}/linux/StaticSitesClient
+   2. Windows: https://swalocaldeploy.azureedge.net/downloads/{StaticSitesClient version}/windows/StaticSitesClient.exe
+   3. macOS: https://swalocaldeploy.azureedge.net/downloads/{StaticSitesClient version}/macOS/StaticSitesClient
 1. Copy this binary to `$HOME/.swa/deploy/VERSION/StaticSiteClient` (add `.exe` for Windows). For eg:
    `/home/USER/.swa/deploy/<StaticSitesClient version>/StaticSiteClient`
 1. Create a file at `$HOME/.swa/deploy/StaticSitesClient.json` with the following content:
