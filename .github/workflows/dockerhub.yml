@@ -12,6 +12,10 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      
+      - name: Refresh Keys
+        run: sudo apt-key adv --refresh-keys --keyserver keyserver.ubuntu.com
+      
       - name: Publish to Docker Hub
         run: ./scripts/publish_docker.sh
         env:
