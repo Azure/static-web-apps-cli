@@ -13,8 +13,8 @@ jobs:
         with:
           fetch-depth: 0
       
-      - name: Get latest signature
-        run: curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+      - name: Refresh key
+        run: sudo gpg --refresh-keys 23E7166788B63E1E
       
       - name: Publish to Docker Hub
         run: ./scripts/publish_docker.sh
