@@ -19,7 +19,7 @@ import { registerTelemetry } from "./commands";
 
 export * from "./commands";
 
-export const pkg = require("../../package.json");
+const pkg = require("../../package.json");
 
 function printWelcomeMessage(argv?: string[]) {
   const args = argv?.slice(2) || [];

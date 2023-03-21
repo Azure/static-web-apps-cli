@@ -1,5 +1,6 @@
 import { TokenCachePersistenceOptions } from "@azure/identity";
 import { ICachePlugin, TokenCacheContext } from "@azure/msal-common";
+import { MACHINE_ID_LENGTH } from "../constants";
 import { logger } from "../utils";
 import { Environment } from "./impl/azure-environment";
 import { NativeCredentialsStore } from "./impl/credentials-store";
@@ -30,7 +31,7 @@ export class SWACLIPersistenceCachePlugin implements ICachePlugin {
   public async beforeCacheAccess(cacheContext: TokenCacheContext): Promise<void> {
     logger.silly(`Executing before cache access plugin`);
 
-    const machineId = await getMachineId();
+    const machineId = await getMachineId("shake256", MACHINE_ID_LENGTH);
     logger.silly(`Machine ID: ${machineId ? "<hidden>" : "<empty>"}`);
 
     const secretStorage = new SecretStorage(this.options, new NativeCredentialsStore(this.options), new CryptoService(machineId));
@@ -49,7 +50,7 @@ export class SWACLIPersistenceCachePlugin implements ICachePlugin {
   public async afterCacheAccess(cacheContext: TokenCacheContext): Promise<void> {
     logger.silly(`Executing after cache access plugin`);
 
-    const machineId = await getMachineId();
+    const machineId = await getMachineId("shake256", MACHINE_ID_LENGTH);
     logger.silly(`Machine ID: ${machineId ? "<hidden>" : "<empty>"}`);
 
     const secretStorage = new SecretStorage(this.options, new NativeCredentialsStore(this.options), new CryptoService(machineId));
@@ -69,7 +70,7 @@ export class SWACLIPersistenceCachePlugin implements ICachePlugin {
   public async clearCache(): Promise<void> {
     logger.silly(`Clearing credentials cache`);
 
-    const machineId = await getMachineId();
+    const machineId = await getMachineId("shake256", MACHINE_ID_LENGTH);
     logger.silly(`Machine ID: ${machineId ? "<hidden>" : "<empty>"}`);
 
     const secretStorage = new SecretStorage(this.options, new NativeCredentialsStore(this.options), new CryptoService(machineId));

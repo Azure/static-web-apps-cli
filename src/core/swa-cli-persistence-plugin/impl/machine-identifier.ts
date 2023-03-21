@@ -9,10 +9,10 @@ let machineId: Promise<string>;
  *
  * @returns {Promise<string>} A 32-byte machine id.
  */
-export async function getMachineId(): Promise<string> {
+export async function getMachineId(algorithm: string, length: number): Promise<string> {
   if (!machineId) {
     machineId = (async () => {
-      return (await getMacMachineId()) || crypto.randomBytes(20).toString("hex");
+      return (await getMacMachineId(algorithm, length)) || crypto.randomBytes(20).toString("hex");
     })();
   }
   return machineId;
@@ -22,10 +22,10 @@ export async function getMachineId(): Promise<string> {
  * Get the mac address of the machine and hash it.
  * @returns {Promise<string>} A 32-byte hash of the mac address.
  */
-async function getMacMachineId(): Promise<string | undefined> {
+async function getMacMachineId(algorithm: string, length: number): Promise<string | undefined> {
   try {
     const macAddress = getMac();
-    return crypto.createHash("shake256", { outputLength: 16 /* 32 byts */ }).update(macAddress, "utf8").digest("hex");
+    return crypto.createHash(algorithm, { outputLength: length /*  bytes */ }).update(macAddress, "utf8").digest("hex");
   } catch (err) {
     logger.error(err as any);
     return undefined;

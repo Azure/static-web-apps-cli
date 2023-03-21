@@ -10,6 +10,7 @@ jest.mock("child_process", () => ({
 
 jest.mock("../../../core/telemetry/utils", () => {
   return {
+    ...jest.requireActual("../../../core/telemetry/utils"),
     collectTelemetryEvent: jest.fn(),
     collectTelemetryException: jest.fn(),
     getTelemetryReporter: jest.fn(),

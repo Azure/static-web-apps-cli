@@ -5,14 +5,14 @@ import { existsSync, promises as fsPromises } from "fs";
 import path from "path";
 import { logger, logGiHubIssueMessageAndExit } from "../../../core";
 import { authenticateWithAzureIdentity, listSubscriptions, listTenants } from "../../../core/account";
-import { ENV_FILENAME } from "../../../core/constants";
+import { ENV_FILENAME, TELEMETRY_LOGIN_EVENT, TELEMETRY_MAC_ADDRESS_HASH_LENGTH } from "../../../core/constants";
 import { updateGitIgnore } from "../../../core/git";
 import { chooseSubscription, chooseTenant } from "../../../core/prompts";
 import { Environment } from "../../../core/swa-cli-persistence-plugin/impl/azure-environment";
-import { collectTelemetryEvent } from "../../../core/telemetry/utils";
-import { pkg } from "../..";
+import { collectTelemetryEvent, getSessionId } from "../../../core/telemetry/utils";
 import os from "os";
 import { DEFAULT_CONFIG } from "../../../config";
+import { getMachineId } from "../../../core/swa-cli-persistence-plugin/impl/machine-identifier";
 const { readFile, writeFile } = fsPromises;
 
 const defaultScope = `${Environment.AzureCloud.resourceManagerEndpointUrl}/.default`;
@@ -33,17 +33,15 @@ export async function loginCommand(options: SWACLIConfig) {
     logGiHubIssueMessageAndExit();
   }
   const end = new Date().getTime();
-  collectTelemetryEvent(
-    "login",
-    {
-      subscriptionId: DEFAULT_CONFIG.subscriptionId!,
-      CLIVersion: pkg.version,
-      OSType: os.platform(),
-      OSVersion: os.version(),
-      duration: (end - start).toLocaleString(),
-    },
-    { PID: process.pid }
-  );
+
+  collectTelemetryEvent(TELEMETRY_LOGIN_EVENT, {
+    macAddressHash: (await getMachineId("sha256", TELEMETRY_MAC_ADDRESS_HASH_LENGTH)).toString(),
+    subscriptionId: DEFAULT_CONFIG.subscriptionId!,
+    sessionId: getSessionId(end),
+    OSType: os.type(),
+    OSVersion: os.version(),
+    duration: (end - start).toLocaleString(),
+  });
 }
 
 export async function login(options: SWACLIConfig): Promise<any> {

@@ -4,6 +4,7 @@ dotenv.config();
 import TelemetryReporter from "./telemetryReporter";
 import type { TelemetryEventMeasurements, TelemetryEventProperties } from "./telemetryReporterTypes";
 import { readCLIEnvFile } from "../utils";
+import * as crypto from "crypto";
 
 const aiKey = "8428a7f6-6650-4490-a15a-c7f7a16449d7";
 
@@ -28,4 +29,13 @@ export async function getTelemetryReporter() {
     return reporter;
   }
   return undefined;
+}
+
+export function getSessionId(timeStamp: number) {
+  const timeStampStr = timeStamp.toString();
+  const PID = process.pid.toString();
+  return crypto
+    .createHash("sha256")
+    .update(PID + timeStampStr)
+    .digest("hex");
 }

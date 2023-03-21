@@ -11,10 +11,11 @@ import {
   writeConfigFile,
 } from "../../../core/utils";
 import { detectProjectFolders, generateConfiguration, isDescendantPath } from "../../../core/frameworks";
-import { collectTelemetryEvent } from "../../../core/telemetry/utils";
+import { collectTelemetryEvent, getSessionId } from "../../../core/telemetry/utils";
 import { DEFAULT_CONFIG } from "../../../config";
-import { pkg } from "../..";
 import os from "os";
+import { getMachineId } from "../../../core/swa-cli-persistence-plugin/impl/machine-identifier";
+import { TELEMETRY_INIT_EVENT, TELEMETRY_MAC_ADDRESS_HASH_LENGTH } from "../../../core/constants";
 
 export async function init(options: SWACLIConfig, showHints: boolean = true) {
   const start = new Date().getTime();
@@ -136,18 +137,16 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
     logger.log(`- Use ${chalk.cyan("swa deploy")} to deploy your app to Azure.\n`);
   }
   const end = new Date().getTime();
-  await collectTelemetryEvent(
-    "init",
-    {
-      subscriptionId: DEFAULT_CONFIG.subscriptionId!,
-      CLIVersion: pkg.version,
-      OSType: os.platform(),
-      OSVersion: os.version(),
-      duration: (end - start).toLocaleString(),
-      appFramework: projectConfig?.name?.split(", with")[0]!,
-    },
-    { PID: process.pid }
-  );
+
+  await collectTelemetryEvent(TELEMETRY_INIT_EVENT, {
+    macAddressHash: (await getMachineId("sha256", TELEMETRY_MAC_ADDRESS_HASH_LENGTH)).toString(),
+    subscriptionId: DEFAULT_CONFIG.subscriptionId!,
+    sessionId: getSessionId(end),
+    OSType: os.type(),
+    OSVersion: os.version(),
+    appFramework: projectConfig?.name?.split(", with")[0]!,
+    duration: (end - start).toLocaleString(),
+  });
 }
 
 function convertToCliConfig(config: FrameworkConfig): SWACLIConfig {

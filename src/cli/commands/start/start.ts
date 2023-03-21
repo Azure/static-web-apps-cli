@@ -17,10 +17,11 @@ import {
 } from "../../../core";
 import { swaCLIEnv } from "../../../core/env";
 import { getCertificate } from "../../../core/ssl";
-import { collectTelemetryEvent } from "../../../core/telemetry/utils";
+import { collectTelemetryEvent, getSessionId } from "../../../core/telemetry/utils";
 import { DEFAULT_CONFIG } from "../../../config";
-import { pkg } from "../..";
 import os from "os";
+import { getMachineId } from "../../../core/swa-cli-persistence-plugin/impl/machine-identifier";
+import { TELEMETRY_MAC_ADDRESS_HASH_LENGTH, TELEMETRY_START_EVENT } from "../../../core/constants";
 const packageInfo = require("../../../../package.json");
 const mshaPath = require.resolve("../../../msha/server");
 
@@ -307,16 +308,18 @@ export async function start(options: SWACLIConfig) {
     });
 
   const end = new Date().getTime();
+
   collectTelemetryEvent(
-    "start",
+    TELEMETRY_START_EVENT,
     {
+      macAddressHash: (await getMachineId("sha256", TELEMETRY_MAC_ADDRESS_HASH_LENGTH)).toString(),
       subscriptionId: DEFAULT_CONFIG.subscriptionId!,
-      CLIVersion: pkg.version,
-      OSType: os.platform(),
+      sessionId: getSessionId(end),
+      OSType: os.type(),
       OSVersion: os.version(),
-      duration: (end - start).toLocaleString(),
       apiRuntime: swaConfigFileContent?.platform.apiRuntime!,
+      duration: (end - start).toLocaleString(),
     },
-    { PID: process.pid, appRuntime: nodeMajorVersion }
+    { appRuntime: nodeMajorVersion }
   );
 }

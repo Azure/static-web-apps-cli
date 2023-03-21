@@ -16,10 +16,11 @@ import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../../
 import { cleanUp, getDeployClientPath } from "../../../core/deploy-client";
 import { swaCLIEnv } from "../../../core/env";
 import { login } from "../login";
-import { collectTelemetryEvent } from "../../../core/telemetry/utils";
+import { collectTelemetryEvent, getSessionId } from "../../../core/telemetry/utils";
 import { DEFAULT_CONFIG } from "../../../config";
-import { pkg } from "../..";
 import os from "os";
+import { getMachineId } from "../../../core/swa-cli-persistence-plugin/impl/machine-identifier";
+import { TELEMETRY_DEPLOY_EVENT, TELEMETRY_MAC_ADDRESS_HASH_LENGTH } from "../../../core/constants";
 
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "..", "package.json"));
 
@@ -300,17 +301,19 @@ export async function deploy(options: SWACLIConfig) {
     logGiHubIssueMessageAndExit();
   } finally {
     const end = new Date().getTime();
+
     collectTelemetryEvent(
-      "deploy",
+      TELEMETRY_DEPLOY_EVENT,
       {
+        macAddressHash: (await getMachineId("sha256", TELEMETRY_MAC_ADDRESS_HASH_LENGTH)).toString(),
         subscriptionId: DEFAULT_CONFIG.subscriptionId!,
-        CLIVersion: pkg.version,
-        OSType: os.platform(),
+        sessionId: getSessionId(end),
+        OSType: os.type(),
         OSVersion: os.version(),
-        duration: (end - start).toLocaleString(),
         apiRuntime: swaConfigFileContent?.platform?.apiRuntime!,
+        duration: (end - start).toLocaleString(),
       },
-      { PID: process.pid, appRuntime: nodeMajorVersion }
+      { appRuntime: nodeMajorVersion }
     );
     cleanUp();
   }
