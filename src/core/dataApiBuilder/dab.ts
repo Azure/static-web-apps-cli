@@ -154,7 +154,7 @@ async function extractBinary(zipFilePath: string, destDirectory: string) {
  * @param platform current OS
  * @returns the Data-api-builder binary for given OS
  */
-function getDefaultDataApiBuilderBinaryForOS(platform: string): string {
+export function getDefaultDataApiBuilderBinaryForOS(platform: string): string {
   switch (platform) {
     case "win-x64":
       return DEFAULT_DATA_API_BUILDER_BINARY.Windows;
