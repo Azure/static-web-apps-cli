@@ -2,13 +2,9 @@ import { logger, execFileCommand } from "../../../../core";
 import { init, isValidDatabaseType } from "./init";
 import path from "path";
 import {
-  // DATA_API_BUILDER_BINARY_NAME,
-  // DATA_API_BUILDER_DATABASE_TYPES,
+  DATA_API_BUILDER_DATABASE_TYPES,
   DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME,
   DATA_API_BUILDER_DEFAULT_FOLDER,
-  // DATA_API_BUILDER_DEFAULT_REST_PATH,
-  // DATA_API_BUILDER_DEFAULT_SCHEMA_FILE_NAME,
-  // DEFAULT_DATA_API_BUILDER_SCHEMA_CONTENT,
 } from "../../../../core/constants";
 import fs from "fs";
 
@@ -59,16 +55,42 @@ describe("init", () => {
     );
   });
 
+  it("should log an error and return if databaseType is empty string", async () => {
+    const options = { databaseType: "" };
+
+    await init(options);
+
+    expect(logger.error).toHaveBeenCalledWith(
+      `--database-type is a required field. Please provide the type of the database you want to connect (mssql, postgresql, cosmosdb_nosql, mysql, cosmosdb_postgresql).`,
+      true
+    );
+  });
+
   it("should create the folder if it doesn't exist", async () => {
     const options = { databaseType: "mssql" };
+    const directory = path.join(process.cwd(), DATA_API_BUILDER_DEFAULT_FOLDER);
     const fsExistsSyncSpy = jest.spyOn(fs, "existsSync").mockReturnValueOnce(false);
     const fsMkdirSyncSpy = jest.spyOn(fs, "mkdirSync").mockReturnValue("");
 
     await init(options);
 
     expect(fsExistsSyncSpy).toHaveBeenCalledTimes(2);
-    expect(fsMkdirSyncSpy).toHaveBeenCalledWith(expect.any(String));
+    expect(fsMkdirSyncSpy).toHaveBeenCalledWith(directory);
     expect(logger.log).toHaveBeenCalledWith(`Creating database connections configuration folder ${DATA_API_BUILDER_DEFAULT_FOLDER}`, "swa");
+  });
+
+  it("should create the custom folder if it doesn't exist", async () => {
+    const customFolderName = "customFolderName";
+    const options = { databaseType: "mssql", folderName: customFolderName };
+    const directory = path.join(process.cwd(), customFolderName);
+    const fsExistsSyncSpy = jest.spyOn(fs, "existsSync").mockReturnValueOnce(false);
+    const fsMkdirSyncSpy = jest.spyOn(fs, "mkdirSync").mockReturnValue("");
+
+    await init(options);
+
+    expect(fsExistsSyncSpy).toHaveBeenCalledTimes(2);
+    expect(fsMkdirSyncSpy).toHaveBeenCalledWith(directory);
+    expect(logger.log).toHaveBeenCalledWith(`Creating database connections configuration folder ${customFolderName}`, "swa");
   });
 
   it("should not create the folder if it already exists", async () => {
@@ -113,6 +135,37 @@ describe("init", () => {
     expect(execFileCommand).toHaveBeenCalled();
     expect(fsExistsSyncSpy).toHaveBeenCalledWith(configFile);
   });
+
+  it("should print warning when --cosmosdb_nosql-container is provided but database type is not cosmosdb_nosql", async () => {
+    const options = { databaseType: "mssql", cosmosdb_nosqlContainer: "xyz" };
+
+    await init(options);
+
+    expect(logger.warn).toHaveBeenCalledWith(
+      `Database type is not ${DATA_API_BUILDER_DATABASE_TYPES.CosmosDbNoSql}, --cosmosdb_nosql-container will be ignored.`
+    );
+  });
+
+  it("should print warning when --cosmosdb_nosql-database is provided but database type is not cosmosdb_nosql", async () => {
+    const options = { databaseType: "mssql", cosmosdb_nosqlDatabase: "xyz" };
+
+    await init(options);
+
+    expect(logger.warn).toHaveBeenCalledWith(
+      `Database type is not ${DATA_API_BUILDER_DATABASE_TYPES.CosmosDbNoSql}, --cosmosdb_nosql-database will be ignored.`
+    );
+  });
+
+  it("should print error when --cosmosdb_nosql-database is not provided when database type is cosmosdb_nosql", async () => {
+    const options = { databaseType: "cosmosdb_nosql" };
+
+    await init(options);
+
+    expect(logger.error).toHaveBeenCalledWith(
+      `--cosmosdb_nosql-database is required when database-type is cosmosdb_nosql, ${DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME} will not be created`,
+      true
+    );
+  });
 });
 
 describe("isValidDatabaseType", () => {
@@ -126,5 +179,6 @@ describe("isValidDatabaseType", () => {
 
   it("returns false for invalid database types", () => {
     expect(isValidDatabaseType("invalid")).toBe(false);
+    expect(isValidDatabaseType("")).toBe(false);
   });
 });

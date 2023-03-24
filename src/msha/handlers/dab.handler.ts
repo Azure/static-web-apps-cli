@@ -42,6 +42,7 @@ export function handleDataApiRequest(req: http.IncomingMessage, res: http.Server
   logRequest(req, target);
 }
 
+// exported for testing
 export function injectHeaders(req: http.ClientRequest, host: string | undefined) {
   const X_MS_ORIGINAL_URL_HEADER = "x-ms-original-url";
   const X_MS_REQUEST_ID_HEADER = "x-ms-request-id";
@@ -67,6 +68,7 @@ export function isDataApiRequest(req: http.IncomingMessage, rewritePath?: string
   return Boolean(path?.toLowerCase().startsWith(`/data-api/`));
 }
 
+// exported for testing
 export function injectClientPrincipalCookies(req: http.ClientRequest) {
   const X_MS_CLIENT_PRINCIPAL_HEADER = "X-MS-CLIENT-PRINCIPAL";
   const AUTH_HEADER = "authorization";

@@ -2,6 +2,14 @@ import { getPlatform } from "./platform";
 import os from "os";
 
 describe("getPlatform", () => {
+  it("should call os.platform() when getPlatform is called", () => {
+    const mockOSPlatform = jest.spyOn(os, "platform").mockReturnValue("win32");
+
+    getPlatform();
+
+    expect(mockOSPlatform).toHaveBeenCalledTimes(1);
+  });
+
   it("should return 'win-x64' when running on Windows", () => {
     // Mock the os.platform function to return "win32"
     jest.spyOn(os, "platform").mockReturnValue("win32");
