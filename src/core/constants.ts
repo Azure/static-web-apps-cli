@@ -1,9 +1,24 @@
 import path from "path";
 import { DEFAULT_CONFIG } from "../config";
 import { address, isHttpUrl } from "./utils/net";
+import os from "os";
 
+export const DEPLOY_BINARY_NAME = "StaticSitesClient";
+export const DEPLOY_BINARY_STABLE_TAG = "stable";
+export const DATA_API_BUILDER_BINARY_NAME = "DataApiBuilder";
+export const DATA_API_BUILDER_COMMAND = "dab";
 export const STATIC_SITE_CLIENT_RELEASE_METADATA_URL = "https://swalocaldeploy.azureedge.net/downloads/versions.json";
-export const SWA_COMMANDS = ["login", "init", "start", "deploy", "build"] as const;
+export const DATA_API_BUILDER_RELEASE_METADATA_URL = "https://dataapibuilder.azureedge.net/releases/dab-manifest.json";
+export const DEPLOY_FOLDER = path.join(os.homedir(), ".swa", "deploy");
+export const DATA_API_BUILDER_FOLDER = path.join(os.homedir(), ".swa", "dataApiBuilder");
+export const DATA_API_BUILDER_RELEASE_TAG = "released";
+export const DATA_API_BUILDER_LATEST_TAG = "latest";
+export const DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME = "staticwebapp.database.config.json";
+export const DATA_API_BUILDER_DEFAULT_SCHEMA_FILE_NAME = "staticwebapp.database.schema.gql";
+export const DATA_API_BUILDER_DEFAULT_FOLDER = "swa-db-connections";
+export const DATA_API_BUILDER_DEFAULT_REST_PATH = "/rest";
+export const DATA_API_BUILDER_VERSION_ID = "0.5.32";
+export const SWA_COMMANDS = ["login", "init", "start", "deploy", "build", "db init"] as const;
 // Type cannot be in swa.d.ts as it's inferred from SWA_COMMANDS
 export type SWACommand = typeof SWA_COMMANDS[number];
 
@@ -11,6 +26,20 @@ export const SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB = 20; // 20kb
 
 export const SWA_AUTH_COOKIE = `StaticWebAppsAuthCookie`;
 export const ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT = ["GET", "HEAD", "OPTIONS"];
+
+export const DEFAULT_DATA_API_BUILDER_BINARY = {
+  Windows: "Microsoft.DataApiBuilder.exe",
+  Linux: "Microsoft.DataApiBuilder",
+  MacOs: "Microsoft.DataApiBuilder",
+};
+
+export const DATA_API_BUILDER_DATABASE_TYPES = {
+  MsSql: "mssql",
+  CosmosDbNoSql: "cosmosdb_nosql",
+  CosmosDbPostGreSql: "cosmosdb_postgresql",
+  MySql: "mysql",
+  PostGreSql: "postgresql",
+};
 
 export const AUTH_STATUS = {
   NoAuth: 0,
@@ -164,6 +193,20 @@ export const MIME_TYPE_LIST: { [key: string]: string } = {
   ".7z": "application/x-7z-compressed",
 };
 
+export const DEFAULT_DATA_API_BUILDER_SCHEMA_CONTENT = `
+"""
+Add your CosmosDB NoSQL database schema in this file
+
+For example:
+
+type Book @model {
+  id: ID
+  title: String
+}
+
+"""
+`;
+
 export const DEFAULT_MIME_TYPE = "application/octet-stream";
 export const HEADER_DELETE_KEYWORD = "@@HEADER_DELETE_KEYWORD@@";
 
@@ -198,4 +241,12 @@ export function IS_API_DEV_SERVER() {
 }
 export function SWA_CLI_API_URI() {
   return IS_API_DEV_SERVER() ? DEFAULT_CONFIG.apiLocation : address(DEFAULT_CONFIG.host, DEFAULT_CONFIG.apiPort);
+}
+
+export function IS_DATA_API_DEV_SERVER() {
+  return isHttpUrl(DEFAULT_CONFIG.dataApiLocation);
+}
+
+export function SWA_CLI_DATA_API_URI() {
+  return IS_DATA_API_DEV_SERVER() ? DEFAULT_CONFIG.dataApiLocation : address(DEFAULT_CONFIG.host, DEFAULT_CONFIG.dataApiPort, "http");
 }

@@ -10,6 +10,7 @@ import { DEFAULT_CONFIG } from "../../config";
 import { findSWAConfigFile, logger, logRequest } from "../../core";
 import { AUTH_STATUS, CUSTOM_URL_SCHEME, IS_APP_DEV_SERVER, SWA_PUBLIC_DIR } from "../../core/constants";
 import { getAuthBlockResponse, handleAuthRequest, isAuthRequest, isLoginRequest, isLogoutRequest } from "../handlers/auth.handler";
+import { isDataApiRequest } from "../handlers/dab.handler";
 import { handleErrorPage } from "../handlers/error-page.handler";
 import { isFunctionRequest } from "../handlers/function.handler";
 import { isRequestMethodValid, isRouteRequiringUserRolesCheck, tryGetMatchingRoute } from "../routes-engine";
@@ -244,7 +245,13 @@ export async function requestMiddleware(
     logger.silly(` - not a function request`);
   }
 
-  if (!isRequestMethodValid(req, isFunctionReq, isAuthReq)) {
+  logger.silly(`checking data-api request`);
+  const isDataApiReq = isDataApiRequest(req, matchingRouteRule?.rewrite);
+  if (!isDataApiReq) {
+    logger.silly(` - not a data Api request`);
+  }
+
+  if (!isRequestMethodValid(req, isFunctionReq, isAuthReq, isDataApiReq)) {
     res.statusCode = 405;
     return res.end();
   }
@@ -284,7 +291,7 @@ export async function requestMiddleware(
     return await handleAuthRequest(req, res, matchingRouteRule, userConfig);
   }
 
-  if (!getResponse(req, res, matchingRouteRule, userConfig, isFunctionReq)) {
+  if (!getResponse(req, res, matchingRouteRule, userConfig, isFunctionReq, isDataApiReq)) {
     logger.silly(` - url: ${chalk.yellow(req.url)}`);
     logger.silly(` - target: ${chalk.yellow(target)}`);
 

@@ -1,43 +1,17 @@
-import chalk from "chalk";
-import crypto from "crypto";
 import fs from "fs";
 import fetch from "node-fetch";
-import ora from "ora";
 import os from "os";
 import path from "path";
-import { PassThrough } from "stream";
-import { STATIC_SITE_CLIENT_RELEASE_METADATA_URL } from "./constants";
+import { STATIC_SITE_CLIENT_RELEASE_METADATA_URL, DEPLOY_BINARY_NAME, DEPLOY_FOLDER, DEPLOY_BINARY_STABLE_TAG } from "./constants";
+import { downloadAndValidateBinary } from "./download-binary-helper";
 import { swaCLIEnv } from "./env";
-import { logger } from "./utils";
-
-type StaticSiteClientReleaseMetadata = {
-  version: "stable" | "latest";
-  buildId: string;
-  publishDate: string;
-  files: {
-    ["linux-x64"]: {
-      url: string;
-      sha: string;
-    };
-    ["win-x64"]: {
-      url: string;
-      sha: string;
-    };
-    ["osx-x64"]: {
-      url: string;
-      sha: string;
-    };
-  };
-};
+import { getPlatform, logger } from "./utils";
 
 type StaticSiteClientLocalMetadata = {
   metadata: StaticSiteClientReleaseMetadata;
   binary: string;
   checksum: string;
 };
-
-export const DEPLOY_BINARY_NAME = "StaticSitesClient";
-export const DEPLOY_FOLDER = path.join(os.homedir(), ".swa", "deploy");
 
 export async function getDeployClientPath(): Promise<{ binary: string; buildId: string }> {
   const platform = getPlatform();
@@ -46,7 +20,7 @@ export async function getDeployClientPath(): Promise<{ binary: string; buildId: 
   }
 
   const localClientMetadata = getLocalClientMetadata() as StaticSiteClientLocalMetadata;
-  const binaryVersion = swaCLIEnv().SWA_CLI_DEPLOY_BINARY_VERSION || "stable";
+  const binaryVersion = swaCLIEnv().SWA_CLI_DEPLOY_BINARY_VERSION || DEPLOY_BINARY_STABLE_TAG;
   const remoteClientMetadata = await fetchClientVersionDefinition(binaryVersion);
   if (remoteClientMetadata === undefined) {
     throw new Error(`Could not load ${DEPLOY_BINARY_NAME} metadata from remote. Please check your internet connection.`);
@@ -83,7 +57,7 @@ export async function getDeployClientPath(): Promise<{ binary: string; buildId: 
   }
 
   return {
-    binary: await downloadAndValidateBinary(remoteClientMetadata, platform),
+    binary: await downloadAndValidateBinary(remoteClientMetadata, DEPLOY_BINARY_NAME, DEPLOY_FOLDER, remoteClientMetadata.buildId, platform),
     buildId: remoteClientMetadata.buildId,
   };
 }
@@ -117,34 +91,6 @@ export function getLocalClientMetadata(): StaticSiteClientLocalMetadata | null {
   return null;
 }
 
-function computeChecksumfromFile(filePath: string | undefined): string {
-  if (!filePath || !fs.existsSync(filePath)) {
-    return "";
-  }
-
-  const buffer = fs.readFileSync(filePath);
-  const hash = crypto.createHash("sha256");
-  hash.update(buffer);
-  return hash.digest("hex");
-}
-
-export function getPlatform(): "win-x64" | "osx-x64" | "linux-x64" | null {
-  switch (os.platform()) {
-    case "win32":
-      return "win-x64";
-    case "darwin":
-      return "osx-x64";
-    case "aix":
-    case "freebsd":
-    case "openbsd":
-    case "sunos":
-    case "linux":
-      return "linux-x64";
-    default:
-      return null;
-  }
-}
-
 export async function fetchClientVersionDefinition(releaseVersion: string): Promise<StaticSiteClientReleaseMetadata | undefined> {
   logger.silly(`Fetching release metadata for version: ${releaseVersion}. Please wait...`);
 
@@ -161,75 +107,6 @@ export async function fetchClientVersionDefinition(releaseVersion: string): Prom
   return undefined;
 }
 
-async function downloadAndValidateBinary(release: StaticSiteClientReleaseMetadata, platform: "win-x64" | "osx-x64" | "linux-x64") {
-  const downloadUrl = release.files[platform!].url;
-  const downloadFilename = path.basename(downloadUrl);
-
-  const url = release.files[platform].url;
-  const buildId = release.buildId;
-
-  const spinner = ora({ prefixText: chalk.dim.gray(`[swa]`) });
-
-  spinner.start(`Downloading ${url}@${buildId}`);
-
-  const response = await fetch(url);
-
-  if (response.status !== 200) {
-    spinner.fail();
-    throw new Error(`Failed to download ${DEPLOY_BINARY_NAME} binary. File not found (${response.status})`);
-  }
-
-  const bodyStream = response?.body?.pipe(new PassThrough());
-
-  createDeployDirectoryIfNotExists(buildId);
-
-  return await new Promise<string>((resolve, reject) => {
-    const isPosix = platform === "linux-x64" || platform === "osx-x64";
-    let outputFile = path.join(DEPLOY_FOLDER, buildId, downloadFilename);
-
-    const writableStream = fs.createWriteStream(outputFile, { mode: isPosix ? 0o755 : undefined });
-    bodyStream?.pipe(writableStream);
-
-    writableStream.on("end", () => {
-      bodyStream?.end();
-    });
-
-    writableStream.on("finish", () => {
-      const computedHash = computeChecksumfromFile(outputFile).toLowerCase();
-      const releaseChecksum = release.files[platform].sha.toLocaleLowerCase();
-      if (computedHash !== releaseChecksum) {
-        try {
-          // in case of a failure, we remove the file
-          fs.unlinkSync(outputFile);
-        } catch {}
-
-        spinner.fail();
-        reject(new Error(`Checksum mismatch! Expected ${computedHash}, got ${releaseChecksum}.`));
-      } else {
-        spinner.succeed();
-
-        logger.silly(`Checksum match: ${computedHash}`);
-        logger.silly(`Saved binary to ${outputFile}`);
-
-        saveMetadata(release, outputFile, computedHash);
-
-        resolve(outputFile);
-      }
-    });
-  });
-}
-
-function saveMetadata(release: StaticSiteClientReleaseMetadata, binaryFilename: string, sha: string) {
-  const metatdaFilename = path.join(DEPLOY_FOLDER, `${DEPLOY_BINARY_NAME}.json`);
-  const metdata: StaticSiteClientLocalMetadata = {
-    metadata: release,
-    binary: binaryFilename,
-    checksum: sha,
-  };
-  fs.writeFileSync(metatdaFilename, JSON.stringify(metdata));
-  logger.silly(`Saved metadata to ${metatdaFilename}`);
-}
-
 // TODO: get StaticSiteClient to remove zip files
 // TODO: can these ZIPs be created under /tmp?
 export function cleanUp() {
@@ -244,11 +121,4 @@ export function cleanUp() {
 
   clean(".\\app.zip");
   clean(".\\api.zip");
-}
-
-function createDeployDirectoryIfNotExists(version: string) {
-  const deployPath = path.join(DEPLOY_FOLDER, version);
-  if (!fs.existsSync(deployPath)) {
-    fs.mkdirSync(deployPath, { recursive: true });
-  }
 }

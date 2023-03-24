@@ -8,7 +8,7 @@ import {
   getCurrentSwaCliConfigFromFile,
   isUserOrConfigOption,
   logger,
-  logGiHubIssueMessageAndExit,
+  logGitHubIssueMessageAndExit,
   readWorkflowFile,
   updateSwaCliConfigFile,
 } from "../../../core";
@@ -28,6 +28,7 @@ export async function deploy(options: SWACLIConfig) {
   let {
     appLocation,
     apiLocation,
+    dataApiLocation,
     outputLocation,
     dryRun,
     deploymentToken,
@@ -48,6 +49,19 @@ export async function deploy(options: SWACLIConfig) {
 
   // make sure appLocation is set
   appLocation = path.resolve(appLocation || process.cwd());
+
+  // make sure dataApiLocation is set
+  if (dataApiLocation) {
+    dataApiLocation = path.resolve(dataApiLocation);
+    if (!fs.existsSync(dataApiLocation)) {
+      logger.error(`The provided Data API folder ${dataApiLocation} does not exist. Abort.`, true);
+      return;
+    } else {
+      logger.log(`Deploying Data API from folder:`);
+      logger.log(`  ${chalk.green(dataApiLocation)}`);
+      logger.log(``);
+    }
+  }
 
   // make sure outputLocation is set
   const resolvedOutputLocation = path.resolve(appLocation, outputLocation || process.cwd());
@@ -182,12 +196,13 @@ export async function deploy(options: SWACLIConfig) {
 
   // TODO: do that in options
   // mix CLI args with the project's build workflow configuration (if any)
-  // use any specific workflow config that the user might provide undef ".github/workflows/"
+  // use any specific workflow config that the user might provide under ".github/workflows/"
   // Note: CLI args will take precedence over workflow config
   let userWorkflowConfig: Partial<GithubActionWorkflow> | undefined = {
     appLocation,
     outputLocation: resolvedOutputLocation,
     apiLocation: resolvedApiLocation,
+    dataApiLocation,
   };
   try {
     userWorkflowConfig = readWorkflowFile({
@@ -228,6 +243,7 @@ export async function deploy(options: SWACLIConfig) {
     APP_LOCATION: userWorkflowConfig?.outputLocation,
     // OUTPUT_LOCATION: outputLocation,
     API_LOCATION: userWorkflowConfig?.apiLocation,
+    DATA_API_LOCATION: userWorkflowConfig?.dataApiLocation,
     // If config file is not in output location, we need to tell where to find it
     CONFIG_FILE_LOCATION: resolvedSwaConfigLocation,
     VERBOSE: isVerboseEnabled ? "true" : "false",
@@ -318,7 +334,7 @@ export async function deploy(options: SWACLIConfig) {
     logger.error(
       `For further information, please visit the Azure Static Web Apps documentation at https://docs.microsoft.com/azure/static-web-apps/`
     );
-    logGiHubIssueMessageAndExit();
+    logGitHubIssueMessageAndExit();
   } finally {
     cleanUp();
   }
