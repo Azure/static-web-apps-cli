@@ -13,7 +13,7 @@ export default function registerCommand(program: Command) {
     .option("-i, --api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("-da, --data-api-location <path>", "the folder containing the database connections configuration", DEFAULT_CONFIG.dataApiLocation)
     .option("-O, --output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
-    .option("-l, --api-language <apiLanguage>", "the runtime language of the function/api", DEFAULT_CONFIG.apiLanguage)
+    .option("-al, --api-language <apiLanguage>", "the runtime language of the function/api", DEFAULT_CONFIG.apiLanguage)
     .option("-av, --api-version <apiVersion>", "the version of the function runtime language", DEFAULT_CONFIG.apiVersion)
     .option(
       "-w, --swa-config-location <swaConfigLocation>",

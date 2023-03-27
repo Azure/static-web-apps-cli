@@ -1,3 +1,5 @@
+import { getDefaultVersion } from "../functions-versions";
+
 export const apiFrameworks: FrameworkDefinition[] = [
   {
     id: "nodejs",
@@ -6,7 +8,7 @@ export const apiFrameworks: FrameworkDefinition[] = [
     config: {
       apiBuildCommand: "npm run build --if-present",
       apiLanguage: "node",
-      apiVersion: "16",
+      apiVersion: getDefaultVersion("node"),
     },
   },
   {
@@ -27,7 +29,7 @@ export const apiFrameworks: FrameworkDefinition[] = [
     config: {
       apiBuildCommand: "dotnet publish -c Release",
       apiLanguage: "dotnet",
-      apiVersion: "6.0",
+      apiVersion: getDefaultVersion("dotnet"),
     },
   },
   {
@@ -36,7 +38,7 @@ export const apiFrameworks: FrameworkDefinition[] = [
     files: ["*.?(csproj|fsproj)", "host.json"],
     config: {
       apiLanguage: "dotnetisolated",
-      apiVersion: "6.0",
+      apiVersion: getDefaultVersion("dotnetisolated"),
     },
   },
   {
@@ -46,7 +48,7 @@ export const apiFrameworks: FrameworkDefinition[] = [
     config: {
       // Nothing to setup, but we need to know the apiLocation (rootPath)
       apiLanguage: "python",
-      apiVersion: "3.9",
+      apiVersion: getDefaultVersion("python"),
     },
   },
 ];

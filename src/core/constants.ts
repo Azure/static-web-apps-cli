@@ -3,13 +3,16 @@ import { DEFAULT_CONFIG } from "../config";
 import { address, isHttpUrl } from "./utils/net";
 import os from "os";
 
+// StaticSiteClient related constants
 export const DEPLOY_BINARY_NAME = "StaticSitesClient";
 export const DEPLOY_BINARY_STABLE_TAG = "stable";
+export const DEPLOY_FOLDER = path.join(os.homedir(), ".swa", "deploy");
+export const STATIC_SITE_CLIENT_RELEASE_METADATA_URL = "https://swalocaldeploy.azureedge.net/downloads/versions.json";
+
+// Data-api-builder related constants
 export const DATA_API_BUILDER_BINARY_NAME = "DataApiBuilder";
 export const DATA_API_BUILDER_COMMAND = "dab";
-export const STATIC_SITE_CLIENT_RELEASE_METADATA_URL = "https://swalocaldeploy.azureedge.net/downloads/versions.json";
 export const DATA_API_BUILDER_RELEASE_METADATA_URL = "https://dataapibuilder.azureedge.net/releases/dab-manifest.json";
-export const DEPLOY_FOLDER = path.join(os.homedir(), ".swa", "deploy");
 export const DATA_API_BUILDER_FOLDER = path.join(os.homedir(), ".swa", "dataApiBuilder");
 export const DATA_API_BUILDER_RELEASE_TAG = "released";
 export const DATA_API_BUILDER_LATEST_TAG = "latest";
@@ -18,6 +21,20 @@ export const DATA_API_BUILDER_DEFAULT_SCHEMA_FILE_NAME = "staticwebapp.database.
 export const DATA_API_BUILDER_DEFAULT_FOLDER = "swa-db-connections";
 export const DATA_API_BUILDER_DEFAULT_REST_PATH = "/rest";
 export const DATA_API_BUILDER_VERSION_ID = "0.5.32";
+export const DEFAULT_DATA_API_BUILDER_BINARY = {
+  Windows: "Microsoft.DataApiBuilder.exe",
+  Linux: "Microsoft.DataApiBuilder",
+  MacOs: "Microsoft.DataApiBuilder",
+};
+export const DATA_API_BUILDER_DATABASE_TYPES = {
+  MsSql: "mssql",
+  CosmosDbNoSql: "cosmosdb_nosql",
+  CosmosDbPostGreSql: "cosmosdb_postgresql",
+  MySql: "mysql",
+  PostGreSql: "postgresql",
+};
+
+// General SWA_CLI constants
 export const SWA_COMMANDS = ["login", "init", "start", "deploy", "build", "db init"] as const;
 // Type cannot be in swa.d.ts as it's inferred from SWA_COMMANDS
 export type SWACommand = typeof SWA_COMMANDS[number];
@@ -26,20 +43,6 @@ export const SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB = 20; // 20kb
 
 export const SWA_AUTH_COOKIE = `StaticWebAppsAuthCookie`;
 export const ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT = ["GET", "HEAD", "OPTIONS"];
-
-export const DEFAULT_DATA_API_BUILDER_BINARY = {
-  Windows: "Microsoft.DataApiBuilder.exe",
-  Linux: "Microsoft.DataApiBuilder",
-  MacOs: "Microsoft.DataApiBuilder",
-};
-
-export const DATA_API_BUILDER_DATABASE_TYPES = {
-  MsSql: "mssql",
-  CosmosDbNoSql: "cosmosdb_nosql",
-  CosmosDbPostGreSql: "cosmosdb_postgresql",
-  MySql: "mysql",
-  PostGreSql: "postgresql",
-};
 
 export const AUTH_STATUS = {
   NoAuth: 0,
@@ -223,10 +226,22 @@ export const SWA_CONFIG_FILENAME = "staticwebapp.config.json";
 export const SWA_CONFIG_FILENAME_LEGACY = "routes.json";
 export const CUSTOM_URL_SCHEME = "swa://";
 export const OVERRIDABLE_ERROR_CODES = [400, 401, 403, 404];
-export const DEFAULT_NODE_VERSION = "16";
-export const DEFAULT_DOTNET_VERSION = "6.0";
-export const DEFAULT_DOTNET_ISOLATED_VERSION = "6.0";
-export const DEFAULT_PYTHON_VERSION = "3.8";
+
+// Constants related to Api runtime
+export const DEFAULT_VERSION = {
+  Node: "16",
+  Dotnet: "6.0",
+  DotnetIsolated: "6.0",
+  Python: "3.8",
+};
+
+export const SUPPORTED_VERSIONS = {
+  Node: ["12", "14", "16", "18"],
+  Dotnet: ["3.1", "6.0"],
+  DotnetIsolated: ["6.0", "7.0"],
+  Python: ["3.8", "3.9", "3.10"],
+};
+
 export const DEFAULT_RUNTIME_LANGUAGE = "node";
 
 // --

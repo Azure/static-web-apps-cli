@@ -1,24 +1,22 @@
-import { DEFAULT_DOTNET_ISOLATED_VERSION, DEFAULT_DOTNET_VERSION, DEFAULT_NODE_VERSION, DEFAULT_PYTHON_VERSION } from "./constants";
+import { DEFAULT_VERSION, SUPPORTED_VERSIONS } from "./constants";
 import { logger } from "./utils/logger";
 
 export function getDefaultVersion(apiLanguage: string): string {
   let apiVersion;
   // apiLanguage = apiLanguage.toLowerCase();
   switch (apiLanguage) {
-    case "node":
-      apiVersion = DEFAULT_NODE_VERSION;
-      break;
     case "python":
-      apiVersion = DEFAULT_PYTHON_VERSION;
+      apiVersion = DEFAULT_VERSION.Python;
       break;
     case "dotnet":
-      apiVersion = DEFAULT_DOTNET_VERSION;
+      apiVersion = DEFAULT_VERSION.Dotnet;
       break;
     case "dotnetisolated":
-      apiVersion = DEFAULT_DOTNET_ISOLATED_VERSION;
+      apiVersion = DEFAULT_VERSION.DotnetIsolated;
       break;
+    case "node":
     default:
-      apiVersion = DEFAULT_NODE_VERSION;
+      apiVersion = DEFAULT_VERSION.Node;
       break;
   }
   return apiVersion;
@@ -29,41 +27,39 @@ export function getChoicesForApiLanguage(apiLanguage: string) {
   logger.silly(`ApiLang: ${apiLanguage}`);
   let choices = [];
   switch (apiLanguage) {
-    case "node":
-      choices = [
-        { title: "18", value: "18" },
-        { title: "16", value: "16" },
-        { title: "14", value: "14" },
-        { title: "12", value: "12" },
-      ];
-      break;
     case "python":
-      choices = [
-        { title: "3.8", value: "3.8" },
-        { title: "3.9", value: "3.9" },
-        { title: "3.10", value: "3.10" },
-      ];
+      choices = generateChoicesForApi(SUPPORTED_VERSIONS.Python);
       break;
     case "dotnet":
-      choices = [
-        { title: "6.0", value: "6.0" },
-        { title: "3.1", value: "3.1" },
-      ];
+      choices = generateChoicesForApi(SUPPORTED_VERSIONS.Dotnet);
       break;
     case "dotnetisolated":
-      choices = [
-        { title: "6.0", value: "6.0" },
-        { title: "7.0", value: "7.0" },
-      ];
+      choices = generateChoicesForApi(SUPPORTED_VERSIONS.DotnetIsolated);
       break;
+    case "node":
     default:
-      choices = [
-        { title: "18", value: "18" },
-        { title: "16", value: "16" },
-        { title: "14", value: "14" },
-        { title: "12", value: "12" },
-      ];
+      choices = generateChoicesForApi(SUPPORTED_VERSIONS.Node);
       break;
   }
+  return choices;
+}
+
+/**
+ * Generates and returns array of choices
+ * @param supportedVersions
+ * @returns array of choices
+ */
+function generateChoicesForApi(supportedVersions: string[]) {
+  let choices = [];
+
+  for (let index = 0; index < supportedVersions.length; index++) {
+    const version = supportedVersions[index];
+    const choice = {
+      title: version,
+      value: version,
+    };
+    choices.push(choice);
+  }
+
   return choices;
 }
