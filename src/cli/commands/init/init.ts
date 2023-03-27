@@ -11,11 +11,8 @@ import {
   writeConfigFile,
 } from "../../../core/utils";
 import { detectProjectFolders, generateConfiguration, isDescendantPath } from "../../../core/frameworks";
-import { collectTelemetryEvent, getSessionId } from "../../../core/telemetry/utils";
-import { DEFAULT_CONFIG } from "../../../config";
-import os from "os";
-import { getMachineId } from "../../../core/swa-cli-persistence-plugin/impl/machine-identifier";
-import { TELEMETRY_INIT_EVENT, TELEMETRY_MAC_ADDRESS_HASH_LENGTH } from "../../../core/constants";
+import { collectTelemetryEvent } from "../../../core/telemetry/utils";
+import { TELEMETRY_EVENTS } from "../../../core/constants";
 
 export async function init(options: SWACLIConfig, showHints: boolean = true) {
   const start = new Date().getTime();
@@ -138,12 +135,7 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
   }
   const end = new Date().getTime();
 
-  await collectTelemetryEvent(TELEMETRY_INIT_EVENT, {
-    macAddressHash: (await getMachineId("sha256", TELEMETRY_MAC_ADDRESS_HASH_LENGTH)).toString(),
-    subscriptionId: DEFAULT_CONFIG.subscriptionId!,
-    sessionId: getSessionId(end),
-    OSType: os.type(),
-    OSVersion: os.version(),
+  await collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
     appFramework: projectConfig?.name?.split(", with")[0]!,
     duration: (end - start).toLocaleString(),
   });

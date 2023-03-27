@@ -5,13 +5,31 @@ import TelemetryReporter from "./telemetryReporter";
 import type { TelemetryEventMeasurements, TelemetryEventProperties } from "./telemetryReporterTypes";
 import { readCLIEnvFile } from "../utils";
 import * as crypto from "crypto";
+import os from "os";
+import { getMachineIdForTelemetry } from "../swa-cli-persistence-plugin/impl/machine-identifier";
+import { DEFAULT_CONFIG } from "../../config";
 
 const aiKey = "8428a7f6-6650-4490-a15a-c7f7a16449d7";
+const pkg = require("../../../package.json");
 
 export async function collectTelemetryEvent(event: string, properties?: TelemetryEventProperties, measurements?: TelemetryEventMeasurements) {
   const reporter = await getTelemetryReporter();
+
   if (reporter) {
-    reporter.sendTelemetryEvent(event, properties, measurements);
+    let macAddressHash = (await getMachineIdForTelemetry()).toString();
+    let extendedTelemetryEventProperties = {
+      macAddressHash: macAddressHash,
+      installationId: crypto
+        .createHash("sha256")
+        .update(pkg.version + macAddressHash)
+        .digest("hex"),
+      subscriptionId: DEFAULT_CONFIG.subscriptionId!,
+      sessionId: getSessionId(new Date().getTime()),
+      OSType: os.type(),
+      OSVersion: os.version(),
+    } as TelemetryEventProperties;
+
+    reporter.sendTelemetryEvent(event, { ...extendedTelemetryEventProperties, ...properties }, measurements);
   }
 }
 

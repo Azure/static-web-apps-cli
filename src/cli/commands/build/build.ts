@@ -10,11 +10,8 @@ import {
   runCommand,
   swaCliConfigFilename,
 } from "../../../core/utils";
-import { collectTelemetryEvent, getSessionId } from "../../../core/telemetry/utils";
-import { DEFAULT_CONFIG } from "../../../config";
-import os from "os";
-import { getMachineId } from "../../../core/swa-cli-persistence-plugin/impl/machine-identifier";
-import { TELEMETRY_BUILD_EVENT, TELEMETRY_MAC_ADDRESS_HASH_LENGTH } from "../../../core/constants";
+import { collectTelemetryEvent } from "../../../core/telemetry/utils";
+import { TELEMETRY_EVENTS } from "../../../core/constants";
 
 export async function build(options: SWACLIConfig) {
   const start = new Date().getTime();
@@ -112,12 +109,7 @@ export async function build(options: SWACLIConfig) {
   }
   const end = new Date().getTime();
 
-  collectTelemetryEvent(TELEMETRY_BUILD_EVENT, {
-    macAddressHash: (await getMachineId("sha256", TELEMETRY_MAC_ADDRESS_HASH_LENGTH)).toString(),
-    subscriptionId: DEFAULT_CONFIG.subscriptionId!,
-    sessionId: getSessionId(end),
-    OSType: os.type(),
-    OSVersion: os.version(),
+  collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
     appFramework: projectConfig?.name?.split(", with")[0]!,
     duration: (end - start).toLocaleString(),
   });

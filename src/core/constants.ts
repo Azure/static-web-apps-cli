@@ -184,11 +184,13 @@ export const OVERRIDABLE_ERROR_CODES = [400, 401, 403, 404];
 export const TELEMETRY_MAC_ADDRESS_HASH_LENGTH = 32; //32 bytes
 export const MACHINE_ID_LENGTH = 16; //16 bytes
 
-export const TELEMETRY_LOGIN_EVENT = "login";
-export const TELEMETRY_INIT_EVENT = "init";
-export const TELEMETRY_BUILD_EVENT = "build";
-export const TELEMETRY_START_EVENT = "start";
-export const TELEMETRY_DEPLOY_EVENT = "deploy";
+export const TELEMETRY_EVENTS = {
+  Login: "login",
+  Init: "init",
+  Start: "start",
+  Build: "build",
+  Deploy: "deploy",
+};
 
 // --
 // Note: declare these as functions so that their body gets evaluated at runtime!
