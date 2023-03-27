@@ -2,40 +2,44 @@ import http from "http";
 import { injectHeaders, isDataApiRequest } from "./dab.handler";
 
 describe("isDataApiRequest", () => {
-  const req = { url: "/data-api/users" } as http.IncomingMessage;
+  beforeEach(() => {
+    // Reset the mocked functions before each test
+    jest.clearAllMocks();
+  });
 
   it('returns true when the path starts with "/data-api/"', () => {
+    const req = { url: "/data-api/users" } as http.IncomingMessage;
     const result = isDataApiRequest(req);
     expect(result).toEqual(true);
   });
 
   it('returns false when the path equals "/data-api" (without trailing slash)', () => {
-    const req2 = { url: "/data-api" } as http.IncomingMessage;
-    const result = isDataApiRequest(req2);
+    const req = { url: "/data-api" } as http.IncomingMessage;
+    const result = isDataApiRequest(req);
     expect(result).toEqual(false);
   });
 
   it('returns true when the path equals "/DATa-Api/" (should ignore case while comparing)', () => {
-    const req2 = { url: "/DATa-Api/" } as http.IncomingMessage;
-    const result = isDataApiRequest(req2);
+    const req = { url: "/DATa-Api/" } as http.IncomingMessage;
+    const result = isDataApiRequest(req);
     expect(result).toEqual(true);
   });
 
   it('returns false when the path has "/data-api" in between', () => {
-    const req2 = { url: "xyz/data-api/abc" } as http.IncomingMessage;
-    const result = isDataApiRequest(req2);
+    const req = { url: "/xyz/data-api/abc" } as http.IncomingMessage;
+    const result = isDataApiRequest(req);
     expect(result).toEqual(false);
   });
 
   it('returns false when the path does not start with "/data-api/"', () => {
-    const req2 = { url: "/api/users" } as http.IncomingMessage;
-    const result = isDataApiRequest(req2);
+    const req = { url: "/api/users" } as http.IncomingMessage;
+    const result = isDataApiRequest(req);
     expect(result).toEqual(false);
   });
 
   it("returns true when the path starts with a custom rewrite path", () => {
-    const req2 = { url: "/api/users" } as http.IncomingMessage;
-    const result = isDataApiRequest(req2, "/data-api/users");
+    const req = { url: "/api/users" } as http.IncomingMessage;
+    const result = isDataApiRequest(req, "/data-api/users");
     expect(result).toEqual(true);
   });
 });
