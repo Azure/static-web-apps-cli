@@ -168,7 +168,7 @@ declare type SWACLIBuildOptions = {
 // -- CLI DB init options
 
 declare type SWACLIDBInitOptions = {
-  databaseType?: "mssql" | "postgresql" | "cosmosdb_nosql" | "mysql" | "cosmosdb_postgresql";
+  databaseType?: string;
   connectionString?: string;
   cosmosdb_nosqlDatabase?: string;
   cosmosdb_nosqlContainer?: string;

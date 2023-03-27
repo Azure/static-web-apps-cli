@@ -4,7 +4,6 @@ import {
   DATA_API_BUILDER_FOLDER,
   DATA_API_BUILDER_LATEST_TAG,
   DATA_API_BUILDER_RELEASE_METADATA_URL,
-  // DATA_API_BUILDER_VERSION_ID,
   DEFAULT_DATA_API_BUILDER_BINARY,
 } from "../constants";
 import fetch from "node-fetch";
@@ -154,7 +153,8 @@ async function extractBinary(zipFilePath: string, destDirectory: string) {
  * @param platform current OS
  * @returns the Data-api-builder binary for given OS
  */
-function getDefaultDataApiBuilderBinaryForOS(platform: string): string {
+// exported for testing
+export function getDefaultDataApiBuilderBinaryForOS(platform: string): string {
   switch (platform) {
     case "win-x64":
       return DEFAULT_DATA_API_BUILDER_BINARY.Windows;

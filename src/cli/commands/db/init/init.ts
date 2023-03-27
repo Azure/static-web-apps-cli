@@ -112,7 +112,7 @@ export async function init(options: SWACLIConfig) {
   // not logging anything here since DAB CLI logs success messages or error messages and we can't catch an error
 }
 
-function isValidDatabaseType(databaseType: string): boolean {
+export function isValidDatabaseType(databaseType: string): boolean {
   if (
     databaseType == DATA_API_BUILDER_DATABASE_TYPES.CosmosDbNoSql ||
     databaseType == DATA_API_BUILDER_DATABASE_TYPES.CosmosDbPostGreSql ||
