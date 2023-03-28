@@ -160,7 +160,6 @@ export async function detectFrameworks(projectFiles: string[], frameworks: Frame
       detectedFrameworks.push({ ...framework, rootPaths });
     }
   }
-
   detectedFrameworks = await asyncFilter(
     detectedFrameworks,
     async (framework) => (await matchPackages(framework)) && (await matchContains(framework, projectFiles))

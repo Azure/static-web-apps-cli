@@ -6,14 +6,17 @@ import path from "path";
 import {
   findSWAConfigFile,
   getCurrentSwaCliConfigFromFile,
+  isUserOrConfigOption,
   logger,
   logGitHubIssueMessageAndExit,
   readWorkflowFile,
   updateSwaCliConfigFile,
 } from "../../../core";
 import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../../core/account";
+import { DEFAULT_RUNTIME_LANGUAGE } from "../../../core/constants";
 import { cleanUp, getDeployClientPath } from "../../../core/deploy-client";
 import { swaCLIEnv } from "../../../core/env";
+import { getDefaultVersion } from "../../../core/functions-versions";
 import { login } from "../login";
 
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "..", "package.json"));
@@ -22,7 +25,20 @@ export async function deploy(options: SWACLIConfig) {
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
 
-  let { appLocation, apiLocation, dataApiLocation, outputLocation, dryRun, deploymentToken, printToken, appName, swaConfigLocation, verbose } = options;
+  let {
+    appLocation,
+    apiLocation,
+    dataApiLocation,
+    outputLocation,
+    dryRun,
+    deploymentToken,
+    printToken,
+    appName,
+    swaConfigLocation,
+    verbose,
+    apiLanguage,
+    apiVersion,
+  } = options;
 
   if (dryRun) {
     logger.warn("***********************************************************************");
@@ -82,6 +98,18 @@ export async function deploy(options: SWACLIConfig) {
         }" but the --api-location option was not provided. The API will not be deployed.\n`
       );
     }
+  }
+
+  if (!isUserOrConfigOption("apiLanguage")) {
+    logger.log(`Consider providing api-language and version using --api-language and --api-version flags,
+    otherwise default values apiLanguage: ${apiLanguage} and apiVersion: ${apiVersion} will apply`);
+  } else if (!isUserOrConfigOption("apiVersion")) {
+    if (!apiLanguage) {
+      apiLanguage = DEFAULT_RUNTIME_LANGUAGE;
+    }
+    apiVersion = getDefaultVersion(apiLanguage);
+    logger.log(`Api language "${apiLanguage}" is provided but api version is not provided.
+      Assuming default version "${apiVersion}"`);
   }
 
   // resolve the deployment token
@@ -174,7 +202,7 @@ export async function deploy(options: SWACLIConfig) {
     appLocation,
     outputLocation: resolvedOutputLocation,
     apiLocation: resolvedApiLocation,
-    dataApiLocation
+    dataApiLocation,
   };
   try {
     userWorkflowConfig = readWorkflowFile({
@@ -219,6 +247,8 @@ export async function deploy(options: SWACLIConfig) {
     // If config file is not in output location, we need to tell where to find it
     CONFIG_FILE_LOCATION: resolvedSwaConfigLocation,
     VERBOSE: isVerboseEnabled ? "true" : "false",
+    FUNCTION_LANGUAGE: apiLanguage,
+    FUNCTION_LANGUAGE_VERSION: apiVersion,
   };
 
   // set the DEPLOYMENT_ENVIRONMENT env variable only when the user has provided
@@ -269,7 +299,7 @@ export async function deploy(options: SWACLIConfig) {
             else if (line.includes("[31m")) {
               if (line.includes("Cannot deploy to the function app because Function language info isn't provided.")) {
                 line = chalk.red(
-                  `Cannot deploy to the function app because Function language info isn't provided. Add a "platform.apiRuntime" property to your staticwebapp.config.json file, or create one in ${options.outputLocation!}. Please consult the documentation for more information about staticwebapp.config.json: https://docs.microsoft.com/azure/static-web-apps/configuration`
+                  `Cannot deploy to the function app because Function language info isn't provided, use flags "--api-language" and "--api-version" or add a "platform.apiRuntime" property to your staticwebapp.config.json file, or create one in ${options.outputLocation!}. Please consult the documentation for more information about staticwebapp.config.json: https://learn.microsoft.com/azure/static-web-apps/build-configuration?tabs=github-actions#skip-building-the-api`
                 );
               }
 

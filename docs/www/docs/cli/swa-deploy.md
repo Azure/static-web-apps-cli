@@ -72,7 +72,13 @@ To deploy both the front-end app and an API to Azure Static Web Apps, use the fo
 
 1. If your front-end application requires a build step, run [`swa build`](./swa-build) or refer to your application build instructions.
 
-2. Make sure the[ API language runtime version](https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#platform) in the `staticwebapp.config.json` file is set correctly, for example:
+2. Use the flags `--api-language` and `--api-version` to specify the language and the runtime version of the backend api.
+
+```json
+swa deploy ./my-dist --api-location ./api --api-language "node" --api-version "16"
+```
+
+Alternatively you can [configure](https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#platform) the `apiRuntime` in the `staticwebapp.config.json` file
 
 ```json
 {
@@ -157,6 +163,8 @@ Here are the options you can use with `swa deploy`:
 - `-a, --app-location <path>`: the folder containing the source code of the front-end application (default: "`.`")
 - `-i, --api-location <path>`: the folder containing the source code of the API application
 - `-O, --output-location <path>`: the folder containing the built source of the front-end application. The path is relative to `--app-location` (default: "`.`")
+- `--api-language <apiLanguage>`: the runtime language of the function (default: "`node`")
+- `--api-version <apiVersion>`: the version of the function runtime language (default: "`16`")
 - `-w, --swa-config-location <swaConfigLocation>`: the directory where the staticwebapp.config.json file is located
 - `-d, --deployment-token <secret>`: the secret token used to authenticate with the Static Web Apps
 - `-dr, --dry-run`: simulate a deploy process without actually running it (default: `false`)
@@ -198,6 +206,12 @@ Print the deployment token
 
 ```bash
 swa deploy --print-token
+```
+
+Provide function language and version
+
+```bash
+swa deploy ./my-dist --api-location ./api --api-language "node" --api-version "16"
 ```
 
 Deploy to a specific environment

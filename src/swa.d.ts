@@ -22,6 +22,8 @@ declare interface StaticSiteClientEnv {
   VERBOSE?: string;
   DEPLOYMENT_ENVIRONMENT?: string;
   CONFIG_FILE_LOCATION?: string;
+  FUNCTION_LANGUAGE?: string;
+  FUNCTION_LANGUAGE_VERSION?: string;
 }
 
 declare interface SWACLIEnv extends StaticSiteClientEnv {
@@ -58,6 +60,8 @@ declare interface SWACLIEnv extends StaticSiteClientEnv {
   SWA_CLI_DEPLOYMENT_TOKEN?: string;
   SWA_RUNTIME_CONFIG?: string;
   SWA_CLI_VERSION?: string;
+  SWA_CLI_API_LANGUAGE?: string;
+  SWA_CLI_API_VERSION?: string;
   AZURE_REGION_LOCATION?: string;
 
   // swa build
@@ -186,6 +190,8 @@ declare type SWACLIDeployOptions = SWACLISharedLoginOptions & {
   dryRun?: boolean;
   printToken?: boolean;
   env?: string;
+  apiLanguage?: string;
+  apiVersion?: string;
 };
 
 // -- CLI Login options ------------------------------------------------------
@@ -298,6 +304,8 @@ declare type SWACLIConfigFile = {
 
 declare type FrameworkConfig = GithubActionWorkflow & {
   name?: string;
+  apiLanguage?: string;
+  apiVersion?: string;
   apiBuildCommand?: string;
   appDevserverCommand?: string;
   appDevserverUrl?: string;

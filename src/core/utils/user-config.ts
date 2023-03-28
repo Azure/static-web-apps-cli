@@ -214,7 +214,7 @@ export function validateUserWorkflowConfig(userWorkflowConfig: Partial<GithubAct
 
   if (userWorkflowConfig?.dataApiLocation) {
     dataApiLocation = path.resolve(userWorkflowConfig.dataApiLocation);
-    if(path.isAbsolute(userWorkflowConfig.dataApiLocation)) {
+    if (path.isAbsolute(userWorkflowConfig.dataApiLocation)) {
       dataApiLocation = userWorkflowConfig.dataApiLocation;
     }
   }
@@ -243,7 +243,7 @@ export function validateUserWorkflowConfig(userWorkflowConfig: Partial<GithubAct
     appLocation,
     apiLocation,
     outputLocation,
-    dataApiLocation
+    dataApiLocation,
   };
 }
 

@@ -11,6 +11,7 @@ import {
   writeConfigFile,
 } from "../../../core/utils";
 import { detectProjectFolders, generateConfiguration, isDescendantPath } from "../../../core/frameworks";
+import { getChoicesForApiLanguage } from "../../../core/functions-versions";
 
 export async function init(options: SWACLIConfig, showHints: boolean = true) {
   const configFilePath = options.config!;
@@ -137,6 +138,8 @@ function convertToCliConfig(config: FrameworkConfig): SWACLIConfig {
     appLocation: config.appLocation,
     apiLocation: config.apiLocation,
     outputLocation: config.outputLocation,
+    apiLanguage: config.apiLanguage,
+    apiVersion: config.apiVersion,
     appBuildCommand: config.appBuildCommand,
     apiBuildCommand: config.apiBuildCommand,
     run: config.appDevserverCommand,
@@ -150,6 +153,7 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
     value = value.trim();
     return value === "" ? undefined : value;
   };
+
   const response = await promptOrUseDefault(disablePrompts, [
     {
       type: "text",
@@ -174,6 +178,23 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
       message: "What's your API location? (optional)",
       initial: detectedConfig.apiLocation,
       format: trimValue,
+    },
+    {
+      type: (prev) => (prev != null ? "select" : null),
+      name: "apiLanguage",
+      message: "What's your API language? (optional)",
+      choices: [
+        { title: "Node.js", value: "node" },
+        { title: "Python", value: "python" },
+        { title: "Dotnet", value: "dotnet" },
+        { title: "Dotnet isolated", value: "dotnetisolated" },
+      ],
+    },
+    {
+      type: (prev) => (prev != null ? "select" : null),
+      name: "apiVersion",
+      message: "What's your API version? (optional)",
+      choices: (prev) => getChoicesForApiLanguage(prev),
     },
     {
       type: "text",
@@ -211,6 +232,7 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
       format: trimValue,
     },
   ]);
+
   return response;
 }
 
@@ -220,6 +242,8 @@ function printFrameworkConfig(config: FrameworkConfig) {
   logger.log(`- App location: ${chalk.green(config.appLocation)}`);
   logger.log(`- Output location: ${chalk.green(config.outputLocation)}`);
   logger.log(`- API location: ${chalk.green(config.apiLocation ?? "")}`);
+  logger.log(`- API language: ${chalk.green(config.apiLanguage ?? "")}`);
+  logger.log(`- API version: ${chalk.green(config.apiVersion ?? "")}`);
   logger.log(`- App build command: ${chalk.green(config.appBuildCommand ?? "")}`);
   logger.log(`- API build command: ${chalk.green(config.apiBuildCommand ?? "")}`);
   logger.log(`- App dev server command: ${chalk.green(config.appDevserverCommand ?? "")}`);

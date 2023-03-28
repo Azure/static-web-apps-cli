@@ -14,7 +14,7 @@ export function runCommand(command: string, cwd?: string) {
   });
 }
 
-export function execFileCommand(command: string, cwd?: string, args?: string[]){
+export function execFileCommand(command: string, cwd?: string, args?: string[]) {
   const child = execFileSync(command, args, {
     stdio: "inherit",
     cwd: cwd ?? process.cwd(),

@@ -13,6 +13,8 @@ export default function registerCommand(program: Command) {
     .option("-i, --api-location <path>", "the folder containing the source code of the API application", DEFAULT_CONFIG.apiLocation)
     .option("-da, --data-api-location <path>", "the folder containing the database connections configuration", DEFAULT_CONFIG.dataApiLocation)
     .option("-O, --output-location <path>", "the folder containing the built source of the front-end application", DEFAULT_CONFIG.outputLocation)
+    .option("-al, --api-language <apiLanguage>", "the runtime language of the function/api", DEFAULT_CONFIG.apiLanguage)
+    .option("-av, --api-version <apiVersion>", "the version of the function runtime language", DEFAULT_CONFIG.apiVersion)
     .option(
       "-w, --swa-config-location <swaConfigLocation>",
       "the directory where the staticwebapp.config.json file is located",
@@ -47,6 +49,9 @@ Examples:
 
   Deploy using a deployment token from env
   SWA_CLI_DEPLOYMENT_TOKEN=123 swa deploy ./dist/ --api-location ./api/
+
+  Provide function language and version
+  swa deploy ./my-dist --api-location ./api --api-language "node" --api-version "16"
 
   Deploy using swa-cli.config.json file
   swa deploy

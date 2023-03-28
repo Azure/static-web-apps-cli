@@ -119,7 +119,7 @@ export function readWorkflowFile({ userWorkflowConfig }: { userWorkflowConfig?: 
     app_location,
     output_location,
     api_location,
-    data_api_location
+    data_api_location,
   });
 
   // the following locations (extracted from the config) should be under the user's project folder:

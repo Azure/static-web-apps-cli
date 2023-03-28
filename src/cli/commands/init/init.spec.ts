@@ -125,6 +125,8 @@ describe("swa init", () => {
             \\"appLocation\\": \\"src\\",
             \\"apiLocation\\": \\"src/node-ts\\",
             \\"outputLocation\\": \\".\\",
+            \\"apiLanguage\\": \\"node\\",
+            \\"apiVersion\\": \\"16\\",
             \\"apiBuildCommand\\": \\"npm run build --if-present\\"
           }
         }
@@ -146,6 +148,8 @@ describe("swa init", () => {
             \\"appLocation\\": \\"src/astro preact\\",
             \\"apiLocation\\": \\"src/node\\",
             \\"outputLocation\\": \\"_site\\",
+            \\"apiLanguage\\": \\"node\\",
+            \\"apiVersion\\": \\"16\\",
             \\"appBuildCommand\\": \\"npm run build\\",
             \\"apiBuildCommand\\": \\"npm run build --if-present\\",
             \\"run\\": \\"npm run dev\\",
