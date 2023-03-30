@@ -299,14 +299,11 @@ export async function deploy(options: SWACLIConfig) {
   } finally {
     const end = new Date().getTime();
 
-    collectTelemetryEvent(
-      TELEMETRY_EVENTS.Deploy,
-      {
-        apiRuntime: swaConfigFileContent?.platform?.apiRuntime!,
-        duration: (end - start).toLocaleString(),
-      },
-      { appRuntime: nodeMajorVersion }
-    );
+    collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+      apiRuntime: swaConfigFileContent?.platform?.apiRuntime!,
+      duration: (end - start).toString(),
+      appRuntime: "node" + nodeMajorVersion,
+    });
     cleanUp();
   }
 }

@@ -41,10 +41,9 @@ export async function build(options: SWACLIConfig) {
   }
 
   let projectConfig;
-  const detectedFolders = await detectProjectFolders(appLocation);
-  projectConfig = await generateConfiguration(detectedFolders.app[0], detectedFolders.api[0]);
   if (options.auto) {
     logger.log("Detecting build configuration...");
+    const detectedFolders = await detectProjectFolders(appLocation);
 
     if (detectedFolders.app.length === 0 && detectedFolders.api.length === 0) {
       logger.error(`Your app configuration could not be detected.`);
@@ -55,6 +54,7 @@ export async function build(options: SWACLIConfig) {
     }
 
     try {
+      projectConfig = await generateConfiguration(detectedFolders.app[0], detectedFolders.api[0]);
       appLocation = projectConfig.appLocation;
       apiLocation = projectConfig.apiLocation;
       outputLocation = projectConfig.outputLocation;
@@ -111,7 +111,7 @@ export async function build(options: SWACLIConfig) {
 
   collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
     appFramework: projectConfig?.name?.split(", with")[0]!,
-    duration: (end - start).toLocaleString(),
+    duration: (end - start).toString(),
   });
 }
 

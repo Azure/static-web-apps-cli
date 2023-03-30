@@ -32,7 +32,7 @@ export async function loginCommand(options: SWACLIConfig) {
   const end = new Date().getTime();
 
   collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
-    duration: (end - start).toLocaleString(),
+    duration: (end - start).toString(),
   });
 }
 

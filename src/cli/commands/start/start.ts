@@ -306,12 +306,9 @@ export async function start(options: SWACLIConfig) {
 
   const end = new Date().getTime();
 
-  collectTelemetryEvent(
-    TELEMETRY_EVENTS.Start,
-    {
-      apiRuntime: swaConfigFileContent?.platform.apiRuntime!,
-      duration: (end - start).toLocaleString(),
-    },
-    { appRuntime: nodeMajorVersion }
-  );
+  collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+    apiRuntime: swaConfigFileContent?.platform.apiRuntime!,
+    duration: (end - start).toString(),
+    appRuntime: "node" + nodeMajorVersion,
+  });
 }

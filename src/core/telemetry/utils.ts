@@ -16,7 +16,7 @@ export async function collectTelemetryEvent(event: string, properties?: Telemetr
   const reporter = await getTelemetryReporter();
 
   if (reporter) {
-    let macAddressHash = (await getMachineIdForTelemetry()).toString();
+    const macAddressHash = (await getMachineIdForTelemetry()).toString();
     let extendedTelemetryEventProperties = {
       macAddressHash: macAddressHash,
       installationId: crypto
@@ -25,8 +25,8 @@ export async function collectTelemetryEvent(event: string, properties?: Telemetr
         .digest("hex"),
       subscriptionId: DEFAULT_CONFIG.subscriptionId!,
       sessionId: getSessionId(new Date().getTime()),
-      OSType: os.type(),
-      OSVersion: os.version(),
+      OsType: os.type(),
+      OsVersion: os.version(),
     } as TelemetryEventProperties;
 
     reporter.sendTelemetryEvent(event, { ...extendedTelemetryEventProperties, ...properties }, measurements);

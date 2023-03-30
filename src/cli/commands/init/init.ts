@@ -137,7 +137,7 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
 
   await collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
     appFramework: projectConfig?.name?.split(", with")[0]!,
-    duration: (end - start).toLocaleString(),
+    duration: (end - start).toString(),
   });
 }
 
