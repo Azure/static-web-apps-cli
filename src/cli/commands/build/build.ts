@@ -51,7 +51,6 @@ export async function build(options: SWACLIConfig) {
     return;
   }
 
-  let projectConfig;
   if (options.auto) {
     logger.log("Detecting build configuration...");
     const detectedFolders = await detectProjectFolders(appLocation);
@@ -82,6 +81,7 @@ export async function build(options: SWACLIConfig) {
       return showAutoErrorMessageAndExit();
     }
 
+    let projectConfig;
     try {
       projectConfig = await generateConfiguration(detectedFolders.app[0], detectedFolders.api[0]);
       appLocation = projectConfig.appLocation;
@@ -156,7 +156,6 @@ export async function build(options: SWACLIConfig) {
   const end = new Date().getTime();
 
   collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
-    appFramework: projectConfig?.name?.split(", with")[0]!,
     flagsUsed: JSON.stringify(flagsUsed),
     duration: (end - start).toString(),
     responseType: "Success",

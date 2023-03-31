@@ -24,12 +24,11 @@ export async function collectTelemetryEvent(event: string, properties?: Telemetr
         .update(pkg.version + macAddressHash)
         .digest("hex"),
       subscriptionId: DEFAULT_CONFIG.subscriptionId!,
-      sessionId: getSessionId(new Date().getTime()),
       OsType: os.type(),
       OsVersion: os.version(),
     } as TelemetryEventProperties;
 
-    reporter.sendTelemetryEvent(event, { ...extendedTelemetryEventProperties, ...properties }, measurements);
+    reporter.sendTelemetryEvent(event, { ...properties, ...extendedTelemetryEventProperties }, measurements);
   }
 }
 
