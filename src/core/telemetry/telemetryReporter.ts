@@ -1,6 +1,9 @@
 import type { TelemetryClient } from "applicationinsights";
 import { SenderData, BaseTelemetryReporter } from "./baseTelemetryReporter";
 import { BaseTelemetrySender, BaseTelemetryClient } from "./baseTelemetrySender";
+import { TelemetryEventProperties } from "./telemetryReporterTypes";
+import { getSessionId } from "./utils";
+
 /**
  * A factory function which creates a telemetry client to be used by an sender to send telemetry in a node application.
  *
@@ -10,6 +13,10 @@ import { BaseTelemetrySender, BaseTelemetryClient } from "./baseTelemetrySender"
  */
 const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClient> => {
   let appInsightsClient: TelemetryClient | undefined;
+  const sessionId = getSessionId(new Date().getTime());
+  const properties: TelemetryEventProperties = {
+    sessionId: sessionId,
+  };
   try {
     const appInsights = await import("applicationinsights");
     //check if another instance is already initialized
@@ -39,7 +46,7 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
       try {
         appInsightsClient?.trackEvent({
           name: eventName,
-          properties: data?.properties,
+          properties: { ...properties, ...data?.properties },
           measurements: data?.measurements,
         });
       } catch (e: any) {

@@ -134,11 +134,17 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
     logger.log(`- Use ${chalk.cyan("swa deploy")} to deploy your app to Azure.\n`);
   }
   const end = new Date().getTime();
-
-  await collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
-    appFramework: projectConfig?.name?.split(", with")[0]!,
-    duration: (end - start).toString(),
-  });
+  const appFramework = projectConfig?.name?.split(", with")[0]!;
+  if (appFramework) {
+    await collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
+      appFramework: appFramework,
+      duration: (end - start).toString(),
+    });
+  } else {
+    await collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
+      duration: (end - start).toString(),
+    });
+  }
 }
 
 function convertToCliConfig(config: FrameworkConfig): SWACLIConfig {
