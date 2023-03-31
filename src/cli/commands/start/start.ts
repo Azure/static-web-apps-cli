@@ -14,6 +14,7 @@ import {
   parseUrl,
   readWorkflowFile,
   findSWAConfigFile,
+  getFlagsUsed,
 } from "../../../core";
 import { swaCLIEnv } from "../../../core/env";
 import { getCertificate } from "../../../core/ssl";
@@ -29,6 +30,7 @@ export async function start(options: SWACLIConfig) {
   // Make sure this code (or code from utils) does't depend on environment variables!
 
   const start = new Date().getTime();
+  const flagsUsed = getFlagsUsed(options);
   let {
     appLocation,
     apiLocation,
@@ -87,6 +89,14 @@ export async function start(options: SWACLIConfig) {
     // check for build folder (outputLocation) using the absolute location
     else if (!fs.existsSync(outputLocation!)) {
       logger.error(`The folder "${resolvedOutputLocation}" is not found. Exit.`, true);
+      const end = new Date().getTime();
+      collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+        duration: (end - start).toString(),
+        flagsUsed: JSON.stringify(flagsUsed),
+        responseType: "PreConditionFailure",
+        errorType: "Start-failure",
+        errorMessage: "Output Location not found",
+      });
       return;
     }
 
@@ -169,6 +179,14 @@ export async function start(options: SWACLIConfig) {
             `Found Azure Functions Core Tools v${targetVersion} which is incompatible with your current Node.js v${process.versions.node}.`
           );
           logger.error("See https://aka.ms/functions-node-versions for more information.");
+          const end = new Date().getTime();
+          collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+            duration: (end - start).toString(),
+            flagsUsed: JSON.stringify(flagsUsed),
+            responseType: "Failure",
+            errorType: "Start-failure",
+            errorMessage: "Azure Functions Core Tools aren't compatible with Node.js",
+          });
           process.exit(1);
         }
 
@@ -279,6 +297,14 @@ export async function start(options: SWACLIConfig) {
         const killedCommand = errorEvent.filter((event) => event.killed).pop();
         const exitCode = killedCommand?.exitCode;
         logger.silly(`SWA emulator exited with code ${exitCode}`);
+        const end = new Date().getTime();
+        collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+          duration: (end - start).toString(),
+          flagsUsed: JSON.stringify(flagsUsed),
+          responseType: "Failure",
+          errorType: "Start-failure",
+          errorMessage: "SWA emulator exited",
+        });
         process.exit();
       },
       (errorEvent: CloseEvent[]) => {
@@ -298,17 +324,35 @@ export async function start(options: SWACLIConfig) {
             break;
         }
         logger.error(`SWA emulator stoped because ${commandMessage}.`, true);
+        end = new Date().getTime();
+        collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+          duration: (end - start).toString(),
+          flagsUsed: JSON.stringify(flagsUsed),
+          responseType: "Failure",
+          errorType: "Start-failure",
+          errorMessage: "SWA emulator exited",
+        });
       }
     )
     .catch((err) => {
       logger.error(err.message, true);
+      end = new Date().getTime();
+      collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+        duration: (end - start).toString(),
+        flagsUsed: JSON.stringify(flagsUsed),
+        responseType: "Failure",
+        errorType: "Start-failure",
+        errorMessage: "SWA emulator exited",
+      });
     });
 
-  const end = new Date().getTime();
+  let end = new Date().getTime();
 
   collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
     apiRuntime: swaConfigFileContent?.platform.apiRuntime!,
+    flagsUsed: JSON.stringify(flagsUsed),
     duration: (end - start).toString(),
     appRuntime: "node" + nodeMajorVersion,
+    responseType: "Success",
   });
 }

@@ -199,7 +199,6 @@ declare type SWACLIConfig = SWACLIGlobalOptions &
   SWACLIBuildOptions &
   SWACLIStartOptions &
   SWACLIDeployOptions &
-  SWACLIBuildOptions &
   SWACLITelemetryOptions & {
     login?: SWACLIGlobalOptions & SWACLILoginOptions;
     init?: SWACLIGlobalOptions & SWACLIInitOptions;

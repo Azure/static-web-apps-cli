@@ -4,6 +4,7 @@ import process from "process";
 import { promptOrUseDefault } from "../../../core/prompts";
 import {
   dasherize,
+  getFlagsUsed,
   hasConfigurationNameInConfigFile,
   logger,
   swaCliConfigFileExists,
@@ -16,6 +17,7 @@ import { TELEMETRY_EVENTS } from "../../../core/constants";
 
 export async function init(options: SWACLIConfig, showHints: boolean = true) {
   const start = new Date().getTime();
+  const flagsUsed = getFlagsUsed(options);
   const configFilePath = options.config!;
   const disablePrompts = options.yes ?? false;
   const outputFolder = process.cwd();
@@ -90,6 +92,14 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
   } catch (error) {
     logger.error(`Cannot generate your project configuration:`);
     logger.error(error as Error, true);
+    const end = new Date().getTime();
+    collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
+      duration: (end - start).toString(),
+      flagsUsed: JSON.stringify(flagsUsed),
+      responseType: "PreConditionFailure",
+      errorType: "Init-failure",
+      errorMessage: "Couldn't generate build configuration",
+    });
     return;
   }
 
@@ -115,6 +125,12 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
     });
     if (!confirmOverwrite) {
       logger.log("Aborted, configuration not saved.");
+      const end = new Date().getTime();
+      collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
+        duration: (end - start).toString(),
+        flagsUsed: JSON.stringify(flagsUsed),
+        responseType: "PartialSuccess",
+      });
       return;
     }
   }
@@ -137,7 +153,9 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
 
   await collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
     appFramework: projectConfig?.name?.split(", with")[0]!,
+    flagsUsed: JSON.stringify(flagsUsed),
     duration: (end - start).toString(),
+    responseType: "Success",
   });
 }
 

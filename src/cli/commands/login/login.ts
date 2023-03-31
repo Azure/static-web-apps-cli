@@ -3,7 +3,7 @@ import chalk from "chalk";
 import dotenv from "dotenv";
 import { existsSync, promises as fsPromises } from "fs";
 import path from "path";
-import { logger, logGiHubIssueMessageAndExit } from "../../../core";
+import { getFlagsUsed, logger, logGiHubIssueMessageAndExit } from "../../../core";
 import { authenticateWithAzureIdentity, listSubscriptions, listTenants } from "../../../core/account";
 import { ENV_FILENAME, TELEMETRY_EVENTS } from "../../../core/constants";
 import { updateGitIgnore } from "../../../core/git";
@@ -16,6 +16,8 @@ const defaultScope = `${Environment.AzureCloud.resourceManagerEndpointUrl}/.defa
 
 export async function loginCommand(options: SWACLIConfig) {
   const start = new Date().getTime();
+  const flagsUsed = getFlagsUsed(options);
+
   try {
     const { credentialChain, subscriptionId } = await login(options);
 
@@ -23,16 +25,33 @@ export async function loginCommand(options: SWACLIConfig) {
       logger.log(chalk.green(`✔ Successfully setup project!`));
     } else {
       logger.log(chalk.red(`✘ Failed to setup project!`));
+      const end = new Date().getTime();
+      collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
+        duration: (end - start).toString(),
+        flagsUsed: JSON.stringify(flagsUsed),
+        responseType: "PreConditionFailure",
+        errorType: "Login-failure",
+        errorMessage: "project setup failed",
+      });
       logGiHubIssueMessageAndExit();
     }
   } catch (error) {
     logger.error(`Failed to setup project: ${(error as any).message}`);
+    const end = new Date().getTime();
+    collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
+      duration: (end - start).toString(),
+      responseType: "Failure",
+      errorType: "Login-failure",
+      errorMessage: "project setup failed",
+    });
     logGiHubIssueMessageAndExit();
   }
   const end = new Date().getTime();
 
   collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
+    flagsUsed: JSON.stringify(flagsUsed),
     duration: (end - start).toString(),
+    responseType: "Success",
   });
 }
 
