@@ -28,7 +28,7 @@ export async function start(options: SWACLIConfig) {
   // Code below doesn't have access to these environment variables which are defined later below.
   // Make sure this code (or code from utils) does't depend on environment variables!
 
-  const start = new Date().getTime();
+  const cmdStartTime = new Date().getTime();
   let {
     appLocation,
     apiLocation,
@@ -304,11 +304,11 @@ export async function start(options: SWACLIConfig) {
       logger.error(err.message, true);
     });
 
-  const end = new Date().getTime();
+  const cmdEndTime = new Date().getTime();
 
   collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
     apiRuntime: swaConfigFileContent?.platform.apiRuntime!,
-    duration: (end - start).toString(),
+    duration: (cmdEndTime - cmdStartTime).toString(),
     appRuntime: "node" + nodeMajorVersion,
   });
 }

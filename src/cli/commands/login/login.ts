@@ -15,7 +15,7 @@ const { readFile, writeFile } = fsPromises;
 const defaultScope = `${Environment.AzureCloud.resourceManagerEndpointUrl}/.default`;
 
 export async function loginCommand(options: SWACLIConfig) {
-  const start = new Date().getTime();
+  const cmdStartTime = new Date().getTime();
   try {
     const { credentialChain, subscriptionId } = await login(options);
 
@@ -29,10 +29,10 @@ export async function loginCommand(options: SWACLIConfig) {
     logger.error(`Failed to setup project: ${(error as any).message}`);
     logGiHubIssueMessageAndExit();
   }
-  const end = new Date().getTime();
+  const cmdEndTime = new Date().getTime();
 
   collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
-    duration: (end - start).toString(),
+    duration: (cmdEndTime - cmdStartTime).toString(),
   });
 }
 

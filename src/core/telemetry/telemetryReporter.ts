@@ -3,7 +3,11 @@ import { SenderData, BaseTelemetryReporter } from "./baseTelemetryReporter";
 import { BaseTelemetrySender, BaseTelemetryClient } from "./baseTelemetrySender";
 import { TelemetryEventProperties } from "./telemetryReporterTypes";
 import { getSessionId } from "./utils";
+import os from "os";
+import * as crypto from "crypto";
+import { getMachineIdForTelemetry } from "../swa-cli-persistence-plugin/impl/machine-identifier";
 
+const pkg = require("../../../package.json");
 /**
  * A factory function which creates a telemetry client to be used by an sender to send telemetry in a node application.
  *
@@ -13,9 +17,17 @@ import { getSessionId } from "./utils";
  */
 const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClient> => {
   let appInsightsClient: TelemetryClient | undefined;
-  const sessionId = getSessionId(new Date().getTime());
-  const properties: TelemetryEventProperties = {
+  const sessionId = await getSessionId(new Date().getTime());
+  const macAddressHash = (await getMachineIdForTelemetry()).toString();
+  const extendedTelemetryEventProperties: TelemetryEventProperties = {
     sessionId: sessionId,
+    macAddressHash: macAddressHash,
+    installationId: crypto
+      .createHash("sha256")
+      .update(pkg.version + macAddressHash)
+      .digest("hex"),
+    OsType: os.type(),
+    OsVersion: os.version(),
   };
   try {
     const appInsights = await import("applicationinsights");
@@ -46,7 +58,7 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
       try {
         appInsightsClient?.trackEvent({
           name: eventName,
-          properties: { ...properties, ...data?.properties },
+          properties: { ...data?.properties, ...extendedTelemetryEventProperties },
           measurements: data?.measurements,
         });
       } catch (e: any) {

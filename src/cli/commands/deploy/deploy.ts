@@ -22,7 +22,7 @@ import { TELEMETRY_EVENTS } from "../../../core/constants";
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "..", "package.json"));
 
 export async function deploy(options: SWACLIConfig) {
-  const start = new Date().getTime();
+  const cmdStartTime = new Date().getTime();
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
 
@@ -297,11 +297,11 @@ export async function deploy(options: SWACLIConfig) {
     );
     logGiHubIssueMessageAndExit();
   } finally {
-    const end = new Date().getTime();
+    const cmdEndTime = new Date().getTime();
 
     collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
       apiRuntime: swaConfigFileContent?.platform?.apiRuntime!,
-      duration: (end - start).toString(),
+      duration: (cmdEndTime - cmdStartTime).toString(),
       appRuntime: "node" + nodeMajorVersion,
     });
     cleanUp();
