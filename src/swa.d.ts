@@ -263,7 +263,12 @@ declare type SWAConfigFileMimeTypes = {
   [key: string]: string;
 };
 
+declare type SWAConfigFilePlatform = {
+  apiRuntime?: string;
+};
+
 declare type SWAConfigFile = {
+  platform: SWAConfigFilePlatform;
   routes: SWAConfigFileRoute[];
   navigationFallback: SWAConfigFileNavigationFallback;
   responseOverrides: SWAConfigFileResponseOverrides;

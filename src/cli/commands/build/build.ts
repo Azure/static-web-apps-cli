@@ -10,8 +10,11 @@ import {
   runCommand,
   swaCliConfigFilename,
 } from "../../../core/utils";
+import { collectTelemetryEvent } from "../../../core/telemetry/utils";
+import { TELEMETRY_EVENTS } from "../../../core/constants";
 
 export async function build(options: SWACLIConfig) {
+  const cmdStartTime = new Date().getTime();
   const workflowConfig = readWorkflowFile();
 
   logger.silly({
@@ -104,6 +107,11 @@ export async function build(options: SWACLIConfig) {
     logger.log(`Building api with ${chalk.green(apiBuildCommand)} in ${chalk.dim(apiLocation)} ...`);
     runCommand(apiBuildCommand, apiLocation!);
   }
+  const cmdEndTime = new Date().getTime();
+
+  collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
+    duration: (cmdEndTime - cmdStartTime).toString(),
+  });
 }
 
 function hasBuildOptionsDefined(options: SWACLIConfig): boolean {

@@ -10,15 +10,19 @@ import {
   logGiHubIssueMessageAndExit,
   readWorkflowFile,
   updateSwaCliConfigFile,
+  getNodeMajorVersion,
 } from "../../../core";
 import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../../core/account";
 import { cleanUp, getDeployClientPath } from "../../../core/deploy-client";
 import { swaCLIEnv } from "../../../core/env";
 import { login } from "../login";
+import { collectTelemetryEvent } from "../../../core/telemetry/utils";
+import { TELEMETRY_EVENTS } from "../../../core/constants";
 
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "..", "package.json"));
 
 export async function deploy(options: SWACLIConfig) {
+  const cmdStartTime = new Date().getTime();
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
 
@@ -175,8 +179,10 @@ export async function deploy(options: SWACLIConfig) {
     );
   }
 
+  const nodeMajorVersion = getNodeMajorVersion();
   swaConfigLocation = swaConfigLocation || userWorkflowConfig?.appLocation;
   const swaConfigFilePath = (await findSWAConfigFile(swaConfigLocation!))?.filepath;
+  const swaConfigFileContent = (await findSWAConfigFile(swaConfigLocation!))?.content;
   const resolvedSwaConfigLocation = swaConfigFilePath ? path.dirname(swaConfigFilePath) : undefined;
 
   const cliEnv: SWACLIEnv = {
@@ -291,6 +297,13 @@ export async function deploy(options: SWACLIConfig) {
     );
     logGiHubIssueMessageAndExit();
   } finally {
+    const cmdEndTime = new Date().getTime();
+
+    collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+      apiRuntime: swaConfigFileContent?.platform?.apiRuntime!,
+      duration: (cmdEndTime - cmdStartTime).toString(),
+      appRuntime: "node" + nodeMajorVersion,
+    });
     cleanUp();
   }
 }

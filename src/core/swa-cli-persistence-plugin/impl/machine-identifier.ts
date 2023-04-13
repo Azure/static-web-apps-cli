@@ -1,8 +1,10 @@
 import crypto from "crypto";
 import { networkInterfaces } from "os";
+import { MACHINE_ID_LENGTH, TELEMETRY_MAC_ADDRESS_HASH_LENGTH } from "../../constants";
 import { logger } from "../../utils";
 
 let machineId: Promise<string>;
+let machineIdForTelemetry: Promise<string>;
 
 /**
  * Generate a 32-byte machine id.
@@ -12,20 +14,28 @@ let machineId: Promise<string>;
 export async function getMachineId(): Promise<string> {
   if (!machineId) {
     machineId = (async () => {
-      return (await getMacMachineId()) || crypto.randomBytes(20).toString("hex");
+      return (await getMacMachineId("shake256", MACHINE_ID_LENGTH)) || crypto.randomBytes(20).toString("hex");
     })();
   }
   return machineId;
 }
 
+export async function getMachineIdForTelemetry(): Promise<string> {
+  if (!machineIdForTelemetry) {
+    machineIdForTelemetry = (async () => {
+      return (await getMacMachineId("sha256", TELEMETRY_MAC_ADDRESS_HASH_LENGTH)) || crypto.randomBytes(20).toString("hex");
+    })();
+  }
+  return machineIdForTelemetry;
+}
 /**
  * Get the mac address of the machine and hash it.
  * @returns {Promise<string>} A 32-byte hash of the mac address.
  */
-async function getMacMachineId(): Promise<string | undefined> {
+async function getMacMachineId(algorithm: string, hashLength: number): Promise<string | undefined> {
   try {
     const macAddress = getMac();
-    return crypto.createHash("shake256", { outputLength: 16 /* 32 byts */ }).update(macAddress, "utf8").digest("hex");
+    return crypto.createHash(algorithm, { outputLength: hashLength /*  bytes */ }).update(macAddress, "utf8").digest("hex");
   } catch (err) {
     logger.error(err as any);
     return undefined;

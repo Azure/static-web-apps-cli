@@ -4,8 +4,18 @@ import { DEFAULT_CONFIG } from "../../../config";
 import { convertToNativePaths } from "../../../jest.helpers.";
 
 jest.mock("child_process", () => ({
+  ...jest.requireActual("child_process"),
   execSync: jest.fn(),
 }));
+
+jest.mock("../../../core/telemetry/utils", () => {
+  return {
+    ...jest.requireActual("../../../core/telemetry/utils"),
+    collectTelemetryEvent: jest.fn(),
+    collectTelemetryException: jest.fn(),
+    getTelemetryReporter: jest.fn(),
+  };
+});
 
 describe("swa build", () => {
   afterEach(() => {

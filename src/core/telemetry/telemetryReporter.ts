@@ -1,6 +1,13 @@
 import type { TelemetryClient } from "applicationinsights";
 import { SenderData, BaseTelemetryReporter } from "./baseTelemetryReporter";
 import { BaseTelemetrySender, BaseTelemetryClient } from "./baseTelemetrySender";
+import { TelemetryEventProperties } from "./telemetryReporterTypes";
+import { getSessionId } from "./utils";
+import os from "os";
+import * as crypto from "crypto";
+import { getMachineIdForTelemetry } from "../swa-cli-persistence-plugin/impl/machine-identifier";
+
+const pkg = require("../../../package.json");
 /**
  * A factory function which creates a telemetry client to be used by an sender to send telemetry in a node application.
  *
@@ -10,6 +17,18 @@ import { BaseTelemetrySender, BaseTelemetryClient } from "./baseTelemetrySender"
  */
 const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClient> => {
   let appInsightsClient: TelemetryClient | undefined;
+  const sessionId = await getSessionId(new Date().getTime());
+  const macAddressHash = (await getMachineIdForTelemetry()).toString();
+  const extendedTelemetryEventProperties: TelemetryEventProperties = {
+    sessionId: sessionId,
+    macAddressHash: macAddressHash,
+    installationId: crypto
+      .createHash("sha256")
+      .update(pkg.version + macAddressHash)
+      .digest("hex"),
+    OsType: os.type(),
+    OsVersion: os.version(),
+  };
   try {
     const appInsights = await import("applicationinsights");
     //check if another instance is already initialized
@@ -39,7 +58,7 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
       try {
         appInsightsClient?.trackEvent({
           name: eventName,
-          properties: data?.properties,
+          properties: { ...data?.properties, ...extendedTelemetryEventProperties },
           measurements: data?.measurements,
         });
       } catch (e: any) {
