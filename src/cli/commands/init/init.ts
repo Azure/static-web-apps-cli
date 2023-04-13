@@ -16,8 +16,9 @@ import { collectTelemetryEvent } from "../../../core/telemetry/utils";
 import { TELEMETRY_EVENTS } from "../../../core/constants";
 
 export async function init(options: SWACLIConfig, showHints: boolean = true) {
-  const start = new Date().getTime();
+  const cmdStartTime = new Date().getTime();
   const flagsUsed = getFlagsUsed(options);
+
   const configFilePath = options.config!;
   const disablePrompts = options.yes ?? false;
   const outputFolder = process.cwd();
@@ -94,7 +95,7 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
     logger.error(error as Error, true);
     const end = new Date().getTime();
     collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
-      duration: (end - start).toString(),
+      duration: (end - cmdStartTime).toString(),
       flagsUsed: JSON.stringify(flagsUsed),
       responseType: "PreConditionFailure",
       errorType: "Init-failure",
@@ -127,7 +128,7 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
       logger.log("Aborted, configuration not saved.");
       const end = new Date().getTime();
       collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
-        duration: (end - start).toString(),
+        duration: (end - cmdStartTime).toString(),
         flagsUsed: JSON.stringify(flagsUsed),
         responseType: "PartialSuccess",
       });
@@ -149,12 +150,11 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
 
     logger.log(`- Use ${chalk.cyan("swa deploy")} to deploy your app to Azure.\n`);
   }
-  const end = new Date().getTime();
-
+  const cmdEndTime = new Date().getTime();
   await collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
     appFramework: projectConfig?.name?.split(", with")[0]!,
     flagsUsed: JSON.stringify(flagsUsed),
-    duration: (end - start).toString(),
+    duration: (cmdEndTime - cmdStartTime).toString(),
     responseType: "Success",
   });
 }

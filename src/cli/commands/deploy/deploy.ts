@@ -23,7 +23,7 @@ import { TELEMETRY_EVENTS } from "../../../core/constants";
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "..", "package.json"));
 
 export async function deploy(options: SWACLIConfig) {
-  const start = new Date().getTime();
+  const cmdStartTime = new Date().getTime();
   const flagsUsed = getFlagsUsed(options);
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
@@ -46,9 +46,9 @@ export async function deploy(options: SWACLIConfig) {
   // if folder exists, deploy from a specific build folder (outputLocation), relative to appLocation
   if (!fs.existsSync(resolvedOutputLocation)) {
     logger.error(`The folder "${resolvedOutputLocation}" is not found. Exit.`, true);
-    const end = new Date().getTime();
+    const cmdEndTime = new Date().getTime();
     collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
-      duration: (end - start).toString(),
+      duration: (cmdEndTime - cmdStartTime).toString(),
       flagsUsed: JSON.stringify(flagsUsed),
       responseType: "PreConditionFailure",
       errorType: "Deploy-failure",
@@ -67,9 +67,9 @@ export async function deploy(options: SWACLIConfig) {
     resolvedApiLocation = path.resolve(apiLocation!);
     if (!fs.existsSync(resolvedApiLocation)) {
       logger.error(`The provided API folder ${resolvedApiLocation} does not exist. Abort.`, true);
-      const end = new Date().getTime();
+      const cmdEndTime = new Date().getTime();
       collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
-        duration: (end - start).toString(),
+        duration: (cmdEndTime - cmdStartTime).toString(),
         flagsUsed: JSON.stringify(flagsUsed),
         responseType: "PreConditionFailure",
         errorType: "Deploy-failure",
@@ -140,9 +140,9 @@ export async function deploy(options: SWACLIConfig) {
       deploymentToken = deploymentTokenResponse?.properties?.apiKey;
 
       if (!deploymentToken) {
-        const end = new Date().getTime();
+        const cmdEndTime = new Date().getTime();
         collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
-          duration: (end - start).toString(),
+          duration: (cmdEndTime - cmdStartTime).toString(),
           flagsUsed: JSON.stringify(flagsUsed),
           responseType: "PreConditionFailure",
           errorType: "Deploy-failure",
@@ -172,9 +172,9 @@ export async function deploy(options: SWACLIConfig) {
       }
     } catch (error: any) {
       logger.error(error.message);
-      const end = new Date().getTime();
+      const cmdEndTime = new Date().getTime();
       collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
-        duration: (end - start).toString(),
+        duration: (cmdEndTime - cmdStartTime).toString(),
         flagsUsed: JSON.stringify(flagsUsed),
         responseType: "Failure",
         errorType: "Deploy-failure",
@@ -329,10 +329,10 @@ export async function deploy(options: SWACLIConfig) {
     logger.error(
       `For further information, please visit the Azure Static Web Apps documentation at https://docs.microsoft.com/azure/static-web-apps/`
     );
-    const end = new Date().getTime();
+    const cmdEndTime = new Date().getTime();
     collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
       apiRuntime: swaConfigFileContent?.platform?.apiRuntime!,
-      duration: (end - start).toString(),
+      duration: (cmdEndTime - cmdStartTime).toString(),
       appRuntime: "node" + nodeMajorVersion,
       flagsUsed: JSON.stringify(flagsUsed),
       errorType: "Deploy-failure",
@@ -341,12 +341,12 @@ export async function deploy(options: SWACLIConfig) {
     });
     logGiHubIssueMessageAndExit();
   } finally {
-    const end = new Date().getTime();
+    const cmdEndTime = new Date().getTime();
 
     collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
       apiRuntime: swaConfigFileContent?.platform?.apiRuntime!,
       flagsUsed: JSON.stringify(flagsUsed),
-      duration: (end - start).toString(),
+      duration: (cmdEndTime - cmdStartTime).toString(),
       appRuntime: "node" + nodeMajorVersion,
       responseType: "Success",
     });

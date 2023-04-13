@@ -5,27 +5,18 @@ import TelemetryReporter from "./telemetryReporter";
 import type { TelemetryEventMeasurements, TelemetryEventProperties } from "./telemetryReporterTypes";
 import { readCLIEnvFile } from "../utils";
 import * as crypto from "crypto";
-import os from "os";
-import { getMachineIdForTelemetry } from "../swa-cli-persistence-plugin/impl/machine-identifier";
 import { DEFAULT_CONFIG } from "../../config";
+import { logger } from "../utils";
 
 const aiKey = "8428a7f6-6650-4490-a15a-c7f7a16449d7";
-const pkg = require("../../../package.json");
+let sessionId: Promise<string>;
 
 export async function collectTelemetryEvent(event: string, properties?: TelemetryEventProperties, measurements?: TelemetryEventMeasurements) {
   const reporter = await getTelemetryReporter();
 
   if (reporter) {
-    const macAddressHash = (await getMachineIdForTelemetry()).toString();
     let extendedTelemetryEventProperties = {
-      macAddressHash: macAddressHash,
-      installationId: crypto
-        .createHash("sha256")
-        .update(pkg.version + macAddressHash)
-        .digest("hex"),
       subscriptionId: DEFAULT_CONFIG.subscriptionId!,
-      OsType: os.type(),
-      OsVersion: os.version(),
     } as TelemetryEventProperties;
 
     reporter.sendTelemetryEvent(event, { ...properties, ...extendedTelemetryEventProperties }, measurements);
@@ -48,11 +39,25 @@ export async function getTelemetryReporter() {
   return undefined;
 }
 
-export function getSessionId(timeStamp: number) {
-  const timeStampStr = timeStamp.toString();
-  const PID = process.pid.toString();
-  return crypto
-    .createHash("sha256")
-    .update(PID + timeStampStr)
-    .digest("hex");
+export async function getSessionId(timeStamp: number): Promise<string> {
+  if (!sessionId) {
+    const timeStampStr = timeStamp.toString();
+    const PID = process.pid.toString();
+    sessionId = (async () => {
+      return (await getPIDHash(PID, timeStampStr)) || crypto.randomBytes(20).toString("hex");
+    })();
+  }
+  return sessionId;
+}
+
+async function getPIDHash(PID: string, timeStampStr: string): Promise<string | undefined> {
+  try {
+    return crypto
+      .createHash("sha256")
+      .update(PID + timeStampStr)
+      .digest("hex");
+  } catch (err) {
+    logger.error(err as any);
+    return undefined;
+  }
 }

@@ -181,6 +181,7 @@ export const SWA_CONFIG_FILENAME_LEGACY = "routes.json";
 export const CUSTOM_URL_SCHEME = "swa://";
 export const OVERRIDABLE_ERROR_CODES = [400, 401, 403, 404];
 
+// Do not change these values
 export const TELEMETRY_MAC_ADDRESS_HASH_LENGTH = 32; //32 bytes
 export const MACHINE_ID_LENGTH = 16; //16 bytes
 
