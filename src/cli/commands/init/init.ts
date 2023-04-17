@@ -18,7 +18,7 @@ import { TELEMETRY_EVENTS } from "../../../core/constants";
 export async function init(options: SWACLIConfig, showHints: boolean = true) {
   const cmdStartTime = new Date().getTime();
   const flagsUsed = getFlagsUsed(options);
-
+  
   const configFilePath = options.config!;
   const disablePrompts = options.yes ?? false;
   const outputFolder = process.cwd();

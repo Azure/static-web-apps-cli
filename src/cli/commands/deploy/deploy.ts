@@ -349,6 +349,7 @@ export async function deploy(options: SWACLIConfig) {
       duration: (cmdEndTime - cmdStartTime).toString(),
       appRuntime: "node" + nodeMajorVersion,
       responseType: "Success",
+
     });
     cleanUp();
   }
