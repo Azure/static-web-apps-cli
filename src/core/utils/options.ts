@@ -92,7 +92,6 @@ export function getFlagsUsed(options: SWACLIConfig) {
   let key: keyof SWACLIConfig;
   for (key in options) {
     if (options[key] != null) {
-      console.log(key);
       if (isUserOption(key)) {
         userOptions.push(key);
       } else if (isConfigFileOption(key)) {
@@ -100,7 +99,7 @@ export function getFlagsUsed(options: SWACLIConfig) {
       }
     }
   }
-  let flagsUsed = {
+  const flagsUsed = {
     userOptions: userOptions,
     configOptions: configOptions,
   };

@@ -31,6 +31,7 @@ export async function start(options: SWACLIConfig) {
 
   const cmdStartTime = new Date().getTime();
   const flagsUsed = getFlagsUsed(options);
+  const flagsUsedStr = JSON.stringify(flagsUsed);
 
   let {
     appLocation,
@@ -93,9 +94,9 @@ export async function start(options: SWACLIConfig) {
       const cmdEndTime = new Date().getTime();
       collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
         duration: (cmdEndTime - cmdStartTime).toString(),
-        flagsUsed: JSON.stringify(flagsUsed),
+        flagsUsed: flagsUsedStr,
         responseType: "PreConditionFailure",
-        errorType: "Start-failure",
+        errorType: "StartFailure",
         errorMessage: "Output Location not found",
       });
       return;
@@ -183,9 +184,9 @@ export async function start(options: SWACLIConfig) {
           const cmdEndTime = new Date().getTime();
           collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
             duration: (cmdEndTime - cmdStartTime).toString(),
-            flagsUsed: JSON.stringify(flagsUsed),
+            flagsUsed: flagsUsedStr,
             responseType: "Failure",
-            errorType: "Start-failure",
+            errorType: "StartFailure",
             errorMessage: "Azure Functions Core Tools aren't compatible with Node.js",
           });
           process.exit(1);
@@ -301,9 +302,9 @@ export async function start(options: SWACLIConfig) {
         const cmdEndTime = new Date().getTime();
         collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
           duration: (cmdEndTime - cmdStartTime).toString(),
-          flagsUsed: JSON.stringify(flagsUsed),
+          flagsUsed: flagsUsedStr,
           responseType: "Failure",
-          errorType: "Start-failure",
+          errorType: "StartFailure",
           errorMessage: "SWA emulator exited",
         });
         process.exit();
@@ -328,9 +329,9 @@ export async function start(options: SWACLIConfig) {
         const cmdEndTime = new Date().getTime();
         collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
           duration: (cmdEndTime - cmdStartTime).toString(),
-          flagsUsed: JSON.stringify(flagsUsed),
+          flagsUsed: flagsUsedStr,
           responseType: "Failure",
-          errorType: "Start-failure",
+          errorType: "StartFailure",
           errorMessage: "SWA emulator exited",
         });
       }
@@ -340,9 +341,9 @@ export async function start(options: SWACLIConfig) {
       const cmdEndTime = new Date().getTime();
       collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
         duration: (cmdEndTime - cmdStartTime).toString(),
-        flagsUsed: JSON.stringify(flagsUsed),
+        flagsUsed: flagsUsedStr,
         responseType: "Failure",
-        errorType: "Start-failure",
+        errorType: "StartFailure",
         errorMessage: "SWA emulator exited",
       });
     });
@@ -351,7 +352,7 @@ export async function start(options: SWACLIConfig) {
 
   collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
     apiRuntime: swaConfigFileContent?.platform.apiRuntime!,
-    flagsUsed: JSON.stringify(flagsUsed),
+    flagsUsed: flagsUsedStr,
     duration: (cmdEndTime - cmdStartTime).toString(),
     appRuntime: "node" + nodeMajorVersion,
     responseType: "Success",

@@ -25,6 +25,7 @@ const packageInfo = require(path.join(__dirname, "..", "..", "..", "..", "packag
 export async function deploy(options: SWACLIConfig) {
   const cmdStartTime = new Date().getTime();
   const flagsUsed = getFlagsUsed(options);
+  const flagsUsedStr = JSON.stringify(flagsUsed);
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
 
@@ -49,9 +50,9 @@ export async function deploy(options: SWACLIConfig) {
     const cmdEndTime = new Date().getTime();
     collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
       duration: (cmdEndTime - cmdStartTime).toString(),
-      flagsUsed: JSON.stringify(flagsUsed),
+      flagsUsed: flagsUsedStr,
       responseType: "PreConditionFailure",
-      errorType: "Deploy-failure",
+      errorType: "DeployFailure",
       errorMessage: "Output Location not found",
     });
     return;
@@ -70,9 +71,9 @@ export async function deploy(options: SWACLIConfig) {
       const cmdEndTime = new Date().getTime();
       collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
         duration: (cmdEndTime - cmdStartTime).toString(),
-        flagsUsed: JSON.stringify(flagsUsed),
+        flagsUsed: flagsUsedStr,
         responseType: "PreConditionFailure",
-        errorType: "Deploy-failure",
+        errorType: "DeployFailure",
         errorMessage: "API Location not found",
       });
       return;
@@ -143,9 +144,9 @@ export async function deploy(options: SWACLIConfig) {
         const cmdEndTime = new Date().getTime();
         collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
           duration: (cmdEndTime - cmdStartTime).toString(),
-          flagsUsed: JSON.stringify(flagsUsed),
+          flagsUsed: flagsUsedStr,
           responseType: "PreConditionFailure",
-          errorType: "Deploy-failure",
+          errorType: "DeployFailure",
           errorMessage: "Deployment token not found",
         });
         logger.error("Cannot find a deployment token. Aborting.", true);
@@ -175,9 +176,9 @@ export async function deploy(options: SWACLIConfig) {
       const cmdEndTime = new Date().getTime();
       collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
         duration: (cmdEndTime - cmdStartTime).toString(),
-        flagsUsed: JSON.stringify(flagsUsed),
+        flagsUsed: flagsUsedStr,
         responseType: "Failure",
-        errorType: "Deploy-failure",
+        errorType: "DeployFailure",
         errorMessage: "Deployment Failed",
       });
       return;
@@ -334,8 +335,8 @@ export async function deploy(options: SWACLIConfig) {
       apiRuntime: swaConfigFileContent?.platform?.apiRuntime!,
       duration: (cmdEndTime - cmdStartTime).toString(),
       appRuntime: "node" + nodeMajorVersion,
-      flagsUsed: JSON.stringify(flagsUsed),
-      errorType: "Deploy-failure",
+      flagsUsed: flagsUsedStr,
+      errorType: "DeployFailure",
       responseType: "Failure",
       errorMessage: "Deployment Failed",
     });
@@ -345,11 +346,10 @@ export async function deploy(options: SWACLIConfig) {
 
     collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
       apiRuntime: swaConfigFileContent?.platform?.apiRuntime!,
-      flagsUsed: JSON.stringify(flagsUsed),
+      flagsUsed: flagsUsedStr,
       duration: (cmdEndTime - cmdStartTime).toString(),
       appRuntime: "node" + nodeMajorVersion,
       responseType: "Success",
-
     });
     cleanUp();
   }

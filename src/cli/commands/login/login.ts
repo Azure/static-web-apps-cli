@@ -17,6 +17,7 @@ const defaultScope = `${Environment.AzureCloud.resourceManagerEndpointUrl}/.defa
 export async function loginCommand(options: SWACLIConfig) {
   const cmdStartTime = new Date().getTime();
   const flagsUsed = getFlagsUsed(options);
+  const flagsUsedStr = JSON.stringify(flagsUsed);
 
   try {
     const { credentialChain, subscriptionId } = await login(options);
@@ -28,9 +29,9 @@ export async function loginCommand(options: SWACLIConfig) {
       const cmdEndTime = new Date().getTime();
       collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
         duration: (cmdEndTime - cmdStartTime).toString(),
-        flagsUsed: JSON.stringify(flagsUsed),
+        flagsUsed: flagsUsedStr,
         responseType: "PreConditionFailure",
-        errorType: "Login-failure",
+        errorType: "LoginFailure",
         errorMessage: "project setup failed",
       });
       logGiHubIssueMessageAndExit();
@@ -39,9 +40,10 @@ export async function loginCommand(options: SWACLIConfig) {
     logger.error(`Failed to setup project: ${(error as any).message}`);
     const cmdEndTime = new Date().getTime();
     collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
+      flagsUsed: flagsUsedStr,
       duration: (cmdEndTime - cmdStartTime).toString(),
       responseType: "Failure",
-      errorType: "Login-failure",
+      errorType: "LoginFailure",
       errorMessage: "project setup failed",
     });
     logGiHubIssueMessageAndExit();
@@ -49,7 +51,7 @@ export async function loginCommand(options: SWACLIConfig) {
   const cmdEndTime = new Date().getTime();
 
   collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
-    flagsUsed: JSON.stringify(flagsUsed),
+    flagsUsed: flagsUsedStr,
     duration: (cmdEndTime - cmdStartTime).toString(),
     responseType: "Success",
   });
