@@ -5,7 +5,7 @@ import { existsSync, promises as fsPromises } from "fs";
 import path from "path";
 import { getFlagsUsed, logger, logGiHubIssueMessageAndExit } from "../../../core";
 import { authenticateWithAzureIdentity, listSubscriptions, listTenants } from "../../../core/account";
-import { ENV_FILENAME, TELEMETRY_EVENTS } from "../../../core/constants";
+import { ENV_FILENAME, TELEMETRY_ERROR_TYPE, TELEMETRY_EVENTS, TELEMETRY_RESPONSE_TYPE } from "../../../core/constants";
 import { updateGitIgnore } from "../../../core/git";
 import { chooseSubscription, chooseTenant } from "../../../core/prompts";
 import { Environment } from "../../../core/swa-cli-persistence-plugin/impl/azure-environment";
@@ -30,8 +30,8 @@ export async function loginCommand(options: SWACLIConfig) {
       collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
         duration: (cmdEndTime - cmdStartTime).toString(),
         flagsUsed: flagsUsedStr,
-        responseType: "PreConditionFailure",
-        errorType: "LoginFailure",
+        responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+        errorType: TELEMETRY_ERROR_TYPE.LoginFailure,
         errorMessage: "project setup failed",
       });
       logGiHubIssueMessageAndExit();
@@ -42,8 +42,8 @@ export async function loginCommand(options: SWACLIConfig) {
     collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
       flagsUsed: flagsUsedStr,
       duration: (cmdEndTime - cmdStartTime).toString(),
-      responseType: "Failure",
-      errorType: "LoginFailure",
+      responseType: TELEMETRY_RESPONSE_TYPE.Failure,
+      errorType: TELEMETRY_ERROR_TYPE.LoginFailure,
       errorMessage: "project setup failed",
     });
     logGiHubIssueMessageAndExit();
@@ -53,7 +53,7 @@ export async function loginCommand(options: SWACLIConfig) {
   collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
     flagsUsed: flagsUsedStr,
     duration: (cmdEndTime - cmdStartTime).toString(),
-    responseType: "Success",
+    responseType: TELEMETRY_RESPONSE_TYPE.Success,
   });
 }
 

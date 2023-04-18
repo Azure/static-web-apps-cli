@@ -12,7 +12,7 @@ import {
   swaCliConfigFilename,
 } from "../../../core/utils";
 import { collectTelemetryEvent } from "../../../core/telemetry/utils";
-import { TELEMETRY_EVENTS } from "../../../core/constants";
+import { TELEMETRY_ERROR_TYPE, TELEMETRY_EVENTS, TELEMETRY_RESPONSE_TYPE } from "../../../core/constants";
 
 export async function build(options: SWACLIConfig) {
   const cmdStartTime = new Date().getTime();
@@ -45,8 +45,8 @@ export async function build(options: SWACLIConfig) {
     collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
       duration: (cmdEndTime - cmdStartTime).toString(),
       flagsUsed: flagsUsedStr,
-      responseType: "PreConditionFailure",
-      errorType: "BuildFailure",
+      responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+      errorType: TELEMETRY_ERROR_TYPE.BuildFailure,
       errorMessage: "auto flag used along with --app-build-command and --api-build-command options",
     });
     return;
@@ -63,8 +63,8 @@ export async function build(options: SWACLIConfig) {
       collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
         duration: (cmdEndTime - cmdStartTime).toString(),
         flagsUsed: flagsUsedStr,
-        responseType: "PreConditionFailure",
-        errorType: "BuildFailure",
+        responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+        errorType: TELEMETRY_ERROR_TYPE.BuildFailure,
         errorMessage: "App configuration could not be detected",
       });
       return showAutoErrorMessageAndExit();
@@ -75,8 +75,8 @@ export async function build(options: SWACLIConfig) {
       collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
         duration: (cmdEndTime - cmdStartTime).toString(),
         flagsUsed: flagsUsedStr,
-        responseType: "PreConditionFailure",
-        errorType: "BuildFailure",
+        responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+        errorType: TELEMETRY_ERROR_TYPE.BuildFailure,
         errorMessage: "Multiple apps found in the project folder",
       });
       return showAutoErrorMessageAndExit();
@@ -98,8 +98,8 @@ export async function build(options: SWACLIConfig) {
       collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
         duration: (cmdEndTime - cmdStartTime).toString(),
         flagsUsed: flagsUsedStr,
-        responseType: "PreConditionFailure",
-        errorType: "BuildFailure",
+        responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+        errorType: TELEMETRY_ERROR_TYPE.BuildFailure,
         errorMessage: "Couldn't generate build configuration",
       });
       return;
@@ -118,9 +118,7 @@ export async function build(options: SWACLIConfig) {
     const cmdEndTime = new Date().getTime();
     collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
       duration: (cmdEndTime - cmdStartTime).toString(),
-      responseType: "PartialSuccess",
-      errorType: "BuildSuccess",
-      errorMessage: "Nothing to build",
+      responseType: TELEMETRY_RESPONSE_TYPE.PartialSuccess,
     });
     return;
   }
@@ -159,7 +157,7 @@ export async function build(options: SWACLIConfig) {
   collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
     flagsUsed: flagsUsedStr,
     duration: (cmdEndTime - cmdStartTime).toString(),
-    responseType: "Success",
+    responseType: TELEMETRY_RESPONSE_TYPE.Success,
   });
 }
 

@@ -185,7 +185,8 @@ export const OVERRIDABLE_ERROR_CODES = [400, 401, 403, 404];
 export const TELEMETRY_MAC_ADDRESS_HASH_LENGTH = 32; //32 bytes
 export const MACHINE_ID_LENGTH = 16; //16 bytes
 
-export const TELEMETRYQUEUELENGTHLIMIT = 100;
+// telemetry event and exception queue length threshold, all the events above this will be discarded
+export const TELEMETRY_QUEUE_LENGTH_LIMIT = 100;
 
 export const TELEMETRY_EVENTS = {
   Login: "login",
@@ -193,6 +194,21 @@ export const TELEMETRY_EVENTS = {
   Start: "start",
   Build: "build",
   Deploy: "deploy",
+};
+
+export const TELEMETRY_ERROR_TYPE = {
+  LoginFailure: "LoginFailure",
+  InitFailure: "InitFailure",
+  StartFailure: "StartFailure",
+  BuildFailure: "BuildFailure",
+  DeployFailure: "DeployFailure",
+};
+
+export const TELEMETRY_RESPONSE_TYPE = {
+  PreConditionFailure: "PreConditionFailure",
+  Failure: "Failure",
+  PartialSuccess: "PartialSuccess",
+  Success: "Success",
 };
 
 // --

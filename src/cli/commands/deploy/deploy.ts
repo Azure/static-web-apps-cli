@@ -18,7 +18,7 @@ import { cleanUp, getDeployClientPath } from "../../../core/deploy-client";
 import { swaCLIEnv } from "../../../core/env";
 import { login } from "../login";
 import { collectTelemetryEvent } from "../../../core/telemetry/utils";
-import { TELEMETRY_EVENTS } from "../../../core/constants";
+import { TELEMETRY_ERROR_TYPE, TELEMETRY_EVENTS, TELEMETRY_RESPONSE_TYPE } from "../../../core/constants";
 
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "..", "package.json"));
 
@@ -51,8 +51,8 @@ export async function deploy(options: SWACLIConfig) {
     collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
       duration: (cmdEndTime - cmdStartTime).toString(),
       flagsUsed: flagsUsedStr,
-      responseType: "PreConditionFailure",
-      errorType: "DeployFailure",
+      responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+      errorType: TELEMETRY_ERROR_TYPE.DeployFailure,
       errorMessage: "Output Location not found",
     });
     return;
@@ -72,8 +72,8 @@ export async function deploy(options: SWACLIConfig) {
       collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
         duration: (cmdEndTime - cmdStartTime).toString(),
         flagsUsed: flagsUsedStr,
-        responseType: "PreConditionFailure",
-        errorType: "DeployFailure",
+        responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+        errorType: TELEMETRY_ERROR_TYPE.DeployFailure,
         errorMessage: "API Location not found",
       });
       return;
@@ -145,8 +145,8 @@ export async function deploy(options: SWACLIConfig) {
         collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
           duration: (cmdEndTime - cmdStartTime).toString(),
           flagsUsed: flagsUsedStr,
-          responseType: "PreConditionFailure",
-          errorType: "DeployFailure",
+          responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+          errorType: TELEMETRY_ERROR_TYPE.DeployFailure,
           errorMessage: "Deployment token not found",
         });
         logger.error("Cannot find a deployment token. Aborting.", true);
@@ -177,8 +177,8 @@ export async function deploy(options: SWACLIConfig) {
       collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
         duration: (cmdEndTime - cmdStartTime).toString(),
         flagsUsed: flagsUsedStr,
-        responseType: "Failure",
-        errorType: "DeployFailure",
+        responseType: TELEMETRY_RESPONSE_TYPE.Failure,
+        errorType: TELEMETRY_ERROR_TYPE.DeployFailure,
         errorMessage: "Deployment Failed",
       });
       return;
@@ -336,8 +336,8 @@ export async function deploy(options: SWACLIConfig) {
       duration: (cmdEndTime - cmdStartTime).toString(),
       appRuntime: "node" + nodeMajorVersion,
       flagsUsed: flagsUsedStr,
-      errorType: "DeployFailure",
-      responseType: "Failure",
+      responseType: TELEMETRY_RESPONSE_TYPE.Failure,
+      errorType: TELEMETRY_ERROR_TYPE.DeployFailure,
       errorMessage: "Deployment Failed",
     });
     logGiHubIssueMessageAndExit();
@@ -349,7 +349,7 @@ export async function deploy(options: SWACLIConfig) {
       flagsUsed: flagsUsedStr,
       duration: (cmdEndTime - cmdStartTime).toString(),
       appRuntime: "node" + nodeMajorVersion,
-      responseType: "Success",
+      responseType: TELEMETRY_RESPONSE_TYPE.Success,
     });
     cleanUp();
   }

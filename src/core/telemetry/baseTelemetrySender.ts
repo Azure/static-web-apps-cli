@@ -1,5 +1,5 @@
 import { SenderData } from "./baseTelemetryReporter";
-import { TELEMETRYQUEUELENGTHLIMIT } from "../constants";
+import { TELEMETRY_QUEUE_LENGTH_LIMIT } from "../constants";
 
 export interface BaseTelemetryClient {
   logEvent(eventName: string, data?: SenderData): void;
@@ -42,7 +42,7 @@ export class BaseTelemetrySender implements TelemetrySender {
    */
   sendEventData(eventName: string, data?: SenderData): void {
     if (!this._telemetryClient) {
-      if (this._instantiationStatus !== InstantiationStatus.INSTANTIATED && this._eventQueue.length < TELEMETRYQUEUELENGTHLIMIT) {
+      if (this._instantiationStatus !== InstantiationStatus.INSTANTIATED && this._eventQueue.length < TELEMETRY_QUEUE_LENGTH_LIMIT) {
         this._eventQueue.push({ eventName, data });
       }
       return;
@@ -57,7 +57,7 @@ export class BaseTelemetrySender implements TelemetrySender {
    */
   sendExceptionData(exception: Error, data?: SenderData): void {
     if (!this._telemetryClient) {
-      if (this._instantiationStatus !== InstantiationStatus.INSTANTIATED && this._exceptionQueue.length < TELEMETRYQUEUELENGTHLIMIT) {
+      if (this._instantiationStatus !== InstantiationStatus.INSTANTIATED && this._exceptionQueue.length < TELEMETRY_QUEUE_LENGTH_LIMIT) {
         this._exceptionQueue.push({ exception, data });
       }
       return;

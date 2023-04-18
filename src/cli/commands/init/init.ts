@@ -13,7 +13,7 @@ import {
 } from "../../../core/utils";
 import { detectProjectFolders, generateConfiguration, isDescendantPath } from "../../../core/frameworks";
 import { collectTelemetryEvent } from "../../../core/telemetry/utils";
-import { TELEMETRY_EVENTS } from "../../../core/constants";
+import { TELEMETRY_ERROR_TYPE, TELEMETRY_EVENTS, TELEMETRY_RESPONSE_TYPE } from "../../../core/constants";
 
 export async function init(options: SWACLIConfig, showHints: boolean = true) {
   const cmdStartTime = new Date().getTime();
@@ -98,8 +98,8 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
     collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
       duration: (cmdEndTime - cmdStartTime).toString(),
       flagsUsed: flagsUsedStr,
-      responseType: "PreConditionFailure",
-      errorType: "InitFailure",
+      responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+      errorType: TELEMETRY_ERROR_TYPE.InitFailure,
       errorMessage: "Couldn't generate build configuration",
     });
     return;
@@ -131,7 +131,7 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
       collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
         duration: (cmdEndTime - cmdStartTime).toString(),
         flagsUsed: flagsUsedStr,
-        responseType: "PartialSuccess",
+        responseType: TELEMETRY_RESPONSE_TYPE.PartialSuccess,
       });
       return;
     }
@@ -156,7 +156,7 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
     appFramework: projectConfig?.name?.split(", with")[0]!,
     flagsUsed: flagsUsedStr,
     duration: (cmdEndTime - cmdStartTime).toString(),
-    responseType: "Success",
+    responseType: TELEMETRY_RESPONSE_TYPE.Success,
   });
 }
 
