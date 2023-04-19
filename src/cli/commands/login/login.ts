@@ -3,9 +3,9 @@ import chalk from "chalk";
 import dotenv from "dotenv";
 import { existsSync, promises as fsPromises } from "fs";
 import path from "path";
-import { logger, logGiHubIssueMessageAndExit } from "../../../core";
+import { getFlagsUsed, logger, logGiHubIssueMessageAndExit } from "../../../core";
 import { authenticateWithAzureIdentity, listSubscriptions, listTenants } from "../../../core/account";
-import { ENV_FILENAME, TELEMETRY_EVENTS } from "../../../core/constants";
+import { ENV_FILENAME, TELEMETRY_ERROR_TYPE, TELEMETRY_EVENTS, TELEMETRY_RESPONSE_TYPE } from "../../../core/constants";
 import { updateGitIgnore } from "../../../core/git";
 import { chooseSubscription, chooseTenant } from "../../../core/prompts";
 import { Environment } from "../../../core/swa-cli-persistence-plugin/impl/azure-environment";
@@ -16,6 +16,9 @@ const defaultScope = `${Environment.AzureCloud.resourceManagerEndpointUrl}/.defa
 
 export async function loginCommand(options: SWACLIConfig) {
   const cmdStartTime = new Date().getTime();
+  const flagsUsed = getFlagsUsed(options);
+  const flagsUsedStr = JSON.stringify(flagsUsed);
+
   try {
     const { credentialChain, subscriptionId } = await login(options);
 
@@ -23,16 +26,34 @@ export async function loginCommand(options: SWACLIConfig) {
       logger.log(chalk.green(`✔ Successfully setup project!`));
     } else {
       logger.log(chalk.red(`✘ Failed to setup project!`));
+      const cmdEndTime = new Date().getTime();
+      collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
+        duration: (cmdEndTime - cmdStartTime).toString(),
+        flagsUsed: flagsUsedStr,
+        responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+        errorType: TELEMETRY_ERROR_TYPE.LoginFailure,
+        errorMessage: "project setup failed",
+      });
       logGiHubIssueMessageAndExit();
     }
   } catch (error) {
     logger.error(`Failed to setup project: ${(error as any).message}`);
+    const cmdEndTime = new Date().getTime();
+    collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
+      flagsUsed: flagsUsedStr,
+      duration: (cmdEndTime - cmdStartTime).toString(),
+      responseType: TELEMETRY_RESPONSE_TYPE.Failure,
+      errorType: TELEMETRY_ERROR_TYPE.LoginFailure,
+      errorMessage: "Project setup failed",
+    });
     logGiHubIssueMessageAndExit();
   }
   const cmdEndTime = new Date().getTime();
 
   collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
+    flagsUsed: flagsUsedStr,
     duration: (cmdEndTime - cmdStartTime).toString(),
+    responseType: TELEMETRY_RESPONSE_TYPE.Success,
   });
 }
 

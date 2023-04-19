@@ -11,18 +11,21 @@ import {
   readWorkflowFile,
   updateSwaCliConfigFile,
   getNodeMajorVersion,
+  getFlagsUsed,
 } from "../../../core";
 import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../../core/account";
 import { cleanUp, getDeployClientPath } from "../../../core/deploy-client";
 import { swaCLIEnv } from "../../../core/env";
 import { login } from "../login";
 import { collectTelemetryEvent } from "../../../core/telemetry/utils";
-import { TELEMETRY_EVENTS } from "../../../core/constants";
+import { TELEMETRY_ERROR_TYPE, TELEMETRY_EVENTS, TELEMETRY_RESPONSE_TYPE } from "../../../core/constants";
 
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "..", "package.json"));
 
 export async function deploy(options: SWACLIConfig) {
   const cmdStartTime = new Date().getTime();
+  const flagsUsed = getFlagsUsed(options);
+  const flagsUsedStr = JSON.stringify(flagsUsed);
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
 
@@ -44,6 +47,14 @@ export async function deploy(options: SWACLIConfig) {
   // if folder exists, deploy from a specific build folder (outputLocation), relative to appLocation
   if (!fs.existsSync(resolvedOutputLocation)) {
     logger.error(`The folder "${resolvedOutputLocation}" is not found. Exit.`, true);
+    const cmdEndTime = new Date().getTime();
+    collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+      duration: (cmdEndTime - cmdStartTime).toString(),
+      flagsUsed: flagsUsedStr,
+      responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+      errorType: TELEMETRY_ERROR_TYPE.DeployFailure,
+      errorMessage: "Output Location not found",
+    });
     return;
   }
 
@@ -57,6 +68,14 @@ export async function deploy(options: SWACLIConfig) {
     resolvedApiLocation = path.resolve(apiLocation!);
     if (!fs.existsSync(resolvedApiLocation)) {
       logger.error(`The provided API folder ${resolvedApiLocation} does not exist. Abort.`, true);
+      const cmdEndTime = new Date().getTime();
+      collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+        duration: (cmdEndTime - cmdStartTime).toString(),
+        flagsUsed: flagsUsedStr,
+        responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+        errorType: TELEMETRY_ERROR_TYPE.DeployFailure,
+        errorMessage: "API Location not found",
+      });
       return;
     } else {
       logger.log(`Deploying API from folder:`);
@@ -122,6 +141,14 @@ export async function deploy(options: SWACLIConfig) {
       deploymentToken = deploymentTokenResponse?.properties?.apiKey;
 
       if (!deploymentToken) {
+        const cmdEndTime = new Date().getTime();
+        collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+          duration: (cmdEndTime - cmdStartTime).toString(),
+          flagsUsed: flagsUsedStr,
+          responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+          errorType: TELEMETRY_ERROR_TYPE.DeployFailure,
+          errorMessage: "Deployment token not found",
+        });
         logger.error("Cannot find a deployment token. Aborting.", true);
       } else {
         logger.log(chalk.green(`✔ Successfully setup project!`));
@@ -146,6 +173,14 @@ export async function deploy(options: SWACLIConfig) {
       }
     } catch (error: any) {
       logger.error(error.message);
+      const cmdEndTime = new Date().getTime();
+      collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+        duration: (cmdEndTime - cmdStartTime).toString(),
+        flagsUsed: flagsUsedStr,
+        responseType: TELEMETRY_RESPONSE_TYPE.Failure,
+        errorType: TELEMETRY_ERROR_TYPE.DeployFailure,
+        errorMessage: "Deployment Failed",
+      });
       return;
     }
   }
@@ -295,14 +330,26 @@ export async function deploy(options: SWACLIConfig) {
     logger.error(
       `For further information, please visit the Azure Static Web Apps documentation at https://docs.microsoft.com/azure/static-web-apps/`
     );
+    const cmdEndTime = new Date().getTime();
+    collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+      apiRuntime: swaConfigFileContent?.platform?.apiRuntime!,
+      duration: (cmdEndTime - cmdStartTime).toString(),
+      appRuntime: "node" + nodeMajorVersion,
+      flagsUsed: flagsUsedStr,
+      responseType: TELEMETRY_RESPONSE_TYPE.Failure,
+      errorType: TELEMETRY_ERROR_TYPE.DeployFailure,
+      errorMessage: "Deployment Failed",
+    });
     logGiHubIssueMessageAndExit();
   } finally {
     const cmdEndTime = new Date().getTime();
 
     collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
       apiRuntime: swaConfigFileContent?.platform?.apiRuntime!,
+      flagsUsed: flagsUsedStr,
       duration: (cmdEndTime - cmdStartTime).toString(),
       appRuntime: "node" + nodeMajorVersion,
+      responseType: TELEMETRY_RESPONSE_TYPE.Success,
     });
     cleanUp();
   }

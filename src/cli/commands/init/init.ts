@@ -4,6 +4,7 @@ import process from "process";
 import { promptOrUseDefault } from "../../../core/prompts";
 import {
   dasherize,
+  getFlagsUsed,
   hasConfigurationNameInConfigFile,
   logger,
   swaCliConfigFileExists,
@@ -12,10 +13,13 @@ import {
 } from "../../../core/utils";
 import { detectProjectFolders, generateConfiguration, isDescendantPath } from "../../../core/frameworks";
 import { collectTelemetryEvent } from "../../../core/telemetry/utils";
-import { TELEMETRY_EVENTS } from "../../../core/constants";
+import { TELEMETRY_ERROR_TYPE, TELEMETRY_EVENTS, TELEMETRY_RESPONSE_TYPE } from "../../../core/constants";
 
 export async function init(options: SWACLIConfig, showHints: boolean = true) {
   const cmdStartTime = new Date().getTime();
+  const flagsUsed = getFlagsUsed(options);
+  const flagsUsedStr = JSON.stringify(flagsUsed);
+
   const configFilePath = options.config!;
   const disablePrompts = options.yes ?? false;
   const outputFolder = process.cwd();
@@ -90,6 +94,14 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
   } catch (error) {
     logger.error(`Cannot generate your project configuration:`);
     logger.error(error as Error, true);
+    const cmdEndTime = new Date().getTime();
+    collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
+      duration: (cmdEndTime - cmdStartTime).toString(),
+      flagsUsed: flagsUsedStr,
+      responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+      errorType: TELEMETRY_ERROR_TYPE.InitFailure,
+      errorMessage: "Couldn't generate build configuration",
+    });
     return;
   }
 
@@ -115,6 +127,12 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
     });
     if (!confirmOverwrite) {
       logger.log("Aborted, configuration not saved.");
+      const cmdEndTime = new Date().getTime();
+      collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
+        duration: (cmdEndTime - cmdStartTime).toString(),
+        flagsUsed: flagsUsedStr,
+        responseType: TELEMETRY_RESPONSE_TYPE.PartialSuccess,
+      });
       return;
     }
   }
@@ -136,7 +154,9 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
   const cmdEndTime = new Date().getTime();
   await collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
     appFramework: projectConfig?.name?.split(", with")[0]!,
+    flagsUsed: flagsUsedStr,
     duration: (cmdEndTime - cmdStartTime).toString(),
+    responseType: TELEMETRY_RESPONSE_TYPE.Success,
   });
 }
 

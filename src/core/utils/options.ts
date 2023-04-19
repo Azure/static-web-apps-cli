@@ -84,3 +84,24 @@ export function isConfigFileOption(option: keyof SWACLIConfig): boolean {
 export function isUserOrConfigOption(option: keyof SWACLIConfig): boolean {
   return isUserOption(option) || isConfigFileOption(option);
 }
+
+export function getFlagsUsed(options: SWACLIConfig) {
+  let userOptions: string[] = [];
+  let configOptions: string[] = [];
+
+  let key: keyof SWACLIConfig;
+  for (key in options) {
+    if (options[key] != null) {
+      if (isUserOption(key)) {
+        userOptions.push(key);
+      } else if (isConfigFileOption(key)) {
+        configOptions.push(key);
+      }
+    }
+  }
+  const flagsUsed = {
+    userOptions: userOptions,
+    configOptions: configOptions,
+  };
+  return flagsUsed;
+}

@@ -3,6 +3,7 @@ import chalk from "chalk";
 import { detectProjectFolders, generateConfiguration } from "../../../core/frameworks";
 import {
   findUpPackageJsonDir,
+  getFlagsUsed,
   isUserOrConfigOption,
   logger,
   pathExists,
@@ -11,10 +12,12 @@ import {
   swaCliConfigFilename,
 } from "../../../core/utils";
 import { collectTelemetryEvent } from "../../../core/telemetry/utils";
-import { TELEMETRY_EVENTS } from "../../../core/constants";
+import { TELEMETRY_ERROR_TYPE, TELEMETRY_EVENTS, TELEMETRY_RESPONSE_TYPE } from "../../../core/constants";
 
 export async function build(options: SWACLIConfig) {
   const cmdStartTime = new Date().getTime();
+  const flagsUsed = getFlagsUsed(options);
+  const flagsUsedStr = JSON.stringify(flagsUsed);
   const workflowConfig = readWorkflowFile();
 
   logger.silly({
@@ -37,6 +40,15 @@ export async function build(options: SWACLIConfig) {
   if (options.auto && hasBuildOptionsDefined(options)) {
     logger.error(`You can't use the --auto option when you have defined appBuildCommand or apiBuildCommand in ${swaCliConfigFilename}`);
     logger.error(`or with the --app-build-command and --api-build-command options.`, true);
+    const cmdEndTime = new Date().getTime();
+
+    collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
+      duration: (cmdEndTime - cmdStartTime).toString(),
+      flagsUsed: flagsUsedStr,
+      responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+      errorType: TELEMETRY_ERROR_TYPE.BuildFailure,
+      errorMessage: "--auto flag is used along with --app-build-command and --api-build-command options",
+    });
     return;
   }
 
@@ -46,9 +58,27 @@ export async function build(options: SWACLIConfig) {
 
     if (detectedFolders.app.length === 0 && detectedFolders.api.length === 0) {
       logger.error(`Your app configuration could not be detected.`);
+
+      const cmdEndTime = new Date().getTime();
+      collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
+        duration: (cmdEndTime - cmdStartTime).toString(),
+        flagsUsed: flagsUsedStr,
+        responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+        errorType: TELEMETRY_ERROR_TYPE.BuildFailure,
+        errorMessage: "App configuration could not be detected",
+      });
       return showAutoErrorMessageAndExit();
     } else if (detectedFolders.app.length > 1 || detectedFolders.api.length > 1) {
       logger.error(`Multiple apps found in your project folder.`);
+
+      const cmdEndTime = new Date().getTime();
+      collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
+        duration: (cmdEndTime - cmdStartTime).toString(),
+        flagsUsed: flagsUsedStr,
+        responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+        errorType: TELEMETRY_ERROR_TYPE.BuildFailure,
+        errorMessage: "Multiple apps found in the project folder",
+      });
       return showAutoErrorMessageAndExit();
     }
 
@@ -63,6 +93,15 @@ export async function build(options: SWACLIConfig) {
     } catch (error) {
       logger.error(`Cannot generate your build configuration:`);
       logger.error(error as Error, true);
+
+      const cmdEndTime = new Date().getTime();
+      collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
+        duration: (cmdEndTime - cmdStartTime).toString(),
+        flagsUsed: flagsUsedStr,
+        responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+        errorType: TELEMETRY_ERROR_TYPE.BuildFailure,
+        errorMessage: "Couldn't generate build configuration",
+      });
       return;
     }
   }
@@ -75,6 +114,12 @@ export async function build(options: SWACLIConfig) {
     }
 
     logger.log("Nothing to build.");
+
+    const cmdEndTime = new Date().getTime();
+    collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
+      duration: (cmdEndTime - cmdStartTime).toString(),
+      responseType: TELEMETRY_RESPONSE_TYPE.PartialSuccess,
+    });
     return;
   }
 
@@ -110,7 +155,9 @@ export async function build(options: SWACLIConfig) {
   const cmdEndTime = new Date().getTime();
 
   collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
+    flagsUsed: flagsUsedStr,
     duration: (cmdEndTime - cmdStartTime).toString(),
+    responseType: TELEMETRY_RESPONSE_TYPE.Success,
   });
 }
 

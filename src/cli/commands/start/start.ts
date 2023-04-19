@@ -14,11 +14,12 @@ import {
   parseUrl,
   readWorkflowFile,
   findSWAConfigFile,
+  getFlagsUsed,
 } from "../../../core";
 import { swaCLIEnv } from "../../../core/env";
 import { getCertificate } from "../../../core/ssl";
 import { collectTelemetryEvent } from "../../../core/telemetry/utils";
-import { TELEMETRY_EVENTS } from "../../../core/constants";
+import { TELEMETRY_ERROR_TYPE, TELEMETRY_EVENTS, TELEMETRY_RESPONSE_TYPE } from "../../../core/constants";
 const packageInfo = require("../../../../package.json");
 const mshaPath = require.resolve("../../../msha/server");
 
@@ -29,6 +30,9 @@ export async function start(options: SWACLIConfig) {
   // Make sure this code (or code from utils) does't depend on environment variables!
 
   const cmdStartTime = new Date().getTime();
+  const flagsUsed = getFlagsUsed(options);
+  const flagsUsedStr = JSON.stringify(flagsUsed);
+
   let {
     appLocation,
     apiLocation,
@@ -87,6 +91,14 @@ export async function start(options: SWACLIConfig) {
     // check for build folder (outputLocation) using the absolute location
     else if (!fs.existsSync(outputLocation!)) {
       logger.error(`The folder "${resolvedOutputLocation}" is not found. Exit.`, true);
+      const cmdEndTime = new Date().getTime();
+      collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+        duration: (cmdEndTime - cmdStartTime).toString(),
+        flagsUsed: flagsUsedStr,
+        responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
+        errorType: TELEMETRY_ERROR_TYPE.StartFailure,
+        errorMessage: "Output Location not found",
+      });
       return;
     }
 
@@ -169,6 +181,14 @@ export async function start(options: SWACLIConfig) {
             `Found Azure Functions Core Tools v${targetVersion} which is incompatible with your current Node.js v${process.versions.node}.`
           );
           logger.error("See https://aka.ms/functions-node-versions for more information.");
+          const cmdEndTime = new Date().getTime();
+          collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+            duration: (cmdEndTime - cmdStartTime).toString(),
+            flagsUsed: flagsUsedStr,
+            responseType: TELEMETRY_RESPONSE_TYPE.Failure,
+            errorType: TELEMETRY_ERROR_TYPE.StartFailure,
+            errorMessage: "Azure Functions Core Tools aren't compatible with Node.js",
+          });
           process.exit(1);
         }
 
@@ -279,6 +299,14 @@ export async function start(options: SWACLIConfig) {
         const killedCommand = errorEvent.filter((event) => event.killed).pop();
         const exitCode = killedCommand?.exitCode;
         logger.silly(`SWA emulator exited with code ${exitCode}`);
+        const cmdEndTime = new Date().getTime();
+        collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+          duration: (cmdEndTime - cmdStartTime).toString(),
+          flagsUsed: flagsUsedStr,
+          responseType: TELEMETRY_RESPONSE_TYPE.Failure,
+          errorType: TELEMETRY_ERROR_TYPE.StartFailure,
+          errorMessage: "SWA emulator exited",
+        });
         process.exit();
       },
       (errorEvent: CloseEvent[]) => {
@@ -298,17 +326,35 @@ export async function start(options: SWACLIConfig) {
             break;
         }
         logger.error(`SWA emulator stoped because ${commandMessage}.`, true);
+        const cmdEndTime = new Date().getTime();
+        collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+          duration: (cmdEndTime - cmdStartTime).toString(),
+          flagsUsed: flagsUsedStr,
+          responseType: TELEMETRY_RESPONSE_TYPE.Failure,
+          errorType: TELEMETRY_ERROR_TYPE.StartFailure,
+          errorMessage: "SWA emulator exited",
+        });
       }
     )
     .catch((err) => {
       logger.error(err.message, true);
+      const cmdEndTime = new Date().getTime();
+      collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+        duration: (cmdEndTime - cmdStartTime).toString(),
+        flagsUsed: flagsUsedStr,
+        responseType: TELEMETRY_RESPONSE_TYPE.Failure,
+        errorType: TELEMETRY_ERROR_TYPE.StartFailure,
+        errorMessage: "SWA emulator exited",
+      });
     });
 
   const cmdEndTime = new Date().getTime();
 
   collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
     apiRuntime: swaConfigFileContent?.platform.apiRuntime!,
+    flagsUsed: flagsUsedStr,
     duration: (cmdEndTime - cmdStartTime).toString(),
     appRuntime: "node" + nodeMajorVersion,
+    responseType: TELEMETRY_RESPONSE_TYPE.Success,
   });
 }
