@@ -44,7 +44,7 @@ export async function loginCommand(options: SWACLIConfig) {
       duration: (cmdEndTime - cmdStartTime).toString(),
       responseType: TELEMETRY_RESPONSE_TYPE.Failure,
       errorType: TELEMETRY_ERROR_TYPE.LoginFailure,
-      errorMessage: "project setup failed",
+      errorMessage: "Project setup failed",
     });
     logGiHubIssueMessageAndExit();
   }

@@ -47,7 +47,7 @@ export async function build(options: SWACLIConfig) {
       flagsUsed: flagsUsedStr,
       responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
       errorType: TELEMETRY_ERROR_TYPE.BuildFailure,
-      errorMessage: "auto flag used along with --app-build-command and --api-build-command options",
+      errorMessage: "--auto flag is used along with --app-build-command and --api-build-command options",
     });
     return;
   }
