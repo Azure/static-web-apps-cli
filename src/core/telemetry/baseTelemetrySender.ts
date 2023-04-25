@@ -86,11 +86,11 @@ export class BaseTelemetrySender implements TelemetrySender {
     this._instantiationStatus = InstantiationStatus.INSTANTIATING;
     // Call the client factory to get the client and then let it know it's instantiated
     this._clientFactory(this._key)
-      .then((client) => {
+      .then(async (client) => {
         this._telemetryClient = client;
         this._instantiationStatus = InstantiationStatus.INSTANTIATED;
-        this._flushQueues();
-        this._telemetryClient.flush();
+        await this._flushQueues();
+        this.flush();
       })
       .catch((err) => {
         throw new Error("Failed to instantiate app insights client factory!\n" + err.message);
@@ -100,7 +100,7 @@ export class BaseTelemetrySender implements TelemetrySender {
   /**
    * Flushes the queued events that existed before the client was instantiated
    */
-  private _flushQueues(): void {
+  private async _flushQueues() {
     this._eventQueue.forEach(({ eventName, data }) => this.sendEventData(eventName, data));
     this._eventQueue = [];
     this._exceptionQueue.forEach(({ exception, data }) => this.sendExceptionData(exception, data));
