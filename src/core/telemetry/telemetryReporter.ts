@@ -34,19 +34,15 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
     //check if another instance is already initialized
     if (appInsights.defaultClient) {
       appInsightsClient = new appInsights.TelemetryClient(key);
-      appInsightsClient.channel.setUseDiskRetryCaching(true);
     } else {
       appInsights
         .setup(key)
+        .setAutoCollectDependencies(false)
         .setAutoCollectRequests(false)
         .setAutoCollectPerformance(false)
         .setAutoCollectExceptions(false)
-        .setAutoCollectDependencies(false)
-        .setAutoDependencyCorrelation(false)
-        .setAutoCollectConsole(true, true)
-        .setAutoCollectHeartbeat(false)
-        .setUseDiskRetryCaching(true)
-        .start();
+        .setAutoCollectPreAggregatedMetrics(false)
+        .setSendLiveMetrics(false);
       appInsightsClient = appInsights.defaultClient;
     }
   } catch (e: any) {

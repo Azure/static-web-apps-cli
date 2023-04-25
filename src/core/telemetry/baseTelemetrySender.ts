@@ -90,6 +90,7 @@ export class BaseTelemetrySender implements TelemetrySender {
         this._telemetryClient = client;
         this._instantiationStatus = InstantiationStatus.INSTANTIATED;
         this._flushQueues();
+        this._telemetryClient.flush();
       })
       .catch((err) => {
         throw new Error("Failed to instantiate app insights client factory!\n" + err.message);

@@ -17,7 +17,7 @@ import { TELEMETRY_ERROR_TYPE, TELEMETRY_EVENTS, TELEMETRY_RESPONSE_TYPE } from 
 
 export async function init(options: SWACLIConfig, showHints: boolean = true) {
   const cmdStartTime = new Date().getTime();
-  const flagsUsed = getFlagsUsed(options);
+  const flagsUsed = getFlagsUsed(options, "init");
   const flagsUsedStr = JSON.stringify(flagsUsed);
 
   const configFilePath = options.config!;
@@ -95,7 +95,7 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
     logger.error(`Cannot generate your project configuration:`);
     logger.error(error as Error, true);
     const cmdEndTime = new Date().getTime();
-    collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
+    await collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
       duration: (cmdEndTime - cmdStartTime).toString(),
       flagsUsed: flagsUsedStr,
       responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
@@ -128,7 +128,7 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
     if (!confirmOverwrite) {
       logger.log("Aborted, configuration not saved.");
       const cmdEndTime = new Date().getTime();
-      collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
         duration: (cmdEndTime - cmdStartTime).toString(),
         flagsUsed: flagsUsedStr,
         responseType: TELEMETRY_RESPONSE_TYPE.PartialSuccess,

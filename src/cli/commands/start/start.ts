@@ -30,7 +30,7 @@ export async function start(options: SWACLIConfig) {
   // Make sure this code (or code from utils) does't depend on environment variables!
 
   const cmdStartTime = new Date().getTime();
-  const flagsUsed = getFlagsUsed(options);
+  const flagsUsed = getFlagsUsed(options, "start");
   const flagsUsedStr = JSON.stringify(flagsUsed);
 
   let {
@@ -92,7 +92,7 @@ export async function start(options: SWACLIConfig) {
     else if (!fs.existsSync(outputLocation!)) {
       logger.error(`The folder "${resolvedOutputLocation}" is not found. Exit.`, true);
       const cmdEndTime = new Date().getTime();
-      collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
         duration: (cmdEndTime - cmdStartTime).toString(),
         flagsUsed: flagsUsedStr,
         responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
@@ -182,7 +182,7 @@ export async function start(options: SWACLIConfig) {
           );
           logger.error("See https://aka.ms/functions-node-versions for more information.");
           const cmdEndTime = new Date().getTime();
-          collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+          await collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
             duration: (cmdEndTime - cmdStartTime).toString(),
             flagsUsed: flagsUsedStr,
             responseType: TELEMETRY_RESPONSE_TYPE.Failure,
@@ -350,7 +350,7 @@ export async function start(options: SWACLIConfig) {
 
   const cmdEndTime = new Date().getTime();
 
-  collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+  await collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
     apiRuntime: swaConfigFileContent?.platform.apiRuntime!,
     flagsUsed: flagsUsedStr,
     duration: (cmdEndTime - cmdStartTime).toString(),

@@ -24,7 +24,7 @@ const packageInfo = require(path.join(__dirname, "..", "..", "..", "..", "packag
 
 export async function deploy(options: SWACLIConfig) {
   const cmdStartTime = new Date().getTime();
-  const flagsUsed = getFlagsUsed(options);
+  const flagsUsed = getFlagsUsed(options, "deploy");
   const flagsUsedStr = JSON.stringify(flagsUsed);
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
@@ -48,7 +48,7 @@ export async function deploy(options: SWACLIConfig) {
   if (!fs.existsSync(resolvedOutputLocation)) {
     logger.error(`The folder "${resolvedOutputLocation}" is not found. Exit.`, true);
     const cmdEndTime = new Date().getTime();
-    collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+    await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
       duration: (cmdEndTime - cmdStartTime).toString(),
       flagsUsed: flagsUsedStr,
       responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
@@ -69,7 +69,7 @@ export async function deploy(options: SWACLIConfig) {
     if (!fs.existsSync(resolvedApiLocation)) {
       logger.error(`The provided API folder ${resolvedApiLocation} does not exist. Abort.`, true);
       const cmdEndTime = new Date().getTime();
-      collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
         duration: (cmdEndTime - cmdStartTime).toString(),
         flagsUsed: flagsUsedStr,
         responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
@@ -142,7 +142,7 @@ export async function deploy(options: SWACLIConfig) {
 
       if (!deploymentToken) {
         const cmdEndTime = new Date().getTime();
-        collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+        await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
           duration: (cmdEndTime - cmdStartTime).toString(),
           flagsUsed: flagsUsedStr,
           responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
@@ -174,7 +174,7 @@ export async function deploy(options: SWACLIConfig) {
     } catch (error: any) {
       logger.error(error.message);
       const cmdEndTime = new Date().getTime();
-      collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
         duration: (cmdEndTime - cmdStartTime).toString(),
         flagsUsed: flagsUsedStr,
         responseType: TELEMETRY_RESPONSE_TYPE.Failure,
@@ -331,7 +331,7 @@ export async function deploy(options: SWACLIConfig) {
       `For further information, please visit the Azure Static Web Apps documentation at https://docs.microsoft.com/azure/static-web-apps/`
     );
     const cmdEndTime = new Date().getTime();
-    collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+    await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
       apiRuntime: swaConfigFileContent?.platform?.apiRuntime!,
       duration: (cmdEndTime - cmdStartTime).toString(),
       appRuntime: "node" + nodeMajorVersion,
@@ -344,7 +344,7 @@ export async function deploy(options: SWACLIConfig) {
   } finally {
     const cmdEndTime = new Date().getTime();
 
-    collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+    await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
       apiRuntime: swaConfigFileContent?.platform?.apiRuntime!,
       flagsUsed: flagsUsedStr,
       duration: (cmdEndTime - cmdStartTime).toString(),

@@ -6,6 +6,32 @@ import { logger } from "./logger";
 
 let userDefinedOptions: SWACLIConfig = {};
 let configFileDefinedOptions: SWACLIConfig = {};
+const commandSpecificOptions = {
+  init: ["yes"],
+  start: [
+    "appLocation",
+    "outputLocation",
+    "apiLocation",
+    "appDevserverUrl",
+    "apiDevserverUrl",
+    "apiPort",
+    "host",
+    "port",
+    "ssl",
+    "sslCert",
+    "sslKey",
+    "run",
+    "devserverTimeout",
+    "open",
+    "funcArgs",
+    "githubActionWorkflowLocation",
+    "swaConfigLocation",
+  ],
+  build: ["appLocation", "outputLocation", "apiLocation", "appBuildCommand", "apiBuildCommand", "auto"],
+  deploy: ["apiLocation", "outputLocation", "deploymentToken", "swaConfigLocation", "dryRun", "printToken", "env"],
+  login: ["subscriptionId", "resourceGroup", "appName", "useKeychain", "clearCredentials", "tenantId", "clientId", "clientSecret"],
+  telemetry: ["disable", "enable", "status"],
+};
 
 export async function configureOptions(
   configName: string | undefined,
@@ -81,11 +107,22 @@ export function isConfigFileOption(option: keyof SWACLIConfig): boolean {
   return configFileDefinedOptions[option] !== undefined;
 }
 
+export function isConfigFileCommandSpecificOption(option: keyof SWACLIConfig, commandName: SWACommand): boolean {
+  return (
+    (["verbose", "config", "printConfig", "configName"].includes(option) && configFileDefinedOptions[option] !== undefined) ||
+    isCommandSpecificOption(option, commandName)
+  );
+}
+
+function isCommandSpecificOption(option: keyof SWACLIConfig, commandName: SWACommand): boolean {
+  return commandSpecificOptions[commandName].includes(option) && configFileDefinedOptions[option] !== undefined;
+}
+
 export function isUserOrConfigOption(option: keyof SWACLIConfig): boolean {
   return isUserOption(option) || isConfigFileOption(option);
 }
 
-export function getFlagsUsed(options: SWACLIConfig) {
+export function getFlagsUsed(options: SWACLIConfig, commandName: SWACommand) {
   let userOptions: string[] = [];
   let configOptions: string[] = [];
 
@@ -94,7 +131,7 @@ export function getFlagsUsed(options: SWACLIConfig) {
     if (options[key] != null) {
       if (isUserOption(key)) {
         userOptions.push(key);
-      } else if (isConfigFileOption(key)) {
+      } else if (isConfigFileCommandSpecificOption(key, commandName)) {
         configOptions.push(key);
       }
     }
