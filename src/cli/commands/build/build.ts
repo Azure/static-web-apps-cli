@@ -16,7 +16,7 @@ import { TELEMETRY_ERROR_TYPE, TELEMETRY_EVENTS, TELEMETRY_RESPONSE_TYPE } from 
 
 export async function build(options: SWACLIConfig) {
   const cmdStartTime = new Date().getTime();
-  const flagsUsed = getFlagsUsed(options, "build");
+  const flagsUsed = getFlagsUsed(options);
   const flagsUsedStr = JSON.stringify(flagsUsed);
   const workflowConfig = readWorkflowFile();
 

@@ -24,7 +24,7 @@ const packageInfo = require(path.join(__dirname, "..", "..", "..", "..", "packag
 
 export async function deploy(options: SWACLIConfig) {
   const cmdStartTime = new Date().getTime();
-  const flagsUsed = getFlagsUsed(options, "deploy");
+  const flagsUsed = getFlagsUsed(options);
   const flagsUsedStr = JSON.stringify(flagsUsed);
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";

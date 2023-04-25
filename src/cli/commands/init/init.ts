@@ -17,7 +17,7 @@ import { TELEMETRY_ERROR_TYPE, TELEMETRY_EVENTS, TELEMETRY_RESPONSE_TYPE } from 
 
 export async function init(options: SWACLIConfig, showHints: boolean = true) {
   const cmdStartTime = new Date().getTime();
-  const flagsUsed = getFlagsUsed(options, "init");
+  const flagsUsed = getFlagsUsed(options);
   const flagsUsedStr = JSON.stringify(flagsUsed);
 
   const configFilePath = options.config!;

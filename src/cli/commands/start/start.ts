@@ -30,7 +30,7 @@ export async function start(options: SWACLIConfig) {
   // Make sure this code (or code from utils) does't depend on environment variables!
 
   const cmdStartTime = new Date().getTime();
-  const flagsUsed = getFlagsUsed(options, "start");
+  const flagsUsed = getFlagsUsed(options);
   const flagsUsedStr = JSON.stringify(flagsUsed);
 
   let {

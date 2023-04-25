@@ -16,7 +16,7 @@ const defaultScope = `${Environment.AzureCloud.resourceManagerEndpointUrl}/.defa
 
 export async function loginCommand(options: SWACLIConfig) {
   const cmdStartTime = new Date().getTime();
-  const flagsUsed = getFlagsUsed(options, "login");
+  const flagsUsed = getFlagsUsed(options);
   const flagsUsedStr = JSON.stringify(flagsUsed);
 
   try {
