@@ -27,7 +27,7 @@ export async function loginCommand(options: SWACLIConfig) {
     } else {
       logger.log(chalk.red(`✘ Failed to setup project!`));
       const cmdEndTime = new Date().getTime();
-      collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
         duration: (cmdEndTime - cmdStartTime).toString(),
         flagsUsed: flagsUsedStr,
         responseType: TELEMETRY_RESPONSE_TYPE.PreConditionFailure,
@@ -39,7 +39,7 @@ export async function loginCommand(options: SWACLIConfig) {
   } catch (error) {
     logger.error(`Failed to setup project: ${(error as any).message}`);
     const cmdEndTime = new Date().getTime();
-    collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
+    await collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
       flagsUsed: flagsUsedStr,
       duration: (cmdEndTime - cmdStartTime).toString(),
       responseType: TELEMETRY_RESPONSE_TYPE.Failure,
@@ -50,7 +50,7 @@ export async function loginCommand(options: SWACLIConfig) {
   }
   const cmdEndTime = new Date().getTime();
 
-  collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
+  await collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
     flagsUsed: flagsUsedStr,
     duration: (cmdEndTime - cmdStartTime).toString(),
     responseType: TELEMETRY_RESPONSE_TYPE.Success,
