@@ -12,7 +12,7 @@ export const STATIC_SITE_CLIENT_RELEASE_METADATA_URL = "https://swalocaldeploy.a
 // Data-api-builder related constants
 export const DATA_API_BUILDER_BINARY_NAME = "DataApiBuilder";
 export const DATA_API_BUILDER_COMMAND = "dab";
-export const DATA_API_BUILDER_RELEASE_METADATA_URL = "https://dataapibuilder.azureedge.net/releases/dab-manifest.json";
+export const DATA_API_BUILDER_RELEASE_METADATA_URL = "https://go.microsoft.com/fwlink/?linkid=2226493";
 export const DATA_API_BUILDER_FOLDER = path.join(os.homedir(), ".swa", "dataApiBuilder");
 export const DATA_API_BUILDER_RELEASE_TAG = "released";
 export const DATA_API_BUILDER_LATEST_TAG = "latest";
