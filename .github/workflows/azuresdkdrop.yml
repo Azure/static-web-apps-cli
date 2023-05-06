@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-18.04]
+        os: [macos-latest, windows-latest, ubuntu-latest]
         node-version: [14.x, 16.x]
 
     steps:
@@ -28,7 +28,7 @@ jobs:
   packageAndRelease:
     needs: [ test ]
     name: Package / tag / release
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
@@ -91,7 +91,7 @@ jobs:
   copy:
     name: "Copy to drop"
     needs: [ packageAndRelease ]
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
     - name: Download artifact
       uses: actions/download-artifact@v2
