@@ -4,6 +4,7 @@ import httpProxy from "http-proxy";
 import fetch from "node-fetch";
 import { decodeCookie, logger, logRequest, registerProcessExit, validateCookie } from "../../core";
 import { HAS_API, SWA_CLI_API_URI } from "../../core/constants";
+import { parseUrl } from "../../core/utils/net";
 import { onConnectionLost } from "../middlewares/request.middleware";
 
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
@@ -53,8 +54,29 @@ function injectClientPrincipalCookies(req: http.ClientRequest) {
   }
 }
 
+async function resolveLocalhostByFetching(url: string) {
+  const { protocol, port } = parseUrl(url);
+  const fetchOneOfUrl = [`${protocol}//127.0.0.1:${port}`, `${protocol}//[::1]:${port}`];
+
+  for (let Url of fetchOneOfUrl) {
+    try {
+      const response = await fetch(Url);
+      if (response.ok || response.redirected) {
+        logger.silly(`Fetch ${Url} successfully`);
+        return Url;
+      }
+    } catch (error) {
+      logger.silly(`Could not fetch ${Url}`);
+    }
+  }
+  throw new Error('Error: "localhost" can not be resolved to either IPv4 or IPv6. Please check your network settings.');
+}
+
 export function handleFunctionRequest(req: http.IncomingMessage, res: http.ServerResponse) {
-  const target = SWA_CLI_API_URI();
+  let cliApiUri = SWA_CLI_API_URI();
+  const { protocol, hostname, port } = parseUrl(cliApiUri);
+  const target = hostname === "localhost" ? `${protocol}//127.0.0.1:${port}` : cliApiUri;
+
   if (HAS_API) {
     logger.silly(`function request detected. Proxying to Azure Functions emulator`);
     logger.silly(` - target: ${chalk.yellow(target)}`);
@@ -93,6 +115,14 @@ export function isFunctionRequest(req: http.IncomingMessage, rewritePath?: strin
 }
 
 export async function validateFunctionTriggers(url: string) {
+  const { hostname } = parseUrl(url);
+  if (hostname === "localhost") {
+    try {
+      url = await resolveLocalhostByFetching(url);
+    } catch (error: any) {
+      logger.error(error?.message, true);
+    }
+  }
   try {
     const functionsResponse = await fetch(`${url}/admin/functions`);
     const functions = (await functionsResponse.json()) as Array<{ config: { bindings: string[] } }>;
