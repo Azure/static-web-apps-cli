@@ -58,18 +58,29 @@ async function resolveLocalhostByFetching(url: string) {
   const { protocol, port } = parseUrl(url);
   const fetchOneOfUrl = [`${protocol}//127.0.0.1:${port}`, `${protocol}//[::1]:${port}`];
 
-  for (let Url of fetchOneOfUrl) {
-    try {
-      const response = await fetch(Url);
-      if (response.ok || response.redirected) {
-        logger.silly(`Fetch ${Url} successfully`);
-        return Url;
-      }
-    } catch (error) {
-      logger.silly(`Could not fetch ${Url}`);
-    }
+  let promises = fetchOneOfUrl.map((Url) => {
+    return fetch(Url)
+      .then((response) => {
+        if (response.ok || response.redirected) {
+          logger.silly(`Fetch ${Url} successfully`);
+          return Url;
+        } else {
+          logger.silly(`Fetch ${Url} failed with status ${response.status} ${response.statusText}`);
+          throw new Error(`Fetch ${Url} failed with status ${response.status} ${response.statusText}`);
+        }
+      })
+      .catch((err) => {
+        logger.silly(`Could not fetch ${Url}`);
+        throw err;
+      });
+  });
+
+  try {
+    const avaliableUrl = await Promise.any(promises);
+    return avaliableUrl;
+  } catch {
+    throw new Error('Error: "localhost" can not be resolved to either IPv4 or IPv6. Please check your network settings.');
   }
-  throw new Error('Error: "localhost" can not be resolved to either IPv4 or IPv6. Please check your network settings.');
 }
 
 export function handleFunctionRequest(req: http.IncomingMessage, res: http.ServerResponse) {
