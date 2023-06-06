@@ -103,10 +103,12 @@ export async function validateDevServerConfig(url: string | undefined, timeout: 
     const resolvedPortNumber = await isAcceptingTcpConnections({ port, host: hostname });
     if (resolvedPortNumber !== 0) {
       const spinner = ora();
-      try {
-        spinner.start(`Waiting for ${chalk.green(url)} to be ready`);
-        await waitOn({
-          resources: [`tcp:${hostname}:${port}`],
+      const waitOnOneOfResources = hostname === "localhost" ? [`tcp:127.0.0.1:${port}`, `tcp:[::1]:${port}`] : [`tcp:${hostname}:${port}`];
+      spinner.start(`Waiting for ${chalk.green(url)} to be ready`);
+
+      let promises = waitOnOneOfResources.map((resource) => {
+        return waitOn({
+          resources: [resource],
           delay: 1000, // initial delay in ms, default 0
           interval: 100, // poll interval in ms, default 250ms
           simultaneous: 1, // limit to 1 connection per resource at a time
@@ -115,10 +117,22 @@ export async function validateDevServerConfig(url: string | undefined, timeout: 
           window: 1000, // stabilization time in ms, default 750ms
           strictSSL: false,
           verbose: false, // force disable verbose logs even if SWA_CLI_DEBUG is enabled
-        });
-        spinner.succeed(`Connected to ${chalk.green(url)} successfully`);
+        })
+          .then(() => {
+            logger.silly(`Connected to ${resource} successfully`);
+            return resource;
+          })
+          .catch((err) => {
+            logger.silly(`Could not connect to ${resource}`);
+            throw err;
+          });
+      });
+
+      try {
+        await Promise.any(promises);
+        spinner.succeed(`Connected to ${url} successfully`);
         spinner.clear();
-      } catch (err) {
+      } catch {
         spinner.fail();
         logger.error(`Could not connect to "${url}". Is the server up and running?`, true);
       }
