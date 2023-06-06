@@ -76,8 +76,8 @@ async function resolveLocalhostByFetching(url: string) {
   });
 
   try {
-    const avaliableUrl = await Promise.any(promises);
-    return avaliableUrl;
+    const availableUrl = await Promise.any(promises);
+    return availableUrl;
   } catch {
     throw new Error('Error: "localhost" can not be resolved to either IPv4 or IPv6. Please check your network settings.');
   }
