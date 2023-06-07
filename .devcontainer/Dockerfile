@@ -9,6 +9,7 @@ COPY library-scripts/*.sh library-scripts/*.env /tmp/library-scripts/
 ARG NODE_VERSION="16"
 ARG CORE_TOOLS_VERSION="4"
 ARG USERNAME="swa-cli"
+ARG SWA_CLI_VERSION
 ENV NVM_DIR="/usr/local/share/nvm" \
     NVM_SYMLINK_CURRENT=true \
     USER_GID=1000 \
