@@ -7,7 +7,7 @@ import { promisify } from "util";
 import { PassThrough } from "stream";
 import crypto from "crypto";
 import fetch from "node-fetch";
-import unzipper from "unzipper";
+import AdmZip from "adm-zip";
 import cliProgress from "cli-progress";
 import { logger } from "./utils/logger";
 
@@ -158,11 +158,36 @@ async function downloadAndUnzipPackage(release: CoreToolsRelease, dest: string) 
       }
     });
 
+    const downloadFilename = release.url.substring(release.url.lastIndexOf("/") + 1);
+    const outputFile = path.join(dest, downloadFilename);
+    const writableStream = fs.createWriteStream(outputFile);
+    bodyStream2?.pipe(writableStream);
+
     const unzipPromise = new Promise((resolve, reject) => {
-      const unzipperInstance = unzipper.Extract({ path: dest });
-      unzipperInstance.promise().then(resolve, reject);
-      bodyStream2?.pipe(unzipperInstance);
-    });
+      const timeout = 30;
+      let timer = setTimeout(() => {
+        if (downloadedSize === 0) {
+          writableStream.close();
+          reject(new Error(`Download failed after ${timeout} seconds. Please check your network or retry.`));
+        }
+      }, timeout * 1000);
+
+      writableStream.on("finish", () => {
+        clearTimeout(timer);
+        resolve(outputFile);
+      });
+      writableStream.on("error", (err) => {
+        reject(err);
+      });
+    })
+      .then(() => {
+        const zip = new AdmZip(outputFile);
+        zip.extractAllTo(dest, true);
+        fs.unlinkSync(outputFile);
+      })
+      .catch((err) => {
+        throw new Error(`Extract failed: ${err.message}`);
+      });
 
     const hash = await new Promise((resolve) => {
       const hash = crypto.createHash("sha256");
