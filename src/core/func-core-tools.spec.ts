@@ -1,7 +1,7 @@
 import { Buffer } from "buffer";
 import mockFs from "mock-fs";
 import { sep } from "path";
-import { PassThrough, Readable } from "stream";
+import { Readable } from "stream";
 import {
   detectTargetCoreToolsVersion,
   downloadCoreTools,
@@ -15,25 +15,28 @@ jest.spyOn(logger, "log").mockImplementation();
 jest.spyOn(logger, "warn").mockImplementation();
 jest.spyOn(logger, "error").mockImplementation();
 
+import fs from "fs";
+jest.spyOn(fs, "unlinkSync").mockImplementation(jest.fn());
+
 jest.mock("process", () => ({ versions: { node: "16.0.0" } }));
 jest.mock("os", () => ({ platform: () => "linux", homedir: () => "/home/user" }));
 jest.mock("child_process", () => ({ exec: jest.fn() }));
 jest.mock("node-fetch", () => jest.fn());
-
-jest.mock("unzipper", () => ({
-  Extract: () => {
-    const fakeStream = new PassThrough() as any;
-    fakeStream.promise = () => Promise.resolve();
-    mockFs(
-      {
-        "/home/user/.swa/core-tools/v4/func": "",
-        "/home/user/.swa/core-tools/v4/gozip": "",
+jest.mock("adm-zip", () =>
+  jest.fn(() => {
+    return {
+      extractAllTo: () => {
+        mockFs(
+          {
+            "/home/user/.swa/core-tools/v4/func": "",
+            "/home/user/.swa/core-tools/v4/gozip": "",
+          },
+          { createTmp: false, createCwd: false }
+        );
       },
-      { createTmp: false, createCwd: false }
-    );
-    return fakeStream;
-  },
-}));
+    };
+  })
+);
 
 class HeadersMock {
   constructor(public headers: Record<string, string>) {}
@@ -341,7 +344,7 @@ describe("funcCoreTools", () => {
       );
       mockFs({ ["/home/user/.swa/core-tools/"]: {} }, { createTmp: false, createCwd: false });
 
-      expect(async () => await downloadCoreTools(4)).rejects.toThrowError(/SHA2 mismatch/);
+      await expect(async () => await downloadCoreTools(4)).rejects.toThrowError(/SHA2 mismatch/);
     });
   });
 });

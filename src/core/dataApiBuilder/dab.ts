@@ -11,9 +11,8 @@ import { promisify } from "util";
 import { exec } from "child_process";
 import fs from "fs";
 import os from "os";
-import unzipper from "unzipper";
+import AdmZip from "adm-zip";
 import path from "path";
-import { PassThrough } from "stream";
 import { getPlatform, logger } from "../utils";
 import { downloadAndValidateBinary } from "../download-binary-helper";
 
@@ -75,7 +74,7 @@ async function downloadAndUnzipBinary(releaseMetadata: DataApiBuilderReleaseMeta
         platform
       );
 
-      await extractBinary(zipFilePath, destDirectory);
+      extractBinary(zipFilePath, destDirectory);
     }
 
     if (platform == "linux-x64" || platform == "osx-x64") {
@@ -135,17 +134,11 @@ async function isLocalVersionInstalledAndLatest(releaseVersion: string): Promise
  * @param zipFilePath file to unzip
  * @param destDirectory directory to extract
  */
-async function extractBinary(zipFilePath: string, destDirectory: string) {
-  // todo: delete zip file after extraction
+function extractBinary(zipFilePath: string, destDirectory: string) {
+  var zip = new AdmZip(zipFilePath);
+  zip.extractAllTo(destDirectory, true);
 
-  const openAsStream = fs.createReadStream(zipFilePath).pipe(new PassThrough());
-  const unzipPromise = new Promise((resolve, reject) => {
-    const unzipperInstance = unzipper.Extract({ path: destDirectory });
-    unzipperInstance.promise().then(resolve, reject);
-    openAsStream.pipe(unzipperInstance);
-  });
-
-  await unzipPromise;
+  fs.unlinkSync(zipFilePath); // delete zip file after extraction
 }
 
 /**
