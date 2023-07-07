@@ -9,6 +9,8 @@ import serveStatic from "serve-static";
 import { DEFAULT_CONFIG } from "../../config";
 import { findSWAConfigFile, logger, logRequest } from "../../core";
 import { AUTH_STATUS, CUSTOM_URL_SCHEME, IS_APP_DEV_SERVER, SWA_PUBLIC_DIR } from "../../core/constants";
+import { parseUrl } from "../../core/utils/net";
+import waitOn from "wait-on";
 import { getAuthBlockResponse, handleAuthRequest, isAuthRequest, isLoginRequest, isLogoutRequest } from "../handlers/auth.handler";
 import { isDataApiRequest } from "../handlers/dab.handler";
 import { handleErrorPage } from "../handlers/error-page.handler";
@@ -67,7 +69,7 @@ export async function handleUserConfig(appLocation: string | undefined): Promise
  * @param proxyApp An `http-proxy` instance.
  * @param target The root folder of the static app (ie. `output_location`). Or, the HTTP host target, if connecting to a dev server, or
  */
-function serveStaticOrProxyResponse(req: http.IncomingMessage, res: http.ServerResponse, proxyApp: httpProxy, target: string | undefined) {
+async function serveStaticOrProxyResponse(req: http.IncomingMessage, res: http.ServerResponse, proxyApp: httpProxy, target: string | undefined) {
   if ([301, 302].includes(res.statusCode)) {
     res.end();
     return;
@@ -99,6 +101,42 @@ function serveStaticOrProxyResponse(req: http.IncomingMessage, res: http.ServerR
 
     target = DEFAULT_CONFIG.outputLocation;
     logRequest(req, target);
+
+    let { protocol, hostname, port } = parseUrl(target);
+
+    if (hostname === "localhost") {
+      let waitOnOneOfResources = [`tcp:127.0.0.1:${port}`, `tcp:localhost:${port}`];
+      let promises = waitOnOneOfResources.map((resource) => {
+        return waitOn({
+          resources: [resource],
+          delay: 1000, // initial delay in ms, default 0
+          interval: 100, // poll interval in ms, default 250ms
+          simultaneous: 1, // limit to 1 connection per resource at a time
+          timeout: 60000, // timeout in ms, default Infinity
+          tcpTimeout: 1000, // tcp timeout in ms, default 300ms
+          window: 1000, // stabilization time in ms, default 750ms
+          strictSSL: false,
+          verbose: false, // force disable verbose logs even if SWA_CLI_DEBUG is enabled
+        })
+          .then(() => {
+            logger.silly(`Connected to ${resource} successfully`);
+            return resource;
+          })
+          .catch((err) => {
+            logger.silly(`Could not connect to ${resource}`);
+            logger.warn(err.message);
+            throw err;
+          });
+      });
+
+      try {
+        const availableUrl = await Promise.any(promises);
+        logger.silly(`${target} validated successfully`);
+        target = protocol + "//" + availableUrl.slice(4);
+      } catch {
+        logger.error(`Could not connect to "${target}". Is the server up and running?`);
+      }
+    }
 
     proxyApp.web(
       req,
@@ -209,7 +247,7 @@ export async function requestMiddleware(
 
   if (isWebsocketRequest(req)) {
     logger.silly(`websocket request detected`);
-    return serveStaticOrProxyResponse(req, res, proxyApp, DEFAULT_CONFIG.outputLocation);
+    return await serveStaticOrProxyResponse(req, res, proxyApp, DEFAULT_CONFIG.outputLocation);
   }
 
   let target = DEFAULT_CONFIG.outputLocation;
@@ -224,7 +262,7 @@ export async function requestMiddleware(
       logger.silly(` - ${statusCodeToServe} code detected. Exit`);
 
       handleErrorPage(req, res, statusCodeToServe, userConfig?.responseOverrides);
-      return serveStaticOrProxyResponse(req, res, proxyApp, target);
+      return await serveStaticOrProxyResponse(req, res, proxyApp, target);
     }
   }
 
@@ -280,7 +318,7 @@ export async function requestMiddleware(
 
   if (!isRouteRequiringUserRolesCheck(req, matchingRouteRule, isFunctionReq, authStatus)) {
     handleErrorPage(req, res, 401, userConfig?.responseOverrides);
-    return serveStaticOrProxyResponse(req, res, proxyApp, target);
+    return await serveStaticOrProxyResponse(req, res, proxyApp, target);
   }
 
   if (authStatus != AUTH_STATUS.NoAuth && (authStatus != AUTH_STATUS.HostNameAuthLogin || !urlPathnameWithQueryParams)) {
@@ -295,6 +333,6 @@ export async function requestMiddleware(
     logger.silly(` - url: ${chalk.yellow(req.url)}`);
     logger.silly(` - target: ${chalk.yellow(target)}`);
 
-    serveStaticOrProxyResponse(req, res, proxyApp, target);
+    await serveStaticOrProxyResponse(req, res, proxyApp, target);
   }
 }
