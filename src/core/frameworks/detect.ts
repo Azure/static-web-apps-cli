@@ -388,6 +388,14 @@ export function printSupportedFrameworks(showList = false): void {
 export function formatDetectedFolders(folders: DetectedFolder[], type: string): string {
   return (
     `Detected ${type} folders (${folders.length}):\n` +
-    `- ${folders.map((f) => `${f.rootPath} (${f.frameworks.map((fr) => fr.name).join(", ")})`).join("\n- ")}`
+    `- ${folders
+      .map(
+        (f) =>
+          `${f.rootPath} (${f.frameworks
+            .map((fr) => fr.name)
+            .filter((frname, index, array) => array.indexOf(frname) === index)
+            .join(", ")})`
+      )
+      .join("\n- ")}`
   );
 }
