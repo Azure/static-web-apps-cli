@@ -3,7 +3,7 @@ name: Bug report
 about: Create a report to help us improve
 title: ""
 labels: ""
-assignees: "Reshmi-Sriram"
+assignees: ""
 ---
 
 Before filing this issue, please ensure you're using the latest CLI by running `swa --version` and comparing to the latest version on [npm](https://www.npmjs.com/package/@azure/static-web-apps-cli).
