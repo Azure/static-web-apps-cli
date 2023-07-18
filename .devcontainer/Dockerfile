@@ -28,7 +28,7 @@ RUN bash /tmp/library-scripts/node-debian.sh "${NVM_DIR}" "${NODE_VERSION}" "${U
     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 RUN su swa-cli -c "umask 0002 && npm install --cache /tmp/empty-cache -g npm@latest fuzz-run" \
-    && if [ -z "$SWA_CLI_VERSION" ]; then su swa-cli -c "umask 0002 && npm install --cache /tmp/empty-cache -g @azure/static-web-apps-cli@$SWA_CLI_VERSION"; fi
+    && if [ -n "$SWA_CLI_VERSION" ]; then su swa-cli -c "umask 0002 && npm install --cache /tmp/empty-cache -g @azure/static-web-apps-cli@$SWA_CLI_VERSION"; fi
 
 USER swa-cli
 WORKDIR /home/swa-cli
