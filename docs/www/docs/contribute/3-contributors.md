@@ -67,6 +67,7 @@ Thanks goes to these wonderful people 🎉
       <td align="center" valign="top" width="16.66%"><a href="https://github.com/vivekjilla"><img src="https://avatars.githubusercontent.com/u/6436807?v=4?s=100" width="100px;" alt="Vivek Jilla"/><br /><sub><b>Vivek Jilla</b></sub></a><br /><a href="https://github.com/Azure/static-web-apps-cli/commits?author=vivekjilla" title="Code">💻</a></td>
       <td align="center" valign="top" width="16.66%"><a href="https://stuartleeks.com"><img src="https://avatars.githubusercontent.com/u/1824461?v=4?s=100" width="100px;" alt="Stuart Leeks"/><br /><sub><b>Stuart Leeks</b></sub></a><br /><a href="https://github.com/Azure/static-web-apps-cli/commits?author=stuartleeks" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="16.66%"><a href="https://github.com/BeardInASuit"><img src="https://avatars.githubusercontent.com/u/27794078?v=4?s=100" width="100px;" alt="BeardinaSuit"/><br /><sub><b>BeardinaSuit</b></sub></a><br /><a href="https://github.com/Azure/static-web-apps-cli/commits?author=BeardInASuit" title="Code">💻</a></td>
+      <td align="center" valign="top" width="16.66%"><a href="https://github.com/cjk7989"><img src="https://avatars.githubusercontent.com/u/36817715?v=4?s=100" width="100px;" alt="Jikun"/><br /><sub><b>Jikun</b></sub></a><br /><a href="https://github.com/Azure/static-web-apps-cli/commits?author=cjk7989" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
@@ -77,9 +78,7 @@ Thanks goes to these wonderful people 🎉
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-
-[![All Contributors](https://img.shields.io/badge/all_contributors-37-orange.svg?style=flat-square)](#contributors-)
-
+[![All Contributors](https://img.shields.io/badge/all_contributors-42-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
