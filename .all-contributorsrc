@@ -353,7 +353,7 @@
       "profile": "https://blog.toshida.org/",
       "contributions": [
         "doc"
-        ]
+      ]
     },
     {
       "login": "thomasgauvin",
@@ -362,7 +362,7 @@
       "profile": "https://thomasgauvin.com/",
       "contributions": [
         "doc"
-        ]
+      ]
     },
     {
       "login": "vivekjilla",
@@ -380,7 +380,7 @@
       "profile": "https://stuartleeks.com",
       "contributions": [
         "doc"
-        ]
+      ]
     },
     {
       "login": "BeardInASuit",
@@ -390,8 +390,18 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "cjk7989",
+      "name": "Jikun",
+      "avatar_url": "https://avatars.githubusercontent.com/u/36817715?v=4",
+      "profile": "https://github.com/cjk7989",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 6,
-  "skipCi": false
+  "skipCi": false,
+  "commitType": "docs"
 }
