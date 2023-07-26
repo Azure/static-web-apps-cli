@@ -1,5 +1,5 @@
 import { convertToUnixPaths } from "../../jest.helpers.";
-import { detectProjectFolders, formatDetectedFolders, generateConfiguration } from "./detect";
+import { detectDbConfigFiles, detectProjectFolders, formatDetectedFolders, generateConfiguration } from "./detect";
 
 describe("framework detection", () => {
   describe("detectProjectFolders()", () => {
@@ -48,6 +48,18 @@ describe("framework detection", () => {
         name: "Static HTML, with API: Node.js, TypeScript",
         apiLanguage: "node",
         apiVersion: "16",
+        outputLocation: ".",
+      });
+    });
+
+    it("should generate expected configuration for app static-mssql", async () => {
+      const { app, api } = await detectProjectFolders("e2e/samples/db/static-mssql");
+      const dataApi = await detectDbConfigFiles("e2e/samples/db/static-mssql");
+      const config = convertToUnixPaths(await generateConfiguration(app[0], api[0], dataApi[0]));
+      expect(config).toEqual({
+        dataApiLocation: "e2e/samples/db/static-mssql/swa-db-connections",
+        appLocation: "e2e/samples/db/static-mssql/src",
+        name: "Static HTML, data API: mssql",
         outputLocation: ".",
       });
     });

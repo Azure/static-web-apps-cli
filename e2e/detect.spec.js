@@ -46,7 +46,7 @@ describe("framework detection", () => {
       - samples/api/node (Node.js)
       - samples/api/node-ts (Node.js, TypeScript)
       - samples/api/python (Python)
-      Detected app folders (62):
+      Detected app folders (63):
       - samples/app/angular (Angular)
       - samples/app/angular-scully (Angular, Scully)
       - samples/app/astro (Astro)
@@ -106,6 +106,7 @@ describe("framework detection", () => {
       - samples/app/vuepress/docs (VuePress)
       - samples/app/wintersmith (Wintersmith)
       - samples/app/zola (Zola)
+      - samples/db/static-mssql/src (Static HTML)
       - samples/ssr/angular-universal (Angular)
       - samples/ssr/nextjs (React, Next.js)
       - samples/ssr/remix (Remix)

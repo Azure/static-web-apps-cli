@@ -8,6 +8,11 @@ declare interface DetectedFolder {
   frameworks: DetectedFramework[];
 }
 
+declare interface DetectedDbConfigFolder {
+  rootPath: string;
+  databaseType: string;
+}
+
 declare interface DetectedFramework extends FrameworkDefinition {
   rootPaths: string[];
 }
