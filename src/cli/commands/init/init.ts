@@ -10,7 +10,7 @@ import {
   swaCliConfigFilename,
   writeConfigFile,
 } from "../../../core/utils";
-import { detectProjectFolders, generateConfiguration, isDescendantPath } from "../../../core/frameworks";
+import { detectDbConfigFiles, detectProjectFolders, generateConfiguration, isDescendantPath } from "../../../core/frameworks";
 import { getChoicesForApiLanguage } from "../../../core/functions-versions";
 
 export async function init(options: SWACLIConfig, showHints: boolean = true) {
@@ -82,9 +82,25 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
     api = detectedFolders.api[0];
   }
 
+  const dbConfigFiles = await detectDbConfigFiles();
+  let dataApi: DetectedDbConfigFolder | undefined = dbConfigFiles[0];
+  if (dbConfigFiles.length > 1) {
+    logger.silly(`More than one (${dbConfigFiles.length}) data api folders found`);
+
+    const response = await promptOrUseDefault(disablePrompts, {
+      type: "select",
+      name: "dataApi",
+      message: "Which data api folder do you want to use?",
+      choices: dbConfigFiles.map((file) => ({ title: file.rootPath, value: file })),
+      initial: 0,
+    });
+
+    dataApi = typeof response.dataApi === "number" ? dbConfigFiles[response.dataApi] : response.dataApi;
+  }
+
   let projectConfig;
   try {
-    projectConfig = await generateConfiguration(app, api);
+    projectConfig = await generateConfiguration(app, api, dataApi);
   } catch (error) {
     logger.error(`Cannot generate your project configuration:`);
     logger.error(error as Error, true);
@@ -138,6 +154,7 @@ function convertToCliConfig(config: FrameworkConfig): SWACLIConfig {
     appLocation: config.appLocation,
     apiLocation: config.apiLocation,
     outputLocation: config.outputLocation,
+    dataApiLocation: config.dataApiLocation,
     apiLanguage: config.apiLanguage,
     apiVersion: config.apiVersion,
     appBuildCommand: config.appBuildCommand,
@@ -198,6 +215,13 @@ async function promptConfigSettings(disablePrompts: boolean, detectedConfig: Fra
     },
     {
       type: "text",
+      name: "dataApiLocation",
+      message: "What's your data API location? (optional)",
+      initial: detectedConfig.dataApiLocation,
+      format: trimValue,
+    },
+    {
+      type: "text",
       name: "appBuildCommand",
       message: "What command do you use to build your app? (optional)",
       initial: detectedConfig.appBuildCommand,
@@ -244,6 +268,7 @@ function printFrameworkConfig(config: FrameworkConfig) {
   logger.log(`- API location: ${chalk.green(config.apiLocation ?? "")}`);
   logger.log(`- API language: ${chalk.green(config.apiLanguage ?? "")}`);
   logger.log(`- API version: ${chalk.green(config.apiVersion ?? "")}`);
+  logger.log(`- Data API location: ${chalk.green(config.dataApiLocation ?? "")}`);
   logger.log(`- App build command: ${chalk.green(config.appBuildCommand ?? "")}`);
   logger.log(`- API build command: ${chalk.green(config.apiBuildCommand ?? "")}`);
   logger.log(`- App dev server command: ${chalk.green(config.appDevserverCommand ?? "")}`);

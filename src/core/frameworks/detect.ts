@@ -1,13 +1,14 @@
 import { promises as fs } from "fs";
 import globrex from "globrex";
 import path from "path";
+import { DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME } from "../constants";
 import { DEFAULT_CONFIG } from "../../config";
 import { hasSpaces, logger, removeTrailingPathSep, safeReadFile, safeReadJson } from "../utils";
 import { apiFrameworks, appFrameworks } from "./frameworks";
 
 const packageJsonFile = "package.json";
 
-export async function generateConfiguration(app?: DetectedFolder, api?: DetectedFolder): Promise<FrameworkConfig> {
+export async function generateConfiguration(app?: DetectedFolder, api?: DetectedFolder, dataApi?: DetectedDbConfigFolder): Promise<FrameworkConfig> {
   let config: FrameworkConfig = {
     appLocation: DEFAULT_CONFIG.appLocation!,
     outputLocation: DEFAULT_CONFIG.outputLocation!,
@@ -42,6 +43,12 @@ export async function generateConfiguration(app?: DetectedFolder, api?: Detected
       logger.silly(`Built API location "${computedApiLocation}" does not match root API location ${api.rootPath}, which is not supported yet`);
     }
     config.apiLocation = removeTrailingPathSep(api.rootPath);
+  }
+
+  if (dataApi) {
+    name += name ? ", " : "No app frameworks detected, ";
+    name += `data API: ${dataApi.databaseType}`;
+    config.dataApiLocation = dataApi.rootPath;
   }
 
   const appRootPath = app && removeTrailingPathSep(app.rootPath);
@@ -107,6 +114,24 @@ async function computePath(basePath: string, additionalPath?: string): Promise<s
   }
 
   return basePath;
+}
+
+export async function detectDbConfigFiles(projectPath: string = "."): Promise<DetectedDbConfigFolder[]> {
+  // Detect all the "staticwebapp.database.config.json" with valid "database-type"
+  const projectFiles = await getFiles(projectPath);
+  const dbConfigFilePaths = projectFiles.filter((f) => f.endsWith(DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME));
+  let dbConfigFiles = await Promise.all(
+    dbConfigFilePaths.map(async (f) => {
+      const contains = await safeReadJson(f);
+      let result: DetectedDbConfigFolder = {
+        rootPath: path.dirname(f),
+        databaseType: contains?.["data-source"]?.["database-type"],
+      };
+      return result;
+    })
+  );
+  dbConfigFiles = dbConfigFiles.filter((f) => f.databaseType !== undefined);
+  return dbConfigFiles;
 }
 
 export async function detectProjectFolders(projectPath: string = "."): Promise<DetectionResult> {
