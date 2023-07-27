@@ -117,7 +117,7 @@ async function computePath(basePath: string, additionalPath?: string): Promise<s
 }
 
 export async function detectDbConfigFiles(projectPath: string = "."): Promise<DetectedDbConfigFolder[]> {
-  // Detect all the `staticwebapp.config.json` with valid "database-type"
+  // Detect all the "staticwebapp.database.config.json" with valid "database-type"
   const projectFiles = await getFiles(projectPath);
   const dbConfigFilePaths = projectFiles.filter((f) => f.endsWith(DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME));
   let dbConfigFiles = await Promise.all(
