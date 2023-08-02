@@ -63,11 +63,10 @@ async function resolveLocalhostByFetching(url: string) {
       .then((response) => {
         if (response.ok || response.redirected) {
           logger.silly(`Fetch ${Url} successfully`);
-          return Url;
         } else {
-          logger.silly(`Fetch ${Url} failed with status ${response.status} ${response.statusText}`);
-          throw new Error(`Fetch ${Url} failed with status ${response.status} ${response.statusText}`);
+          logger.warn(`Fetch ${Url} with status ${response.status} ${response.statusText}`);
         }
+        return Url;
       })
       .catch((err) => {
         logger.silly(`Could not fetch ${Url}`);
