@@ -200,7 +200,7 @@
     },
     "loginSharedCommandParameters": {
       "properties": {
-        "subscription": {
+        "subscriptionId": {
           "description": "Azure subscription ID used by this project",
           "type": "string"
         },
