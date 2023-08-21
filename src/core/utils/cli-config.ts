@@ -3,6 +3,7 @@ import { existsSync, promises as fsPromises } from "fs";
 import * as path from "path";
 import * as process from "process";
 import { logger } from "./logger";
+import { promptOrUseDefault } from "../prompts";
 const { readFile, writeFile } = fsPromises;
 
 export const swaCliConfigSchemaUrl = "https://aka.ms/azure/static-web-apps-cli/schema";
@@ -47,19 +48,27 @@ export function matchLoadedConfigName(name: string) {
  * @returns An object with the `{@link SWACLIOptions}` config or an empty object if the config file, or the config entry were not found.
  */
 export async function getConfigFileOptions(configName: string | undefined, configFilePath: string): Promise<SWACLIConfig> {
-  logger.silly(`Getting config file options from ${configFilePath}...`);
+  logger.silly(`Getting config file options from "${configFilePath}"...`);
 
   let resolvedConfigFilePath = path.resolve(configFilePath);
   if (!swaCliConfigFileExists(resolvedConfigFilePath)) {
-    logger.silly(`Config file does not exist at ${configFilePath}`);
-    if (configName) {
-      resolvedConfigFilePath = path.resolve(configName, configFilePath);
-      if (!swaCliConfigFileExists(resolvedConfigFilePath)) {
-        return {};
-      } else {
-        logger.silly(`Found config file at ${resolvedConfigFilePath}`);
-      }
+    logger.silly(`Config file does not exist at "${configFilePath}"`);
+
+    // Handle the case when the user runs the command outside the project path
+    if (!configName || !swaCliConfigFileExists(path.resolve(configName, configFilePath))) {
+      return {};
     }
+    logger.warn(`WARNING: Config file does not exist at "${configFilePath}", but can be detected at "${path.join(configName, configFilePath)}".`);
+    const { confirmConfigPath } = await promptOrUseDefault(false, {
+      type: "confirm",
+      name: "confirmConfigPath",
+      message: `Do you mean "swa --config ${path.join(configName, configFilePath)} <command> ${configName} [options]"?`,
+      initial: true,
+    });
+    if (!confirmConfigPath) {
+      return {};
+    }
+    resolvedConfigFilePath = path.resolve(configName, configFilePath);
   }
 
   const cliConfig = await tryParseSwaCliConfig(resolvedConfigFilePath);
