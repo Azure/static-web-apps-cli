@@ -3,7 +3,6 @@ import { existsSync, promises as fsPromises } from "fs";
 import * as path from "path";
 import * as process from "process";
 import { logger } from "./logger";
-import { promptOrUseDefault } from "../prompts";
 const { readFile, writeFile } = fsPromises;
 
 export const swaCliConfigSchemaUrl = "https://aka.ms/azure/static-web-apps-cli/schema";
@@ -50,35 +49,31 @@ export function matchLoadedConfigName(name: string) {
 export async function getConfigFileOptions(configName: string | undefined, configFilePath: string): Promise<SWACLIConfig> {
   logger.silly(`Getting config file options from "${configFilePath}"...`);
 
-  let resolvedConfigFilePath = path.resolve(configFilePath);
-  if (!swaCliConfigFileExists(resolvedConfigFilePath)) {
+  let configFilePathResolved = path.resolve(configFilePath);
+  if (!swaCliConfigFileExists(configFilePathResolved)) {
     logger.silly(`Config file does not exist at "${configFilePath}"`);
 
     // Handle the case when the user runs the command outside the project path
-    if (!configName || !swaCliConfigFileExists(path.resolve(configName, configFilePath))) {
+    if (!configName || !swaCliConfigFileExists(path.resolve(configName, swaCliConfigFilename))) {
       return {};
     }
-    logger.warn(`WARNING: Config file does not exist at "${configFilePath}", but can be detected at "${path.join(configName, configFilePath)}".`);
-    const { confirmConfigPath } = await promptOrUseDefault(false, {
-      type: "confirm",
-      name: "confirmConfigPath",
-      message: `Do you mean "swa --config ${path.join(configName, configFilePath)} <command> ${configName} [options]"?`,
-      initial: true,
-    });
-    if (!confirmConfigPath) {
-      return {};
-    }
-    resolvedConfigFilePath = path.resolve(configName, configFilePath);
+    logger.warn(
+      `WARNING: Config file does not exist at "${configFilePath}", but can be detected at "${path.join(
+        configName,
+        swaCliConfigFilename
+      )}". Do you mean "swa --config ${path.join(configName, swaCliConfigFilename)} <command> ${configName} [options]"?`
+    );
+    configFilePathResolved = path.resolve(configName, swaCliConfigFilename);
   }
 
-  const cliConfig = await tryParseSwaCliConfig(resolvedConfigFilePath);
+  const cliConfig = await tryParseSwaCliConfig(configFilePathResolved);
   if (!cliConfig.configurations) {
     logger.warn(`${swaCliConfigFilename} is missing the "configurations" property. No options will be loaded.`);
     return {};
   }
 
   // Use configuration root path as the outputLocation
-  const configDir = path.dirname(resolvedConfigFilePath);
+  const configDir = path.dirname(configFilePathResolved);
   process.chdir(configDir);
 
   logger.silly(`Changed directory to ${configDir}`);
@@ -92,10 +87,10 @@ export async function getConfigFileOptions(configName: string | undefined, confi
     }
 
     const [configName, config] = Object.entries(cliConfig.configurations)[0];
-    printConfigMsg(configName, resolvedConfigFilePath);
+    printConfigMsg(configName, configFilePathResolved);
     currentSwaCliConfigFromFile = {
       name: configName,
-      filePath: resolvedConfigFilePath,
+      filePath: configFilePathResolved,
       config,
     };
     return { ...config };
