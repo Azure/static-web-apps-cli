@@ -352,7 +352,7 @@ export async function start(options: SWACLIConfig) {
             commandMessage = `the --run command exited with code ${exitCode}`;
             break;
         }
-        logger.error(`SWA emulator stoped because ${commandMessage}.`, true);
+        logger.error(`SWA emulator stopped because ${commandMessage}.`, true);
       }
     )
     .catch((err) => {
