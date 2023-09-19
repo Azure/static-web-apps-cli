@@ -240,8 +240,8 @@ export async function deploy(options: SWACLIConfig) {
     DEPLOYMENT_TOKEN: deploymentToken,
     // /!\ Static site client doesn't use OUTPUT_LOCATION at all if SKIP_APP_BUILD is set,
     // so you need to provide the output path as the app location
-    APP_LOCATION: userWorkflowConfig?.outputLocation,
-    // OUTPUT_LOCATION: outputLocation,
+    APP_LOCATION: userWorkflowConfig?.appLocation,
+    OUTPUT_LOCATION: userWorkflowConfig?.outputLocation,
     API_LOCATION: userWorkflowConfig?.apiLocation,
     DATA_API_LOCATION: userWorkflowConfig?.dataApiLocation,
     // If config file is not in output location, we need to tell where to find it
@@ -271,6 +271,7 @@ export async function deploy(options: SWACLIConfig) {
       logger.silly(`Deploying using ${cliEnv.SWA_CLI_DEPLOY_BINARY}`);
       logger.silly(`Deploying using the following options:`);
       logger.silly({ env: { ...cliEnv, ...deployClientEnv } });
+      logger.silly(`StaticSiteClient working directory: ${path.dirname(userWorkflowConfig?.appLocation!)}`);
 
       spinner.start(`Preparing deployment. Please wait...`);
 
@@ -278,6 +279,7 @@ export async function deploy(options: SWACLIConfig) {
         env: {
           ...swaCLIEnv(cliEnv, deployClientEnv),
         },
+        cwd: path.dirname(userWorkflowConfig?.appLocation!),
       });
 
       let projectUrl = "";
