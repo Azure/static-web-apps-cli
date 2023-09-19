@@ -11,7 +11,7 @@ title: Environment Variables
 | -------------------- | ---------------------------------------------------------------------------------- | ---------- | ------------- |
 | SWA_CLI_VERSION      | CLI version                                                                        | Yes        |               |
 | SWA_CLI_DEBUG        | Enable verbose logs (`silly`, `silent`, `log`, `info` or `error`)                  |            | `log`         |
-| DEBUG                | General purpose environment variable used to enable verbose logs for commong tools |            |               |
+| DEBUG                | General purpose environment variable used to enable verbose logs for common tools  |            |               |
 
 ## Emulator Settings
 
