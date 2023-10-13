@@ -172,7 +172,10 @@ async function loadSWAConfigSchema(): Promise<JSONSchemaType<SWACLIConfigFile> |
       logger.silly(`Schema loaded successfully from ${schemaUrl}`);
       return (await res.json()) as JSONSchemaType<SWACLIConfigFile>;
     }
-  } catch {}
+    logger.silly(`Status: ${res.status} ${res.statusText}.`);
+  } catch (err) {
+    logger.warn((err as any).message);
+  }
 
   logger.silly(`Failed to load schema from ${schemaUrl}`);
   return null;

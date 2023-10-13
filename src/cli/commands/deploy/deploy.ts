@@ -13,7 +13,7 @@ import {
   updateSwaCliConfigFile,
 } from "../../../core";
 import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../../core/account";
-import { DEFAULT_RUNTIME_LANGUAGE } from "../../../core/constants";
+import { DEFAULT_RUNTIME_LANGUAGE, STATIC_SITE_CLIENT_Working_Folder } from "../../../core/constants";
 import { cleanUp, getDeployClientPath } from "../../../core/deploy-client";
 import { swaCLIEnv } from "../../../core/env";
 import { getDefaultVersion } from "../../../core/functions-versions";
@@ -240,8 +240,8 @@ export async function deploy(options: SWACLIConfig) {
     DEPLOYMENT_TOKEN: deploymentToken,
     // /!\ Static site client doesn't use OUTPUT_LOCATION at all if SKIP_APP_BUILD is set,
     // so you need to provide the output path as the app location
-    APP_LOCATION: userWorkflowConfig?.appLocation,
-    OUTPUT_LOCATION: userWorkflowConfig?.outputLocation,
+    APP_LOCATION: userWorkflowConfig?.outputLocation,
+    // OUTPUT_LOCATION: outputLocation,
     API_LOCATION: userWorkflowConfig?.apiLocation,
     DATA_API_LOCATION: userWorkflowConfig?.dataApiLocation,
     // If config file is not in output location, we need to tell where to find it
@@ -250,6 +250,11 @@ export async function deploy(options: SWACLIConfig) {
     FUNCTION_LANGUAGE: apiLanguage,
     FUNCTION_LANGUAGE_VERSION: apiVersion,
   };
+
+  const clientWorkingDir = path.resolve(deployClientEnv.REPOSITORY_BASE ?? "", STATIC_SITE_CLIENT_Working_Folder);
+  if (!fs.existsSync(clientWorkingDir)) {
+    fs.mkdirSync(clientWorkingDir);
+  }
 
   // set the DEPLOYMENT_ENVIRONMENT env variable only when the user has provided
   // a deployment environment which is not "production".
@@ -271,7 +276,7 @@ export async function deploy(options: SWACLIConfig) {
       logger.silly(`Deploying using ${cliEnv.SWA_CLI_DEPLOY_BINARY}`);
       logger.silly(`Deploying using the following options:`);
       logger.silly({ env: { ...cliEnv, ...deployClientEnv } });
-      logger.silly(`StaticSiteClient working directory: ${path.dirname(userWorkflowConfig?.appLocation!)}`);
+      logger.silly(`StaticSiteClient working directory: ${clientWorkingDir}`);
 
       spinner.start(`Preparing deployment. Please wait...`);
 
@@ -279,7 +284,7 @@ export async function deploy(options: SWACLIConfig) {
         env: {
           ...swaCLIEnv(cliEnv, deployClientEnv),
         },
-        cwd: path.dirname(userWorkflowConfig?.appLocation!),
+        cwd: clientWorkingDir,
       });
 
       let projectUrl = "";
@@ -321,7 +326,7 @@ export async function deploy(options: SWACLIConfig) {
       });
 
       child.on("close", (code) => {
-        cleanUp();
+        cleanUp(clientWorkingDir);
 
         if (code === 0) {
           spinner.succeed(chalk.green(`Project deployed to ${chalk.underline(projectUrl)} 🚀`));
@@ -338,7 +343,7 @@ export async function deploy(options: SWACLIConfig) {
     );
     logGitHubIssueMessageAndExit();
   } finally {
-    cleanUp();
+    cleanUp(clientWorkingDir);
   }
 }
 
