@@ -6,7 +6,7 @@ FROM mcr.microsoft.com/azure-functions/python:4-python3.9-core-tools
 COPY library-scripts/*.sh library-scripts/*.env /tmp/library-scripts/
 
 # Install Node.js, Azure Static Web Apps CLI and Azure Functions Core Tools
-ARG NODE_VERSION="16"
+ARG NODE_VERSION="18"
 ARG CORE_TOOLS_VERSION="4"
 ARG USERNAME="swa-cli"
 ARG SWA_CLI_VERSION
