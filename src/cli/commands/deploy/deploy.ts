@@ -63,13 +63,17 @@ export async function deploy(options: SWACLIConfig) {
     }
   }
 
-  // make sure outputLocation is set
-  const resolvedOutputLocation = path.resolve(appLocation, outputLocation || process.cwd());
+  logger.silly(`Resolving outputLocation=${outputLocation} full path...`);
+  let resolvedOutputLocation = path.resolve(appLocation, outputLocation as string);
 
   // if folder exists, deploy from a specific build folder (outputLocation), relative to appLocation
   if (!fs.existsSync(resolvedOutputLocation)) {
-    logger.error(`The folder "${resolvedOutputLocation}" is not found. Exit.`, true);
-    return;
+    if (!fs.existsSync(outputLocation as string)) {
+      logger.error(`The folder "${resolvedOutputLocation}" is not found. Exit.`, true);
+      return;
+    }
+    // otherwise, build folder (outputLocation) is using the absolute location
+    resolvedOutputLocation = path.resolve(outputLocation as string);
   }
 
   logger.log(`Deploying front-end files from folder:`);
