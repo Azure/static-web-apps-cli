@@ -109,7 +109,6 @@ async function serveStaticOrProxyResponse(req: http.IncomingMessage, res: http.S
       let promises = waitOnOneOfResources.map((resource) => {
         return waitOn({
           resources: [resource],
-          delay: 1000, // initial delay in ms, default 0
           interval: 100, // poll interval in ms, default 250ms
           simultaneous: 1, // limit to 1 connection per resource at a time
           timeout: 60000, // timeout in ms, default Infinity
