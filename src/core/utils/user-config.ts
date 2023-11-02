@@ -105,7 +105,7 @@ export async function validateRuntimeConfigAndGetData(filepath: string): Promise
   logger.silly(`Loading staticwebapp.config.json schema...`);
   const schema = await loadSWAConfigSchema();
   if (!schema) {
-    logger.warn(`WARNING: Failed to load staticwebapp.config.json schema. Continuing without validation!`);
+    logger.error(`Failed to load staticwebapp.config.json schema. Continuing without validation!`, true);
     return null;
   }
 
