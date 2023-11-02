@@ -18,7 +18,7 @@ jest.spyOn(logger, "error").mockImplementation();
 import fs from "fs";
 jest.spyOn(fs, "unlinkSync").mockImplementation(jest.fn());
 
-jest.mock("process", () => ({ versions: { node: "16.0.0" } }));
+jest.mock("process", () => ({ versions: { node: "18.0.0" } }));
 jest.mock("os", () => ({ platform: () => "linux", homedir: () => "/home/user" }));
 jest.mock("child_process", () => ({ exec: jest.fn() }));
 jest.mock("node-fetch", () => jest.fn());
