@@ -112,8 +112,6 @@ async function serveStaticOrProxyResponse(req: http.IncomingMessage, res: http.S
           interval: 100, // poll interval in ms, default 250ms
           simultaneous: 1, // limit to 1 connection per resource at a time
           timeout: 60000, // timeout in ms, default Infinity
-          tcpTimeout: 1000, // tcp timeout in ms, default 300ms
-          window: 1000, // stabilization time in ms, default 750ms
           strictSSL: false,
           verbose: false, // force disable verbose logs even if SWA_CLI_DEBUG is enabled
         })
@@ -123,7 +121,6 @@ async function serveStaticOrProxyResponse(req: http.IncomingMessage, res: http.S
           })
           .catch((err) => {
             logger.silly(`Could not connect to ${resource}`);
-            logger.warn(err.message);
             throw err;
           });
       });
