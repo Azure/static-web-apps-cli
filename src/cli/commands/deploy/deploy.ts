@@ -13,7 +13,7 @@ import {
   updateSwaCliConfigFile,
 } from "../../../core";
 import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../../core/account";
-import { DEFAULT_RUNTIME_LANGUAGE, STATIC_SITE_CLIENT_Working_Folder } from "../../../core/constants";
+import { DEFAULT_RUNTIME_LANGUAGE, STATIC_SITE_CLIENT_WORKING_FOLDER } from "../../../core/constants";
 import { cleanUp, getDeployClientPath } from "../../../core/deploy-client";
 import { swaCLIEnv } from "../../../core/env";
 import { getDefaultVersion } from "../../../core/functions-versions";
@@ -255,7 +255,7 @@ export async function deploy(options: SWACLIConfig) {
     FUNCTION_LANGUAGE_VERSION: apiVersion,
   };
 
-  const clientWorkingDir = path.resolve(deployClientEnv.REPOSITORY_BASE ?? "", STATIC_SITE_CLIENT_Working_Folder);
+  const clientWorkingDir = path.resolve(deployClientEnv.REPOSITORY_BASE ?? "", STATIC_SITE_CLIENT_WORKING_FOLDER);
   if (!fs.existsSync(clientWorkingDir)) {
     fs.mkdirSync(clientWorkingDir);
   }
