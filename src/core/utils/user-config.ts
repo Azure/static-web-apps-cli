@@ -105,7 +105,7 @@ export async function validateRuntimeConfigAndGetData(filepath: string): Promise
   logger.silly(`Loading staticwebapp.config.json schema...`);
   const schema = await loadSWAConfigSchema();
   if (!schema) {
-    logger.warn(`WARNING: Failed to load staticwebapp.config.json schema. Continuing without validation!`);
+    logger.error(`Failed to load staticwebapp.config.json schema. Continuing without validation!`, true);
     return null;
   }
 
@@ -172,7 +172,10 @@ async function loadSWAConfigSchema(): Promise<JSONSchemaType<SWACLIConfigFile> |
       logger.silly(`Schema loaded successfully from ${schemaUrl}`);
       return (await res.json()) as JSONSchemaType<SWACLIConfigFile>;
     }
-  } catch {}
+    logger.silly(`Status: ${res.status} ${res.statusText}.`);
+  } catch (err) {
+    logger.warn((err as any).message);
+  }
 
   logger.silly(`Failed to load schema from ${schemaUrl}`);
   return null;

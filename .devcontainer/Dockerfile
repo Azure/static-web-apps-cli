@@ -6,7 +6,8 @@ FROM mcr.microsoft.com/azure-functions/python:4-python3.9-core-tools
 COPY library-scripts/*.sh library-scripts/*.env /tmp/library-scripts/
 
 # Install Node.js, Azure Static Web Apps CLI and Azure Functions Core Tools
-ARG NODE_VERSION="16"
+ARG NODE_VERSION="18"
+ARG NPM_VERSION="10"
 ARG CORE_TOOLS_VERSION="4"
 ARG USERNAME="swa-cli"
 ARG SWA_CLI_VERSION
@@ -27,7 +28,7 @@ RUN bash /tmp/library-scripts/node-debian.sh "${NVM_DIR}" "${NODE_VERSION}" "${U
     && if [ $CORE_TOOLS_VERSION != "4" ]; then apt-get remove -y azure-functions-core-tools-4 && apt-get install -y "azure-functions-core-tools-${CORE_TOOLS_VERSION}"; fi \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
-RUN su swa-cli -c "umask 0002 && npm install --cache /tmp/empty-cache -g npm@latest fuzz-run" \
+RUN su swa-cli -c "umask 0002 && npm install --cache /tmp/empty-cache -g npm@$NPM_VERSION fuzz-run" \
     && if [ -n "$SWA_CLI_VERSION" ]; then su swa-cli -c "umask 0002 && npm install --cache /tmp/empty-cache -g @azure/static-web-apps-cli@$SWA_CLI_VERSION"; fi
 
 USER swa-cli

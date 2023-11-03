@@ -94,6 +94,11 @@ const config = {
         style: "dark",
         copyright: `Copyright © ${new Date().getFullYear()} Microsoft | Built with Docusaurus and Iconcloud.design <br>build: ${getBuildId()}`,
       },
+      colorMode: {
+        defaultMode: 'light',
+        disableSwitch: false,
+        respectPrefersColorScheme: true,
+      },
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
