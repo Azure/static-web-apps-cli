@@ -63,12 +63,14 @@ export async function authenticateWithAzureIdentity(details: LoginDetails = {}, 
 
   const environmentCredential = new EnvironmentCredential();
 
-  const azureCliCredential = new AzureCliCredential();
+  const azureCliCredential = new AzureCliCredential({
+    tenantId: details.clientId,
+  });
 
   // Only use interactive browser credential if we're not running in docker
   const credentials = isRunningInDocker()
-    ? [azureCliCredential, environmentCredential, deviceCredential]
-    : [azureCliCredential, environmentCredential, browserCredential, deviceCredential];
+    ? [environmentCredential, azureCliCredential, deviceCredential]
+    : [environmentCredential, azureCliCredential, browserCredential, deviceCredential];
 
   if (details.tenantId && details.clientId && details.clientSecret) {
     const clientSecretCredential = new ClientSecretCredential(details.tenantId, details.clientId, details.clientSecret, {
