@@ -1,6 +1,6 @@
 {
   "name": "@azure/static-web-apps-cli",
-  "version": "1.1.5",
+  "version": "1.1.6-alpha",
   "description": "Azure Static Web Apps CLI",
   "scripts": {
     "test": "jest --detectOpenHandles --silent --verbose",
