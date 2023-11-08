@@ -13,7 +13,7 @@ import {
   updateSwaCliConfigFile,
 } from "../../../core";
 import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../../core/account";
-import { DEFAULT_RUNTIME_LANGUAGE, STATIC_SITE_CLIENT_WORKING_FOLDER } from "../../../core/constants";
+import { DEFAULT_RUNTIME_LANGUAGE } from "../../../core/constants";
 import { cleanUp, getDeployClientPath } from "../../../core/deploy-client";
 import { swaCLIEnv } from "../../../core/env";
 import { getDefaultVersion } from "../../../core/functions-versions";
@@ -255,11 +255,6 @@ export async function deploy(options: SWACLIConfig) {
     FUNCTION_LANGUAGE_VERSION: apiVersion,
   };
 
-  const clientWorkingDir = path.resolve(deployClientEnv.REPOSITORY_BASE ?? "", STATIC_SITE_CLIENT_WORKING_FOLDER);
-  if (!fs.existsSync(clientWorkingDir)) {
-    fs.mkdirSync(clientWorkingDir);
-  }
-
   // set the DEPLOYMENT_ENVIRONMENT env variable only when the user has provided
   // a deployment environment which is not "production".
   if (options.env?.toLowerCase() !== "production" && options.env?.toLowerCase() !== "prod") {
@@ -280,7 +275,6 @@ export async function deploy(options: SWACLIConfig) {
       logger.silly(`Deploying using ${cliEnv.SWA_CLI_DEPLOY_BINARY}`);
       logger.silly(`Deploying using the following options:`);
       logger.silly({ env: { ...cliEnv, ...deployClientEnv } });
-      logger.silly(`StaticSiteClient working directory: ${clientWorkingDir}`);
 
       spinner.start(`Preparing deployment. Please wait...`);
 
@@ -288,7 +282,6 @@ export async function deploy(options: SWACLIConfig) {
         env: {
           ...swaCLIEnv(cliEnv, deployClientEnv),
         },
-        cwd: clientWorkingDir,
       });
 
       let projectUrl = "";
@@ -330,7 +323,7 @@ export async function deploy(options: SWACLIConfig) {
       });
 
       child.on("close", (code) => {
-        cleanUp(clientWorkingDir);
+        cleanUp();
 
         if (code === 0) {
           spinner.succeed(chalk.green(`Project deployed to ${chalk.underline(projectUrl)} 🚀`));
@@ -347,7 +340,7 @@ export async function deploy(options: SWACLIConfig) {
     );
     logGitHubIssueMessageAndExit();
   } finally {
-    cleanUp(clientWorkingDir);
+    cleanUp();
   }
 }
 
