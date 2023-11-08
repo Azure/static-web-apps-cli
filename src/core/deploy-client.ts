@@ -109,9 +109,9 @@ export async function fetchClientVersionDefinition(releaseVersion: string): Prom
 
 // TODO: get StaticSiteClient to remove zip files
 // TODO: can these ZIPs be created under /tmp?
-export function cleanUp(clientWorkingDir: string) {
+export function cleanUp() {
   const clean = (file: string) => {
-    const filepath = path.join(clientWorkingDir, file);
+    const filepath = path.join(process.cwd(), file);
     if (fs.existsSync(filepath)) {
       try {
         fs.unlinkSync(filepath);
@@ -121,10 +121,4 @@ export function cleanUp(clientWorkingDir: string) {
 
   clean(".\\app.zip");
   clean(".\\api.zip");
-
-  if (fs.existsSync(clientWorkingDir)) {
-    try {
-      fs.rmdirSync(clientWorkingDir, { recursive: true });
-    } catch {}
-  }
 }
