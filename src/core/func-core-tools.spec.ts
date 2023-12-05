@@ -53,45 +53,57 @@ describe("funcCoreTools", () => {
   describe("isCoreToolsVersionCompatible()", () => {
     it("should return true for compatible versions", () => {
       expect(isCoreToolsVersionCompatible(4, 10)).toBe(false);
-      expect(isCoreToolsVersionCompatible(3, 10)).toBe(true);
+      expect(isCoreToolsVersionCompatible(3, 10)).toBe(false);
       expect(isCoreToolsVersionCompatible(2, 10)).toBe(true);
-      expect(isCoreToolsVersionCompatible(3, 11)).toBe(true);
-      expect(isCoreToolsVersionCompatible(2, 11)).toBe(false);
+      expect(isCoreToolsVersionCompatible(3, 11)).toBe(false);
+      expect(isCoreToolsVersionCompatible(2, 11)).toBe(true);
       expect(isCoreToolsVersionCompatible(4, 12)).toBe(false);
-      expect(isCoreToolsVersionCompatible(3, 12)).toBe(true);
-      expect(isCoreToolsVersionCompatible(2, 12)).toBe(false);
-      expect(isCoreToolsVersionCompatible(3, 13)).toBe(true);
-      expect(isCoreToolsVersionCompatible(4, 14)).toBe(true);
+      expect(isCoreToolsVersionCompatible(3, 12)).toBe(false);
+      expect(isCoreToolsVersionCompatible(2, 12)).toBe(true);
+      expect(isCoreToolsVersionCompatible(4, 13)).toBe(false);
+      expect(isCoreToolsVersionCompatible(3, 13)).toBe(false);
+      expect(isCoreToolsVersionCompatible(2, 13)).toBe(true);
+      expect(isCoreToolsVersionCompatible(4, 14)).toBe(false);
       expect(isCoreToolsVersionCompatible(3, 14)).toBe(true);
-      expect(isCoreToolsVersionCompatible(2, 14)).toBe(false);
-      expect(isCoreToolsVersionCompatible(4, 15)).toBe(true);
-      expect(isCoreToolsVersionCompatible(3, 15)).toBe(false);
-      expect(isCoreToolsVersionCompatible(4, 16)).toBe(true);
-      expect(isCoreToolsVersionCompatible(3, 16)).toBe(false);
+      expect(isCoreToolsVersionCompatible(2, 14)).toBe(true);
+      expect(isCoreToolsVersionCompatible(4, 15)).toBe(false);
+      expect(isCoreToolsVersionCompatible(3, 15)).toBe(true);
+      expect(isCoreToolsVersionCompatible(4, 16)).toBe(false);
+      expect(isCoreToolsVersionCompatible(3, 16)).toBe(true);
       expect(isCoreToolsVersionCompatible(2, 16)).toBe(false);
-      expect(isCoreToolsVersionCompatible(4, 17)).toBe(true);
-      expect(isCoreToolsVersionCompatible(3, 17)).toBe(false);
+      expect(isCoreToolsVersionCompatible(4, 17)).toBe(false);
+      expect(isCoreToolsVersionCompatible(3, 17)).toBe(true);
       expect(isCoreToolsVersionCompatible(2, 17)).toBe(false);
       expect(isCoreToolsVersionCompatible(4, 18)).toBe(true);
-      expect(isCoreToolsVersionCompatible(3, 18)).toBe(false);
+      expect(isCoreToolsVersionCompatible(3, 18)).toBe(true);
       expect(isCoreToolsVersionCompatible(2, 18)).toBe(false);
+      expect(isCoreToolsVersionCompatible(4, 19)).toBe(true);
+      expect(isCoreToolsVersionCompatible(3, 19)).toBe(true);
+      expect(isCoreToolsVersionCompatible(2, 19)).toBe(false);
+      expect(isCoreToolsVersionCompatible(4, 20)).toBe(true);
+      expect(isCoreToolsVersionCompatible(3, 20)).toBe(true);
+      expect(isCoreToolsVersionCompatible(2, 20)).toBe(false);
     });
   });
 
   describe("detectTargetCoreToolsVersion()", () => {
     it("should return the latest valid version for each Node version", () => {
-      expect(detectTargetCoreToolsVersion(8)).toBe(2);
-      expect(detectTargetCoreToolsVersion(9)).toBe(2);
-      expect(detectTargetCoreToolsVersion(10)).toBe(3);
-      expect(detectTargetCoreToolsVersion(11)).toBe(3);
-      expect(detectTargetCoreToolsVersion(12)).toBe(3);
-      expect(detectTargetCoreToolsVersion(13)).toBe(3);
-      expect(detectTargetCoreToolsVersion(14)).toBe(4);
-      expect(detectTargetCoreToolsVersion(15)).toBe(4);
-      expect(detectTargetCoreToolsVersion(16)).toBe(4);
+      expect(detectTargetCoreToolsVersion(10)).toBe(2);
+      expect(detectTargetCoreToolsVersion(11)).toBe(2);
+      expect(detectTargetCoreToolsVersion(12)).toBe(2);
+      expect(detectTargetCoreToolsVersion(13)).toBe(2);
+      expect(detectTargetCoreToolsVersion(14)).toBe(3);
+      expect(detectTargetCoreToolsVersion(15)).toBe(3);
+      expect(detectTargetCoreToolsVersion(16)).toBe(3);
+      expect(detectTargetCoreToolsVersion(17)).toBe(3);
+      expect(detectTargetCoreToolsVersion(18)).toBe(4);
+      expect(detectTargetCoreToolsVersion(19)).toBe(4);
+      expect(detectTargetCoreToolsVersion(20)).toBe(4);
       // Unsupported Node versions should always return the latest version
+      expect(detectTargetCoreToolsVersion(8)).toBe(4);
+      expect(detectTargetCoreToolsVersion(9)).toBe(4);
       expect(detectTargetCoreToolsVersion(7)).toBe(4);
-      expect(detectTargetCoreToolsVersion(17)).toBe(4);
+      expect(detectTargetCoreToolsVersion(21)).toBe(4);
     });
   });
 
