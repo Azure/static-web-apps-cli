@@ -40,6 +40,10 @@ describe("glob functions", () => {
     it("glob = {foo,bar}.json", () => {
       expect(globToRegExp("{foo,bar}.json")).toBe("(foo|bar).json");
     });
+
+    it("glob = /foo*", () => {
+      expect(globToRegExp("/foo*")).toBe("\\/foo.*");
+    });
   });
 
   // describe isValidGlobExpression
