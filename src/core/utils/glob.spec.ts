@@ -26,19 +26,19 @@ describe("glob functions", () => {
     });
 
     it("glob = /*.{ext}", () => {
-      expect(globToRegExp("/*.{ext}")).toBe("\\/.*(ext)");
+      expect(globToRegExp("/*.{ext}")).toBe("\\/.*\\.(ext)");
     });
 
     it("glob = /*.{ext,gif}", () => {
-      expect(globToRegExp("/*.{ext,gif}")).toBe("\\/.*(ext|gif)");
+      expect(globToRegExp("/*.{ext,gif}")).toBe("\\/.*\\.(ext|gif)");
     });
 
     it("glob = /foo/*.{ext,gif}", () => {
-      expect(globToRegExp("/foo/*.{ext,gif}")).toBe("\\/foo\\/.*(ext|gif)");
+      expect(globToRegExp("/foo/*.{ext,gif}")).toBe("\\/foo\\/.*\\.(ext|gif)");
     });
 
     it("glob = {foo,bar}.json", () => {
-      expect(globToRegExp("{foo,bar}.json")).toBe("(foo|bar).json");
+      expect(globToRegExp("{foo,bar}.json")).toBe("(foo|bar)\\.json");
     });
 
     it("glob = /foo*", () => {
