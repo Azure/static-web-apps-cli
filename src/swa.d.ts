@@ -51,6 +51,7 @@ declare interface SWACLIEnv extends StaticSiteClientEnv {
   SWA_CLI_APP_DEVSERVER_URL?: string;
   SWA_CLI_API_DEVSERVER_URL?: string;
   SWA_CLI_DATA_API_DEVSERVER_URL?: string;
+  SWA_CLI_CONFIG_SCHEMA_LOCATION?: string;
 
   // swa deploy
   SWA_CLI_DEPLOY_DRY_RUN?: string;
@@ -152,6 +153,7 @@ declare type SWACLIStartOptions = {
   run?: string;
   devserverTimeout?: number;
   open?: boolean;
+  schemaUrl?: string;
   funcArgs?: string;
   githubActionWorkflowLocation?: string;
   swaConfigLocation?: string;

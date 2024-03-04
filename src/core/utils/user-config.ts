@@ -8,6 +8,7 @@ import path from "path";
 import { SWA_CONFIG_FILENAME, SWA_CONFIG_FILENAME_LEGACY, SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB } from "../constants";
 import { logger } from "./logger";
 import { isHttpUrl } from "./net";
+import { DEFAULT_CONFIG } from "../../config";
 const { readdir, readFile, stat } = fs.promises;
 
 /**
@@ -165,7 +166,7 @@ function findLineAndColumnByPosition(content: string, position: number | undefin
 }
 
 async function loadSWAConfigSchema(): Promise<JSONSchemaType<SWACLIConfigFile> | null> {
-  const schemaUrl = "https://json.schemastore.org/staticwebapp.config.json";
+  const schemaUrl = DEFAULT_CONFIG.schemaUrl || "https://aka.ms/azure/static-web-apps-cli/schema";
   try {
     const res = await fetch(schemaUrl, { timeout: 10 * 1000 } as RequestInit);
     if (res.status === 200) {

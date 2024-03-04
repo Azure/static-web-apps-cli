@@ -2,7 +2,7 @@ import fs from "fs";
 import mockFs from "mock-fs";
 import { init } from "./init";
 import { DEFAULT_CONFIG } from "../../../config";
-import { swaCliConfigFilename } from "../../../core/utils";
+import { swaCliConfigFilename, swaCliConfigSchemaUrl } from "../../../core/utils";
 import { convertToNativePaths, convertToUnixPaths } from "../../../jest.helpers.";
 
 jest.mock("prompts", () => jest.fn());
@@ -23,6 +23,7 @@ const defautResolvedPrompts = {
   appDevserverUrl: "http://localhost:3000",
   apiDevserverUrl: "http://localhost:4040",
   confirmOverwrite: true,
+  schemaUrl: "https://json.schemastore.org/staticwebapp.config.json",
 };
 
 describe("swa init", () => {

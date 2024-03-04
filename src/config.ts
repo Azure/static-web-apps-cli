@@ -37,6 +37,7 @@ const {
   SWA_CLI_DATA_API_FOLDER,
   SWA_CLI_API_LANGUAGE,
   SWA_CLI_API_VERSION,
+  SWA_CLI_CONFIG_SCHEMA_LOCATION,
 } = swaCLIEnv();
 
 export const DEFAULT_CONFIG: SWACLIConfig = {
@@ -59,6 +60,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   verbose: SWA_CLI_DEBUG || "log",
   devserverTimeout: parseInt(SWA_CLI_SERVER_TIMEOUT || "60", 10),
   open: useEnvVarOrUseDefault(SWA_CLI_OPEN_BROWSER, false),
+  schemaUrl: SWA_CLI_CONFIG_SCHEMA_LOCATION || undefined,
   githubActionWorkflowLocation: SWA_RUNTIME_WORKFLOW_LOCATION ? SWA_RUNTIME_WORKFLOW_LOCATION : undefined,
   appDevserverUrl: SWA_CLI_APP_DEVSERVER_URL || undefined,
   apiDevserverUrl: SWA_CLI_API_DEVSERVER_URL || undefined,
