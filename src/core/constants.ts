@@ -226,6 +226,8 @@ export const SWA_CONFIG_FILENAME = "staticwebapp.config.json";
 export const SWA_CONFIG_FILENAME_LEGACY = "routes.json";
 export const CUSTOM_URL_SCHEME = "swa://";
 export const OVERRIDABLE_ERROR_CODES = [400, 401, 403, 404];
+export const SWA_CONFIG_SCHEME_URL = "https://json.schemastore.org/staticwebapp.config.json";
+export const SWA_CONFIG_SCHEME_FALLBACK_PATH = path.join(__dirname, "..", "..", "schema", SWA_CONFIG_FILENAME);
 
 // Constants related to Api runtime
 export const DEFAULT_VERSION = {
