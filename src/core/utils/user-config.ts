@@ -166,7 +166,7 @@ function findLineAndColumnByPosition(content: string, position: number | undefin
 }
 
 async function loadSWAConfigSchema(): Promise<JSONSchemaType<SWACLIConfigFile> | null> {
-  const schemaUrl = DEFAULT_CONFIG.schemaUrl || "https://aka.ms/azure/static-web-apps-cli/schema";
+  const schemaUrl = DEFAULT_CONFIG.schemaUrl || "https://json.schemastore.org/staticwebapp.config.json";
   try {
     const res = await fetch(schemaUrl, { timeout: 10 * 1000 } as RequestInit);
     if (res.status === 200) {
