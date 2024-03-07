@@ -3,8 +3,7 @@
 
 name: Create release and publish to drop
 
-permissions:
-  actions: write
+permissions: write-all
 
 on: workflow_dispatch
 
