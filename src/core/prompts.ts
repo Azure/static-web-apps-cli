@@ -74,6 +74,18 @@ export async function chooseProjectName(initial: string, maxLength: number): Pro
   return response.projectName;
 }
 
+export async function chooseProjectSku(): Promise<string> {
+  const response = await promptOrUseDefault(false, {
+    type: "text",
+    name: "sku",
+    message: "Choose a SKU:",
+    initial: "Free",
+    validate: (value: string) => value === "Free" || value === "Standard" || "Configuration name cannot be empty",
+  });
+
+  return response.sku;
+}
+
 export async function chooseTenant(tenants: TenantIdDescription[], initial?: string): Promise<TenantIdDescription | undefined> {
   const choices = tenants.map((tenant) => ({
     title: tenant.tenantId as string,

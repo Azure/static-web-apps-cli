@@ -15,7 +15,7 @@ import chalk from "chalk";
 import ora from "ora";
 import path from "path";
 import { swaCLIEnv } from "./env";
-import { chooseProjectName, chooseStaticSite, wouldYouLikeToCreateStaticSite, wouldYouLikeToOverrideStaticSite } from "./prompts";
+import { chooseProjectName, chooseProjectSku, chooseStaticSite, wouldYouLikeToCreateStaticSite, wouldYouLikeToOverrideStaticSite } from "./prompts";
 import { swaCliPersistencePlugin } from "./swa-cli-persistence-plugin";
 import { SWACLIPersistenceCachePlugin } from "./swa-cli-persistence-plugin/persistence-cache-plugin";
 import { dasherize, logger } from "./utils";
@@ -125,6 +125,7 @@ async function createStaticSite(options: SWACLIConfig, credentialChain: TokenCre
   const defaultStaticSiteName = appName || dasherize(path.basename(process.cwd())).substring(0, maxProjectNameLength);
 
   appName = await chooseProjectName(defaultStaticSiteName, maxProjectNameLength);
+  const sku = await chooseProjectSku();
   resourceGroup = resourceGroup || `${appName}-rg`;
 
   let spinner = ora("Creating a new project...").start();
@@ -144,7 +145,7 @@ async function createStaticSite(options: SWACLIConfig, credentialChain: TokenCre
 
     const staticSiteEnvelope: StaticSiteARMResource = {
       location: AZURE_REGION_LOCATION || DEFAULT_AZURE_LOCATION,
-      sku: { name: "Free", tier: "Free" },
+      sku: { name: sku, tier: sku },
 
       // these are mandatory, otherwise the static site will not be created
       buildProperties: {
