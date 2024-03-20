@@ -103,7 +103,7 @@ export async function validateDevServerConfig(url: string | undefined, timeout: 
     const resolvedPortNumber = await isAcceptingTcpConnections({ port, host: hostname });
     if (resolvedPortNumber !== 0) {
       const spinner = ora();
-      let waitOnOneOfResources = hostname === "localhost" ? [`tcp:127.0.0.1:${port}`, `tcp:localhost:${port}`] : [`tcp:${hostname}:${port}`];
+      const waitOnOneOfResources = hostname === "localhost" ? [`tcp:127.0.0.1:${port}`, `tcp:[::1]:${port}`] : [`tcp:${hostname}:${port}`];
       spinner.start(`Waiting for ${chalk.green(url)} to be ready`);
 
       let promises = waitOnOneOfResources.map((resource) => {
@@ -130,7 +130,7 @@ export async function validateDevServerConfig(url: string | undefined, timeout: 
 
       try {
         await Promise.any(promises);
-        spinner.succeed(`${url} validated successfully`);
+        spinner.succeed(`Connected to ${url} successfully`);
         spinner.clear();
       } catch {
         spinner.fail();
