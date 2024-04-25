@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import cookie from "cookie";
-import { SWA_AUTH_COOKIE } from "../constants";
+import { NONCE, SWA_AUTH_COOKIE } from "../constants";
 import { logger } from "./logger";
 
 /**
@@ -43,5 +43,36 @@ export function decodeCookie(cookieValue: string): ClientPrincipal | null {
     return JSON.parse(decodedValue);
   }
   logger.silly(` - no cookie 'StaticWebAppsAuthCookie' found`);
+  return null;
+}
+
+/**
+ * Check if the Nonce is available.
+ * @param cookieValue The cookie value.
+ * @returns True if Nonce is found. False otherwise.
+ */
+export function validateNonceCookie(cookieValue: string | number | string[]) {
+  if (typeof cookieValue !== "string") {
+    throw Error(`TypeError: cookie value must be a string`);
+  }
+
+  const cookies = cookie.parse(cookieValue);
+  return !!cookies[NONCE];
+}
+
+/**
+ *
+ * @param cookieValue
+ * @returns Nonce string.
+ */
+export function decodeNonceCookie(cookieValue: string): string | null {
+  logger.silly(`decoding nonce cookie`);
+  const cookies = cookie.parse(cookieValue);
+  if (cookies[NONCE]) {
+    const decodedValue = Buffer.from(cookies[NONCE], "base64").toString();
+    logger.silly(` - Nonce: ${chalk.yellow(decodedValue)}`);
+    return decodedValue;
+  }
+  logger.silly(` - no cookie 'Nonce' found`);
   return null;
 }
