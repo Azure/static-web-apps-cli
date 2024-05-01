@@ -3,6 +3,8 @@
 
 name: Create release and publish to drop
 
+permissions: write-all
+
 on: workflow_dispatch
 
 jobs:

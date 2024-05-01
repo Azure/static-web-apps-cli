@@ -8,7 +8,6 @@ export const DEPLOY_BINARY_NAME = "StaticSitesClient";
 export const DEPLOY_BINARY_STABLE_TAG = "stable";
 export const DEPLOY_FOLDER = path.join(os.homedir(), ".swa", "deploy");
 export const STATIC_SITE_CLIENT_RELEASE_METADATA_URL = "https://swalocaldeploy.azureedge.net/downloads/versions.json";
-export const STATIC_SITE_CLIENT_WORKING_FOLDER = "staticsites-cli";
 
 // Data-api-builder related constants
 export const DATA_API_BUILDER_BINARY_NAME = "DataApiBuilder";
@@ -227,6 +226,8 @@ export const SWA_CONFIG_FILENAME = "staticwebapp.config.json";
 export const SWA_CONFIG_FILENAME_LEGACY = "routes.json";
 export const CUSTOM_URL_SCHEME = "swa://";
 export const OVERRIDABLE_ERROR_CODES = [400, 401, 403, 404];
+export const SWA_CONFIG_SCHEME_URL = "https://json.schemastore.org/staticwebapp.config.json";
+export const SWA_CONFIG_SCHEME_FALLBACK_PATH = path.join(__dirname, "..", "..", "schema", SWA_CONFIG_FILENAME);
 
 // Constants related to Api runtime
 export const DEFAULT_VERSION = {
@@ -239,7 +240,7 @@ export const DEFAULT_VERSION = {
 export const SUPPORTED_VERSIONS = {
   Node: ["12", "14", "16", "18"],
   Dotnet: ["3.1", "6.0"],
-  DotnetIsolated: ["6.0", "7.0"],
+  DotnetIsolated: ["6.0", "7.0", "8.0"],
   Python: ["3.8", "3.9", "3.10"],
 };
 
