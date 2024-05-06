@@ -7,23 +7,31 @@ function getAuthPaths(isCustomAuth: boolean): Path[] {
   if (isCustomAuth) {
     paths.push({
       method: "GET",
-      route: /^\/\.auth\/login\/(?<provider>aad|github|twitter|google|facebook|[a-z]+)\/callback/,
+      // only match for providers with custom auth support implemented (github, google)
+      route: /^\/\.auth\/login\/(?<provider>github|google|dummy)\/callback(\?.*)?$/i,
       function: "auth-login-provider-callback",
     });
     paths.push({
       method: "GET",
-      route: /^\/\.auth\/login\/(?<provider>aad|github|twitter|google|facebook|[a-z]+)/,
+      // only match for providers with custom auth support implemented (github, google)
+      route: /^\/\.auth\/login\/(?<provider>github|google|dummy)(\?.*)?$/i,
       function: "auth-login-provider-custom",
     });
     paths.push({
+      method: "GET",
+      // For providers with custom auth support not implemented, revert to old behavior
+      route: /^\/\.auth\/login\/(?<provider>aad|twitter|facebook|[a-z]+)(\?.*)?$/i,
+      function: "auth-login-provider",
+    });
+    paths.push({
       method: "POST",
-      route: /^\/\.auth\/complete/,
+      route: /^\/\.auth\/complete(\?.*)?$/i,
       function: "auth-complete",
     });
   } else {
     paths.push({
       method: "GET",
-      route: /^\/\.auth\/login\/(?<provider>aad|github|twitter|google|facebook|[a-z]+)/,
+      route: /^\/\.auth\/login\/(?<provider>aad|github|twitter|google|facebook|[a-z]+)(\?.*)?$/i,
       function: "auth-login-provider",
     });
   }
@@ -31,17 +39,17 @@ function getAuthPaths(isCustomAuth: boolean): Path[] {
   paths.push(
     {
       method: "GET",
-      route: /^\/\.auth\/me/,
+      route: /^\/\.auth\/me(\?.*)?$/i,
       function: "auth-me",
     },
     {
       method: "GET",
-      route: /^\/\.auth\/logout/,
+      route: /^\/\.auth\/logout(\?.*)?$/i,
       function: "auth-logout",
     },
     {
       method: "GET",
-      route: /^\/\.auth\/purge\/(?<provider>aad|github|twitter|google|facebook|[a-z]+)/,
+      route: /^\/\.auth\/purge\/(?<provider>aad|github|twitter|google|facebook|[a-z]+)(\?.*)?$/i,
       // locally, all purge requests are processed as logout requests
       function: "auth-logout",
     }
