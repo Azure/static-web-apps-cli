@@ -1,5 +1,5 @@
 import type http from "http";
-import { logger, serializeCookie } from "../../core";
+import { logger, response as newResponse, serializeCookie } from "../../core";
 
 function getAuthPaths(isCustomAuth: boolean): Path[] {
   const paths: Path[] = [];
@@ -137,19 +137,28 @@ export async function processAuth(request: http.IncomingMessage, response: http.
       logger.error(errorMessage);
 
       defaultStatus = 500;
-      context.res.body = {
-        error: errorMessage,
-      };
+      context.res = newResponse({
+        context,
+        status: 500,
+        body: {
+          error: errorMessage,
+        },
+      });
     }
   } else {
     defaultStatus = 404;
+    context.res = newResponse({
+      context,
+      status: 404,
+      headers: { ["Content-Type"]: "text/plain" },
+      body: "We couldn't find that page, please check the URL and try again.",
+    });
   }
 
   const statusCode = context.res.status || defaultStatus;
-  if (statusCode === 200 || statusCode === 302) {
-    response.writeHead(statusCode);
-    response.end(context.res.body);
-  }
+
+  response.writeHead(statusCode);
+  response.end(context.res.body);
 
   return statusCode;
 }

@@ -366,6 +366,7 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     context.res = response({
       context,
       status: 404,
+      headers: { ["Content-Type"]: "text/plain" },
       body: `Provider '${providerName}' not found`,
     });
     return;
@@ -377,6 +378,8 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     context.res = response({
       context,
       status: 401,
+      headers: { ["Content-Type"]: "text/plain" },
+      body: "Invalid login request",
     });
     return;
   }
@@ -392,6 +395,8 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     context.res = response({
       context,
       status: 401,
+      headers: { ["Content-Type"]: "text/plain" },
+      body: "Invalid login request",
     });
     return;
   }
@@ -402,6 +407,7 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     context.res = response({
       context,
       status: 404,
+      headers: { ["Content-Type"]: "text/plain" },
       body: `ClientIdSettingName not found for '${providerName}' provider`,
     });
     return;
@@ -411,6 +417,7 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     context.res = response({
       context,
       status: 404,
+      headers: { ["Content-Type"]: "text/plain" },
       body: `ClientSecretSettingName not found for '${providerName}' provider`,
     });
     return;
@@ -422,6 +429,7 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     context.res = response({
       context,
       status: 404,
+      headers: { ["Content-Type"]: "text/plain" },
       body: `ClientId not found for '${providerName}' provider`,
     });
     return;
@@ -433,6 +441,7 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     context.res = response({
       context,
       status: 404,
+      headers: { ["Content-Type"]: "text/plain" },
       body: `ClientSecret not found for '${providerName}' provider`,
     });
     return;

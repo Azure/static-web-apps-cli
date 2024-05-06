@@ -13,6 +13,7 @@ const httpTrigger = async function (context: Context, _request: http.IncomingMes
     context.res = response({
       context,
       status: 404,
+      headers: { ["Content-Type"]: "text/plain" },
       body: `Provider '${providerName}' not found`,
     });
     return;
@@ -24,6 +25,7 @@ const httpTrigger = async function (context: Context, _request: http.IncomingMes
     context.res = response({
       context,
       status: 404,
+      headers: { ["Content-Type"]: "text/plain" },
       body: `ClientIdSettingName not found for '${providerName}' provider`,
     });
     return;
@@ -35,6 +37,7 @@ const httpTrigger = async function (context: Context, _request: http.IncomingMes
     context.res = response({
       context,
       status: 404,
+      headers: { ["Content-Type"]: "text/plain" },
       body: `ClientId not found for '${providerName}' provider`,
     });
     return;
