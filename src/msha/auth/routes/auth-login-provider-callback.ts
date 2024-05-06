@@ -4,7 +4,7 @@ import * as https from "https";
 import * as querystring from "querystring";
 import { SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../../../core/constants";
 import { DEFAULT_CONFIG } from "../../../config";
-import { hashStateGuid } from "../../../core/utils/auth";
+import { hashStateGuid, isNonceExpired } from "../../../core/utils/auth";
 
 const getGithubAuthToken = function (codeValue: string, clientId: string, clientSecret: string) {
   const data = querystring.stringify({
@@ -401,6 +401,16 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     return;
   }
 
+  if (isNonceExpired(nonce)) {
+    context.res = response({
+      context,
+      status: 401,
+      headers: { ["Content-Type"]: "text/plain" },
+      body: "Login timed out. Please try again.",
+    });
+    return;
+  }
+
   const { clientIdSettingName, clientSecretSettingName } = customAuth?.identityProviders?.[providerName]?.registration || {};
 
   if (!clientIdSettingName) {
@@ -466,7 +476,8 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
         name: "Nonce",
         value: "deleted",
         path: "/",
-        HttpOnly: false,
+        secure: true,
+        httpOnly: true,
         expires: new Date(1).toUTCString(),
       },
       {
@@ -474,6 +485,8 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
         value: clientPrincipal === null ? "deleted" : btoa(JSON.stringify(clientPrincipal)),
         domain: DEFAULT_CONFIG.host,
         path: "/",
+        secure: true,
+        httpOnly: true,
         expires: clientPrincipal === null ? new Date(1).toUTCString() : new Date(Date.now() + 1000 * 60 * 60 * 8).toUTCString(),
       },
     ],

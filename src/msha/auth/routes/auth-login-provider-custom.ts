@@ -2,7 +2,7 @@ import { response } from "../../../core";
 import * as http from "http";
 import { SWA_CLI_APP_PROTOCOL } from "../../../core/constants";
 import { DEFAULT_CONFIG } from "../../../config";
-import { hashStateGuid, newGuid } from "../../../core/utils/auth";
+import { hashStateGuid, newNonceWithExpiration } from "../../../core/utils/auth";
 
 const httpTrigger = async function (context: Context, _request: http.IncomingMessage, customAuth?: SWAConfigFileAuth) {
   await Promise.resolve();
@@ -43,7 +43,7 @@ const httpTrigger = async function (context: Context, _request: http.IncomingMes
     return;
   }
 
-  const state = newGuid();
+  const state = newNonceWithExpiration();
   const hashedState = hashStateGuid(state);
   const redirectUri = `${SWA_CLI_APP_PROTOCOL}://${DEFAULT_CONFIG.host}:${DEFAULT_CONFIG.port}`;
 
@@ -60,6 +60,8 @@ const httpTrigger = async function (context: Context, _request: http.IncomingMes
         value: btoa(state),
         domain: DEFAULT_CONFIG.host,
         path: "/",
+        secure: true,
+        httpOnly: true,
       },
     ],
     status: 302,

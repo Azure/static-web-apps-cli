@@ -13,3 +13,28 @@ export function hashStateGuid(guid: string) {
   hash.update(guid);
   return hash.digest("hex");
 }
+
+export function newNonceWithExpiration() {
+  const nonceExpiration = Date.now() + 1000 * 60;
+  return `${newGuid()}_${nonceExpiration}}`;
+}
+
+export function isNonceExpired(nonce: string) {
+  if (!nonce) {
+    return true;
+  }
+
+  const expirationString = nonce.split("_")[1];
+
+  if (!expirationString) {
+    return true;
+  }
+
+  const expirationParsed = parseInt(expirationString, 10);
+
+  if (isNaN(expirationParsed) || expirationParsed < Date.now()) {
+    return true;
+  }
+
+  return false;
+}
