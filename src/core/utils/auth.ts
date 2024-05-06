@@ -38,3 +38,14 @@ export function isNonceExpired(nonce: string) {
 
   return false;
 }
+
+export function extractPostLoginRedirectUri(protocol?: string, host?: string, path?: string) {
+  if (!!protocol && !!host && !!path) {
+    try {
+      const url = new URL(`${protocol}://${host}${path}`);
+      return url.searchParams.get("post_login_redirect_uri") ?? undefined;
+    } catch {}
+  }
+
+  return undefined;
+}

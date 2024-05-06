@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import cookie from "cookie";
-import { NONCE, SWA_AUTH_COOKIE } from "../constants";
+import { SWA_AUTH_CONTEXT_COOKIE, SWA_AUTH_COOKIE } from "../constants";
 import { logger } from "./logger";
 
 /**
@@ -35,7 +35,7 @@ export function serializeCookie(cookieName: string, cookieValue: string, options
  * @returns A ClientPrincipal object.
  */
 export function decodeCookie(cookieValue: string): ClientPrincipal | null {
-  logger.silly(`decoding cookie`);
+  logger.silly(`decoding StaticWebAppsAuthCookie cookie`);
   const cookies = cookie.parse(cookieValue);
   if (cookies[SWA_AUTH_COOKIE]) {
     const decodedValue = Buffer.from(cookies[SWA_AUTH_COOKIE], "base64").toString();
@@ -47,32 +47,32 @@ export function decodeCookie(cookieValue: string): ClientPrincipal | null {
 }
 
 /**
- * Check if the Nonce is available.
+ * Check if the StaticWebAppsAuthContextCookie is available.
  * @param cookieValue The cookie value.
- * @returns True if Nonce is found. False otherwise.
+ * @returns True if StaticWebAppsAuthContextCookie is found. False otherwise.
  */
-export function validateNonceCookie(cookieValue: string | number | string[]) {
+export function validateAuthContextCookie(cookieValue: string | number | string[]) {
   if (typeof cookieValue !== "string") {
     throw Error(`TypeError: cookie value must be a string`);
   }
 
   const cookies = cookie.parse(cookieValue);
-  return !!cookies[NONCE];
+  return !!cookies[SWA_AUTH_CONTEXT_COOKIE];
 }
 
 /**
  *
  * @param cookieValue
- * @returns Nonce string.
+ * @returns StaticWebAppsAuthContextCookie string.
  */
-export function decodeNonceCookie(cookieValue: string): string | null {
-  logger.silly(`decoding nonce cookie`);
+export function decodeAuthContextCookie(cookieValue: string): AuthContext | null {
+  logger.silly(`decoding StaticWebAppsAuthContextCookie cookie`);
   const cookies = cookie.parse(cookieValue);
-  if (cookies[NONCE]) {
-    const decodedValue = Buffer.from(cookies[NONCE], "base64").toString();
-    logger.silly(` - Nonce: ${chalk.yellow(decodedValue)}`);
-    return decodedValue;
+  if (cookies[SWA_AUTH_CONTEXT_COOKIE]) {
+    const decodedValue = Buffer.from(cookies[SWA_AUTH_CONTEXT_COOKIE], "base64").toString();
+    logger.silly(` - StaticWebAppsAuthContextCookie: ${chalk.yellow(decodedValue)}`);
+    return JSON.parse(decodedValue);
   }
-  logger.silly(` - no cookie 'Nonce' found`);
+  logger.silly(` - no cookie 'StaticWebAppsAuthContextCookie' found`);
   return null;
 }

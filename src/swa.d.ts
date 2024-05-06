@@ -240,6 +240,12 @@ declare type SWACLIConfigInfo = {
 declare type ResponseOptions = {
   [key: string]: any;
 };
+
+declare type AuthContext = {
+  authNonce: string;
+  postLoginRedirectUri?: string;
+};
+
 declare type ClientPrincipal = {
   identityProvider: string;
   userId: string;

@@ -1,4 +1,4 @@
-import { decodeNonceCookie, parseUrl, response, validateNonceCookie } from "../../../core";
+import { decodeAuthContextCookie, parseUrl, response, validateAuthContextCookie } from "../../../core";
 import * as http from "http";
 import * as https from "https";
 import * as querystring from "querystring";
@@ -374,7 +374,7 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
 
   const { cookie } = request.headers;
 
-  if (!cookie || !validateNonceCookie(cookie)) {
+  if (!cookie || !validateAuthContextCookie(cookie)) {
     context.res = response({
       context,
       status: 401,
@@ -389,9 +389,9 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
   const codeValue = url.searchParams.get("code");
   const stateValue = url.searchParams.get("state");
 
-  const nonce = decodeNonceCookie(cookie);
+  const authContext = decodeAuthContextCookie(cookie);
 
-  if (!nonce || hashStateGuid(nonce) !== stateValue) {
+  if (!authContext?.authNonce || hashStateGuid(authContext.authNonce) !== stateValue) {
     context.res = response({
       context,
       status: 401,
@@ -401,7 +401,7 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     return;
   }
 
-  if (isNonceExpired(nonce)) {
+  if (isNonceExpired(authContext.authNonce)) {
     context.res = response({
       context,
       status: 401,
@@ -473,7 +473,7 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     context,
     cookies: [
       {
-        name: "Nonce",
+        name: "StaticWebAppsAuthContextCookie",
         value: "deleted",
         path: "/",
         secure: true,
@@ -493,7 +493,7 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     status: 302,
     headers: {
       status: 302,
-      Location: `${SWA_CLI_APP_PROTOCOL}://${DEFAULT_CONFIG.host}:${DEFAULT_CONFIG.port}`,
+      Location: authContext.postLoginRedirectUri ?? "/",
     },
     body: "",
   });
