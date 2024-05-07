@@ -1,11 +1,15 @@
 import { IncomingMessage } from "http";
-import { response } from "../../../core";
+import { CookiesManager, response } from "../../../core";
 
 const fs = require("fs").promises;
 const path = require("path");
 
 const httpTrigger = async function (context: Context, request: IncomingMessage) {
   const body = await fs.readFile(path.join(__dirname, "..", "..", "..", "public", "auth.html"), "utf-8");
+
+  const cookiesManager = new CookiesManager(request.headers.cookie);
+  cookiesManager.addCookieToDelete("StaticWebAppsAuthContextCookie");
+
   context.res = response({
     context,
     status: 200,

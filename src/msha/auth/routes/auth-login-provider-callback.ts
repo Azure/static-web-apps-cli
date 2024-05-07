@@ -1,10 +1,10 @@
-import { decodeAuthContextCookie, parseUrl, response, validateAuthContextCookie } from "../../../core";
+import { CookiesManager, decodeAuthContextCookie, parseUrl, response, validateAuthContextCookie } from "../../../core";
 import * as http from "http";
 import * as https from "https";
 import * as querystring from "querystring";
 import { SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../../../core/constants";
 import { DEFAULT_CONFIG } from "../../../config";
-import { hashStateGuid, isNonceExpired } from "../../../core/utils/auth";
+import { encryptAndSign, hashStateGuid, isNonceExpired } from "../../../core/utils/auth";
 
 const getGithubAuthToken = function (codeValue: string, clientId: string, clientSecret: string) {
   const data = querystring.stringify({
@@ -469,27 +469,27 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     } catch {}
   }
 
+  const authCookieString = clientPrincipal && JSON.stringify(clientPrincipal);
+  const authCookieEncrypted = authCookieString && encryptAndSign(authCookieString);
+  const authCookie = authCookieEncrypted ? btoa(authCookieEncrypted) : undefined;
+
+  const cookiesManager = new CookiesManager(request.headers.cookie);
+  cookiesManager.addCookieToDelete("StaticWebAppsAuthContextCookie");
+  if (authCookie) {
+    cookiesManager.addCookieToSet({
+      name: "StaticWebAppsAuthCookie",
+      value: authCookie,
+      domain: DEFAULT_CONFIG.host,
+      path: "/",
+      secure: true,
+      httpOnly: true,
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 8).toUTCString(),
+    });
+  }
+
   context.res = response({
     context,
-    cookies: [
-      {
-        name: "StaticWebAppsAuthContextCookie",
-        value: "deleted",
-        path: "/",
-        secure: true,
-        httpOnly: true,
-        expires: new Date(1).toUTCString(),
-      },
-      {
-        name: "StaticWebAppsAuthCookie",
-        value: clientPrincipal === null ? "deleted" : btoa(JSON.stringify(clientPrincipal)),
-        domain: DEFAULT_CONFIG.host,
-        path: "/",
-        secure: true,
-        httpOnly: true,
-        expires: clientPrincipal === null ? new Date(1).toUTCString() : new Date(Date.now() + 1000 * 60 * 60 * 8).toUTCString(),
-      },
-    ],
+    cookies: cookiesManager.getCookies(),
     status: 302,
     headers: {
       status: 302,

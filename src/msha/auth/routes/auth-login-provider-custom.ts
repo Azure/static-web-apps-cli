@@ -1,8 +1,8 @@
-import { response } from "../../../core";
+import { CookiesManager, response } from "../../../core";
 import * as http from "http";
 import { SWA_CLI_APP_PROTOCOL } from "../../../core/constants";
 import { DEFAULT_CONFIG } from "../../../config";
-import { extractPostLoginRedirectUri, hashStateGuid, newNonceWithExpiration } from "../../../core/utils/auth";
+import { encryptAndSign, extractPostLoginRedirectUri, hashStateGuid, newNonceWithExpiration } from "../../../core/utils/auth";
 
 const httpTrigger = async function (context: Context, request: http.IncomingMessage, customAuth?: SWAConfigFileAuth) {
   await Promise.resolve();
@@ -50,6 +50,10 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     postLoginRedirectUri: extractPostLoginRedirectUri(SWA_CLI_APP_PROTOCOL, request.headers.host, request.url),
   };
 
+  const authContextCookieString = JSON.stringify(authContext);
+  const authContextCookieEncrypted = encryptAndSign(authContextCookieString);
+  const authContextCookie = authContextCookieEncrypted ? btoa(authContextCookieEncrypted) : undefined;
+
   const hashedState = hashStateGuid(state);
   const redirectUri = `${SWA_CLI_APP_PROTOCOL}://${DEFAULT_CONFIG.host}:${DEFAULT_CONFIG.port}`;
 
@@ -58,18 +62,23 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
       ? `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}/.auth/login/google/callback&scope=openid+profile+email&state=${hashedState}`
       : `https://github.com/login/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}/.auth/login/github/callback&scope=read:user&state=${hashedState}`;
 
+  const cookiesManager = new CookiesManager(request.headers.cookie);
+  if (!authContextCookie) {
+    cookiesManager.addCookieToDelete("StaticWebAppsAuthContextCookie");
+  } else {
+    cookiesManager.addCookieToSet({
+      name: "StaticWebAppsAuthContextCookie",
+      value: authContextCookie,
+      domain: DEFAULT_CONFIG.host,
+      path: "/",
+      secure: true,
+      httpOnly: true,
+    });
+  }
+
   context.res = response({
     context,
-    cookies: [
-      {
-        name: "StaticWebAppsAuthContextCookie",
-        value: btoa(JSON.stringify(authContext)),
-        domain: DEFAULT_CONFIG.host,
-        path: "/",
-        secure: true,
-        httpOnly: true,
-      },
-    ],
+    cookies: cookiesManager.getCookies(),
     status: 302,
     headers: {
       status: 302,
