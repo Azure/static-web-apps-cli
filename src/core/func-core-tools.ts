@@ -54,7 +54,7 @@ export function isCoreToolsVersionCompatible(coreToolsVersion: number, nodeVersi
 
 export function detectTargetCoreToolsVersion(nodeVersion: number): number {
   // Pick the highest version that is compatible with the specified Node version
-  if (nodeVersion >= 14 && nodeVersion <= 18) return 4;
+  if (nodeVersion >= 14 && nodeVersion <= 20) return 4;
   if (nodeVersion >= 10 && nodeVersion < 14) return 3;
   if (nodeVersion >= 8 && nodeVersion < 10) return 2;
 
