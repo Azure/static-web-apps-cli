@@ -100,12 +100,18 @@ jobs:
       with:
           name: package
 
+    - name: 'Az CLI login'
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
     - name: Upload to drop
       run: |
         ls -la
         PACKAGE_ID=`echo $(ls *.tgz) | sed -e 's/\.tgz$//'`
         echo $PACKAGE_ID
-        az storage blob upload -n azure-staticwebapps/npm/$PACKAGE_ID/$(ls *.tgz) -c drops -f $(ls *.tgz) --account-name $AZURE_SDK_STORAGE_ACCOUNT_NAME --account-key $AZURE_SDK_DROP_ACCESS_KEY
+        az storage blob upload -n azure-staticwebapps/npm/$PACKAGE_ID/$(ls *.tgz) -c drops -f $(ls *.tgz) --account-name $AZURE_SDK_STORAGE_ACCOUNT_NAME
       env:
         AZURE_SDK_STORAGE_ACCOUNT_NAME: ${{secrets.AZURE_SDK_STORAGE_ACCOUNT_NAME}}
-        AZURE_SDK_DROP_ACCESS_KEY: ${{secrets.AZURE_SDK_DROP_ACCESS_KEY}}
