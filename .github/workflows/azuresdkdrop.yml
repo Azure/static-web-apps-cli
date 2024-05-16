@@ -13,7 +13,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-12, windows-latest, ubuntu-latest]
         node-version: [14.x, 16.x, 18.x]
 
     steps:
@@ -99,7 +99,7 @@ jobs:
       uses: actions/download-artifact@v2
       with:
           name: package
-
+          
     - name: 'Az CLI login'
       uses: azure/login@v1
       with:
