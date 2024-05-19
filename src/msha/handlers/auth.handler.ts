@@ -10,11 +10,9 @@ export async function handleAuthRequest(
   userConfig: SWAConfigFile | undefined
 ) {
   logger.silly(`processing auth request`);
-  const statusCode = await processAuth(req, res, matchedRoute?.rewrite);
-  if (statusCode === 404) {
-    logger.silly(` - auth returned 404`);
-
-    handleErrorPage(req, res, 404, userConfig?.responseOverrides);
+  const statusCode = await processAuth(req, res, matchedRoute?.rewrite, userConfig?.auth);
+  if (statusCode >= 400) {
+    logger.silly(` - auth returned ${statusCode}`);
   }
 
   logRequest(req, "", statusCode);

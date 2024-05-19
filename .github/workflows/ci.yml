@@ -27,7 +27,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest]
+        os: [macos-12]
         node-version: [14.x, 15.x, 16.x, 17.x, 18.x]
 
     name: "test: use node ${{ matrix.node-version }}"
@@ -58,7 +58,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest]
+        os: [macos-12]
         node-version: [14.x, 15.x, 16.x, 17.x, 18.x]
 
     name: "deploy: use node ${{ matrix.node-version }}"

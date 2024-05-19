@@ -14,7 +14,7 @@ describe("auth-logout-https", () => {
     name: "StaticWebAppsAuthCookie",
     value: "deleted",
     path: "/",
-    HttpOnly: false,
+    httpOnly: false,
     expires: new Date(1).toUTCString(),
   };
 

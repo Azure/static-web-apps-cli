@@ -41,6 +41,7 @@ export type SWACommand = typeof SWA_COMMANDS[number];
 
 export const SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB = 20; // 20kb
 
+export const SWA_AUTH_CONTEXT_COOKIE = `StaticWebAppsAuthContextCookie`;
 export const SWA_AUTH_COOKIE = `StaticWebAppsAuthCookie`;
 export const ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT = ["GET", "HEAD", "OPTIONS"];
 
