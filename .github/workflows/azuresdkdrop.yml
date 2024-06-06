@@ -115,4 +115,4 @@ jobs:
         ls -la
         PACKAGE_ID=`echo $(ls *.tgz) | sed -e 's/\.tgz$//'`
         echo $PACKAGE_ID
-        az storage blob upload -n azure-staticwebapps/npm/$PACKAGE_ID/$(ls *.tgz) -c drops -f $(ls *.tgz) --account-name azuresdkpartnerdrops
+        az storage blob upload -n azure-staticwebapps/npm/$PACKAGE_ID/$(ls *.tgz) -c drops -f $(ls *.tgz) --account-name azuresdkpartnerdrops --auth-mode login
