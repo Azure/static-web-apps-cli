@@ -108,9 +108,11 @@ jobs:
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+    # Deploy npm package - this is done by uploading to Azure's SDK blob storage then triggering their partner release pipeline.
+    # More info: https://dev.azure.com/azure-sdk/internal/_wiki/wikis/internal.wiki/1/Partner-Release-Pipeline
     - name: Upload to drop
       run: |
         ls -la
         PACKAGE_ID=`echo $(ls *.tgz) | sed -e 's/\.tgz$//'`
         echo $PACKAGE_ID
-        az storage blob upload -n azure-staticwebapps/npm/$PACKAGE_ID/$(ls *.tgz) -c drops -f $(ls *.tgz) --account-name $AZURE_SDK_STORAGE_ACCOUNT_NAME
+        az storage blob upload -n azure-staticwebapps/npm/$PACKAGE_ID/$(ls *.tgz) -c drops -f $(ls *.tgz) --account-name azuresdkpartnerdrops
