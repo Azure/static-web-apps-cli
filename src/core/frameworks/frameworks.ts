@@ -188,10 +188,10 @@ export const appFrameworks: FrameworkDefinition[] = [
     overrides: ["vue"],
     packages: ["vuepress"],
     config: {
-      appBuildCommand: "npm run build",
-      appDevserverCommand: "npm run dev",
+      appBuildCommand: "npm run docs:build",
+      appDevserverCommand: "npm run docs:dev",
       appDevserverUrl: "http://localhost:8080",
-      outputLocation: "src/.vuepress/dist",
+      outputLocation: "docs/.vuepress/dist",
     },
   },
   {
