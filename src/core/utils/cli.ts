@@ -87,6 +87,8 @@ export function createStartupScriptCommand(startupScript: string, options: SWACL
       return `${npmOrYarnBin} run ${npmOrYarnScript.join(":")} --if-present`;
     } else if (["npx"].includes(npmOrYarnBin)) {
       return `${npmOrYarnBin} ${npmOrYarnScript.join(":")}`;
+    } else if (npmOrYarnBin.startsWith("npm run") && npmOrYarnScript.length === 1) {
+      return `${npmOrYarnBin}:${npmOrYarnScript} --if-present`;
     }
   } else {
     if (!path.isAbsolute(startupScript)) {
