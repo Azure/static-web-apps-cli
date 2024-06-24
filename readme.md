@@ -35,13 +35,13 @@ The CLI emulates commonly used capabilities of the Azure Static Web Apps cloud s
 
 ### Installing the CLI with `npm`, `yarn` or `pnpm`:
 
-- To install the CLI globally, use:
+- To install the CLI in your project, use:
 
   ```bash
-  npm install -g @azure/static-web-apps-cli
+  npm install -D @azure/static-web-apps-cli
   ```
 
-  > You can also install the SWA CLI inside a project (instead of globally) as a development dependency using `npm install -D @azure/static-web-apps-cli`. This is highly recommended.
+  > You can also install the SWA CLI globally using `npm install -g @azure/static-web-apps-cli`.
 
 ### Basic usage
 
