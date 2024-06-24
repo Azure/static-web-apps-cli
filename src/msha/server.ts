@@ -3,7 +3,6 @@ import fs from "fs";
 import http from "http";
 import httpProxy from "http-proxy";
 import https from "https";
-import internalIp from "internal-ip";
 import net from "net";
 import open from "open";
 import { DEFAULT_CONFIG } from "../config";
@@ -146,7 +145,6 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
 // start SWA proxy server
 (async () => {
   let socketConnection: net.Socket | undefined;
-  const localIpAdress = await internalIp.v4();
 
   // load user custom rules if running in local mode (non-dev server)
   let userConfig: SWAConfigFile | undefined;
@@ -171,5 +169,4 @@ function onServerStart(server: https.Server | http.Server, socketConnection: net
 
   const server = createServer();
   server.listen(Number(SWA_CLI_PORT), hostnameToIpAdress(DEFAULT_CONFIG.host), onServerStart(server, socketConnection));
-  server.listen(Number(SWA_CLI_PORT), localIpAdress);
 })();
