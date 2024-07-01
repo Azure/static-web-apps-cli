@@ -2,6 +2,7 @@ import { StaticSiteARMResource, WebSiteManagementClient } from "@azure/arm-appse
 import { GenericResourceExpanded, ResourceGroup, ResourceManagementClient } from "@azure/arm-resources";
 import { Subscription, SubscriptionClient } from "@azure/arm-subscriptions";
 import {
+  AzureCliCredential,
   ChainedTokenCredential,
   ClientSecretCredential,
   DeviceCodeCredential,
@@ -62,8 +63,14 @@ export async function authenticateWithAzureIdentity(details: LoginDetails = {}, 
 
   const environmentCredential = new EnvironmentCredential();
 
+  const azureCliCredential = new AzureCliCredential({
+    tenantId: details.tenantId,
+  });
+
   // Only use interactive browser credential if we're not running in docker
-  const credentials = isRunningInDocker() ? [environmentCredential, deviceCredential] : [environmentCredential, browserCredential, deviceCredential];
+  const credentials = isRunningInDocker()
+    ? [environmentCredential, azureCliCredential, deviceCredential]
+    : [environmentCredential, azureCliCredential, browserCredential, deviceCredential];
 
   if (details.tenantId && details.clientId && details.clientSecret) {
     const clientSecretCredential = new ClientSecretCredential(details.tenantId, details.clientId, details.clientSecret, {
