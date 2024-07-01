@@ -321,11 +321,25 @@ export const appFrameworks: FrameworkDefinition[] = [
     },
   },
   {
-    id: "hugo",
-    name: "Hugo",
+    id: "hugolegacy",
+    name: "Hugo (Legacy)",
     files: ["config.toml", "content"],
     contains: {
       "config.toml": "baseURL =",
+    },
+    config: {
+      appBuildCommand: "hugo -D",
+      appDevserverCommand: "hugo server -D",
+      appDevserverUrl: "http://localhost:1313",
+      outputLocation: "public",
+    },
+  },
+  {
+    id: "hugo",
+    name: "Hugo",
+    files: ["hugo.toml", "content"],
+    contains: {
+      "hugo.toml": "baseURL =",
     },
     config: {
       appBuildCommand: "hugo -D",
