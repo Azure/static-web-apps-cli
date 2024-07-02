@@ -1,11 +1,11 @@
-import child_process from "child_process";
+import child_process from "node:child_process";
 import mockFs from "mock-fs";
-import path from "path";
-import { logger } from "../../../core";
-import * as accountModule from "../../../core/account";
-import * as deployClientModule from "../../../core/deploy-client";
-import { deploy } from "./deploy";
-import * as loginModule from "../login/login";
+import path from "node:path";
+import { logger } from "../../../core/utils/logger.js";
+import * as accountModule from "../../../core/account.js";
+import * as deployClientModule from "../../../core/deploy-client.js";
+import { deploy } from "./deploy.js";
+import * as loginModule from "../login/login.js";
 
 const pkg = require(path.join(__dirname, "..", "..", "..", "..", "package.json"));
 

@@ -1,10 +1,12 @@
 import { promises as fs } from "fs";
 import globrex from "globrex";
 import path from "path";
-import { DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME } from "../constants";
-import { DEFAULT_CONFIG } from "../../config";
-import { hasSpaces, logger, removeTrailingPathSep, safeReadFile, safeReadJson } from "../utils";
-import { apiFrameworks, appFrameworks } from "./frameworks";
+import { DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME } from "../constants.js";
+import { DEFAULT_CONFIG } from "../../config.js";
+import { hasSpaces, removeTrailingPathSep } from "../utils/strings.js";
+import { logger } from "../utils/logger.js";
+import { safeReadFile, safeReadJson } from "../utils/file.js";
+import { apiFrameworks, appFrameworks } from "./frameworks.js";
 
 const packageJsonFile = "package.json";
 

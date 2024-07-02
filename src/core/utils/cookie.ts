@@ -1,8 +1,8 @@
 import chalk from "chalk";
 import cookie from "cookie";
-import { SWA_AUTH_CONTEXT_COOKIE, SWA_AUTH_COOKIE } from "../constants";
-import { isValueEncryptedAndSigned, validateSignatureAndDecrypt } from "./auth";
-import { logger } from "./logger";
+import { SWA_AUTH_CONTEXT_COOKIE, SWA_AUTH_COOKIE } from "../constants.js";
+import { isValueEncryptedAndSigned, validateSignatureAndDecrypt } from "./auth.js";
+import { logger } from "./logger.js";
 
 /**
  * Serialize a cookie name-value pair into a string that can be used in Set-Cookie header.

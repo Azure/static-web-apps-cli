@@ -1,23 +1,22 @@
-import concurrently, { CloseEvent } from "concurrently";
+import { concurrently, CloseEvent, ConcurrentlyOptions } from "concurrently";
 import fs from "node:fs";
 import path from "node:path";
-import { DEFAULT_CONFIG } from "../../../config";
+import { DEFAULT_CONFIG } from "../../../config.js";
+import { askNewPort, isAcceptingTcpConnections, parseUrl } from "../../../core/utils/net.js";
+import { logger } from "../../../core/utils/logger.js";
+import { createStartupScriptCommand } from "../../../core/utils/cli.js";
+import { readWorkflowFile } from "../../../core/utils/workflow-config.js";
 import {
-  askNewPort,
-  createStartupScriptCommand,
-  detectTargetCoreToolsVersion,
-  getCoreToolsBinary,
   getNodeMajorVersion,
-  isAcceptingTcpConnections,
   isCoreToolsVersionCompatible,
-  logger,
-  parseUrl,
-  readWorkflowFile,
-} from "../../../core";
-import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME } from "../../../core/constants";
-import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder";
-import { swaCLIEnv } from "../../../core/env";
-import { getCertificate } from "../../../core/ssl";
+  getCoreToolsBinary,
+  detectTargetCoreToolsVersion,
+} from "../../../core/func-core-tools.js";
+import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME } from "../../../core/constants.js";
+import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder/index.js";
+import { swaCLIEnv } from "../../../core/env.js";
+import { getCertificate } from "../../../core/ssl.js";
+
 const packageInfo = require("../../../../package.json");
 const mshaPath = require.resolve("../../../msha/server");
 
@@ -340,7 +339,8 @@ export async function start(options: SWACLIConfig) {
     },
   });
 
-  const { result } = concurrently(concurrentlyCommands, { restartTries: 0, killOthers: ["failure", "success"] });
+  const concurrentlyOptions: Partial<ConcurrentlyOptions> = { restartTries: 0, killOthers: ["failure", "success"] };
+  const { result } = concurrently(concurrentlyCommands, concurrentlyOptions);
 
   await result
     .then(
@@ -372,7 +372,7 @@ export async function start(options: SWACLIConfig) {
         logger.error(`SWA emulator stopped because ${commandMessage}.`, true);
       }
     )
-    .catch((err) => {
+    .catch((err: Error) => {
       logger.error(err.message, true);
     });
 }

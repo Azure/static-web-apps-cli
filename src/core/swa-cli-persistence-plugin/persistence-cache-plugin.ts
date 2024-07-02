@@ -1,11 +1,11 @@
 import { TokenCachePersistenceOptions } from "@azure/identity";
 import { ICachePlugin, TokenCacheContext } from "@azure/msal-common";
-import { logger } from "../utils";
-import { Environment } from "./impl/azure-environment";
-import { NativeCredentialsStore } from "./impl/credentials-store";
-import { CryptoService } from "./impl/crypto";
-import { getMachineId } from "./impl/machine-identifier";
-import { SecretStorage } from "./impl/secret-storage";
+import { logger } from "../utils/logger.js";
+import { Environment } from "./impl/azure-environment.js";
+import { NativeCredentialsStore } from "./impl/credentials-store.js";
+import { CryptoService } from "./impl/crypto.js";
+import { getMachineId } from "./impl/machine-identifier.js";
+import { SecretStorage } from "./impl/secret-storage.js";
 
 export interface SWACLIPersistenceCacheOptions {
   enableCache: boolean;

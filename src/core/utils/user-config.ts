@@ -1,19 +1,19 @@
-import Ajv4, { JSONSchemaType, ValidateFunction } from "ajv-draft-04";
+import { Ajv, JSONSchemaType, ValidateFunction } from "ajv";
 import chalk from "chalk";
-import fs from "fs";
-import type http from "http";
+import fs from "node:fs";
+import type http from "node:http";
 import jsonMap from "json-source-map";
 import fetch, { RequestInit } from "node-fetch";
-import path from "path";
+import path from "node:path";
 import {
   SWA_CONFIG_FILENAME,
   SWA_CONFIG_FILENAME_LEGACY,
   SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB,
   SWA_CONFIG_SCHEME_URL,
   SWA_CONFIG_SCHEME_FALLBACK_PATH,
-} from "../constants";
-import { logger } from "./logger";
-import { isHttpUrl } from "./net";
+} from "../constants.js";
+import { logger } from "./logger.js";
+import { isHttpUrl } from "./net.js";
 const { readdir, readFile, stat } = fs.promises;
 
 /**
@@ -103,7 +103,7 @@ export async function findSWAConfigFile(folder: string): Promise<{ filepath: str
 }
 
 export async function validateRuntimeConfigAndGetData(filepath: string): Promise<SWAConfigFile | null> {
-  const ajv4 = new Ajv4({
+  const ajv4 = new Ajv({
     strict: false,
     allErrors: true,
   });

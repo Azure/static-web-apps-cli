@@ -1,7 +1,7 @@
-import path from "path";
-import { DEFAULT_CONFIG } from "../config";
-import { address, isHttpUrl } from "./utils/net";
-import os from "os";
+import os from "node:os";
+import path from "node:path";
+import { DEFAULT_CONFIG } from "../config.js";
+import { address, isHttpUrl } from "./utils/net.js";
 
 // StaticSiteClient related constants
 export const DEPLOY_BINARY_NAME = "StaticSitesClient";

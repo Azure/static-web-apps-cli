@@ -1,23 +1,26 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import process from "process";
+import process from "node:process";
 import chalk from "chalk";
 import { Command, Option, program } from "commander";
-import path from "path";
+import path from "node:path";
 import updateNotifier from "update-notifier";
-import { DEFAULT_CONFIG } from "../config";
-import { configureOptions, getCurrentSwaCliConfigFromFile, getNodeMajorVersion, logger, runCommand, swaCliConfigFilename } from "../core";
-import { registerDeploy } from "./commands/deploy";
-import { registerInit } from "./commands/init";
-import { registerLogin } from "./commands/login";
-import { registerStart } from "./commands/start";
-import { registerBuild } from "./commands/build";
-import { registerDocs } from "./commands/docs";
-import { registerDb } from "./commands/db/init";
-import { promptOrUseDefault } from "../core/prompts";
-
-export * from "./commands";
+import { DEFAULT_CONFIG } from "../config.js";
+import { configureOptions } from "../core/utils/options.js";
+import { getCurrentSwaCliConfigFromFile, swaCliConfigFilename } from "../core/utils/cli-config.js";
+import { getNodeMajorVersion } from "../core/func-core-tools.js";
+import { logger } from "../core/utils/logger.js";
+import { runCommand } from "../core/utils/command.js";
+import { default as registerDeploy } from "./commands/deploy/register.js";
+import { default as registerInit } from "./commands/init/register.js";
+import { default as registerLogin } from "./commands/login/register.js";
+import { default as registerStart } from "./commands/start/register.js";
+import { default as registerBuild } from "./commands/build/register.js";
+import { registerDocs } from "./commands/docs.js";
+import { default as registerDb } from "./commands/db/init/register.js";
+import { promptOrUseDefault } from "../core/prompts.js";
+//export * from "./commands";
 
 const pkg = require("../../package.json");
 

@@ -1,5 +1,5 @@
-import http from "http";
-import { injectHeaders, isDataApiRequest } from "./dab.handler";
+import http from "node:http";
+import { injectHeaders, isDataApiRequest } from "./dab.handler.js";
 
 describe("isDataApiRequest", () => {
   beforeEach(() => {

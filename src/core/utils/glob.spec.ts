@@ -1,4 +1,4 @@
-import { globToRegExp, isBalancedCurlyBrackets, isValidGlobExpression } from "./glob";
+import { globToRegExp, isBalancedCurlyBrackets, isValidGlobExpression } from "./glob.js";
 
 describe("glob functions", () => {
   describe("globToRegExp()", () => {

@@ -1,7 +1,7 @@
 import { TokenCachePersistenceOptions } from "@azure/identity";
-import { logger } from "../../utils";
-import { NativeCredentialsStore } from "./credentials-store";
-import { CryptoService } from "./crypto";
+import { logger } from "../../utils/logger.js";
+import { NativeCredentialsStore } from "./credentials-store.js";
+import { CryptoService } from "./crypto.js";
 
 export class SecretStorage {
   private secretStoragePrefix: Promise<string>;

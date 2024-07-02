@@ -2,6 +2,7 @@
   "name": "@azure/static-web-apps-cli",
   "version": "1.1.10",
   "description": "Azure Static Web Apps CLI",
+  "type": "module",
   "scripts": {
     "test": "jest --detectOpenHandles --silent --verbose",
     "e2e:start:static": "npm run build && node ./dist/cli/bin.js --config ./cypress/fixtures/static/swa-cli.config.json start static",

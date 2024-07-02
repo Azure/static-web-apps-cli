@@ -14,13 +14,20 @@ import {
 } from "@azure/identity";
 import chalk from "chalk";
 import ora from "ora";
-import path from "path";
-import { swaCLIEnv } from "./env";
-import { chooseProjectName, chooseProjectSku, chooseStaticSite, wouldYouLikeToCreateStaticSite, wouldYouLikeToOverrideStaticSite } from "./prompts";
-import { swaCliPersistencePlugin } from "./swa-cli-persistence-plugin";
-import { SWACLIPersistenceCachePlugin } from "./swa-cli-persistence-plugin/persistence-cache-plugin";
-import { dasherize, logger } from "./utils";
-import { isRunningInDocker } from "./utils/docker";
+import path from "node:path";
+import { swaCLIEnv } from "./env.js";
+import {
+  chooseProjectName,
+  chooseProjectSku,
+  chooseStaticSite,
+  wouldYouLikeToCreateStaticSite,
+  wouldYouLikeToOverrideStaticSite,
+} from "./prompts.js";
+import { swaCliPersistencePlugin } from "./swa-cli-persistence-plugin/index.js";
+import { SWACLIPersistenceCachePlugin } from "./swa-cli-persistence-plugin/persistence-cache-plugin.js";
+import { logger } from "./utils/logger.js";
+import { dasherize } from "./utils/strings.js";
+import { isRunningInDocker } from "./utils/docker.js";
 
 const DEFAULT_AZURE_LOCATION = "West US 2";
 

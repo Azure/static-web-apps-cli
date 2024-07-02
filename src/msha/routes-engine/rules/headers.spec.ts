@@ -1,6 +1,6 @@
-import type http from "http";
-import { HEADER_DELETE_KEYWORD } from "../../../core/constants";
-import { getHeadersForRoute, getResponseHeaders, updateResponseHeaders } from "./headers";
+import type http from "node:http";
+import { HEADER_DELETE_KEYWORD } from "../../../core/constants.js";
+import { getHeadersForRoute, getResponseHeaders, updateResponseHeaders } from "./headers.js";
 
 describe("headers", () => {
   describe("getHeadersForRoute()", () => {

@@ -1,10 +1,12 @@
-import { CookiesManager, decodeAuthContextCookie, parseUrl, response, validateAuthContextCookie } from "../../../core";
-import * as http from "http";
-import * as https from "https";
-import * as querystring from "querystring";
-import { SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../../../core/constants";
-import { DEFAULT_CONFIG } from "../../../config";
-import { encryptAndSign, hashStateGuid, isNonceExpired } from "../../../core/utils/auth";
+import * as http from "node:http";
+import * as https from "node:https";
+import * as querystring from "node:querystring";
+
+import { CookiesManager, decodeAuthContextCookie, validateAuthContextCookie } from "../../../core/utils/cookie.js";
+import { parseUrl, response } from "../../../core/utils/net.js";
+import { SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../../../core/constants.js";
+import { DEFAULT_CONFIG } from "../../../config.js";
+import { encryptAndSign, hashStateGuid, isNonceExpired } from "../../../core/utils/auth.js";
 
 const getGithubAuthToken = function (codeValue: string, clientId: string, clientSecret: string) {
   const data = querystring.stringify({
@@ -37,7 +39,7 @@ const getGithubAuthToken = function (codeValue: string, clientId: string, client
       });
     });
 
-    req.on("error", (err) => {
+    req.on("error", (err: Error) => {
       reject(err);
     });
 

@@ -1,7 +1,6 @@
 import type http from "http";
-import { logger } from "../../../core";
-
-import { CACHE_CONTROL_MAX_AGE, HEADER_DELETE_KEYWORD } from "../../../core/constants";
+import { logger } from "../../../core/utils/logger.js";
+import { CACHE_CONTROL_MAX_AGE, HEADER_DELETE_KEYWORD } from "../../../core/constants.js";
 
 // // See: https://docs.microsoft.com/azure/static-web-apps/configuration#global-headers
 

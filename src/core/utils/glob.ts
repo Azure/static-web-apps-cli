@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { logger } from "./logger";
+import { logger } from "./logger.js";
 
 /**
  * Turn expression into a valid regexp

@@ -1,8 +1,8 @@
 import chalk from "chalk";
-import { existsSync, promises as fsPromises } from "fs";
-import * as path from "path";
-import * as process from "process";
-import { logger } from "./logger";
+import { existsSync, promises as fsPromises } from "node:fs";
+import * as path from "node:path";
+import * as process from "node:process";
+import { logger } from "./logger.js";
 const { readFile, writeFile } = fsPromises;
 
 export const swaCliConfigSchemaUrl = "https://aka.ms/azure/static-web-apps-cli/schema";

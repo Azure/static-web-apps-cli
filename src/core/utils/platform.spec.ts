@@ -1,5 +1,5 @@
-import { getPlatform } from "./platform";
-import os from "os";
+import { getPlatform } from "./platform.js";
+import os from "node:os";
 
 describe("getPlatform", () => {
   beforeEach(() => {

@@ -1,7 +1,7 @@
 import mockFs from "mock-fs";
-import { build } from "./build";
-import { DEFAULT_CONFIG } from "../../../config";
-import { convertToNativePaths } from "../../../jest.helpers";
+import { build } from "./build.js";
+import { DEFAULT_CONFIG } from "../../../config.js";
+import { convertToNativePaths } from "../../../jest.helpers.js";
 
 jest.mock("child_process", () => ({
   execSync: jest.fn(),

@@ -1,17 +1,12 @@
 import chalk from "chalk";
-import path from "path";
-import process from "process";
-import { promptOrUseDefault } from "../../../core/prompts";
-import {
-  dasherize,
-  hasConfigurationNameInConfigFile,
-  logger,
-  swaCliConfigFileExists,
-  swaCliConfigFilename,
-  writeConfigFile,
-} from "../../../core/utils";
-import { detectDbConfigFiles, detectProjectFolders, generateConfiguration, isDescendantPath } from "../../../core/frameworks";
-import { getChoicesForApiLanguage } from "../../../core/functions-versions";
+import path from "node:path";
+import process from "node:process";
+import { promptOrUseDefault } from "../../../core/prompts.js";
+import { dasherize } from "../../../core/utils/strings.js";
+import { hasConfigurationNameInConfigFile, swaCliConfigFileExists, swaCliConfigFilename, writeConfigFile } from "../../../core/utils/cli-config.js";
+import { logger } from "../../../core/utils/logger.js";
+import { detectDbConfigFiles, detectProjectFolders, generateConfiguration, isDescendantPath } from "../../../core/frameworks/detect.js";
+import { getChoicesForApiLanguage } from "../../../core/functions-versions.js";
 
 export async function init(options: SWACLIConfig, showHints: boolean = true) {
   const configFilePath = options.config!;

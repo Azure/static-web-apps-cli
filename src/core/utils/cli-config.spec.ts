@@ -1,4 +1,5 @@
 import mockFs from "mock-fs";
+
 // Spy on console to avoid this error: https://github.com/tschaub/mock-fs/issues/234
 jest.spyOn(global.console, "log").mockImplementation();
 jest.spyOn(global.console, "warn").mockImplementation();
@@ -16,13 +17,13 @@ jest.mock("../../core/utils/logger", () => {
   };
 });
 
-import * as fsModule from "fs";
+import * as fsModule from "node:fs";
 const spyWriteFile = jest.spyOn(fsModule.promises, "writeFile");
 
-import * as path from "path";
-import { logger } from "../../core";
-import * as cliConfigModule from "./cli-config";
-import { getConfigFileOptions, updateSwaCliConfigFile, writeConfigFile } from "./cli-config";
+import * as path from "node:path";
+import { logger } from "./logger.js";
+import * as cliConfigModule from "./cli-config.js";
+import { getConfigFileOptions, updateSwaCliConfigFile, writeConfigFile } from "./cli-config.js";
 
 const mockConfig1 = {
   $schema: "../../../schema/swa-cli.config.schema.json",

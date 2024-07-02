@@ -1,16 +1,16 @@
-import { Buffer } from "buffer";
+import { Buffer } from "node:buffer";
 import mockFs from "mock-fs";
-import { sep } from "path";
-import { Readable } from "stream";
+import { sep } from "node:path";
+import { Readable } from "node:stream";
 import {
   detectTargetCoreToolsVersion,
   downloadCoreTools,
   getCoreToolsBinary,
   getLatestCoreToolsRelease,
   isCoreToolsVersionCompatible,
-} from "./func-core-tools";
+} from "./func-core-tools.js";
 
-import { logger } from "../core";
+import { logger } from "../core/utils/logger.js";
 jest.spyOn(logger, "log").mockImplementation();
 jest.spyOn(logger, "warn").mockImplementation();
 jest.spyOn(logger, "error").mockImplementation();

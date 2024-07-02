@@ -1,23 +1,24 @@
 import chalk from "chalk";
 import finalhandler from "finalhandler";
-import fs from "fs";
-import type http from "http";
+import fs from "node:fs";
+import type http from "node:http";
 import httpProxy from "http-proxy";
-import type net from "net";
-import path from "path";
+import type net from "node:net";
+import path from "node:path";
 import serveStatic from "serve-static";
-import { DEFAULT_CONFIG } from "../../config";
-import { findSWAConfigFile, logger, logRequest } from "../../core";
-import { AUTH_STATUS, CUSTOM_URL_SCHEME, IS_APP_DEV_SERVER, SWA_PUBLIC_DIR } from "../../core/constants";
-import { parseUrl } from "../../core/utils/net";
 import waitOn from "wait-on";
-import { getAuthBlockResponse, handleAuthRequest, isAuthRequest, isLoginRequest, isLogoutRequest } from "../handlers/auth.handler";
-import { isDataApiRequest } from "../handlers/dab.handler";
-import { handleErrorPage } from "../handlers/error-page.handler";
-import { isFunctionRequest } from "../handlers/function.handler";
-import { isRequestMethodValid, isRouteRequiringUserRolesCheck, tryGetMatchingRoute } from "../routes-engine";
-import { isCustomUrl, parseQueryParams } from "../routes-engine/route-processor";
-import { getResponse } from "./response.middleware";
+import { DEFAULT_CONFIG } from "../../config.js";
+import { logger, logRequest } from "../../core/utils/logger.js";
+import { findSWAConfigFile } from "../../core/utils/user-config.js";
+import { parseUrl } from "../../core/utils/net.js";
+import { AUTH_STATUS, CUSTOM_URL_SCHEME, IS_APP_DEV_SERVER, SWA_PUBLIC_DIR } from "../../core/constants.js";
+import { getAuthBlockResponse, handleAuthRequest, isAuthRequest, isLoginRequest, isLogoutRequest } from "../handlers/auth.handler.js";
+import { isDataApiRequest } from "../handlers/dab.handler.js";
+import { handleErrorPage } from "../handlers/error-page.handler.js";
+import { isFunctionRequest } from "../handlers/function.handler.js";
+import { isRequestMethodValid, isRouteRequiringUserRolesCheck, tryGetMatchingRoute } from "../routes-engine/rules/routes.js";
+import { isCustomUrl, parseQueryParams } from "../routes-engine/route-processor.js";
+import { getResponse } from "./response.middleware.js";
 
 /**
  * On connection lost handler. Called when a connection to a target host cannot be made or if the remote target is down.

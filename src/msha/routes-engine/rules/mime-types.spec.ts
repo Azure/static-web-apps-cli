@@ -1,5 +1,5 @@
 jest.mock("../../../core/constants", () => {});
-import { mimeTypes } from "./mime-types";
+import { mimeTypes } from "./mime-types.js";
 
 describe("mimeTypes()", () => {
   let req: any;

@@ -1,7 +1,9 @@
 import { TokenCachePersistenceOptions } from "@azure/identity";
-import os from "os";
+import os from "node:os";
 import waitOn from "wait-on";
-import { isValidIpAddress, isWSL, logger } from "../../utils";
+import { logger } from "../../utils/logger.js";
+import { isValidIpAddress } from "../../utils/net.js";
+import { isWSL } from "../../utils/platform.js";
 
 type KeychainModule = typeof import("keytar");
 

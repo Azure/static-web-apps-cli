@@ -1,10 +1,10 @@
 import { Command } from "commander";
 import mockFs from "mock-fs";
-import { swaCliConfigFilename } from "./cli-config";
-import { parsePort } from "./net";
-import { parseServerTimeout } from "./cli";
-import { configureOptions, getUserOptions } from "./options";
-import { DEFAULT_CONFIG } from "../../config";
+import { swaCliConfigFilename } from "./cli-config.js";
+import { parsePort } from "./net.js";
+import { parseServerTimeout } from "./cli.js";
+import { configureOptions, getUserOptions } from "./options.js";
+import { DEFAULT_CONFIG } from "../../config.js";
 
 describe("configureOptions()", () => {
   afterEach(() => {

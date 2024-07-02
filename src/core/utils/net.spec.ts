@@ -1,6 +1,6 @@
 jest.mock("../constants", () => {});
-import { logger } from "./logger";
-import { address, hostnameToIpAdress, isHttpsUrl, parsePort, parseUrl, response } from "./net";
+import { logger } from "./logger.js";
+import { address, hostnameToIpAdress, isHttpsUrl, parsePort, parseUrl, response } from "./net.js";
 
 describe("net utilities", () => {
   describe("response()", () => {

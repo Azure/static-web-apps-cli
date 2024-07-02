@@ -1,7 +1,7 @@
-import type http from "http";
-import { CookiesManager, response } from "../../../core";
-// import { response } from "../../../core";
-import { SWA_CLI_APP_PROTOCOL } from "../../../core/constants";
+import type http from "node:http";
+import { CookiesManager } from "../../../core/utils/cookie.js";
+import { response } from "../../../core/utils/net.js";
+import { SWA_CLI_APP_PROTOCOL } from "../../../core/constants.js";
 
 export default async function (context: Context, req: http.IncomingMessage) {
   const headers = req?.headers;

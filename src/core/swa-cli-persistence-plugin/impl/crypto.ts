@@ -1,5 +1,5 @@
-import crypto from "crypto";
-import { logger } from "../../utils";
+import crypto from "node:crypto";
+import { logger } from "../../utils/logger.js";
 
 interface Encryption {
   encrypt(key: string, value: string): Promise<string>;

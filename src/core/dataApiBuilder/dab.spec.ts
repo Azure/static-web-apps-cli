@@ -1,5 +1,5 @@
-import { DEFAULT_DATA_API_BUILDER_BINARY } from "../constants";
-import { getDefaultDataApiBuilderBinaryForOS } from "./dab";
+import { DEFAULT_DATA_API_BUILDER_BINARY } from "../constants.js";
+import { getDefaultDataApiBuilderBinaryForOS } from "./dab.js";
 
 describe("getDefaultDataApiBuilderBinaryForOS", () => {
   it("returns the default binary for Windows when given win-x64 platform", () => {

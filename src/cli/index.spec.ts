@@ -1,7 +1,7 @@
 import { program } from "commander";
 import { UpdateNotifier } from "update-notifier";
 import mockFs from "mock-fs";
-import { run } from "./index";
+import { run } from "./index.js";
 
 jest.mock("./commands/build/build", () => ({
   build: jest.fn(),

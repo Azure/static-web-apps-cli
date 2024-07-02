@@ -1,6 +1,6 @@
-import fs from "fs";
+import fs from "node:fs";
 import mockFs from "mock-fs";
-import { isGitProject, updateGitIgnore } from "./git";
+import { isGitProject, updateGitIgnore } from "./git.js";
 
 describe("git", () => {
   beforeEach(() => {

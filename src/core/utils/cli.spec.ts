@@ -1,8 +1,8 @@
 jest.mock("../constants", () => {});
 import mockFs from "mock-fs";
-import path from "path";
-import { argv, createStartupScriptCommand, parseServerTimeout } from "./cli";
-import { logger } from "./logger";
+import path from "node:path";
+import { argv, createStartupScriptCommand, parseServerTimeout } from "./cli.js";
+import { logger } from "./logger.js";
 
 describe("argv()", () => {
   it("process.argv = []", () => {

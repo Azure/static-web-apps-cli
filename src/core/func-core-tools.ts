@@ -1,15 +1,15 @@
-import os from "os";
-import fs from "fs";
-import path from "path";
-import process from "process";
-import { exec } from "child_process";
-import { promisify } from "util";
-import { PassThrough } from "stream";
-import crypto from "crypto";
+import os from "node:os";
+import fs from "node:fs";
+import path from "node:path";
+import process from "node:process";
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
+import { PassThrough } from "node:stream";
+import crypto from "node:crypto";
 import fetch from "node-fetch";
 import AdmZip from "adm-zip";
 import cliProgress from "cli-progress";
-import { logger } from "./utils/logger";
+import { logger } from "./utils/logger.js";
 
 const RELEASES_FEED_URL = "https://functionscdn.azureedge.net/public/cli-feed-v4.json";
 const DEFAULT_FUNC_BINARY = "func";

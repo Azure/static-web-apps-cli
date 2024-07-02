@@ -1,5 +1,6 @@
-import { IncomingMessage } from "http";
-import { CookiesManager, response } from "../../../core";
+import { IncomingMessage } from "node:http";
+import { CookiesManager } from "../../../core/utils/cookie.js";
+import { response } from "../../../core/utils/net.js";
 
 const fs = require("fs").promises;
 const path = require("path");

@@ -1,5 +1,5 @@
-import { CUSTOM_URL_SCHEME } from "../../../core/constants";
-import { responseOverrides } from "./response-overrides";
+import { CUSTOM_URL_SCHEME } from "../../../core/constants.js";
+import { responseOverrides } from "./response-overrides.js";
 
 describe("responseOverrides()", () => {
   let req: any;

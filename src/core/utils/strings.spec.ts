@@ -1,4 +1,4 @@
-import { dasherize, hasSpaces, removeTrailingPathSep, stripJsonComments } from "./strings";
+import { dasherize, hasSpaces, removeTrailingPathSep, stripJsonComments } from "./strings.js";
 
 describe("string utilities", () => {
   describe("dasherize()", () => {
@@ -33,9 +33,9 @@ describe("string utilities", () => {
         "but": "not // this or /* this */ or /* this"
       }`)
       ).toBe(`{
-        
+
         "hello": "world",
-        
+
         "but": "not // this or /* this */ or /* this"
       }`);
     });

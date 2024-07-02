@@ -3,7 +3,7 @@ jest.mock("./logger", () => {
     silly: jest.fn();
   }
 });
-import { validateCookie } from "./cookie";
+import { validateCookie } from "./cookie.js";
 
 describe("validateCookie()", () => {
   it("cookies = ''", () => {

@@ -3,8 +3,8 @@ jest.mock("../../../core/constants", () => {
     SWA_CLI_APP_PROTOCOL: "http",
   };
 });
-import { IncomingMessage } from "http";
-import httpTrigger from "./auth-logout";
+import { IncomingMessage } from "node:http";
+import httpTrigger from "./auth-logout.js";
 
 describe("auth_logout", () => {
   let context: Context;

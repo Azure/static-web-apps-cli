@@ -1,15 +1,14 @@
 import { TokenCredential } from "@azure/identity";
 import chalk from "chalk";
 import dotenv from "dotenv";
-import { existsSync, promises as fsPromises } from "fs";
-import path from "path";
-import { logger, logGitHubIssueMessageAndExit } from "../../../core";
-import { authenticateWithAzureIdentity, listSubscriptions, listTenants } from "../../../core/account";
-import { ENV_FILENAME } from "../../../core/constants";
-import { updateGitIgnore } from "../../../core/git";
-import { chooseSubscription, chooseTenant } from "../../../core/prompts";
-import { Environment } from "../../../core/swa-cli-persistence-plugin/impl/azure-environment";
-const { readFile, writeFile } = fsPromises;
+import { existsSync, promises as fs } from "node:fs";
+import path from "node:path";
+import { logger, logGitHubIssueMessageAndExit } from "../../../core/utils/logger.js";
+import { authenticateWithAzureIdentity, listSubscriptions, listTenants } from "../../../core/account.js";
+import { ENV_FILENAME } from "../../../core/constants.js";
+import { updateGitIgnore } from "../../../core/git.js";
+import { chooseSubscription, chooseTenant } from "../../../core/prompts.js";
+import { Environment } from "../../../core/swa-cli-persistence-plugin/impl/azure-environment.js";
 
 const defaultScope = `${Environment.AzureCloud.resourceManagerEndpointUrl}/.default`;
 
@@ -112,7 +111,7 @@ async function storeProjectCredentialsInEnvFile(
 ) {
   const envFile = path.join(process.cwd(), ENV_FILENAME);
   const envFileExists = existsSync(envFile);
-  const envFileContent = envFileExists ? await readFile(envFile, "utf8") : "";
+  const envFileContent = envFileExists ? await fs.readFile(envFile, "utf8") : "";
   const buf = Buffer.from(envFileContent);
 
   // in case the .env file format changes in the future, we can use the following to parse the file
@@ -143,7 +142,7 @@ async function storeProjectCredentialsInEnvFile(
   // write file if we have at least one new env line
   if (newEnvFileLines.length > 0) {
     const envFileContentWithProjectDetails = [...oldEnvFileLines, ...newEnvFileLines].join("\n");
-    await writeFile(envFile, envFileContentWithProjectDetails);
+    await fs.writeFile(envFile, envFileContentWithProjectDetails);
 
     logger.log(chalk.green(`✔ Saved project credentials in ${ENV_FILENAME} file.`));
 

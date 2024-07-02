@@ -2,11 +2,12 @@ import chalk from "chalk";
 import fs from "fs";
 import type http from "http";
 import path from "path";
-import { DEFAULT_CONFIG } from "../../../config";
-import { decodeCookie, logger } from "../../../core";
-import { ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT, AUTH_STATUS, SWA_CLI_APP_PROTOCOL } from "../../../core/constants";
-import { isAuthRequest } from "../../handlers/auth.handler";
-import { doesRequestPathMatchLegacyRoute, doesRequestPathMatchRoute } from "../route-processor";
+import { DEFAULT_CONFIG } from "../../../config.js";
+import { decodeCookie } from "../../../core/utils/cookie.js";
+import { logger } from "../../../core/utils/logger.js";
+import { ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT, AUTH_STATUS, SWA_CLI_APP_PROTOCOL } from "../../../core/constants.js";
+import { isAuthRequest } from "../../handlers/auth.handler.js";
+import { doesRequestPathMatchLegacyRoute, doesRequestPathMatchRoute } from "../route-processor.js";
 
 export function tryFindFileForRequest(rawRequestPath: string) {
   logger.silly(`finding file for request`);

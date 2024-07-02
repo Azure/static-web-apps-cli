@@ -1,12 +1,13 @@
-import { logger, execFileCommand } from "../../../../core";
-import { init, isValidDatabaseType } from "./init";
-import path from "path";
+import path from "node:path";
+import fs from "node:fs";
+import { logger } from "../../../../core/utils/logger.js";
+import { execFileCommand } from "../../../../core/utils/command.js";
+import { init, isValidDatabaseType } from "./init.js";
 import {
   DATA_API_BUILDER_DATABASE_TYPES,
   DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME,
   DATA_API_BUILDER_DEFAULT_FOLDER,
-} from "../../../../core/constants";
-import fs from "fs";
+} from "../../../../core/constants.js";
 
 // Replace the imported functions with mocks for testing purposes
 jest.mock("../../../../core/dataApiBuilder", () => ({

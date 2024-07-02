@@ -1,23 +1,19 @@
 import chalk from "chalk";
-import { spawn } from "child_process";
-import fs from "fs";
+import { spawn } from "node:child_process";
+import fs from "node:fs";
 import ora, { Ora } from "ora";
-import path from "path";
-import {
-  findSWAConfigFile,
-  getCurrentSwaCliConfigFromFile,
-  isUserOrConfigOption,
-  logger,
-  logGitHubIssueMessageAndExit,
-  readWorkflowFile,
-  updateSwaCliConfigFile,
-} from "../../../core";
-import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../../core/account";
-import { DEFAULT_RUNTIME_LANGUAGE } from "../../../core/constants";
-import { cleanUp, getDeployClientPath } from "../../../core/deploy-client";
-import { swaCLIEnv } from "../../../core/env";
-import { getDefaultVersion } from "../../../core/functions-versions";
-import { login } from "../login";
+import path from "node:path";
+import { findSWAConfigFile } from "../../../core/utils/user-config.js";
+import { getCurrentSwaCliConfigFromFile, updateSwaCliConfigFile } from "../../../core/utils/cli-config.js";
+import { logger, logGitHubIssueMessageAndExit } from "../../../core/utils/logger.js";
+import { isUserOrConfigOption } from "../../../core/utils/options.js";
+import { readWorkflowFile } from "../../../core/utils/workflow-config.js";
+import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../../core/account.js";
+import { DEFAULT_RUNTIME_LANGUAGE } from "../../../core/constants.js";
+import { cleanUp, getDeployClientPath } from "../../../core/deploy-client.js";
+import { swaCLIEnv } from "../../../core/env.js";
+import { getDefaultVersion } from "../../../core/functions-versions.js";
+import { login } from "../login/login.js";
 
 const packageInfo = require(path.join(__dirname, "..", "..", "..", "..", "package.json"));
 

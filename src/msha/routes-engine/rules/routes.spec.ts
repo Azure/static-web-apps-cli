@@ -25,12 +25,12 @@ jest.mock("../../../config", () => {
   };
 });
 
-import type http from "http";
+import type http from "node:http";
 import mockFs from "mock-fs";
-import { applyRedirectResponse, isRequestMethodValid, isRouteRequiringUserRolesCheck, tryFindFileForRequest, tryGetMatchingRoute } from "./routes";
+import { applyRedirectResponse, isRequestMethodValid, isRouteRequiringUserRolesCheck, tryFindFileForRequest, tryGetMatchingRoute } from "./routes.js";
 
-import * as routeModule from "../route-processor";
-import * as cookieModule from "../../../core/utils/cookie";
+import * as routeModule from "../route-processor.js";
+import * as cookieModule from "../../../core/utils/cookie.js";
 
 // btoa is only available in Node.js >= 16
 const btoa = (str: string) => Buffer.from(str).toString("base64");

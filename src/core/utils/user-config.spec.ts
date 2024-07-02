@@ -1,12 +1,12 @@
-import { logger } from "./logger";
+import { logger } from "./logger.js";
 
 jest.spyOn(logger, "silly").mockImplementation();
 jest.spyOn(logger, "warn").mockImplementation();
 
 import mockFs from "mock-fs";
-import path from "path";
-import { findSWAConfigFile, traverseFolder } from "./user-config";
-import * as userConfigModule from "./user-config";
+import path from "node:path";
+import { findSWAConfigFile, traverseFolder } from "./user-config.js";
+import * as userConfigModule from "./user-config.js";
 
 describe("userConfig", () => {
   describe("traverseFolder()", () => {

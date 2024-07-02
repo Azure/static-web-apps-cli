@@ -1,11 +1,12 @@
-import fs from "fs";
+import fs from "node:fs";
 import fetch from "node-fetch";
-import os from "os";
-import path from "path";
-import { STATIC_SITE_CLIENT_RELEASE_METADATA_URL, DEPLOY_BINARY_NAME, DEPLOY_FOLDER, DEPLOY_BINARY_STABLE_TAG } from "./constants";
-import { downloadAndValidateBinary } from "./download-binary-helper";
-import { swaCLIEnv } from "./env";
-import { getPlatform, logger } from "./utils";
+import os from "node:os";
+import path from "node:path";
+import { STATIC_SITE_CLIENT_RELEASE_METADATA_URL, DEPLOY_BINARY_NAME, DEPLOY_FOLDER, DEPLOY_BINARY_STABLE_TAG } from "./constants.js";
+import { downloadAndValidateBinary } from "./download-binary-helper.js";
+import { swaCLIEnv } from "./env.js";
+import { logger } from "./utils/logger.js";
+import { getPlatform } from "./utils/platform.js";
 
 type StaticSiteClientLocalMetadata = {
   metadata: StaticSiteClientReleaseMetadata;
