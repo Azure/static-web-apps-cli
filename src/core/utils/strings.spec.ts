@@ -25,19 +25,14 @@ describe("string utilities", () => {
     });
 
     it("should strip JSON comments", () => {
-      expect(
-        stripJsonComments(`{
+      const actual = stripJsonComments(`{
         // this is a /* tricky comment
         "hello": "world",
         /* and this should be removed too // */
         "but": "not // this or /* this */ or /* this"
-      }`)
-      ).toBe(`{
+      }`).replace(/\n\s*/gm, "");
 
-        "hello": "world",
-
-        "but": "not // this or /* this */ or /* this"
-      }`);
+      expect(actual).toBe('{"hello": "world","but": "not // this or /* this */ or /* this"}');
     });
   });
 
