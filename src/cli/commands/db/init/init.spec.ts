@@ -13,7 +13,7 @@ import {
 jest.mock("../../../../core/dataApiBuilder", () => ({
   getDataApiBuilderBinaryPath: jest.fn(() => "dataApiBuilderPath"),
 }));
-jest.mock("../../../../core", () => ({
+jest.mock("../../../../core/utils/command", () => ({
   fs: {
     existsSync: jest.fn(() => false),
     mkdirSync: jest.fn(),
@@ -26,6 +26,14 @@ jest.mock("../../../../core", () => ({
     info: jest.fn(),
   },
   execFileCommand: jest.fn(),
+}));
+jest.mock("../../../../core/utils/logger", () => ({
+  logger: {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+  },
 }));
 
 describe("init", () => {
