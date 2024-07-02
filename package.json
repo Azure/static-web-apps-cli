@@ -28,11 +28,11 @@
   },
   "author": "Microsoft Corporation",
   "dependencies": {
-    "@azure/arm-appservice": "^12.0.0",
+    "@azure/arm-appservice": "^15.0.0",
     "@azure/arm-resources": "^5.2.0",
     "@azure/arm-subscriptions": "^5.1.0",
     "@azure/identity": "^4.3.0",
-    "@azure/msal-common": "^6.2.0",
+    "@azure/msal-common": "^14.13.0",
     "adm-zip": "^0.5.14",
     "ajv": "^8.16.0",
     "ajv-draft-04": "^1.0.0",
