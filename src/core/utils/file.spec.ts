@@ -1,5 +1,5 @@
 import mockFs from "mock-fs";
-import { convertToNativePaths } from "../../jest.helpers.";
+import { convertToNativePaths } from "../../jest.helpers";
 import { findUpPackageJsonDir, pathExists, safeReadFile, safeReadJson } from "./file";
 
 describe("file utilities", () => {

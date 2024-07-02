@@ -1,6 +1,6 @@
 import concurrently, { CloseEvent } from "concurrently";
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { DEFAULT_CONFIG } from "../../../config";
 import {
   askNewPort,
@@ -286,18 +286,25 @@ export async function start(options: SWACLIConfig) {
 
   // INFO: from here, code may access SWA CLI env vars.
 
-  // Copied from concurrently src so we aren't dependent on the type.
-  // See https://github.com/open-cli-tools/concurrently/blob/main/src/command.ts#L10C1-L40C2
+  const swa_cli_env = swaCLIEnv();
+  // Convert the swa_cli_env to a Record<string, unknown> object so that type checking
+  // works in the ConcurrentlyCommandInput[] array
+  let env: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(swa_cli_env)) {
+    env[k] = v;
+  }
+
+  // Copy of the CommandInfo interface from concurrently.d.ts
+  // See https://github.com/open-cli-tools/concurrently/blob/main/src/command.ts#L10
   interface CommandInfo {
     name: string;
     command: string;
-    env?: object | Record<string, unknown>;
+    env?: Record<string, unknown>;
     cwd?: string;
     prefixColor?: string;
     raw?: boolean;
   }
 
-  const env = swaCLIEnv();
   const concurrentlyCommands: CommandInfo[] = [
     // start the reverse proxy
     { command: `node "${mshaPath}"`, name: "swa", env, prefixColor: "gray.dim" },

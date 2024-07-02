@@ -1,4 +1,4 @@
-import { convertToUnixPaths } from "../../jest.helpers.";
+import { convertToUnixPaths } from "../../jest.helpers";
 import { detectDbConfigFiles, detectProjectFolders, formatDetectedFolders, generateConfiguration } from "./detect";
 
 describe("framework detection", () => {

@@ -3,7 +3,7 @@ import mockFs from "mock-fs";
 import { init } from "./init";
 import { DEFAULT_CONFIG } from "../../../config";
 import { swaCliConfigFilename } from "../../../core/utils";
-import { convertToNativePaths, convertToUnixPaths } from "../../../jest.helpers.";
+import { convertToNativePaths, convertToUnixPaths } from "../../../jest.helpers";
 
 jest.mock("prompts", () => jest.fn());
 

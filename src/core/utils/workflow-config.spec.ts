@@ -1,7 +1,7 @@
 jest.mock("../constants", () => {});
 import mockFs from "mock-fs";
 import path from "path";
-import { convertToNativePaths } from "../../jest.helpers.";
+import { convertToNativePaths } from "../../jest.helpers";
 import { readWorkflowFile } from "./workflow-config";
 
 jest.mock("../../config", () => {
