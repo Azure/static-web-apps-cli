@@ -1,0 +1,11 @@
+{
+  "preset": "ts-jest",
+  "roots": ["<rootDir>/src"],
+  "setupFilesAfterEnv": ["jest-extended/all"],
+  "testMatch": ["**/__tests__/**/*.+(ts)", "**/?(*.)+(spec|test).+(ts)"],
+  "testEnvironment": "node",
+  "transform": {
+    "^.+\\.(ts)$": "ts-jest"
+  },
+  "verbose": true
+}

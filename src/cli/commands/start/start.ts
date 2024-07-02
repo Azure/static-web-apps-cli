@@ -1,5 +1,4 @@
 import concurrently, { CloseEvent } from "concurrently";
-import { CommandInfo } from "concurrently/dist/src/command";
 import fs from "fs";
 import path from "path";
 import { DEFAULT_CONFIG } from "../../../config";
@@ -286,6 +285,17 @@ export async function start(options: SWACLIConfig) {
   };
 
   // INFO: from here, code may access SWA CLI env vars.
+
+  // Copied from concurrently src so we aren't dependent on the type.
+  // See https://github.com/open-cli-tools/concurrently/blob/main/src/command.ts#L10C1-L40C2
+  interface CommandInfo {
+    name: string;
+    command: string;
+    env?: object | Record<string, unknown>;
+    cwd?: string;
+    prefixColor?: string;
+    raw?: boolean;
+  }
 
   const env = swaCLIEnv();
   const concurrentlyCommands: CommandInfo[] = [
