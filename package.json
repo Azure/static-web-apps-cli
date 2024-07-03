@@ -35,8 +35,6 @@
     "@azure/identity": "^4.3.0",
     "@azure/msal-common": "^14.13.0",
     "adm-zip": "^0.5.14",
-    "ajv": "^8.6.0",
-    "ajv-draft-04": "^1.0.0",
     "chalk": "^4.1.2",
     "cli-progress": "^3.12.0",
     "commander": "^9.5.0",
@@ -49,6 +47,7 @@
     "globrex": "^0.1.2",
     "http-proxy": "^1.18.1",
     "internal-ip": "^6.2.0",
+    "json-schema-library": "^9.3.5",
     "json-source-map": "^0.6.1",
     "keytar": "^7.9.0",
     "node-fetch": "^2.7.0",
@@ -98,7 +97,7 @@
     "start-server-and-test": "^2.0.4",
     "supertest": "^6.3.4",
     "ts-jest": "^29.1.5",
-    "typescript": "^4.9.5"
+    "typescript": "^5.5.3"
   },
   "homepage": "https://github.com/azure/static-web-apps-cli#readme",
   "private": false,

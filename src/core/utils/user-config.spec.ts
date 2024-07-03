@@ -6,7 +6,6 @@ jest.spyOn(logger, "warn").mockImplementation();
 import mockFs from "mock-fs";
 import path from "node:path";
 import { findSWAConfigFile, traverseFolder } from "./user-config.js";
-import * as userConfigModule from "./user-config.js";
 
 describe("userConfig", () => {
   describe("traverseFolder()", () => {
@@ -124,16 +123,6 @@ describe("userConfig", () => {
       expect(file).toBe(null);
     });
 
-    it.skip("should find staticwebapp.config.json (at the root)", async () => {
-      mockFs({
-        "staticwebapp.config.json": `{ "routes": []}`,
-      });
-      jest.spyOn(userConfigModule, "validateRuntimeConfigAndGetData").mockImplementation();
-
-      const config = await findSWAConfigFile(".");
-      expect(config?.filepath).toContain("staticwebapp.config.json");
-    });
-
     it("should find staticwebapp.config.json (recursively)", async () => {
       mockFs({
         s: {
@@ -144,7 +133,6 @@ describe("userConfig", () => {
           },
         },
       });
-      jest.spyOn(userConfigModule, "validateRuntimeConfigAndGetData").mockImplementation();
 
       const config = await findSWAConfigFile(".");
       expect(config?.filepath).toContain("staticwebapp.config.json");
