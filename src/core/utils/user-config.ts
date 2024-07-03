@@ -1,6 +1,6 @@
-import { Ajv, JSONSchemaType, ValidateFunction } from "ajv";
+import _Ajv4, { JSONSchemaType, ValidateFunction } from "ajv-draft-04";
 import chalk from "chalk";
-import fs from "node:fs";
+import { promises as fs, Dirent, readFileSync } from "node:fs";
 import type http from "node:http";
 import jsonMap from "json-source-map";
 import fetch, { RequestInit } from "node-fetch";
@@ -14,7 +14,9 @@ import {
 } from "../constants.js";
 import { logger } from "./logger.js";
 import { isHttpUrl } from "./net.js";
-const { readdir, readFile, stat } = fs.promises;
+
+// See https://github.com/ajv-validator/ajv/issues/2132#issuecomment-1290409907
+const Ajv4 = _Ajv4 as unknown as typeof _Ajv4.default;
 
 /**
  * A utility function to recursively traverse a folder and returns its entries.
@@ -28,7 +30,7 @@ const { readdir, readFile, stat } = fs.promises;
  * ```
  */
 export async function* traverseFolder(folder: string): AsyncGenerator<string> {
-  const folders = (await readdir(folder, { withFileTypes: true })) as fs.Dirent[];
+  const folders = (await fs.readdir(folder, { withFileTypes: true })) as Dirent[];
   for (const folderEntry of folders) {
     // WARNING: ignore node_modules and other common folders to avoid perf hits!
     if (folderEntry.name.includes("node_modules") || folderEntry.name.startsWith(".git")) {
@@ -67,7 +69,7 @@ export async function findSWAConfigFile(folder: string): Promise<{ filepath: str
       const content = await validateRuntimeConfigAndGetData(file.filepath!);
 
       if (content) {
-        const fileSize = (await stat(file.filepath)).size;
+        const fileSize = (await fs.stat(file.filepath)).size;
         const fileSizeInKb = Math.round(fileSize / 1024);
         if (fileSizeInKb > SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB) {
           logger.warn(`WARNING: ${SWA_CONFIG_FILENAME} is ${fileSizeInKb} bytes. The maximum size is ${SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB} bytes.`);
@@ -103,7 +105,7 @@ export async function findSWAConfigFile(folder: string): Promise<{ filepath: str
 }
 
 export async function validateRuntimeConfigAndGetData(filepath: string): Promise<SWAConfigFile | null> {
-  const ajv4 = new Ajv({
+  const ajv4 = new Ajv4({
     strict: false,
     allErrors: true,
   });
@@ -119,7 +121,7 @@ export async function validateRuntimeConfigAndGetData(filepath: string): Promise
   const validate = ajv4.compile(schema);
 
   logger.silly(`Reading content from staticwebapp.config.json...`);
-  const content = (await readFile(filepath)).toString("utf-8");
+  const content = (await fs.readFile(filepath)).toString("utf-8");
 
   let config;
   try {
@@ -185,7 +187,7 @@ async function loadSWAConfigSchema(): Promise<JSONSchemaType<SWACLIConfigFile> |
   logger.warn(`Warning: Failed to load schema from ${SWA_CONFIG_SCHEME_URL}. Try to load fallback schema locally.`);
 
   try {
-    const data = fs.readFileSync(SWA_CONFIG_SCHEME_FALLBACK_PATH, "utf8");
+    const data = readFileSync(SWA_CONFIG_SCHEME_FALLBACK_PATH, "utf8");
     const config = JSON.parse(data);
     logger.silly(`Schema loaded successfully from ${SWA_CONFIG_SCHEME_FALLBACK_PATH}`);
     return config;
