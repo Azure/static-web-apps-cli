@@ -5,7 +5,7 @@ import process from "node:process";
 import chalk from "chalk";
 import { Command, Option, program } from "commander";
 import path from "node:path";
-import updateNotifier from "update-notifier";
+import { notifyOnUpdate } from "../core/utils/update-notifier.js";
 import { DEFAULT_CONFIG } from "../config.js";
 import { configureOptions } from "../core/utils/options.js";
 import { getCurrentSwaCliConfigFromFile, swaCliConfigFilename } from "../core/utils/cli-config.js";
@@ -20,7 +20,6 @@ import { default as registerBuild } from "./commands/build/register.js";
 import { registerDocs } from "./commands/docs.js";
 import { default as registerDb } from "./commands/db/init/register.js";
 import { promptOrUseDefault } from "../core/prompts.js";
-//export * from "./commands";
 
 const pkg = require("../../package.json");
 
@@ -53,9 +52,7 @@ function checkNodeVersion() {
 
 export async function run(argv?: string[]) {
   printWelcomeMessage(argv);
-
-  // Once a day, check for updates
-  updateNotifier({ pkg }).notify();
+  notifyOnUpdate();
 
   program
     .name("swa")
