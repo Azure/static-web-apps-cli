@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2021",
-    "module": "node16",
-    "moduleResolution": "node16",
+    "module": "node16", // ESM Module resolution
+    "moduleResolution": "node16", // ESM module resolution
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -17,7 +17,7 @@
     "strictBindCallApply": true,
     "strictPropertyInitialization": true,
     "noImplicitThis": true,
-    "alwaysStrict": true,
+    "alwaysStrict": false, // Can be set to false when writing ESM
 
     /* Additional Checks */
     "noUnusedLocals": true,

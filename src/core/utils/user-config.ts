@@ -1,4 +1,4 @@
-import { default as DefaultAJV, JSONSchemaType, ValidateFunction } from "ajv-draft-04";
+import { Ajv, JSONSchemaType, ValidateFunction } from "./ajv.js";
 import chalk from "chalk";
 import { promises as fs, Dirent, readFileSync } from "node:fs";
 import type http from "node:http";
@@ -14,9 +14,6 @@ import {
 } from "../constants.js";
 import { logger } from "./logger.js";
 import { isHttpUrl } from "./net.js";
-
-// See https://github.com/ajv-validator/ajv/issues/2132#issuecomment-1290409907
-const Ajv4 = DefaultAJV as unknown as typeof DefaultAJV;
 
 /**
  * A utility function to recursively traverse a folder and returns its entries.
@@ -105,10 +102,7 @@ export async function findSWAConfigFile(folder: string): Promise<{ filepath: str
 }
 
 export async function validateRuntimeConfigAndGetData(filepath: string): Promise<SWAConfigFile | null> {
-  const ajv4 = new Ajv4({
-    strict: false,
-    allErrors: true,
-  });
+  const ajv4 = new Ajv({ strict: false, allErrors: true });
 
   logger.silly(`Loading staticwebapp.config.json schema...`);
   const schema = await loadSWAConfigSchema();
