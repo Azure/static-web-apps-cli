@@ -18,9 +18,9 @@ jest.spyOn(logger, "error").mockImplementation();
 import fs from "fs";
 jest.spyOn(fs, "unlinkSync").mockImplementation(jest.fn());
 
-jest.mock("process", () => ({ versions: { node: "18.0.0" } }));
-jest.mock("os", () => ({ platform: () => "linux", homedir: () => "/home/user" }));
-jest.mock("child_process", () => ({ exec: jest.fn() }));
+jest.mock("node:process", () => ({ versions: { node: "18.0.0" } }));
+jest.mock("node:os", () => ({ platform: () => "linux", homedir: () => "/home/user" }));
+jest.mock("node:child_process", () => ({ exec: jest.fn() }));
 jest.mock("node-fetch", () => jest.fn());
 jest.mock("adm-zip", () =>
   jest.fn(() => {
@@ -200,7 +200,7 @@ describe("funcCoreTools", () => {
 
   describe("getCoreToolsBinary", () => {
     it("should return the system binary if it's compatible", async () => {
-      const execMock = jest.requireMock("child_process").exec;
+      const execMock = jest.requireMock("node:child_process").exec;
       execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb(null, { stdout: "4.0.0" }));
 
       const binary = await getCoreToolsBinary();
@@ -208,7 +208,7 @@ describe("funcCoreTools", () => {
     });
 
     it("should return the downloaded binary if there's no system binary", async () => {
-      const execMock = jest.requireMock("child_process").exec;
+      const execMock = jest.requireMock("node:child_process").exec;
       execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: "func does not exist" }));
       mockFs(
         {
@@ -228,7 +228,7 @@ describe("funcCoreTools", () => {
     });
 
     it("should return the downloaded binary if the system binary is incompatible", async () => {
-      const execMock = jest.requireMock("child_process").exec;
+      const execMock = jest.requireMock("node:child_process").exec;
       execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb(null, { stdout: "3.0.0" }));
       mockFs(
         {
@@ -248,7 +248,7 @@ describe("funcCoreTools", () => {
 
     // Note: this test blocks jest from exiting!
     it("should download core tools and return downloaded binary", async () => {
-      const execMock = jest.requireMock("child_process").exec;
+      const execMock = jest.requireMock("node:child_process").exec;
       execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: "func does not exist" }));
 
       const fetchMock = jest.requireMock("node-fetch");
@@ -294,7 +294,7 @@ describe("funcCoreTools", () => {
     });
 
     it("should return undefined if an error occured", async () => {
-      const execMock = jest.requireMock("child_process").exec;
+      const execMock = jest.requireMock("node:child_process").exec;
       execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: "func does not exist" }));
 
       const fetchMock = jest.requireMock("node-fetch");
@@ -309,7 +309,7 @@ describe("funcCoreTools", () => {
   describe("downloadCoreTools", () => {
     // Note: this test blocks jest from exiting!
     it("should throw an error if the download is corrupted", async () => {
-      const execMock = jest.requireMock("child_process").exec;
+      const execMock = jest.requireMock("node:child_process").exec;
       execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: "func does not exist" }));
 
       const fetchMock = jest.requireMock("node-fetch");

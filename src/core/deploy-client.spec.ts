@@ -6,7 +6,7 @@ import { fetchClientVersionDefinition, getLocalClientMetadata } from "./deploy-c
 import { getPlatform } from "./utils/platform.js";
 
 jest.mock("node-fetch", () => jest.fn());
-jest.mock("os", () => ({ platform: () => "linux", homedir: () => "/home/user", tmpdir: () => "/tmp", release: () => "4.4.0-1-amd64" }));
+jest.mock("node:os", () => ({ platform: () => "linux", homedir: () => "/home/user", tmpdir: () => "/tmp", release: () => "4.4.0-1-amd64" }));
 
 function mockResponse(response: any, status = 200) {
   const fetchMock = jest.requireMock("node-fetch");
@@ -267,50 +267,60 @@ describe("deploy client", () => {
   });
 
   describe("getPlatform()", () => {
+    const spy = jest.spyOn(os, "platform");
+
     it("should return 'linux-x64' when platform is 'linux'", () => {
-      jest.spyOn(os, "platform").mockReturnValue("linux");
+      spy.mockReturnValue("linux");
+      expect(os.platform()).toBe("linux");
       const result = getPlatform();
       expect(result).toBe("linux-x64");
     });
 
     it("should return 'linux-x64' when platform is 'aix'", () => {
-      jest.spyOn(os, "platform").mockReturnValue("aix");
+      spy.mockReturnValue("aix");
+      expect(os.platform()).toBe("aix");
       const result = getPlatform();
       expect(result).toBe("linux-x64");
     });
 
     it("should return 'linux-x64' when platform is 'freebsd'", () => {
-      jest.spyOn(os, "platform").mockReturnValue("freebsd");
+      spy.mockReturnValue("freebsd");
+      expect(os.platform()).toBe("freebsd");
       const result = getPlatform();
       expect(result).toBe("linux-x64");
     });
 
     it("should return 'linux-x64' when platform is 'sunos'", () => {
-      jest.spyOn(os, "platform").mockReturnValue("sunos");
+      spy.mockReturnValue("sunos");
+      expect(os.platform()).toBe("sunos");
       const result = getPlatform();
       expect(result).toBe("linux-x64");
     });
 
     it("should return 'linux-x64' when platform is 'openbsd'", () => {
-      jest.spyOn(os, "platform").mockReturnValue("openbsd");
+      spy.mockReturnValue("openbsd");
+      expect(os.platform()).toBe("openbsd");
       const result = getPlatform();
       expect(result).toBe("linux-x64");
     });
 
     it("should return 'win-x64' when platform is 'win32'", () => {
-      jest.spyOn(os, "platform").mockReturnValue("win32");
+      spy.mockReturnValue("win32");
+      expect(os.platform()).toBe("win32");
       const result = getPlatform();
       expect(result).toBe("win-x64");
     });
 
     it("should return 'osx-x64' when platform is 'darwin'", () => {
-      jest.spyOn(os, "platform").mockReturnValue("darwin");
+      spy.mockReturnValue("darwin");
+      expect(os.platform()).toBe("darwin");
       const result = getPlatform();
       expect(result).toBe("osx-x64");
     });
 
     it("should return null when platform is unsupported", () => {
-      jest.spyOn(os, "platform").mockReturnValue("unsupported" as any);
+      spy.mockReturnValue("unsupported" as any);
+      expect(os.platform()).toBe("unsupported" as any);
       const result = getPlatform();
       expect(result).toBe(null);
     });
