@@ -1,4 +1,4 @@
-import _Ajv4, { JSONSchemaType, ValidateFunction } from "ajv-draft-04";
+import { default as DefaultAJV, JSONSchemaType, ValidateFunction } from "ajv-draft-04";
 import chalk from "chalk";
 import { promises as fs, Dirent, readFileSync } from "node:fs";
 import type http from "node:http";
@@ -16,7 +16,7 @@ import { logger } from "./logger.js";
 import { isHttpUrl } from "./net.js";
 
 // See https://github.com/ajv-validator/ajv/issues/2132#issuecomment-1290409907
-const Ajv4 = _Ajv4 as unknown as typeof _Ajv4.default;
+const Ajv4 = DefaultAJV as unknown as typeof DefaultAJV;
 
 /**
  * A utility function to recursively traverse a folder and returns its entries.
