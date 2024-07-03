@@ -30,7 +30,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "types": ["./node_modules/jest-extended"]
+    "types": ["jest", "./node_modules/jest-extended"]
   },
   "exclude": ["node_modules", "dist"],
   "include": ["src/**/*.ts", "src/**/*.json"],

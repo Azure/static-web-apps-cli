@@ -40,11 +40,11 @@ describe("swa init", () => {
 
     expect(configFile).toMatchInlineSnapshot(`
       "{
-        \\"$schema\\": \\"https://aka.ms/azure/static-web-apps-cli/schema\\",
-        \\"configurations\\": {
-          \\"test\\": {
-            \\"appLocation\\": \\".\\",
-            \\"outputLocation\\": \\".\\"
+        "$schema": "https://aka.ms/azure/static-web-apps-cli/schema",
+        "configurations": {
+          "test": {
+            "appLocation": ".",
+            "outputLocation": "."
           }
         }
       }"
@@ -119,15 +119,15 @@ describe("swa init", () => {
 
     expect(configFile).toMatchInlineSnapshot(`
       "{
-        \\"$schema\\": \\"https://aka.ms/azure/static-web-apps-cli/schema\\",
-        \\"configurations\\": {
-          \\"test\\": {
-            \\"appLocation\\": \\"src\\",
-            \\"apiLocation\\": \\"src/node-ts\\",
-            \\"outputLocation\\": \\".\\",
-            \\"apiLanguage\\": \\"node\\",
-            \\"apiVersion\\": \\"16\\",
-            \\"apiBuildCommand\\": \\"npm run build --if-present\\"
+        "$schema": "https://aka.ms/azure/static-web-apps-cli/schema",
+        "configurations": {
+          "test": {
+            "appLocation": "src",
+            "apiLocation": "src/node-ts",
+            "outputLocation": ".",
+            "apiLanguage": "node",
+            "apiVersion": "16",
+            "apiBuildCommand": "npm run build --if-present"
           }
         }
       }"
@@ -142,18 +142,18 @@ describe("swa init", () => {
 
     expect(configFile).toMatchInlineSnapshot(`
       "{
-        \\"$schema\\": \\"https://aka.ms/azure/static-web-apps-cli/schema\\",
-        \\"configurations\\": {
-          \\"test\\": {
-            \\"appLocation\\": \\"src/astro preact\\",
-            \\"apiLocation\\": \\"src/node\\",
-            \\"outputLocation\\": \\"_site\\",
-            \\"apiLanguage\\": \\"node\\",
-            \\"apiVersion\\": \\"16\\",
-            \\"appBuildCommand\\": \\"npm run build\\",
-            \\"apiBuildCommand\\": \\"npm run build --if-present\\",
-            \\"run\\": \\"npm run dev\\",
-            \\"appDevserverUrl\\": \\"http://localhost:8080\\"
+        "$schema": "https://aka.ms/azure/static-web-apps-cli/schema",
+        "configurations": {
+          "test": {
+            "appLocation": "src/astro preact",
+            "apiLocation": "src/node",
+            "outputLocation": "_site",
+            "apiLanguage": "node",
+            "apiVersion": "16",
+            "appBuildCommand": "npm run build",
+            "apiBuildCommand": "npm run build --if-present",
+            "run": "npm run dev",
+            "appDevserverUrl": "http://localhost:8080"
           }
         }
       }"
@@ -173,17 +173,17 @@ describe("swa init", () => {
 
     expect(configFile).toMatchInlineSnapshot(`
       "{
-        \\"$schema\\": \\"https://aka.ms/azure/static-web-apps-cli/schema\\",
-        \\"configurations\\": {
-          \\"test\\": {
-            \\"appLocation\\": \\"./app\\",
-            \\"apiLocation\\": \\"./api\\",
-            \\"outputLocation\\": \\"./dist\\",
-            \\"appBuildCommand\\": \\"npm run build\\",
-            \\"apiBuildCommand\\": \\"npm run build:api\\",
-            \\"run\\": \\"npm run dev\\",
-            \\"appDevserverUrl\\": \\"http://localhost:3000\\",
-            \\"apiDevserverUrl\\": \\"http://localhost:4040\\"
+        "$schema": "https://aka.ms/azure/static-web-apps-cli/schema",
+        "configurations": {
+          "test": {
+            "appLocation": "./app",
+            "apiLocation": "./api",
+            "outputLocation": "./dist",
+            "appBuildCommand": "npm run build",
+            "apiBuildCommand": "npm run build:api",
+            "run": "npm run dev",
+            "appDevserverUrl": "http://localhost:3000",
+            "apiDevserverUrl": "http://localhost:4040"
           }
         }
       }"
