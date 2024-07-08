@@ -1,6 +1,6 @@
-jest.mock("./logger", () => {
+vi.mock("./logger", () => {
   logger: {
-    silly: jest.fn();
+    silly: vi.fn();
   }
 });
 import { validateCookie } from "./cookie.js";

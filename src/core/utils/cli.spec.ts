@@ -1,4 +1,4 @@
-jest.mock("../constants", () => {});
+vi.mock("../constants", () => {});
 import mockFs from "mock-fs";
 import path from "node:path";
 import { argv, createStartupScriptCommand, parseServerTimeout } from "./cli.js";
@@ -149,7 +149,7 @@ describe("createStartupScriptCommand()", () => {
   });
 
   describe("parseServerTimeout()", () => {
-    const mockLoggerError = jest.spyOn(logger, "error").mockImplementation(() => {
+    const mockLoggerError = vi.spyOn(logger, "error").mockImplementation(() => {
       return undefined as never;
     });
 

@@ -1,11 +1,11 @@
-jest.mock("../../../core/utils/logger", () => {
+vi.mock("../../../core/utils/logger", () => {
   return {
     logger: {
       silly: () => {},
     },
   };
 });
-jest.mock("../../../core/constants", () => {
+vi.mock("../../../core/constants", () => {
   return {
     SWA_CLI_OUTPUT_LOCATION: "/",
     SWA_CLI_APP_PROTOCOL: "http",
@@ -17,7 +17,7 @@ jest.mock("../../../core/constants", () => {
   };
 });
 
-jest.mock("../../../config", () => {
+vi.mock("../../../config", () => {
   return {
     DEFAULT_CONFIG: {
       outputLocation: "/",
@@ -27,6 +27,7 @@ jest.mock("../../../config", () => {
 
 import type http from "node:http";
 import mockFs from "mock-fs";
+import { MockInstance } from "vitest";
 import { applyRedirectResponse, isRequestMethodValid, isRouteRequiringUserRolesCheck, tryFindFileForRequest, tryGetMatchingRoute } from "./routes.js";
 
 import * as routeModule from "../route-processor.js";
@@ -136,14 +137,14 @@ describe("route utilities", () => {
         expect(filePath).toBe("/foo/index.html");
       });
 
-      it("should return same file if using dev server", () => {
+      it("should return same file if using dev server", async () => {
         mockFs({
           "/foo": {
             "index.html": "",
           },
         });
 
-        const constantsMock = jest.requireMock("../../../core/constants");
+        const constantsMock = await vi.importMock("../../../core/constants");
         constantsMock.IS_APP_DEV_SERVER = () => true;
 
         const filePath = tryFindFileForRequest("/foo/index.html");
@@ -155,9 +156,9 @@ describe("route utilities", () => {
       const req: Partial<http.IncomingMessage> = {};
       const routeDef: Partial<SWAConfigFileRoute> = {};
 
-      let spyDecodeCookie: jest.SpyInstance;
+      let spyDecodeCookie: MockInstance<(this: ClientPrincipal | null, cookieValue: string) => ClientPrincipal | string | null>;
       beforeEach(() => {
-        spyDecodeCookie = jest.spyOn(cookieModule, "decodeCookie");
+        spyDecodeCookie = vi.spyOn(cookieModule, "decodeCookie");
       });
 
       it("should not require user roles check when route rule is undefined", () => {
@@ -283,11 +284,11 @@ describe("route utilities", () => {
           },
         ],
       };
-      let spyDoesRequestPathMatchRoute: jest.SpyInstance;
-      let spyDoesRequestPathMatchLegacyRoute: jest.SpyInstance;
+      let spyDoesRequestPathMatchRoute: MockInstance<(this: boolean | undefined, requestPath: string, routeRule: SWAConfigFileRoute | undefined, requestMethod: string | null | undefined, methods: string[] | null | undefined, authStatus: number) => boolean | undefined>;
+      let spyDoesRequestPathMatchLegacyRoute: MockInstance<(this: boolean | undefined, requestPath: string, routeRule: SWAConfigFileRoute | undefined, isAuthRequest: boolean, isFileRequest: boolean) => boolean | undefined>;
       beforeEach(() => {
-        spyDoesRequestPathMatchRoute = jest.spyOn(routeModule, "doesRequestPathMatchRoute");
-        spyDoesRequestPathMatchLegacyRoute = jest.spyOn(routeModule, "doesRequestPathMatchLegacyRoute");
+        spyDoesRequestPathMatchRoute = vi.spyOn(routeModule, "doesRequestPathMatchRoute");
+        spyDoesRequestPathMatchLegacyRoute = vi.spyOn(routeModule, "doesRequestPathMatchLegacyRoute");
       });
 
       it("should return undefined when no route provided", () => {
@@ -446,12 +447,12 @@ describe("route utilities", () => {
   describe("applyRedirectResponse()", () => {
     const req: Partial<http.IncomingMessage> = {};
     const res: Partial<http.ServerResponse> = {
-      setHeader: jest.fn(),
-      end: jest.fn(),
+      setHeader: vi.fn(),
+      end: vi.fn(),
     };
     const routeDef: Partial<SWAConfigFileRoute> = {};
     beforeEach(() => {
-      jest.resetAllMocks();
+      vi.resetAllMocks();
     });
     it("should not apply redirect header when no redirect rule is provided", () => {
       applyRedirectResponse(req as http.IncomingMessage, res as http.ServerResponse, routeDef as SWAConfigFileRoute);

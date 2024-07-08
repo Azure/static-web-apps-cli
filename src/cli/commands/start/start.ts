@@ -16,8 +16,10 @@ import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME
 import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder/index.js";
 import { swaCLIEnv } from "../../../core/env.js";
 import { getCertificate } from "../../../core/ssl.js";
+import packageInfo from "../../../../package.json" with { type: "json" };
 
-const packageInfo = require("../../../../package.json");
+import { createRequire  } from "node:module";
+const require = createRequire(import.meta.url);
 const mshaPath = require.resolve("../../../msha/server");
 
 export async function start(options: SWACLIConfig) {

@@ -1,16 +1,22 @@
 import { logger } from "./logger.js";
+import { fs, vol } from "memfs";
 
-jest.spyOn(logger, "silly").mockImplementation();
-jest.spyOn(logger, "warn").mockImplementation();
+vi.mock("node:fs");
+vi.mock("node:fs/promises", async () => {
+  const memfs: { fs: typeof fs } = await vi.importActual("memfs");
+  return memfs.fs.promises;
+});
 
-import mockFs from "mock-fs";
+vi.spyOn(logger, "silly").mockImplementation(() => {});
+vi.spyOn(logger, "warn").mockImplementation(() => {});
+
 import path from "node:path";
 import { findSWAConfigFile, traverseFolder } from "./user-config.js";
 
 describe("userConfig", () => {
   describe("traverseFolder()", () => {
-    afterEach(() => {
-      mockFs.restore();
+    beforeEach(() => {
+      vol.reset();
     });
 
     const asyncGeneratorToArray = async (gen: AsyncGenerator<string, string, unknown>) => {
@@ -22,15 +28,13 @@ describe("userConfig", () => {
     };
 
     it("should handle empty folders", async () => {
-      mockFs();
-
       const entry = await asyncGeneratorToArray(traverseFolder("."));
       expect(entry).toEqual([]);
     });
 
     describe("should handle flat folder", () => {
       it("with single entry", async () => {
-        mockFs({
+        vol.fromJSON({
           "foo.txt": "fake content",
         });
 
@@ -38,11 +42,11 @@ describe("userConfig", () => {
         expect(entries.length).toBe(1);
 
         // entries are populated indeterminately because of async generator
-        expect(entries.find((entry) => entry.endsWith("foo.txt"))).toEndWith("foo.txt");
+        expect(entries.find((entry) => entry.endsWith("foo.txt"))).toMatch(/foo\.txt$/);
       });
 
       it("with multiple entries", async () => {
-        mockFs({
+        vol.fromJSON({
           "foo.txt": "fake content",
           "bar.jpg": "fake content",
         });
@@ -51,14 +55,14 @@ describe("userConfig", () => {
         expect(entries.length).toBe(2);
 
         // entries are populated indeterminately because of async generator
-        expect(entries.find((entry) => entry.endsWith("bar.jpg"))).toEndWith("bar.jpg");
-        expect(entries.find((entry) => entry.endsWith("foo.txt"))).toEndWith("foo.txt");
+        expect(entries.find((entry) => entry.endsWith("bar.jpg"))).toMatch(/bar\.jpg$/);
+        expect(entries.find((entry) => entry.endsWith("foo.txt"))).toMatch(/foo\.txt$/);
       });
     });
 
     describe("should handle deep folders", () => {
       it("with single entry", async () => {
-        mockFs({
+        vol.fromNestedJSON({
           swa: {
             "foo.txt": "fake content",
           },
@@ -68,11 +72,11 @@ describe("userConfig", () => {
         expect(entries.length).toBe(1);
 
         // entries are populated indeterminately because of async generator
-        expect(entries.find((entry) => entry.endsWith(`swa${path.sep}foo.txt`))).toEndWith(`swa${path.sep}foo.txt`);
+        expect(entries.find((entry) => entry.endsWith(`swa${path.sep}foo.txt`))).toMatch(/foo\.txt$/);
       });
 
       it("with multiple entries", async () => {
-        mockFs({
+        vol.fromNestedJSON({
           swa: {
             "foo.txt": "fake content",
           },
@@ -83,14 +87,14 @@ describe("userConfig", () => {
         expect(entries.length).toBe(2);
 
         // entries are populated indeterminately because of async generator
-        expect(entries.find((entry) => entry.endsWith("bar.jpg"))).toEndWith("bar.jpg");
-        expect(entries.find((entry) => entry.endsWith(`swa${path.sep}foo.txt`))).toEndWith(`swa${path.sep}foo.txt`);
+        expect(entries.find((entry) => entry.endsWith("bar.jpg"))).toMatch(/bar\.jpg$/);
+        expect(entries.find((entry) => entry.endsWith(`swa${path.sep}foo.txt`))).toMatch(/foo\.txt$/);
       });
     });
 
     describe("should exclude folders", () => {
       it("node_modules", async () => {
-        mockFs({
+        vol.fromNestedJSON({
           "foo.txt": "fake content",
           swa: {
             "bar.jpg": "fake content",
@@ -105,26 +109,24 @@ describe("userConfig", () => {
         expect(entries.length).toBe(2);
 
         // entries are populated indeterminately because of async generator
-        expect(entries.find((entry) => entry.endsWith(`swa${path.sep}bar.jpg`))).toEndWith(`swa${path.sep}bar.jpg`);
-        expect(entries.find((entry) => entry.endsWith("foo.txt"))).toEndWith("foo.txt");
+        expect(entries.find((entry) => entry.endsWith(`swa${path.sep}bar.jpg`))).toMatch(/bar\.jpg$/);
+        expect(entries.find((entry) => entry.endsWith("foo.txt"))).toMatch(/foo\.txt$/);
       });
     });
   });
 
   describe("findSWAConfigFile()", () => {
-    afterEach(() => {
-      mockFs.restore();
+    beforeEach(() => {
+      vol.reset();
     });
 
     it("should find no config file", async () => {
-      mockFs({});
-
       const file = await findSWAConfigFile(".");
       expect(file).toBe(null);
     });
 
     it("should find staticwebapp.config.json (recursively)", async () => {
-      mockFs({
+      vol.fromNestedJSON({
         s: {
           w: {
             a: {
@@ -139,7 +141,7 @@ describe("userConfig", () => {
     });
 
     it("should warn if routes.json is found (root project)", async () => {
-      mockFs({
+      vol.fromNestedJSON({
         "routes.json": `{ "routes": []}`,
       });
 
@@ -152,7 +154,7 @@ describe("userConfig", () => {
     });
 
     it("should warn if routes.json is found (recursively)", async () => {
-      mockFs({
+      vol.fromNestedJSON({
         s: {
           w: {
             a: {
@@ -171,7 +173,7 @@ describe("userConfig", () => {
     });
 
     it("should ignore routes.json if a staticwebapp.config.json exists", async () => {
-      mockFs({
+      vol.fromNestedJSON({
         s: {
           w: {
             "staticwebapp.config.json": `{ "routes": []}`,

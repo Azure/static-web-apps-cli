@@ -10,7 +10,7 @@ describe("responseOverrides()", () => {
 
     res = {
       statusCode: 200,
-      setHeader: jest.fn(),
+      setHeader: vi.fn(),
     } as any;
 
     userConfig = {};

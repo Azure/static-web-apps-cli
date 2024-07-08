@@ -1,4 +1,4 @@
-jest.mock("../constants", () => {});
+vi.mock("../constants", () => {});
 import { logger } from "./logger.js";
 import { address, hostnameToIpAdress, isHttpsUrl, parsePort, parseUrl, response } from "./net.js";
 
@@ -234,7 +234,7 @@ describe("net utilities", () => {
   });
 
   describe("parsePort()", () => {
-    const mockLoggerError = jest.spyOn(logger, "error").mockImplementation(() => {
+    const mockLoggerError = vi.spyOn(logger, "error").mockImplementation(() => {
       return undefined as never;
     });
 

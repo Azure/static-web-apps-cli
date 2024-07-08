@@ -1,10 +1,11 @@
-jest.mock("../constants", () => {});
+vi.mock("../constants", () => {});
 import mockFs from "mock-fs";
 import path from "path";
-import { convertToNativePaths } from "../../jest.helpers.js";
+import { MockInstance } from "vitest";
+import { convertToNativePaths } from "../../test.helpers.js";
 import { readWorkflowFile } from "./workflow-config.js";
 
-jest.mock("../../config", () => {
+vi.mock("../../config", () => {
   return {
     DEFAULT_CONFIG: {
       appLocation: convertToNativePaths("/"),
@@ -16,10 +17,10 @@ jest.mock("../../config", () => {
 });
 
 describe("readWorkflowFile()", () => {
-  let processSpy: jest.SpyInstance;
+  let processSpy: MockInstance<(this: string) => string>;
 
   beforeEach(() => {
-    processSpy = jest.spyOn(process, "cwd").mockReturnValue(convertToNativePaths("/ABSOLUTE_PATH"));
+    processSpy = vi.spyOn(process, "cwd").mockReturnValue(convertToNativePaths("/ABSOLUTE_PATH"));
   });
 
   afterEach(() => {

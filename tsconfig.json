@@ -31,7 +31,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "types": ["jest", "./node_modules/jest-extended"]
+    "types": [
+      "vitest/globals"
+    ]
   },
   "exclude": ["node_modules", "dist"],
   "include": ["src/**/*.ts", "src/**/*.json"],

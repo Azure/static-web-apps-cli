@@ -1,4 +1,4 @@
-jest.mock("../../../core/constants", () => {});
+vi.mock("../../../core/constants", () => {});
 import { mimeTypes } from "./mime-types.js";
 
 describe("mimeTypes()", () => {
@@ -9,7 +9,7 @@ describe("mimeTypes()", () => {
     req = {} as any;
 
     res = {
-      setHeader: jest.fn(),
+      setHeader: vi.fn(),
     } as any;
 
     userConfig = {};

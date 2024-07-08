@@ -1,26 +1,26 @@
+import { fs, vol } from "memfs";
 import { program } from "commander";
-import mockFs from "mock-fs";
 import { run } from "./index.js";
+import pkg from "../../package.json" with { type: "json" };
 
-jest.mock("./commands/build/build", () => ({
-  build: jest.fn(),
+vi.mock("node:fs");
+vi.mock("node:fs/promises", async () => {
+  const memfs: { fs: typeof fs } = await vi.importActual("memfs");
+  return memfs.fs.promises;
+});
+
+const buildMock = vi.fn();
+vi.mock("./commands/build/build", () => ({
+  build: buildMock,
 }));
-
-const pkg = require("../../package.json");
 
 const originalConsoleError = console.error;
 
 describe("cli", () => {
   beforeEach(() => {
-    // Throws CommanderError instead of exiting after showing version or error
+    vol.reset();
     program.exitOverride();
-    console.error = jest.fn();
-  });
-
-  afterEach(() => {
-    mockFs.restore();
-    const buildMock = jest.requireMock("./commands/build/build").build;
-    buildMock.mockReset();
+    console.error = vi.fn();
   });
 
   afterAll(() => {
@@ -32,16 +32,12 @@ describe("cli", () => {
   });
 
   it("should ignore empty spaces when using positional argument", async () => {
-    const build = jest.requireMock("./commands/build/build").build;
-    mockFs();
     await run(["node", "swa", "build", "   app  ", "--app-build-command", "npm run something"]);
-    expect(build.mock.calls[0][0].appLocation).toBe("app");
+    expect(buildMock).toHaveBeenCalledWith({ appLocation: "app" });
   });
 
   it("should not interpret empty spaces as a positional argument", async () => {
-    const build = jest.requireMock("./commands/build/build").build;
-    mockFs();
     await run(["node", "swa", "build", "    ", "--app-build-command", "npm run something", "   "]);
-    expect(build.mock.calls[0][0].appLocation).toBe(".");
+    expect(buildMock).toHaveBeenCalledWith({ appLocation: "." });
   });
 });

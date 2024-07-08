@@ -1,4 +1,4 @@
-jest.mock("../../../core/constants", () => {
+vi.mock("../../../core/constants", () => {
   return {
     SWA_CLI_APP_PROTOCOL: "http",
   };

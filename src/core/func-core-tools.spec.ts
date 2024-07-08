@@ -1,7 +1,9 @@
 import { Buffer } from "node:buffer";
-import mockFs from "mock-fs";
+import { fs, vol } from "memfs";
+import { type ObjectEncodingOptions } from "node:fs";
 import { sep } from "node:path";
 import { Readable } from "node:stream";
+import cp, { ExecException } from "node:child_process";
 import {
   detectTargetCoreToolsVersion,
   downloadCoreTools,
@@ -11,28 +13,28 @@ import {
 } from "./func-core-tools.js";
 
 import { logger } from "../core/utils/logger.js";
-jest.spyOn(logger, "log").mockImplementation();
-jest.spyOn(logger, "warn").mockImplementation();
-jest.spyOn(logger, "error").mockImplementation();
+vi.spyOn(logger, "log").mockImplementation(() => {});
+vi.spyOn(logger, "warn").mockImplementation(() => {});
+vi.spyOn(logger, "error").mockImplementation(() => {});
 
-import fs from "fs";
-jest.spyOn(fs, "unlinkSync").mockImplementation(jest.fn());
+vi.mock("node:fs");
+vi.mock("node:fs/promises", async () => {
+  const memfs: { fs: typeof fs } = await vi.importActual("memfs");
+  return memfs.fs.promises;
+});
+vi.spyOn(fs, "unlinkSync").mockImplementation(vi.fn());
 
-jest.mock("node:process", () => ({ versions: { node: "18.0.0" } }));
-jest.mock("node:os", () => ({ platform: () => "linux", homedir: () => "/home/user" }));
-jest.mock("node:child_process", () => ({ exec: jest.fn() }));
-jest.mock("node-fetch", () => jest.fn());
-jest.mock("adm-zip", () =>
-  jest.fn(() => {
+vi.mock("node:process", () => ({ versions: { node: "18.0.0" } }));
+vi.mock("node:os", () => ({ platform: () => "linux", homedir: () => "/home/user" }));
+vi.mock("adm-zip", () =>
+  vi.fn(() => {
     return {
       extractAllTo: () => {
-        mockFs(
+        vol.fromJSON(
           {
             "/home/user/.swa/core-tools/v4/func": "",
             "/home/user/.swa/core-tools/v4/gozip": "",
-          },
-          { createTmp: false, createCwd: false }
-        );
+          });
       },
     };
   })
@@ -47,7 +49,7 @@ class HeadersMock {
 
 describe("funcCoreTools", () => {
   afterEach(() => {
-    mockFs.restore();
+    vol.reset();
   });
 
   describe("isCoreToolsVersionCompatible()", () => {
@@ -97,7 +99,9 @@ describe("funcCoreTools", () => {
 
   describe("getLatestCoreToolsRelease()", () => {
     it("should return the latest release for the specified version", async () => {
-      const fetchMock = jest.requireMock("node-fetch");
+      const fetchMock = vi.fn();
+      vi.mock("node-fetch", fetchMock);
+
       fetchMock.mockImplementationOnce(() =>
         Promise.resolve({
           json: () =>
@@ -129,7 +133,9 @@ describe("funcCoreTools", () => {
     });
 
     it("should throw an error if tags match the specified version", async () => {
-      const fetchMock = jest.requireMock("node-fetch");
+      const fetchMock = vi.fn();
+      vi.mock("node-fetch", fetchMock);
+
       fetchMock.mockImplementationOnce(() =>
         Promise.resolve({
           json: () =>
@@ -146,7 +152,9 @@ describe("funcCoreTools", () => {
     });
 
     it("should throw an error if no release match the specified version", async () => {
-      const fetchMock = jest.requireMock("node-fetch");
+      const fetchMock = vi.fn();
+      vi.mock("node-fetch", fetchMock);
+
       fetchMock.mockImplementationOnce(() =>
         Promise.resolve({
           json: () =>
@@ -163,7 +171,9 @@ describe("funcCoreTools", () => {
     });
 
     it("should throw an error if there's no compatible package", async () => {
-      const fetchMock = jest.requireMock("node-fetch");
+      const fetchMock = vi.fn();
+      vi.mock("node-fetch", fetchMock);
+
       fetchMock.mockImplementationOnce(() =>
         Promise.resolve({
           json: () =>
@@ -191,7 +201,9 @@ describe("funcCoreTools", () => {
     });
 
     it("should throw an error if no release match the specified version", async () => {
-      const fetchMock = jest.requireMock("node-fetch");
+      const fetchMock = vi.fn();
+      vi.mock("node-fetch", fetchMock);
+
       fetchMock.mockImplementationOnce(() => Promise.reject(new Error("bad network")));
 
       await expect(async () => await getLatestCoreToolsRelease(4)).rejects.toThrowError(/bad network/);
@@ -200,22 +212,31 @@ describe("funcCoreTools", () => {
 
   describe("getCoreToolsBinary", () => {
     it("should return the system binary if it's compatible", async () => {
-      const execMock = jest.requireMock("node:child_process").exec;
-      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb(null, { stdout: "4.0.0" }));
+      const execMock = vi.spyOn(cp, 'exec');
+      execMock.mockImplementationOnce(function(this: cp.ChildProcess, _cmd: string, _opts: (ObjectEncodingOptions & cp.ExecOptions) | null | undefined, callback?: ((error: ExecException | null, stdout: string | Buffer, stderr: string | Buffer) => void) | undefined): cp.ChildProcess {
+        if (callback) {
+          callback(null, "4.0.0", "");
+        }
+        return this;
+      });
 
       const binary = await getCoreToolsBinary();
       expect(binary).toBe("func");
     });
 
     it("should return the downloaded binary if there's no system binary", async () => {
-      const execMock = jest.requireMock("node:child_process").exec;
-      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: "func does not exist" }));
-      mockFs(
+      const execMock = vi.spyOn(cp, 'exec');
+      execMock.mockImplementationOnce(function(this: cp.ChildProcess, _cmd: string, _opts: (ObjectEncodingOptions & cp.ExecOptions) | null | undefined, callback?: ((error: ExecException | null, stdout: string | Buffer, stderr: string | Buffer) => void) | undefined): cp.ChildProcess {
+        if (callback) {
+          callback(null, "", "func does not exist");
+        }
+        return this;
+      });
+
+      vol.fromNestedJSON(
         {
           ["/home/user/.swa/core-tools/v4"]: { ".release-version": "4.3.2" },
-        },
-        { createTmp: false, createCwd: false }
-      );
+        });
 
       const binary = await getCoreToolsBinary();
 
@@ -228,13 +249,17 @@ describe("funcCoreTools", () => {
     });
 
     it("should return the downloaded binary if the system binary is incompatible", async () => {
-      const execMock = jest.requireMock("node:child_process").exec;
-      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb(null, { stdout: "3.0.0" }));
-      mockFs(
+      const execMock = vi.spyOn(cp, 'exec');
+      execMock.mockImplementationOnce(function(this: cp.ChildProcess, _cmd: string, _opts: (ObjectEncodingOptions & cp.ExecOptions) | null | undefined, callback?: ((error: ExecException | null, stdout: string | Buffer, stderr: string | Buffer) => void) | undefined): cp.ChildProcess {
+        if (callback) {
+          callback(null, "3.0.0", "");
+        }
+        return this;
+      });
+      vol.fromNestedJSON(
         {
           ["/home/user/.swa/core-tools/v4"]: { ".release-version": "4.3.2" },
-        },
-        { createTmp: false, createCwd: false }
+        }
       );
 
       const binary = await getCoreToolsBinary();
@@ -246,12 +271,18 @@ describe("funcCoreTools", () => {
       }
     });
 
-    // Note: this test blocks jest from exiting!
     it("should download core tools and return downloaded binary", async () => {
-      const execMock = jest.requireMock("node:child_process").exec;
-      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: "func does not exist" }));
+      const execMock = vi.spyOn(cp, 'exec');
+      execMock.mockImplementationOnce(function(this: cp.ChildProcess, _cmd: string, _opts: (ObjectEncodingOptions & cp.ExecOptions) | null | undefined, callback?: ((error: ExecException | null, stdout: string | Buffer, stderr: string | Buffer) => void) | undefined): cp.ChildProcess {
+        if (callback) {
+          callback(null, "", "func does not exist");
+        }
+        return this;
+      });
 
-      const fetchMock = jest.requireMock("node-fetch");
+      const fetchMock = vi.fn();
+      vi.mock("node-fetch", fetchMock);
+
       fetchMock.mockImplementationOnce(() =>
         Promise.resolve({
           json: () =>
@@ -282,7 +313,7 @@ describe("funcCoreTools", () => {
           headers: new HeadersMock({ "content-length": packageZip.length.toString() }),
         })
       );
-      mockFs({ ["/home/user/.swa/core-tools/"]: {} }, { createTmp: false, createCwd: false });
+      vol.fromNestedJSON({ ["/home/user/.swa/core-tools/"]: {} });
 
       const binary = await getCoreToolsBinary();
       // note: we have mocked os.platform(), so we can't check for os name!
@@ -294,12 +325,17 @@ describe("funcCoreTools", () => {
     });
 
     it("should return undefined if an error occured", async () => {
-      const execMock = jest.requireMock("node:child_process").exec;
-      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: "func does not exist" }));
+      const execMock = vi.spyOn(cp, 'exec');
+      execMock.mockImplementationOnce(function(this: cp.ChildProcess, _cmd: string, _opts: (ObjectEncodingOptions & cp.ExecOptions) | null | undefined, callback?: ((error: ExecException | null, stdout: string | Buffer, stderr: string | Buffer) => void) | undefined): cp.ChildProcess {
+        if (callback) {
+          callback(null, "", "func does not exist");
+        }
+        return this;
+      });
 
-      const fetchMock = jest.requireMock("node-fetch");
+      const fetchMock = vi.fn();
+      vi.mock("node-fetch", fetchMock);
       fetchMock.mockImplementationOnce(() => Promise.reject({}));
-      mockFs({}, { createTmp: false, createCwd: false });
 
       const binary = await getCoreToolsBinary();
       expect(binary).toBe(undefined);
@@ -307,12 +343,17 @@ describe("funcCoreTools", () => {
   });
 
   describe("downloadCoreTools", () => {
-    // Note: this test blocks jest from exiting!
     it("should throw an error if the download is corrupted", async () => {
-      const execMock = jest.requireMock("node:child_process").exec;
-      execMock.mockImplementationOnce((_cmd: string, cb: Function) => cb({ stderr: "func does not exist" }));
+      const execMock = vi.spyOn(cp, 'exec');
+      execMock.mockImplementationOnce(function(this: cp.ChildProcess, _cmd: string, _opts: (ObjectEncodingOptions & cp.ExecOptions) | null | undefined, callback?: ((error: ExecException | null, stdout: string | Buffer, stderr: string | Buffer) => void) | undefined): cp.ChildProcess {
+        if (callback) {
+          callback(null, "", "func does not exist");
+        }
+        return this;
+      });
 
-      const fetchMock = jest.requireMock("node-fetch");
+      const fetchMock = vi.fn();
+      vi.mock("node-fetch", fetchMock);
       fetchMock.mockImplementationOnce(() =>
         Promise.resolve({
           json: () =>
@@ -342,7 +383,7 @@ describe("funcCoreTools", () => {
           headers: new HeadersMock({ "content-length": packageZip.length.toString() }),
         })
       );
-      mockFs({ ["/home/user/.swa/core-tools/"]: {} }, { createTmp: false, createCwd: false });
+      vol.fromNestedJSON({ ["/home/user/.swa/core-tools/"]: {} });
 
       await expect(async () => await downloadCoreTools(4)).rejects.toThrowError(/SHA2 mismatch/);
     });

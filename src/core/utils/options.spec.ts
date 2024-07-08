@@ -1,14 +1,20 @@
 import { Command } from "commander";
-import mockFs from "mock-fs";
+import { fs, vol } from "memfs";
 import { swaCliConfigFilename } from "./cli-config.js";
 import { parsePort } from "./net.js";
 import { parseServerTimeout } from "./cli.js";
 import { configureOptions, getUserOptions } from "./options.js";
 import { DEFAULT_CONFIG } from "../../config.js";
 
+vi.mock("node:fs");
+vi.mock("node:fs/promises", async () => {
+  const memfs: { fs: typeof fs } = await vi.importActual("memfs");
+  return memfs.fs.promises;
+});
+
 describe("configureOptions()", () => {
-  afterEach(() => {
-    mockFs.restore();
+  beforeEach(() => {
+    vol.reset();
   });
 
   it("should return configuration options", async () => {
@@ -22,7 +28,7 @@ describe("configureOptions()", () => {
 
   it("should return merged configuration from config file", async () => {
     const command = await new Command().parseAsync([]);
-    mockFs({
+    vol.fromJSON({
       "swa-cli.config.json": JSON.stringify({
         configurations: {
           test: { port: 1234 },
@@ -39,7 +45,7 @@ describe("configureOptions()", () => {
   it("should return merged configuration with config file overriding default cli options", async () => {
     const command = await new Command().option<number>("--port <port>", "", parsePort, 4444).parseAsync([]);
 
-    mockFs({
+    vol.fromJSON({
       "swa-cli.config.json": JSON.stringify({
         configurations: {
           test: { port: 1234 },
@@ -59,7 +65,7 @@ describe("configureOptions()", () => {
       .option<number>("--port <port>", "", parsePort, 4444)
       .parseAsync(["node", "swa", "--port", "4567"]);
 
-    mockFs({
+    vol.fromJSON({
       "swa-cli.config.json": JSON.stringify({
         configurations: {
           test: { port: 1234 },
@@ -76,7 +82,7 @@ describe("configureOptions()", () => {
   it("should return merged configuration with command specific options overriding global options", async () => {
     const command = await new Command().option<number>("--port <port>", "", parsePort, 4444).parseAsync([]);
 
-    mockFs({
+    vol.fromJSON({
       "swa-cli.config.json": JSON.stringify({
         configurations: {
           test: {
