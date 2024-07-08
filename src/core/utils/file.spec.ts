@@ -1,12 +1,7 @@
-import { fs, vol } from "memfs";
+import "../../../tests/_mocks/fs.js";
+import { vol } from "memfs";
 import { convertToNativePaths } from "../../test.helpers.js";
 import { findUpPackageJsonDir, pathExists, safeReadFile, safeReadJson } from "./file.js";
-
-vi.mock("node:fs");
-vi.mock("node:fs/promises", async () => {
-  const memfs: { fs: typeof fs } = await vi.importActual("memfs");
-  return memfs.fs.promises;
-});
 
 describe("file utilities", () => {
   describe("safeReadJson()", () => {

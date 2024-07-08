@@ -3,10 +3,12 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     globals: true,
-    include: [
-      'src/**/*.spec.ts'
-    ],
+    include: ["src/**/*.spec.ts"],
     mockReset: true,
-
-  }
+    server: {
+      deps: {
+        inline: ["to-vfile"],
+      },
+    },
+  },
 });
