@@ -7,7 +7,7 @@ export async function safeReadJson(path: string): Promise<JsonData | undefined> 
   try {
     let contents = await fs.readFile(path, "utf8");
     contents = stripJsonComments(contents);
-    return JSON.parse(contents) as JsonData;
+    return JSON.parse(contents.trim()) as JsonData;
   } catch (error) {
     logger.warn(`Failed to read JSON file at: ${path}`);
     return undefined;

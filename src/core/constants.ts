@@ -272,3 +272,8 @@ export function IS_DATA_API_DEV_SERVER() {
 export function SWA_CLI_DATA_API_URI() {
   return IS_DATA_API_DEV_SERVER() ? DEFAULT_CONFIG.dataApiLocation : address(DEFAULT_CONFIG.host, DEFAULT_CONFIG.dataApiPort, "http");
 }
+
+// Constants related to swa login
+const azureFolderName = ".azure";
+const azureProfileFilename = "azureProfile.json";
+export const AZURE_LOGIN_CONFIG = path.join(os.homedir(), azureFolderName, azureProfileFilename);
