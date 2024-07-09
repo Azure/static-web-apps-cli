@@ -1,4 +1,7 @@
-vi.mock("../../../core/constants", () => {});
+vi.mock("../../../core/constants", () => {
+  return {};
+});
+
 import { mimeTypes } from "./mime-types.js";
 
 describe("mimeTypes()", () => {

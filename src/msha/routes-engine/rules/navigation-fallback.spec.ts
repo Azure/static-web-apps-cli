@@ -1,5 +1,8 @@
-vi.mock("../../../core/constants", () => {});
-import mockFs from "mock-fs";
+import "../../../../tests/_mocks/fs.js";
+import { vol } from "memfs";
+vi.mock("../../../core/constants", () => {
+  return {};
+});
 
 import { navigationFallback } from "./navigation-fallback.js";
 
@@ -7,14 +10,12 @@ describe("navigationFallback()", () => {
   let req: any;
   let res: any;
   let userConfig: SWAConfigFileNavigationFallback;
+
   beforeEach(() => {
     req = {} as any;
     res = {} as any;
     userConfig = {} as any;
-  });
-
-  afterEach(() => {
-    mockFs.restore();
+    vol.reset();
   });
 
   it("should not process fallbacks if empty config", () => {
@@ -60,7 +61,7 @@ describe("navigationFallback()", () => {
     };
     process.env.SWA_CLI_OUTPUT_LOCATION = "/";
 
-    mockFs({
+    vol.fromNestedJSON({
       "/images/foo.png": "",
     });
 
@@ -77,7 +78,7 @@ describe("navigationFallback()", () => {
     };
     process.env.SWA_CLI_OUTPUT_LOCATION = "/";
 
-    mockFs({
+    vol.fromNestedJSON({
       "/no-file": "",
     });
 
@@ -94,7 +95,7 @@ describe("navigationFallback()", () => {
     };
     process.env.SWA_CLI_OUTPUT_LOCATION = "/";
 
-    mockFs({
+    vol.fromNestedJSON({
       "/images/foo.png": "",
     });
 
@@ -111,7 +112,7 @@ describe("navigationFallback()", () => {
     };
     process.env.SWA_CLI_OUTPUT_LOCATION = "/";
 
-    mockFs({
+    vol.fromNestedJSON({
       "/no-file": "",
     });
 
@@ -128,7 +129,7 @@ describe("navigationFallback()", () => {
     };
     process.env.SWA_CLI_OUTPUT_LOCATION = "/";
 
-    mockFs({
+    vol.fromNestedJSON({
       "/no-file": "",
     });
 
@@ -145,7 +146,7 @@ describe("navigationFallback()", () => {
     };
     process.env.SWA_CLI_OUTPUT_LOCATION = "/";
 
-    mockFs({
+    vol.fromNestedJSON({
       "/no-file": "",
     });
 

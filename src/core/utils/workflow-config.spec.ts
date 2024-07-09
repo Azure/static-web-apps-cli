@@ -1,5 +1,10 @@
-vi.mock("../constants", () => {});
-import mockFs from "mock-fs";
+import "../../../tests/_mocks/fs.js";
+import { vol } from "memfs";
+
+vi.mock("../constants", () => {
+  return {};
+});
+
 import path from "path";
 import { MockInstance } from "vitest";
 import { convertToNativePaths } from "../../test.helpers.js";
@@ -24,7 +29,7 @@ describe("readWorkflowFile()", () => {
   });
 
   afterEach(() => {
-    mockFs.restore();
+    vol.reset();
     processSpy.mockRestore();
   });
 
@@ -33,7 +38,7 @@ describe("readWorkflowFile()", () => {
   });
 
   it("config file with wrong filename should return undefined", () => {
-    mockFs({
+    vol.fromJSON({
       [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/wrong-file-name-pattern.yml")]: "",
     });
 
@@ -41,7 +46,7 @@ describe("readWorkflowFile()", () => {
   });
 
   it("invalid YAML file should throw", () => {
-    mockFs({
+    vol.fromJSON({
       [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps__not-valid.yml")]: "",
     });
 
@@ -50,7 +55,7 @@ describe("readWorkflowFile()", () => {
 
   describe("checking workflow properties", () => {
     it(`missing property "jobs" should throw`, () => {
-      mockFs({
+      vol.fromJSON({
         [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps__not-valid.yml")]: `name: Azure Static Web Apps CI/CD`,
       });
 
@@ -58,7 +63,7 @@ describe("readWorkflowFile()", () => {
     });
 
     it(`missing property "jobs.build_and_deploy_job" should throw`, () => {
-      mockFs({
+      vol.fromJSON({
         [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps.yml")]: `
 jobs:
   invalid_property:
@@ -68,7 +73,7 @@ jobs:
     });
 
     it(`missing property "jobs.build_and_deploy_job.steps" should throw`, () => {
-      mockFs({
+      vol.fromJSON({
         [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps.yml")]: `
 jobs:
   build_and_deploy_job:
@@ -80,7 +85,7 @@ jobs:
     });
 
     it(`invalid property"jobs.build_and_deploy_job.steps" should throw`, () => {
-      mockFs({
+      vol.fromJSON({
         [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps.yml")]: `
 jobs:
   build_and_deploy_job:
@@ -91,7 +96,7 @@ jobs:
     });
 
     it(`invalid property "jobs.build_and_deploy_job.steps[]" should throw`, () => {
-      mockFs({
+      vol.fromJSON({
         [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps.yml")]: `
 jobs:
   build_and_deploy_job:
@@ -104,7 +109,7 @@ jobs:
     });
 
     it(`missing property "jobs.build_and_deploy_job.steps[].with" should throw`, () => {
-      mockFs({
+      vol.fromJSON({
         [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps.yml")]: `
 jobs:
   build_and_deploy_job:
@@ -120,7 +125,7 @@ jobs:
 
   describe("checking SWA properties", () => {
     it("property 'app_location' should be set", () => {
-      mockFs({
+      vol.fromJSON({
         [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps.yml")]: `
 jobs:
   build_and_deploy_job:
@@ -139,7 +144,7 @@ jobs:
     });
 
     it("property 'app_location' should be set to '/' if missing", () => {
-      mockFs({
+      vol.fromJSON({
         [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps.yml")]: `
 jobs:
   build_and_deploy_job:
@@ -158,7 +163,7 @@ jobs:
     });
 
     it("property 'api_location' should be set", () => {
-      mockFs({
+      vol.fromJSON({
         [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps.yml")]: `
 jobs:
   build_and_deploy_job:
@@ -177,7 +182,7 @@ jobs:
     });
 
     it("property 'api_location' should be undefined if missing", () => {
-      mockFs({
+      vol.fromJSON({
         [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps.yml")]: `
 jobs:
   build_and_deploy_job:
@@ -196,7 +201,7 @@ jobs:
     });
 
     it("property 'output_location' should be set", () => {
-      mockFs({
+      vol.fromJSON({
         [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps.yml")]: `
 jobs:
   build_and_deploy_job:
@@ -215,7 +220,7 @@ jobs:
     });
 
     it("property 'output_location' should be set to default if missing", () => {
-      mockFs({
+      vol.fromJSON({
         [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps.yml")]: `
 jobs:
   build_and_deploy_job:
@@ -234,7 +239,7 @@ jobs:
     });
 
     it("property 'app_build_command' should be set", () => {
-      mockFs({
+      vol.fromJSON({
         [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps.yml")]: `
 jobs:
   build_and_deploy_job:
@@ -253,7 +258,7 @@ jobs:
     });
 
     it("property 'app_build_command' should be set to default if missing", () => {
-      mockFs({
+      vol.fromJSON({
         [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps.yml")]: `
 jobs:
   build_and_deploy_job:
@@ -272,7 +277,7 @@ jobs:
     });
 
     it("property 'api_build_command' should be set", () => {
-      mockFs({
+      vol.fromJSON({
         [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps.yml")]: `
 jobs:
   build_and_deploy_job:
@@ -291,7 +296,7 @@ jobs:
     });
 
     it("property 'api_build_command' should be set to default if missing", () => {
-      mockFs({
+      vol.fromJSON({
         [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps.yml")]: `
 jobs:
   build_and_deploy_job:

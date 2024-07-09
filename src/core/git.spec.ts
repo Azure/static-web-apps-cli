@@ -1,11 +1,6 @@
+import "../../tests/_mocks/fs.js";
 import { fs, vol } from "memfs";
 import { isGitProject, updateGitIgnore } from "./git.js";
-
-vi.mock("node:fs");
-vi.mock("node:fs/promises", async () => {
-  const memfs: { fs: typeof fs } = await vi.importActual("memfs");
-  return memfs.fs.promises;
-});
 
 describe("git", () => {
   beforeEach(() => {

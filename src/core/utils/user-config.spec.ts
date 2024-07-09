@@ -1,17 +1,11 @@
+import "../../../tests/_mocks/fs.js";
+import { vol } from "memfs";
+import path from "node:path";
+import { findSWAConfigFile, traverseFolder } from "./user-config.js";
 import { logger } from "./logger.js";
-import { fs, vol } from "memfs";
-
-vi.mock("node:fs");
-vi.mock("node:fs/promises", async () => {
-  const memfs: { fs: typeof fs } = await vi.importActual("memfs");
-  return memfs.fs.promises;
-});
 
 vi.spyOn(logger, "silly").mockImplementation(() => {});
 vi.spyOn(logger, "warn").mockImplementation(() => {});
-
-import path from "node:path";
-import { findSWAConfigFile, traverseFolder } from "./user-config.js";
 
 describe("userConfig", () => {
   describe("traverseFolder()", () => {

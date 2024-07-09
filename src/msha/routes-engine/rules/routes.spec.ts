@@ -1,10 +1,15 @@
-vi.mock("../../../core/utils/logger", () => {
-  return {
-    logger: {
-      silly: () => {},
-    },
-  };
-});
+import "../../../../tests/_mocks/fs.js";
+import { vol } from "memfs";
+import type http from "node:http";
+import { MockInstance } from "vitest";
+import { applyRedirectResponse, isRequestMethodValid, isRouteRequiringUserRolesCheck, tryFindFileForRequest, tryGetMatchingRoute } from "./routes.js";
+import { logger } from "../../../core/utils/logger.js";
+
+import * as routeModule from "../route-processor.js";
+import * as cookieModule from "../../../core/utils/cookie.js";
+
+vi.spyOn(logger, "silly").mockImplementation(() => {});
+
 vi.mock("../../../core/constants", () => {
   return {
     SWA_CLI_OUTPUT_LOCATION: "/",
@@ -25,26 +30,18 @@ vi.mock("../../../config", () => {
   };
 });
 
-import type http from "node:http";
-import mockFs from "mock-fs";
-import { MockInstance } from "vitest";
-import { applyRedirectResponse, isRequestMethodValid, isRouteRequiringUserRolesCheck, tryFindFileForRequest, tryGetMatchingRoute } from "./routes.js";
-
-import * as routeModule from "../route-processor.js";
-import * as cookieModule from "../../../core/utils/cookie.js";
-
 // btoa is only available in Node.js >= 16
 const btoa = (str: string) => Buffer.from(str).toString("base64");
 
 describe("route utilities", () => {
   describe("route", () => {
     describe("tryFindFileForRequest()", () => {
-      afterEach(() => {
-        mockFs.restore();
+      beforeEach(() => {
+        vol.reset();
       });
 
       it("should return NULL when file doesn't exist", () => {
-        mockFs({
+        vol.fromJSON({
           "/bar.txt": "",
         });
 
@@ -53,7 +50,7 @@ describe("route utilities", () => {
       });
 
       it("should return file path when file exists", () => {
-        mockFs({
+        vol.fromJSON({
           "/foo.png": "",
         });
 
@@ -62,7 +59,7 @@ describe("route utilities", () => {
       });
 
       it("should return file path when file (without extension) exists", () => {
-        mockFs({
+        vol.fromJSON({
           "/foo": "",
         });
 
@@ -71,7 +68,7 @@ describe("route utilities", () => {
       });
 
       it("should return NULL when file (without extension) doesn't exist", () => {
-        mockFs({
+        vol.fromJSON({
           "/foo.txt": "",
         });
 
@@ -80,7 +77,7 @@ describe("route utilities", () => {
       });
 
       it("should return file path when file (w/ space) exists", () => {
-        mockFs({
+        vol.fromJSON({
           "/foo bar.png": "",
         });
 
@@ -89,7 +86,7 @@ describe("route utilities", () => {
       });
 
       it("should return file path when file (w/ percent-encoded symbols) exists", () => {
-        mockFs({
+        vol.fromJSON({
           "/with space.html": "",
         });
 
@@ -98,7 +95,7 @@ describe("route utilities", () => {
       });
 
       it("should return file path when file exists in subfolder", () => {
-        mockFs({
+        vol.fromJSON({
           "/foo/bar.png": "",
         });
 
@@ -107,7 +104,7 @@ describe("route utilities", () => {
       });
 
       it("should return file path when file exists in subfolder (w/ percent-encoded symbols)", () => {
-        mockFs({
+        vol.fromJSON({
           "/with space/index.html": "",
         });
 
@@ -116,7 +113,7 @@ describe("route utilities", () => {
       });
 
       it("should return null when index.html does not exist", () => {
-        mockFs({
+        vol.fromNestedJSON({
           "/foo": {
             "foo.html": "",
           },
@@ -127,7 +124,7 @@ describe("route utilities", () => {
       });
 
       it("should return index.html when folder is provided", () => {
-        mockFs({
+        vol.fromNestedJSON({
           "/foo": {
             "index.html": "",
           },
@@ -138,7 +135,7 @@ describe("route utilities", () => {
       });
 
       it("should return same file if using dev server", async () => {
-        mockFs({
+        vol.fromNestedJSON({
           "/foo": {
             "index.html": "",
           },
@@ -284,8 +281,25 @@ describe("route utilities", () => {
           },
         ],
       };
-      let spyDoesRequestPathMatchRoute: MockInstance<(this: boolean | undefined, requestPath: string, routeRule: SWAConfigFileRoute | undefined, requestMethod: string | null | undefined, methods: string[] | null | undefined, authStatus: number) => boolean | undefined>;
-      let spyDoesRequestPathMatchLegacyRoute: MockInstance<(this: boolean | undefined, requestPath: string, routeRule: SWAConfigFileRoute | undefined, isAuthRequest: boolean, isFileRequest: boolean) => boolean | undefined>;
+      let spyDoesRequestPathMatchRoute: MockInstance<
+        (
+          this: boolean | undefined,
+          requestPath: string,
+          routeRule: SWAConfigFileRoute | undefined,
+          requestMethod: string | null | undefined,
+          methods: string[] | null | undefined,
+          authStatus: number
+        ) => boolean | undefined
+      >;
+      let spyDoesRequestPathMatchLegacyRoute: MockInstance<
+        (
+          this: boolean | undefined,
+          requestPath: string,
+          routeRule: SWAConfigFileRoute | undefined,
+          isAuthRequest: boolean,
+          isFileRequest: boolean
+        ) => boolean | undefined
+      >;
       beforeEach(() => {
         spyDoesRequestPathMatchRoute = vi.spyOn(routeModule, "doesRequestPathMatchRoute");
         spyDoesRequestPathMatchLegacyRoute = vi.spyOn(routeModule, "doesRequestPathMatchLegacyRoute");

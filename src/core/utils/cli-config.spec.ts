@@ -1,18 +1,13 @@
+import "../../../tests/_mocks/fs.js";
 import { fs, vol } from "memfs";
 import { logger } from "./logger.js";
 import * as cliConfigModule from "./cli-config.js";
 import { getConfigFileOptions, updateSwaCliConfigFile, writeConfigFile } from "./cli-config.js";
 
-// Spy on console to avoid this error: https://github.com/tschaub/mock-fs/issues/234
-vi.spyOn(global.console, "log").mockImplementation(() => {});
-vi.spyOn(global.console, "warn").mockImplementation(() => {});
-vi.spyOn(global.console, "error").mockImplementation(() => {});
-
-const errorLogger = vi.fn();
-vi.mock("../../core/utils/logger", () => {
+vi.mock("./logger", () => {
   return {
     logger: {
-      error: errorLogger,
+      error: vi.fn(),
       log: vi.fn(),
       warn: vi.fn(),
       silly: vi.fn(),
@@ -20,13 +15,6 @@ vi.mock("../../core/utils/logger", () => {
     logGitHubIssueMessageAndExit: vi.fn(),
   };
 });
-
-vi.mock("node:fs");
-vi.mock("node:fs/promises", async () => {
-  const memfs: { fs: typeof fs } = await vi.importActual("memfs");
-  return memfs.fs.promises;
-});
-const writeFileMock = vi.mocked("node:fs/promises.writeFile")
 
 const mockConfig1 = {
   $schema: "../../../schema/swa-cli.config.schema.json",
@@ -63,49 +51,48 @@ const mockConfig2 = {
 
 describe("CLI config", () => {
   describe("getConfigFileOptions()", () => {
-
     beforeEach(() => {
       vol.reset();
     });
 
     it("Should return empty object if not found", async () => {
       vol.fromJSON({
-        "swa-cli.config.json": JSON.stringify(mockConfig1)
+        "swa-cli.config.json": JSON.stringify(mockConfig1),
       });
       expect(await getConfigFileOptions("app", "")).toStrictEqual({});
     });
 
     it("Should return empty object if contex is undefined", async () => {
       vol.fromJSON({
-        "swa-cli.config.json": JSON.stringify(mockConfig1)
+        "swa-cli.config.json": JSON.stringify(mockConfig1),
       });
       expect(await getConfigFileOptions(undefined, "")).toStrictEqual({});
     });
 
     it("Should return empty object if config name is not found", async () => {
       vol.fromJSON({
-        "swa-cli.config.json": JSON.stringify(mockConfig1)
+        "swa-cli.config.json": JSON.stringify(mockConfig1),
       });
       expect(await getConfigFileOptions("configName", "swa-cli.config.json")).toStrictEqual({});
     });
 
     it("Should return proper config options", async () => {
       vol.fromJSON({
-        "swa-cli.config.json": JSON.stringify(mockConfig1)
+        "swa-cli.config.json": JSON.stringify(mockConfig1),
       });
       expect(await getConfigFileOptions("app", "swa-cli.config.json")).toStrictEqual(mockConfig1.configurations.app);
     });
 
     it("Should return the default config if there are one or more configs", async () => {
       vol.fromJSON({
-        "swa-cli.config.json": JSON.stringify(mockConfig1)
+        "swa-cli.config.json": JSON.stringify(mockConfig1),
       });
       expect(await getConfigFileOptions(undefined, "swa-cli.config.json")).toStrictEqual(mockConfig1.configurations.app);
     });
 
     it("Should return a default config", async () => {
       vol.fromJSON({
-        "swa-cli.config.json": JSON.stringify(mockConfig2)
+        "swa-cli.config.json": JSON.stringify(mockConfig2),
       });
       expect(await getConfigFileOptions(undefined, "swa-cli.config.json")).toStrictEqual(mockConfig2.configurations.app);
     });
@@ -116,7 +103,7 @@ describe("CLI config", () => {
 
     it("Should return proper config without path specified", async () => {
       vol.fromJSON({
-        "swa-cli.config.json": JSON.stringify(mockConfig1)
+        "swa-cli.config.json": JSON.stringify(mockConfig1),
       });
       expect(await getConfigFileOptions("app", "swa-cli.config.json")).toStrictEqual(mockConfig1.configurations.app);
     });
@@ -151,6 +138,7 @@ describe("CLI config", () => {
 
       // set currentSwaCliConfigFromFile to undefined
       const spyGetCurrentSwaCliConfigFromFile = vi.spyOn(cliConfigModule, "getCurrentSwaCliConfigFromFile").mockReturnValue(undefined);
+      const spyWriteFile = vi.spyOn(fs, "writeFile");
 
       const storedConfig = {
         configurations: {
@@ -160,13 +148,13 @@ describe("CLI config", () => {
         },
       };
       vol.fromJSON({
-        "swa-cli.config.json": JSON.stringify(storedConfig)
+        "swa-cli.config.json": JSON.stringify(storedConfig),
       });
 
       await updateSwaCliConfigFile(config);
 
       // we should not write to config file
-      expect(writeFileMock).not.toHaveBeenCalled();
+      expect(spyWriteFile).not.toHaveBeenCalled();
       expect(spyGetCurrentSwaCliConfigFromFile).toHaveBeenCalled();
       expect(logger.error).toHaveBeenCalledWith("No configuration file currently loaded", true);
     });
@@ -179,6 +167,7 @@ describe("CLI config", () => {
 
       // set currentSwaCliConfigFromFile to undefined
       const spyGetCurrentSwaCliConfigFromFile = vi.spyOn(cliConfigModule, "getCurrentSwaCliConfigFromFile").mockReturnValue({ name: "app" } as any);
+      const spyWriteFile = vi.spyOn(fs, "writeFile");
       // const spyProcessExit = vi.spyOn(process, "exit").mockImplementation(() => {});
 
       const mockConfig = {
@@ -187,13 +176,13 @@ describe("CLI config", () => {
         },
       };
       vol.fromJSON({
-        "swa-cli.config.json": JSON.stringify(mockConfig)
+        "swa-cli.config.json": JSON.stringify(mockConfig),
       });
 
       await updateSwaCliConfigFile(config);
 
       expect(spyGetCurrentSwaCliConfigFromFile).toHaveBeenCalled();
-      expect(writeFileMock).toHaveBeenCalled();
+      expect(spyWriteFile).toHaveBeenCalled();
       //expect(spyProcessExit).not.toHaveBeenCalled();
     });
   });
@@ -216,15 +205,16 @@ describe("CLI config", () => {
         },
       };
       vol.fromJSON({
-        "swa-cli.config.json": JSON.stringify(mockConfig)
+        "swa-cli.config.json": JSON.stringify(mockConfig),
       });
+      const spyWriteFile = vi.spyOn(fs, "writeFile");
 
       await writeConfigFile("swa-cli.config.json", "foo", config);
       const savedFileContent = fs.readFileSync("swa-cli.config.json", "utf8");
 
-      expect(writeFileMock).toHaveBeenCalled();
+      expect(spyWriteFile).toHaveBeenCalled();
       expect(spySwaCliConfigFileExists).toHaveBeenCalled();
-      expect(JSON.parse('' + savedFileContent).configurations.foo).toStrictEqual(config);
+      expect(JSON.parse("" + savedFileContent).configurations.foo).toStrictEqual(config);
     });
 
     it("Should override existing config into file", async () => {
@@ -234,21 +224,22 @@ describe("CLI config", () => {
         apiLocation: "./",
       };
 
-      const mockConfig ={
+      const mockConfig = {
         configurations: {
           app: {},
         },
       };
       vol.fromJSON({
-        "swa-cli.config.json": JSON.stringify(mockConfig)
+        "swa-cli.config.json": JSON.stringify(mockConfig),
       });
+      const spyWriteFile = vi.spyOn(fs, "writeFile");
 
       await writeConfigFile("swa-cli.config.json", "app", config);
       const savedFileContent = fs.readFileSync("swa-cli.config.json", "utf8");
 
-      expect(writeFileMock).toHaveBeenCalled();
+      expect(spyWriteFile).toHaveBeenCalled();
       expect(spySwaCliConfigFileExists).toHaveBeenCalled();
-      expect(JSON.parse('' + savedFileContent).configurations.app).toStrictEqual(config);
+      expect(JSON.parse("" + savedFileContent).configurations.app).toStrictEqual(config);
     });
 
     it("Should add an configuration entry if it does not exist", async () => {
@@ -259,15 +250,16 @@ describe("CLI config", () => {
       };
 
       vol.fromJSON({
-        "swa-cli.config.json": "{}"
+        "swa-cli.config.json": "{}",
       });
+      const spyWriteFile = vi.spyOn(fs, "writeFile");
 
       await writeConfigFile("swa-cli.config.json", "app", config);
       const savedFileContent = fs.readFileSync("swa-cli.config.json", "utf8");
 
-      expect(writeFileMock).toHaveBeenCalled();
+      expect(spyWriteFile).toHaveBeenCalled();
       expect(spySwaCliConfigFileExists).toHaveBeenCalled();
-      expect(JSON.parse('' + savedFileContent).configurations.app).toStrictEqual(config);
+      expect(JSON.parse("" + savedFileContent).configurations.app).toStrictEqual(config);
     });
 
     it("Should error if config file is malformed", async () => {
@@ -277,12 +269,11 @@ describe("CLI config", () => {
       };
 
       vol.fromJSON({
-        "swa-cli.config.json": "\"\""
+        "swa-cli.config.json": '""',
       });
 
       await writeConfigFile("swa-cli.config.json", "app", config);
-
-      expect(errorLogger).toHaveBeenCalled();
+      expect(logger.error).toHaveBeenCalled();
     });
   });
 });

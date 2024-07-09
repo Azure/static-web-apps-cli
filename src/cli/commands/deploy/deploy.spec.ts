@@ -1,7 +1,8 @@
+import "../../../../tests/_mocks/fs.js";
 import child_process from "node:child_process";
-import mockFs from "mock-fs";
 import path from "node:path";
 import { logger } from "../../../core/utils/logger.js";
+import { vol } from "memfs";
 import * as accountModule from "../../../core/account.js";
 import * as deployClientModule from "../../../core/deploy-client.js";
 import { deploy } from "./deploy.js";
@@ -21,7 +22,7 @@ vi.mock("../../../core/utils/logger", () => {
       warn: vi.fn(),
       silly: vi.fn(),
     },
-    logGitHubIssueMessageAndExit: vi.fn()
+    logGitHubIssueMessageAndExit: vi.fn(),
   };
 });
 
@@ -50,16 +51,13 @@ describe("deploy", () => {
   const OLD_ENV = process.env;
 
   beforeEach(() => {
+    vol.reset();
     vi.resetModules();
     process.env = {};
   });
 
   afterAll(() => {
     process.env = OLD_ENV;
-  });
-
-  afterEach(() => {
-    mockFs.restore();
   });
 
   it("should be a function", () => {
@@ -71,7 +69,6 @@ describe("deploy", () => {
   });
 
   it("should print warning when using dry run mode", async () => {
-    mockFs();
     await deploy({
       outputLocation: "./dist",
       dryRun: true,
@@ -82,7 +79,6 @@ describe("deploy", () => {
   });
 
   it.skip("should print error and exit when --api-location does not exist", async () => {
-    mockFs();
     await deploy({
       outputLocation: "./dist",
       apiLocation: "/does/not/exist",

@@ -1,16 +1,11 @@
+import "../../../tests/_mocks/fs.js";
 import { Command } from "commander";
-import { fs, vol } from "memfs";
+import { vol } from "memfs";
 import { swaCliConfigFilename } from "./cli-config.js";
 import { parsePort } from "./net.js";
 import { parseServerTimeout } from "./cli.js";
 import { configureOptions, getUserOptions } from "./options.js";
 import { DEFAULT_CONFIG } from "../../config.js";
-
-vi.mock("node:fs");
-vi.mock("node:fs/promises", async () => {
-  const memfs: { fs: typeof fs } = await vi.importActual("memfs");
-  return memfs.fs.promises;
-});
 
 describe("configureOptions()", () => {
   beforeEach(() => {

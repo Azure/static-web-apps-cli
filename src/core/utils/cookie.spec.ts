@@ -1,8 +1,11 @@
 vi.mock("./logger", () => {
-  logger: {
-    silly: vi.fn();
-  }
+  return {
+    logger: {
+      silly: vi.fn(),
+    },
+  };
 });
+
 import { validateCookie } from "./cookie.js";
 
 describe("validateCookie()", () => {

@@ -1,4 +1,6 @@
-vi.mock("../constants", () => {});
+vi.mock("../constants", () => {
+  return {};
+});
 import { logger } from "./logger.js";
 import { address, hostnameToIpAdress, isHttpsUrl, parsePort, parseUrl, response } from "./net.js";
 
@@ -313,19 +315,19 @@ describe("net utilities", () => {
 
   describe("isHttpsUrl()", () => {
     it("https url should be valid", () => {
-      expect(isHttpsUrl("https://foo.com")).toBeTrue();
+      expect(isHttpsUrl("https://foo.com")).to.be.true;
     });
     it("http url should be invalid", () => {
-      expect(isHttpsUrl("http://foo.com")).toBeFalse();
+      expect(isHttpsUrl("http://foo.com")).to.be.false;
     });
     it("empty url should be invalid", () => {
-      expect(isHttpsUrl(undefined)).toBeFalse();
+      expect(isHttpsUrl(undefined)).to.be.false;
     });
     it("wrong Url should be invalid", () => {
-      expect(isHttpsUrl("foo.com")).toBeFalse();
+      expect(isHttpsUrl("foo.com")).to.be.false;
     });
     it("url should not be case sensitive", () => {
-      expect(isHttpsUrl("HTTPS://foo.com")).toBeTrue();
+      expect(isHttpsUrl("HTTPS://foo.com")).to.be.true;
     });
   });
 });

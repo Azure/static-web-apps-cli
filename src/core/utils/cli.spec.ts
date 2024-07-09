@@ -1,6 +1,9 @@
-vi.mock("../constants", () => {});
-import mockFs from "mock-fs";
+import "../../../tests/_mocks/fs.js";
+vi.mock("../constants", () => {
+  return {};
+});
 import path from "node:path";
+import { vol } from "memfs";
 import { argv, createStartupScriptCommand, parseServerTimeout } from "./cli.js";
 import { logger } from "./logger.js";
 
@@ -112,11 +115,11 @@ describe("createStartupScriptCommand()", () => {
     });
   });
   describe("an external script", () => {
-    afterEach(() => {
-      mockFs.restore();
+    beforeEach(() => {
+      vol.reset();
     });
     it("should parse relative script file ./script.sh", () => {
-      mockFs({
+      vol.fromJSON({
         "script.sh": "",
       });
       const cmd = createStartupScriptCommand("script.sh", {});
@@ -124,15 +127,15 @@ describe("createStartupScriptCommand()", () => {
     });
 
     it("should parse relative script file ./script.sh from the root of --app-location", () => {
-      mockFs({
+      vol.fromJSON({
         "/bar/script.sh": "",
       });
       const cmd = createStartupScriptCommand("script.sh", { appLocation: `${path.sep}bar` });
-      expect(cmd).toInclude(path.join(path.sep, "bar", "script.sh"));
+      expect(cmd).to.include(path.join(path.sep, "bar", "script.sh"));
     });
 
     it("should parse absolute script file /foo/script.sh", () => {
-      mockFs({
+      vol.fromNestedJSON({
         "/foo": {
           "script.sh": "",
         },

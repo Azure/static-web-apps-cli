@@ -1,7 +1,7 @@
 import { fs, vol } from "memfs";
 import { program } from "commander";
 import { run } from "./index.js";
-import pkg from "../../package.json" with { type: "json" };
+import pkg from "../../package.json";
 
 vi.mock("node:fs");
 vi.mock("node:fs/promises", async () => {

@@ -1,13 +1,17 @@
-import { fs, vol } from "memfs"
+import "../../tests/_mocks/fetch.js";
+import "../../tests/_mocks/fs.js";
+
+import { vol } from "memfs";
 import os from "node:os";
 import path from "node:path";
 import { DEPLOY_BINARY_NAME, DEPLOY_FOLDER } from "./constants.js";
 import { fetchClientVersionDefinition, getLocalClientMetadata } from "./deploy-client.js";
 import { getPlatform } from "./utils/platform.js";
+import * as nodeFetch from "node-fetch";
+import { Response } from "node-fetch";
 
-vi.mock("node-fetch", () => vi.fn());
 vi.mock("node:os", async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual: typeof os = await importOriginal();
   return {
     ...actual,
     platform: () => "linux",
@@ -17,14 +21,10 @@ vi.mock("node:os", async (importOriginal) => {
   };
 });
 
-vi.mock("node:fs");
-vi.mock("node:fs/promises", async () => {
-  const memfs: { fs: typeof fs } = await vi.importActual("memfs");
-  return memfs.fs.promises;
-});
+const fetch = vi.mocked(nodeFetch).default;
 
 function mockResponse(response: any, status = 200) {
-  vi.mocked("node-fetch").mockResolvedValue({ status, json: () => Promise.resolve(response) });
+  fetch.mockResolvedValue(new Response(JSON.stringify(response), { status }));
 }
 
 function getMockedLocalClientMetadata({ version, isWindows }: { version: string; isWindows?: boolean }) {
