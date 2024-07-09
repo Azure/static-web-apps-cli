@@ -1,15 +1,20 @@
 import "../../../tests/_mocks/fs.js";
 import { vol } from "memfs";
 import path from "node:path";
+import { MockInstance } from "vitest";
 import { findSWAConfigFile, traverseFolder } from "./user-config.js";
 import { logger } from "./logger.js";
+import { convertToNativePaths } from "../../test.helpers.js";
 
 vi.spyOn(logger, "silly").mockImplementation(() => {});
 vi.spyOn(logger, "warn").mockImplementation(() => {});
 
 describe("userConfig", () => {
   describe("traverseFolder()", () => {
+    let processSpy: MockInstance<(this: string) => string>;
+
     beforeEach(() => {
+      processSpy = vi.spyOn(process, "cwd").mockReturnValue(convertToNativePaths("/ABSOLUTE_PATH"));
       vol.reset();
     });
 
@@ -22,6 +27,9 @@ describe("userConfig", () => {
     };
 
     it("should handle empty folders", async () => {
+      vol.fromNestedJSON({
+        [convertToNativePaths("/ABSOLUTE_PATH")]: {},
+      });
       const entry = await asyncGeneratorToArray(traverseFolder("."));
       expect(entry).toEqual([]);
     });
@@ -135,8 +143,8 @@ describe("userConfig", () => {
     });
 
     it("should warn if routes.json is found (root project)", async () => {
-      vol.fromNestedJSON({
-        "routes.json": `{ "routes": []}`,
+      vol.fromJSON({
+        "routes.json": JSON.stringify({ routes: [] }),
       });
 
       const config = await findSWAConfigFile(".");
@@ -170,9 +178,9 @@ describe("userConfig", () => {
       vol.fromNestedJSON({
         s: {
           w: {
-            "staticwebapp.config.json": `{ "routes": []}`,
+            "staticwebapp.config.json": JSON.stringify({ routes: [] }),
             a: {
-              "routes.json": `{ "routes": []}`,
+              "routes.json": JSON.stringify({ routes: [] }),
             },
           },
         },

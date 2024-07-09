@@ -1,18 +1,12 @@
 import "../../../../tests/_mocks/fs.js";
 import child_process from "node:child_process";
-import path from "node:path";
 import { logger } from "../../../core/utils/logger.js";
 import { vol } from "memfs";
 import * as accountModule from "../../../core/account.js";
 import * as deployClientModule from "../../../core/deploy-client.js";
 import { deploy } from "./deploy.js";
 import * as loginModule from "../login/login.js";
-
-const pkg = require(path.join(__dirname, "..", "..", "..", "..", "package.json"));
-
-vi.mock("ora", () => {
-  return vi.fn();
-});
+import pkg from "../../../../package.json";
 
 vi.mock("../../../core/utils/logger", () => {
   return {

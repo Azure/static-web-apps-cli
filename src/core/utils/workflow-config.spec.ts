@@ -26,11 +26,7 @@ describe("readWorkflowFile()", () => {
 
   beforeEach(() => {
     processSpy = vi.spyOn(process, "cwd").mockReturnValue(convertToNativePaths("/ABSOLUTE_PATH"));
-  });
-
-  afterEach(() => {
     vol.reset();
-    processSpy.mockRestore();
   });
 
   it("config file not found should return undefined", () => {

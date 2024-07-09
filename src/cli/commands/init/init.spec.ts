@@ -5,9 +5,6 @@ import { DEFAULT_CONFIG } from "../../../config.js";
 import { swaCliConfigFilename } from "../../../core/utils/cli-config.js";
 import { convertToNativePaths } from "../../../test.helpers.js";
 
-const promptsMock = vi.fn();
-vi.mock("prompts", () => promptsMock);
-
 const defaultCliConfig = {
   ...DEFAULT_CONFIG,
   config: swaCliConfigFilename,
@@ -29,6 +26,9 @@ const defautResolvedPrompts = {
 describe("swa init", () => {
   beforeEach(() => {
     vol.reset();
+    vi.mock("prompts", () => {
+      return vi.fn();
+    });
   });
 
   it("should create a config file", async () => {

@@ -21,10 +21,6 @@ describe("swa build", () => {
     vol.reset();
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   it("should run app build command", async () => {
     const command = await import("../../../core/utils/command.js");
     command.runCommand = vi.fn().mockImplementation(vi.fn());

@@ -5,7 +5,6 @@ import { Buffer } from "node:buffer";
 import { vol } from "memfs";
 import { type ObjectEncodingOptions } from "node:fs";
 import { sep } from "node:path";
-import { Readable } from "node:stream";
 import cp, { ExecException } from "node:child_process";
 import {
   detectTargetCoreToolsVersion,
@@ -44,7 +43,7 @@ function mockResponse(response: any, status = 200) {
 }
 
 describe("funcCoreTools", () => {
-  afterEach(() => {
+  beforeEach(() => {
     vol.reset();
   });
 

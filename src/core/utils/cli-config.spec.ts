@@ -3,6 +3,8 @@ import { fs, vol } from "memfs";
 import { logger } from "./logger.js";
 import * as cliConfigModule from "./cli-config.js";
 import { getConfigFileOptions, updateSwaCliConfigFile, writeConfigFile } from "./cli-config.js";
+import { promises as fsPromises } from "node:fs";
+import { MockInstance } from "vitest";
 
 vi.mock("./logger", () => {
   return {
@@ -126,8 +128,11 @@ describe("CLI config", () => {
   });
 
   describe("updateSwaCliConfigFile", () => {
+    let spyWriteFile: MockInstance;
+
     beforeEach(() => {
       vol.reset();
+      spyWriteFile = vi.spyOn(fsPromises, "writeFile");
     });
 
     it("Should fail and exit when currentSwaCliConfigFromFile is undefined", async () => {
@@ -138,7 +143,6 @@ describe("CLI config", () => {
 
       // set currentSwaCliConfigFromFile to undefined
       const spyGetCurrentSwaCliConfigFromFile = vi.spyOn(cliConfigModule, "getCurrentSwaCliConfigFromFile").mockReturnValue(undefined);
-      const spyWriteFile = vi.spyOn(fs, "writeFile");
 
       const storedConfig = {
         configurations: {
@@ -167,8 +171,6 @@ describe("CLI config", () => {
 
       // set currentSwaCliConfigFromFile to undefined
       const spyGetCurrentSwaCliConfigFromFile = vi.spyOn(cliConfigModule, "getCurrentSwaCliConfigFromFile").mockReturnValue({ name: "app" } as any);
-      const spyWriteFile = vi.spyOn(fs, "writeFile");
-      // const spyProcessExit = vi.spyOn(process, "exit").mockImplementation(() => {});
 
       const mockConfig = {
         configurations: {
@@ -183,13 +185,15 @@ describe("CLI config", () => {
 
       expect(spyGetCurrentSwaCliConfigFromFile).toHaveBeenCalled();
       expect(spyWriteFile).toHaveBeenCalled();
-      //expect(spyProcessExit).not.toHaveBeenCalled();
     });
   });
 
   describe("writeConfigFile()", () => {
+    let spyWriteFile: MockInstance;
+
     beforeEach(() => {
       vol.reset();
+      spyWriteFile = vi.spyOn(fsPromises, "writeFile");
     });
 
     it("Should write new config into file", async () => {
@@ -207,7 +211,6 @@ describe("CLI config", () => {
       vol.fromJSON({
         "swa-cli.config.json": JSON.stringify(mockConfig),
       });
-      const spyWriteFile = vi.spyOn(fs, "writeFile");
 
       await writeConfigFile("swa-cli.config.json", "foo", config);
       const savedFileContent = fs.readFileSync("swa-cli.config.json", "utf8");
@@ -232,7 +235,6 @@ describe("CLI config", () => {
       vol.fromJSON({
         "swa-cli.config.json": JSON.stringify(mockConfig),
       });
-      const spyWriteFile = vi.spyOn(fs, "writeFile");
 
       await writeConfigFile("swa-cli.config.json", "app", config);
       const savedFileContent = fs.readFileSync("swa-cli.config.json", "utf8");
@@ -252,7 +254,6 @@ describe("CLI config", () => {
       vol.fromJSON({
         "swa-cli.config.json": "{}",
       });
-      const spyWriteFile = vi.spyOn(fs, "writeFile");
 
       await writeConfigFile("swa-cli.config.json", "app", config);
       const savedFileContent = fs.readFileSync("swa-cli.config.json", "utf8");

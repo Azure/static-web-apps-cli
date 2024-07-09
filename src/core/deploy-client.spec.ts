@@ -2,6 +2,7 @@ import "../../tests/_mocks/fetch.js";
 import "../../tests/_mocks/fs.js";
 
 import { vol } from "memfs";
+import { MockInstance } from "vitest";
 import os from "node:os";
 import path from "node:path";
 import { DEPLOY_BINARY_NAME, DEPLOY_FOLDER } from "./constants.js";
@@ -63,10 +64,6 @@ describe("deploy client", () => {
 
     afterAll(() => {
       process.env = OLD_ENV;
-    });
-
-    afterEach(() => {
-      vi.resetAllMocks();
     });
 
     describe("should return undefined when release metadata is", () => {
@@ -278,7 +275,11 @@ describe("deploy client", () => {
   });
 
   describe("getPlatform()", () => {
-    const spy = vi.spyOn(os, "platform");
+    let spy: MockInstance;
+
+    beforeEach(() => {
+      spy = vi.spyOn(os, "platform");
+    });
 
     it("should return 'linux-x64' when platform is 'linux'", () => {
       spy.mockReturnValue("linux");
