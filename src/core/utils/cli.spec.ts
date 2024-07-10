@@ -152,13 +152,15 @@ describe("createStartupScriptCommand()", () => {
   });
 
   describe("parseServerTimeout()", () => {
-    const mockLoggerError = vi.spyOn(logger, "error").mockImplementation(() => {
-      return undefined as never;
+    beforeEach(() => {
+      vi.spyOn(logger, "error").mockImplementation(() => {
+        return undefined as never;
+      });
     });
 
     it("DevserverTimeout below 0 should be invalid", () => {
       parseServerTimeout("-10");
-      expect(mockLoggerError).toBeCalled();
+      expect(logger.error).toHaveBeenCalled();
     });
 
     it("DevserverTimeout for any positive value should be valid", () => {
@@ -168,7 +170,7 @@ describe("createStartupScriptCommand()", () => {
 
     it("Non-number DevserverTimeout should be invalid", () => {
       parseServerTimeout("not a number");
-      expect(mockLoggerError).toBeCalled();
+      expect(logger.error).toHaveBeenCalled();
     });
   });
 });

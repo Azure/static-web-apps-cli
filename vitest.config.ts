@@ -5,6 +5,7 @@ export default defineConfig({
     globals: true,
     include: ["src/**/*.spec.ts"],
     mockReset: true,
+    restoreMocks: true,
     server: {
       deps: {
         inline: ["to-vfile"],

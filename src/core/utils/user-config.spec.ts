@@ -8,15 +8,14 @@ import { convertToNativePaths } from "../../test.helpers.js";
 
 const currentDir = "/a";
 
-vi.spyOn(logger, "silly").mockImplementation(() => {});
-vi.spyOn(logger, "warn").mockImplementation(() => {});
-
 describe("userConfig", () => {
   describe("traverseFolder()", () => {
     let processSpy: MockInstance<(this: string) => string>;
 
     beforeEach(() => {
       processSpy = vi.spyOn(process, "cwd").mockReturnValue(convertToNativePaths(currentDir));
+      vi.spyOn(logger, "silly").mockImplementation(() => {});
+      vi.spyOn(logger, "warn").mockImplementation(() => {});
       vol.reset();
     });
 
@@ -124,6 +123,8 @@ describe("userConfig", () => {
 
   describe("findSWAConfigFile()", () => {
     beforeEach(() => {
+      vi.spyOn(logger, "silly").mockImplementation(() => {});
+      vi.spyOn(logger, "warn").mockImplementation(() => {});
       vol.reset();
     });
 

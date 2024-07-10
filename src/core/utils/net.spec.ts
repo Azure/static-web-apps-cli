@@ -236,21 +236,23 @@ describe("net utilities", () => {
   });
 
   describe("parsePort()", () => {
-    const mockLoggerError = vi.spyOn(logger, "error").mockImplementation(() => {
-      return undefined as never;
+    beforeEach(() => {
+      vi.spyOn(logger, "error").mockImplementation(() => {
+        return undefined as never;
+      });
     });
 
     it("Ports below 1024 should be invalid", () => {
       parsePort("0");
-      expect(mockLoggerError).toBeCalled();
+      expect(logger.error).toHaveBeenCalled();
     });
     it("Ports above 49151 should be invalid", () => {
       parsePort("98765");
-      expect(mockLoggerError).toBeCalled();
+      expect(logger.error).toHaveBeenCalled();
     });
     it("Non-number ports should be invalid", () => {
       parsePort("not a number");
-      expect(mockLoggerError).toBeCalled();
+      expect(logger.error).toHaveBeenCalled();
     });
     it("Ports between 1024 - 49151 should be valid", () => {
       const port = parsePort("1984");
