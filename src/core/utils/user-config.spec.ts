@@ -128,7 +128,13 @@ describe("userConfig", () => {
     });
 
     it("should find no config file", async () => {
-      const file = await findSWAConfigFile(".");
+      vol.fromNestedJSON(
+        {
+          [convertToNativePaths(currentDir)]: {},
+        },
+        currentDir
+      );
+      const file = await findSWAConfigFile("/");
       expect(file).toBe(null);
     });
 
@@ -137,13 +143,13 @@ describe("userConfig", () => {
         s: {
           w: {
             a: {
-              "staticwebapp.config.json": `{ "routes": []}`,
+              "staticwebapp.config.json": JSON.stringify({ routes: [] }),
             },
           },
         },
       });
 
-      const config = await findSWAConfigFile(".");
+      const config = await findSWAConfigFile("/");
       expect(config?.filepath).toContain("staticwebapp.config.json");
     });
 
@@ -152,7 +158,7 @@ describe("userConfig", () => {
         "routes.json": JSON.stringify({ routes: [] }),
       });
 
-      const config = await findSWAConfigFile(".");
+      const config = await findSWAConfigFile("/");
       expect(config).toBeNull();
       expect(logger.warn).toHaveBeenLastCalledWith(
         `   WARNING: Functionality defined in the routes.json file is now deprecated. File will be ignored!\n` +
@@ -165,13 +171,13 @@ describe("userConfig", () => {
         s: {
           w: {
             a: {
-              "routes.json": `{ "routes": []}`,
+              "routes.json": JSON.stringify({ routes: [] }),
             },
           },
         },
       });
 
-      const config = await findSWAConfigFile(".");
+      const config = await findSWAConfigFile("/");
       expect(config).toBeNull();
       expect(logger.warn).toHaveBeenLastCalledWith(
         `   WARNING: Functionality defined in the routes.json file is now deprecated. File will be ignored!\n` +
@@ -191,7 +197,7 @@ describe("userConfig", () => {
         },
       });
 
-      const config = await findSWAConfigFile(".");
+      const config = await findSWAConfigFile("/");
       expect(config?.filepath).toContain("staticwebapp.config.json");
     });
   });
