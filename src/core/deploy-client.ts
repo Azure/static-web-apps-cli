@@ -95,16 +95,23 @@ export function getLocalClientMetadata(): StaticSiteClientLocalMetadata | null {
 export async function fetchClientVersionDefinition(releaseVersion: string): Promise<StaticSiteClientReleaseMetadata | undefined> {
   logger.silly(`Fetching release metadata for version: ${releaseVersion}. Please wait...`);
 
-  const remoteVersionDefinitions = (await fetch(STATIC_SITE_CLIENT_RELEASE_METADATA_URL).then((res) =>
-    res.json()
-  )) as StaticSiteClientReleaseMetadata[];
-  if (Array.isArray(remoteVersionDefinitions) && remoteVersionDefinitions.length) {
-    const releaseMetadata = remoteVersionDefinitions.find((versionDefinition) => versionDefinition?.version === releaseVersion);
+  try {
+    logger.silly(`GET ${STATIC_SITE_CLIENT_RELEASE_METADATA_URL}`);
+    const response = await fetch(STATIC_SITE_CLIENT_RELEASE_METADATA_URL);
+    if (!response.ok) {
+      logger.silly(`Response.status = ${response.status} ${response.statusText}`);
+      return undefined;
+    }
+    const remoteVersionDefinitions = (await response.json()) as StaticSiteClientReleaseMetadata[];
+    logger.silly(`Decode JSON: ${JSON.stringify(remoteVersionDefinitions, null, 2)}`);
+    if (Array.isArray(remoteVersionDefinitions) && remoteVersionDefinitions.length) {
+      const releaseMetadata = remoteVersionDefinitions.find((v) => v?.version === releaseVersion);
+      logger.silly(`Release Metadata for ${releaseVersion}: ${JSON.stringify(releaseMetadata, null, 2)}`);
+      return releaseMetadata;
+    }
+  } catch {}
 
-    logger.silly(releaseMetadata!);
-
-    return releaseMetadata;
-  }
+  logger.silly(`Could not find release metadata; returning undefined`);
   return undefined;
 }
 
