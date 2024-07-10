@@ -6,7 +6,6 @@ vi.mock("../constants", () => {
 });
 
 import path from "path";
-import { MockInstance } from "vitest";
 import { convertToNativePaths } from "../../test.helpers.js";
 import { readWorkflowFile } from "./workflow-config.js";
 
@@ -22,10 +21,7 @@ vi.mock("../../config", () => {
 });
 
 describe("readWorkflowFile()", () => {
-  let processSpy: MockInstance<(this: string) => string>;
-
   beforeEach(() => {
-    processSpy = vi.spyOn(process, "cwd").mockReturnValue(convertToNativePaths("/ABSOLUTE_PATH"));
     vol.reset();
   });
 

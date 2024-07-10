@@ -1,7 +1,6 @@
 import "../../../tests/_mocks/fs.js";
 import { vol } from "memfs";
 import path from "node:path";
-import { MockInstance } from "vitest";
 import { findSWAConfigFile, traverseFolder } from "./user-config.js";
 import { logger } from "./logger.js";
 import { convertToNativePaths } from "../../test.helpers.js";
@@ -10,10 +9,7 @@ const currentDir = "/a";
 
 describe("userConfig", () => {
   describe("traverseFolder()", () => {
-    let processSpy: MockInstance<(this: string) => string>;
-
     beforeEach(() => {
-      processSpy = vi.spyOn(process, "cwd").mockReturnValue(convertToNativePaths(currentDir));
       vi.spyOn(logger, "silly").mockImplementation(() => {});
       vi.spyOn(logger, "warn").mockImplementation(() => {});
       vol.reset();
