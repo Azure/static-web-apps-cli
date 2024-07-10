@@ -62,7 +62,26 @@ export function detectTargetCoreToolsVersion(nodeVersion: number): number {
   return 4;
 }
 
+// Cache the results of getInstalledSystemCoreToolsVersion
+// This supports the testing inside of func-core-tools.spec.ts
+let installedSystemCoreToolsVersionIsCached: boolean = false;
+let cachedSystemCoreToolsVersion: number | undefined = undefined;
+
+export function setCachedInstalledSystemCoreToolsVersion(version: number | undefined) {
+  cachedSystemCoreToolsVersion = version;
+  installedSystemCoreToolsVersionIsCached = true;
+}
+
+export function resetCachedInstalledSystemCoreToolsVersion(): void {
+  cachedSystemCoreToolsVersion = undefined;
+  installedSystemCoreToolsVersionIsCached = false;
+}
+
 async function getInstalledSystemCoreToolsVersion(): Promise<number | undefined> {
+  if (installedSystemCoreToolsVersionIsCached) {
+    return cachedSystemCoreToolsVersion;
+  }
+
   try {
     const { stdout: version } = await promisify(exec)(`${DEFAULT_FUNC_BINARY} --version`);
     return getMajorVersion(version);

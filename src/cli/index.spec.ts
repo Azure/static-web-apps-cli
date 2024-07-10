@@ -2,6 +2,7 @@ import { fs, vol } from "memfs";
 import { program } from "commander";
 import { run } from "./index.js";
 import pkg from "../../package.json";
+import * as builder from "./commands/build/build.js";
 
 vi.mock("node:fs");
 vi.mock("node:fs/promises", async () => {
@@ -9,18 +10,24 @@ vi.mock("node:fs/promises", async () => {
   return memfs.fs.promises;
 });
 
-const buildMock = vi.fn();
-vi.mock("./commands/build/build", () => ({
-  build: buildMock,
-}));
-
 const originalConsoleError = console.error;
+
+const expectedConfig = {
+  appBuildCommand: "npm run something",
+  appLocation: "app",
+  auto: false,
+  config: "swa-cli.config.json",
+  outputLocation: ".",
+  printConfig: false,
+  verbose: "log",
+};
 
 describe("cli", () => {
   beforeEach(() => {
     vol.reset();
     program.exitOverride();
     console.error = vi.fn();
+    vi.spyOn(builder, "build").mockResolvedValue();
   });
 
   afterAll(() => {
@@ -33,11 +40,11 @@ describe("cli", () => {
 
   it("should ignore empty spaces when using positional argument", async () => {
     await run(["node", "swa", "build", "   app  ", "--app-build-command", "npm run something"]);
-    expect(buildMock).toHaveBeenCalledWith({ appLocation: "app" });
+    expect(builder.build).toHaveBeenCalledWith({ ...expectedConfig, appLocation: "app" });
   });
 
   it("should not interpret empty spaces as a positional argument", async () => {
     await run(["node", "swa", "build", "    ", "--app-build-command", "npm run something", "   "]);
-    expect(buildMock).toHaveBeenCalledWith({ appLocation: "." });
+    expect(builder.build).toHaveBeenCalledWith({ ...expectedConfig, appLocation: "." });
   });
 });

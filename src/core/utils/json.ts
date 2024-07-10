@@ -2,8 +2,7 @@ import { Draft04, Draft, JsonError } from "json-schema-library";
 import { promises as fs } from "node:fs";
 import chalk from "chalk";
 import { logger } from "./logger.js";
-
-const configSchema = require("../../../schema/staticwebapp.config.json");
+import configSchema from "../../../schema/staticwebapp.config.json";
 
 /**
  * Loads JSON from the designated file path, printing any JSON errors to the console.

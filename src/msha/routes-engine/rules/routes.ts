@@ -184,7 +184,6 @@ export function isRequestMethodValid(req: http.IncomingMessage, isFunctionReques
 }
 
 export function getIndexHtml(requestPath: string | undefined) {
-  // skip requests that contains file extensions
   if (requestPath?.toLocaleLowerCase().endsWith("index.html") || requestPath?.includes(".")) {
     return requestPath;
   }

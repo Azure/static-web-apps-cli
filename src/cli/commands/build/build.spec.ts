@@ -97,16 +97,16 @@ describe("swa build", () => {
     expect(command.runCommand).not.toHaveBeenCalled();
   });
 
-  // JEST-TODO: Use unionfs combined with memfs to simulate mockFs.load
-  // it("should detect build config and run commands", async () => {
-  //   const execSyncMock = vi.spyOn(cp, "execSync");
-  //   mockFs({
-  //     src: mockFs.load("e2e/fixtures/static-node-ts")
-  //   });
+  // SKIPPED: Cannot mock execSync; need to set up unionfs for loading real file system.
+  it.skip("should detect build config and run commands", async () => {
+    const execSyncMock = vi.spyOn(cp, "execSync");
+    // mockFs({
+    //   src: mockFs.load("e2e/fixtures/static-node-ts")
+    // });
 
-  //   await build({ ...DEFAULT_CONFIG, auto: true });
-  //   expect(execSyncMock).toHaveBeenCalledTimes(2);
-  //   expect(execSyncMock).toHaveBeenCalledWith("npm install", { cwd: convertToNativePaths("src/node-ts") });
-  //   expect(execSyncMock).toHaveBeenCalledWith("npm run build --if-present", { cwd: convertToNativePaths("src/node-ts") });
-  // });
+    await build({ ...DEFAULT_CONFIG, auto: true });
+    expect(execSyncMock).toHaveBeenCalledTimes(2);
+    expect(execSyncMock).toHaveBeenCalledWith("npm install", { cwd: convertToNativePaths("src/node-ts") });
+    expect(execSyncMock).toHaveBeenCalledWith("npm run build --if-present", { cwd: convertToNativePaths("src/node-ts") });
+  });
 });

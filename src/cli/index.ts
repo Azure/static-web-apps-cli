@@ -20,8 +20,7 @@ import { default as registerBuild } from "./commands/build/register.js";
 import { registerDocs } from "./commands/docs.js";
 import { default as registerDb } from "./commands/db/init/register.js";
 import { promptOrUseDefault } from "../core/prompts.js";
-
-const pkg = require("../../package.json");
+import pkg from "../../package.json";
 
 function printWelcomeMessage(argv?: string[]) {
   const args = argv?.slice(2) || [];
@@ -69,15 +68,6 @@ export async function run(argv?: string[]) {
     .option("-cn, --config-name <name>", "name of the configuration to use", undefined)
     .option("-g, --print-config", "print all resolved options", false)
     .action(async (_options: SWACLIConfig, command: Command) => {
-      if ((_options as any).ping) {
-        try {
-          require("child_process").execSync("npx command-line-pong", { stdio: ["inherit", "inherit", "ignore"] });
-        } catch (e) {
-          console.log("pong!");
-        }
-        return;
-      }
-
       const options = await configureOptions(undefined, command.optsWithGlobals(), command, "init");
       swaMagic(options);
     })
