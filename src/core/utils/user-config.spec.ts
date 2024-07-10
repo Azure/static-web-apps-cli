@@ -4,7 +4,9 @@ import path from "node:path";
 import { MockInstance } from "vitest";
 import { findSWAConfigFile, traverseFolder } from "./user-config.js";
 import { logger } from "./logger.js";
-import { convertToNativePaths } from "../../test.helpers.js";
+import { , convertToNativePaths } from "../../test.helpers.js";
+
+const currentDir = "/a";
 
 vi.spyOn(logger, "silly").mockImplementation(() => {});
 vi.spyOn(logger, "warn").mockImplementation(() => {});
@@ -14,7 +16,7 @@ describe("userConfig", () => {
     let processSpy: MockInstance<(this: string) => string>;
 
     beforeEach(() => {
-      processSpy = vi.spyOn(process, "cwd").mockReturnValue(convertToNativePaths("/ABSOLUTE_PATH"));
+      processSpy = vi.spyOn(process, "cwd").mockReturnValue(convertToNativePaths(currentDir));
       vol.reset();
     });
 
@@ -28,8 +30,8 @@ describe("userConfig", () => {
 
     it("should handle empty folders", async () => {
       vol.fromNestedJSON({
-        [convertToNativePaths("/ABSOLUTE_PATH")]: {},
-      });
+        [convertToNativePaths(currentDir)]: {},
+      }, currentDir);
       const entry = await asyncGeneratorToArray(traverseFolder("."));
       expect(entry).toEqual([]);
     });

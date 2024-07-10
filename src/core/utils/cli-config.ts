@@ -19,6 +19,7 @@ let currentSwaCliConfigFromFile: SWACLIConfigInfo | undefined;
  * @returns The current configuration of the CLI loaded from the `swa-cli.config.json` file.
  */
 export const getCurrentSwaCliConfigFromFile = () => currentSwaCliConfigFromFile;
+export const setCurrentSwaCliConfigFromFile = (config: SWACLIConfigInfo | undefined) => (currentSwaCliConfigFromFile = config);
 
 /**
  * Checks if the given configuration file exists.

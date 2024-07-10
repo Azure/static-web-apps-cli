@@ -72,8 +72,15 @@ const mockProcessExit = (err?: any) => {
 
 describe("CLI config", () => {
   describe("getConfigFileOptions()", () => {
+    let originalSwaConfig: SWACLIConfigInfo | undefined;
+
     beforeEach(() => {
       vol.reset();
+      originalSwaConfig = cliConfigModule.getCurrentSwaCliConfigFromFile();
+    });
+
+    afterEach(() => {
+      cliConfigModule.setCurrentSwaCliConfigFromFile(originalSwaConfig);
     });
 
     it("Should return empty object if not found", async () => {
@@ -136,8 +143,8 @@ describe("CLI config", () => {
     });
 
     it("Should fail and exit when currentSwaCliConfigFromFile is undefined", async () => {
-      // JEST-TODO: THIS MOCK DOES NOT WORK!
-      vi.spyOn(cliConfigModule, "getCurrentSwaCliConfigFromFile").mockReturnValue(undefined);
+      cliConfigModule.setCurrentSwaCliConfigFromFile(undefined);
+
       const config: SWACLIConfig = {
         outputLocation: "./",
         apiLocation: "./",
@@ -163,8 +170,7 @@ describe("CLI config", () => {
     });
 
     it("Should update config file when currentSwaCliConfigFromFile is set", async () => {
-      // JEST-TODO: THIS MOCK DOES NOT WORK!
-      const mock = vi.spyOn(cliConfigModule, "getCurrentSwaCliConfigFromFile").mockReturnValue({ name: "app" } as any);
+      cliConfigModule.setCurrentSwaCliConfigFromFile({ name: "app", filePath: "swa-cli.config.json", config: {} });
 
       const config: SWACLIConfig = {
         outputLocation: "./",
