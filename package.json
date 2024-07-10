@@ -4,14 +4,14 @@
   "description": "Azure Static Web Apps CLI",
   "type": "module",
   "scripts": {
-    "test": "vitest run --silent",
+    "test": "vitest run --silent --config ./vitest.config.unit.ts",
     "e2e:start:static": "npm run build && node ./dist/cli/bin.js --config ./cypress/fixtures/static/swa-cli.config.json start static",
     "e2e:start:blazor": "npm run build && node ./dist/cli/bin.js --config ./cypress/fixtures/blazor-starter/swa-cli.config.json start blazor-starter",
     "e2e:static": "start-server-and-test e2e:start:static http://0.0.0.0:1234 cy:run",
     "e2e:blazor": "start-server-and-test e2e:start:blazor http://0.0.0.0:1234 cy:run",
     "e2e:detection:prepare-samples": "rimraf -fr e2e/samples && npx -y degit sinedied/frameworks-playground#samples e2e/samples",
     "e2e:detection:run": "node e2e/detect.js e2e/samples 2",
-    "e2e:detection:test": "vitest run --config e2e/vitest.config.ts",
+    "e2e:detection:test": "vitest run --silent --config ./e2e/vitest.config.e2e.js",
     "cy:run": "cypress run",
     "cy:open": "cypress open",
     "build": "tsc",
@@ -93,7 +93,7 @@
     "start-server-and-test": "^2.0.4",
     "supertest": "^6.3.4",
     "typescript": "^5.5.3",
-    "vitest": "^2.0.1"
+    "vitest": "^2.0.2"
   },
   "homepage": "https://github.com/azure/static-web-apps-cli#readme",
   "private": false,

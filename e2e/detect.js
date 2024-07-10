@@ -4,23 +4,23 @@
 // Small utility to test framework detection against a folder structure.
 // ---------------------------------------------------------------------------
 
-const fs = require("fs").promises;
-const path = require("path");
-const { detectProjectFolders, formatDetectedFolders } = require("../dist/core/frameworks/detect");
+import { promises as fs } from "node:fs";
+import path from "node:path";
+import { detectProjectFolders, formatDetectedFolders } from "../src/core/frameworks/detect.js";
 
-const invoked = path.basename(process.argv[1], path.extname(process.argv[1])) === 'detect';
+const invoked = path.basename(process.argv[1], path.extname(process.argv[1])) === "detect";
 
 async function getFolders(rootPath, depth = -1) {
   if (depth === 0) {
     return [];
   }
   const entries = await fs.readdir(rootPath, { withFileTypes: true });
-  const folders = await Promise.all(entries.map(async (entry) => {
-    const entryPath = path.join(rootPath, entry.name);
-    return entry.isDirectory()
-      ? [...(depth === 1 ? [entryPath] : []), ...(await getFolders(entryPath, depth - 1))]
-      : [];
-  }));
+  const folders = await Promise.all(
+    entries.map(async (entry) => {
+      const entryPath = path.join(rootPath, entry.name);
+      return entry.isDirectory() ? [...(depth === 1 ? [entryPath] : []), ...(await getFolders(entryPath, depth - 1))] : [];
+    })
+  );
   return folders.flat();
 }
 
@@ -28,21 +28,21 @@ async function detect(rootPath, depth) {
   if (process.env.DEBUG) {
     process.env.SWA_CLI_DEBUG = "silly";
   }
-  let out = '';
+  let out = "";
   const folders = await detectProjectFolders(rootPath);
   const alphaCompare = (a, b) => a.rootPath.localeCompare(b.rootPath);
   folders.api.sort(alphaCompare);
   folders.app.sort(alphaCompare);
-  out += formatDetectedFolders(folders.api, 'api') + '\n';
-  out += formatDetectedFolders(folders.app, 'app');
+  out += formatDetectedFolders(folders.api, "api") + "\n";
+  out += formatDetectedFolders(folders.app, "app");
 
   if (depth > 0) {
     let undetectedFolders = await getFolders(rootPath, depth);
     undetectedFolders = undetectedFolders.filter(
-      f => !folders.api.some(api => api.rootPath.startsWith(f)) && !folders.app.some(app => app.rootPath.startsWith(f))
+      (f) => !folders.api.some((api) => api.rootPath.startsWith(f)) && !folders.app.some((app) => app.rootPath.startsWith(f))
     );
     out += `\nUndetected folders (${undetectedFolders.length}):\n`;
-    out += undetectedFolders.length ? `- ${undetectedFolders.join("\n- ")}` : '';
+    out += undetectedFolders.length ? `- ${undetectedFolders.join("\n- ")}` : "";
   }
   if (invoked) {
     console.log(out);
@@ -54,7 +54,7 @@ async function detect(rootPath, depth) {
 // Launch detection when invoked directly
 if (invoked) {
   const args = process.argv.slice(2);
-  let dir = '.';
+  let dir = ".";
   let depth = -1;
   if (args.length === 1) {
     const value = Number(args[0]);
@@ -70,4 +70,4 @@ if (invoked) {
   detect(dir, depth);
 }
 
-module.exports = detect;
+export default detect;

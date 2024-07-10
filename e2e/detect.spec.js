@@ -1,6 +1,7 @@
-const fs = require("fs");
-const path = require("path");
-const detect = require("./detect");
+import fs from "node:fs";
+import path from "node:path";
+import { describe, it, expect } from "vitest";
+import detect from "./detect.js";
 
 function findFolders(basePath) {
   const entries = fs.readdirSync(basePath, { withFileTypes: true });
