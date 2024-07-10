@@ -6,13 +6,8 @@ import { vol } from "memfs";
 import { type ObjectEncodingOptions } from "node:fs";
 import { sep } from "node:path";
 import cp, { ExecException } from "node:child_process";
-import {
-  detectTargetCoreToolsVersion,
-  downloadCoreTools,
-  getCoreToolsBinary,
-  getLatestCoreToolsRelease,
-  isCoreToolsVersionCompatible,
-} from "./func-core-tools.js";
+import os from "node:os";
+import * as fct from "./func-core-tools.js";
 import * as nodeFetch from "node-fetch";
 import { Response } from "node-fetch";
 
@@ -23,20 +18,18 @@ vi.spyOn(logger, "error").mockImplementation(() => {});
 
 const fetch = vi.mocked(nodeFetch).default;
 
-vi.mock("node:process", () => ({ versions: { node: "18.0.0" } }));
-vi.mock("node:os", () => ({ platform: () => "linux", homedir: () => "/home/user" }));
-vi.mock("adm-zip", () =>
-  vi.fn(() => {
-    return {
-      extractAllTo: () => {
-        vol.fromJSON({
-          "/home/user/.swa/core-tools/v4/func": "",
-          "/home/user/.swa/core-tools/v4/gozip": "",
-        });
-      },
-    };
-  })
-);
+vi.mock("adm-zip", async () => {
+  const actual = await vi.importActual("adm-zip");
+  return {
+    ...actual,
+    extractAllTo: () => {
+      vol.fromJSON({
+        "/home/user/.swa/core-tools/v4/func": "",
+        "/home/user/.swa/core-tools/v4/gozip": "",
+      });
+    },
+  };
+});
 
 function mockResponse(response: any, status = 200) {
   fetch.mockResolvedValueOnce(new Response(JSON.stringify(response), { status }));
@@ -47,52 +40,57 @@ describe("funcCoreTools", () => {
     vol.reset();
   });
 
-  describe("isCoreToolsVersionCompatible()", () => {
+  describe("fct.isCoreToolsVersionCompatible()", () => {
     it("should return true for compatible versions", () => {
-      expect(isCoreToolsVersionCompatible(4, 10)).toBe(false);
-      expect(isCoreToolsVersionCompatible(3, 10)).toBe(true);
-      expect(isCoreToolsVersionCompatible(2, 10)).toBe(true);
-      expect(isCoreToolsVersionCompatible(3, 11)).toBe(true);
-      expect(isCoreToolsVersionCompatible(2, 11)).toBe(false);
-      expect(isCoreToolsVersionCompatible(4, 12)).toBe(false);
-      expect(isCoreToolsVersionCompatible(3, 12)).toBe(true);
-      expect(isCoreToolsVersionCompatible(2, 12)).toBe(false);
-      expect(isCoreToolsVersionCompatible(3, 13)).toBe(true);
-      expect(isCoreToolsVersionCompatible(4, 14)).toBe(true);
-      expect(isCoreToolsVersionCompatible(3, 14)).toBe(true);
-      expect(isCoreToolsVersionCompatible(2, 14)).toBe(false);
-      expect(isCoreToolsVersionCompatible(4, 15)).toBe(true);
-      expect(isCoreToolsVersionCompatible(3, 15)).toBe(false);
-      expect(isCoreToolsVersionCompatible(4, 16)).toBe(true);
-      expect(isCoreToolsVersionCompatible(3, 16)).toBe(false);
-      expect(isCoreToolsVersionCompatible(2, 16)).toBe(false);
-      expect(isCoreToolsVersionCompatible(4, 17)).toBe(true);
-      expect(isCoreToolsVersionCompatible(3, 17)).toBe(false);
-      expect(isCoreToolsVersionCompatible(2, 17)).toBe(false);
-      expect(isCoreToolsVersionCompatible(4, 18)).toBe(true);
-      expect(isCoreToolsVersionCompatible(3, 18)).toBe(false);
-      expect(isCoreToolsVersionCompatible(2, 18)).toBe(false);
+      expect(fct.isCoreToolsVersionCompatible(4, 10)).toBe(false);
+      expect(fct.isCoreToolsVersionCompatible(3, 10)).toBe(true);
+      expect(fct.isCoreToolsVersionCompatible(2, 10)).toBe(true);
+      expect(fct.isCoreToolsVersionCompatible(3, 11)).toBe(true);
+      expect(fct.isCoreToolsVersionCompatible(2, 11)).toBe(false);
+      expect(fct.isCoreToolsVersionCompatible(4, 12)).toBe(false);
+      expect(fct.isCoreToolsVersionCompatible(3, 12)).toBe(true);
+      expect(fct.isCoreToolsVersionCompatible(2, 12)).toBe(false);
+      expect(fct.isCoreToolsVersionCompatible(3, 13)).toBe(true);
+      expect(fct.isCoreToolsVersionCompatible(4, 14)).toBe(true);
+      expect(fct.isCoreToolsVersionCompatible(3, 14)).toBe(true);
+      expect(fct.isCoreToolsVersionCompatible(2, 14)).toBe(false);
+      expect(fct.isCoreToolsVersionCompatible(4, 15)).toBe(true);
+      expect(fct.isCoreToolsVersionCompatible(3, 15)).toBe(false);
+      expect(fct.isCoreToolsVersionCompatible(4, 16)).toBe(true);
+      expect(fct.isCoreToolsVersionCompatible(3, 16)).toBe(false);
+      expect(fct.isCoreToolsVersionCompatible(2, 16)).toBe(false);
+      expect(fct.isCoreToolsVersionCompatible(4, 17)).toBe(true);
+      expect(fct.isCoreToolsVersionCompatible(3, 17)).toBe(false);
+      expect(fct.isCoreToolsVersionCompatible(2, 17)).toBe(false);
+      expect(fct.isCoreToolsVersionCompatible(4, 18)).toBe(true);
+      expect(fct.isCoreToolsVersionCompatible(3, 18)).toBe(false);
+      expect(fct.isCoreToolsVersionCompatible(2, 18)).toBe(false);
     });
   });
 
   describe("detectTargetCoreToolsVersion()", () => {
     it("should return the latest valid version for each Node version", () => {
-      expect(detectTargetCoreToolsVersion(8)).toBe(2);
-      expect(detectTargetCoreToolsVersion(9)).toBe(2);
-      expect(detectTargetCoreToolsVersion(10)).toBe(3);
-      expect(detectTargetCoreToolsVersion(11)).toBe(3);
-      expect(detectTargetCoreToolsVersion(12)).toBe(3);
-      expect(detectTargetCoreToolsVersion(13)).toBe(3);
-      expect(detectTargetCoreToolsVersion(14)).toBe(4);
-      expect(detectTargetCoreToolsVersion(15)).toBe(4);
-      expect(detectTargetCoreToolsVersion(16)).toBe(4);
+      expect(fct.detectTargetCoreToolsVersion(8)).toBe(2);
+      expect(fct.detectTargetCoreToolsVersion(9)).toBe(2);
+      expect(fct.detectTargetCoreToolsVersion(10)).toBe(3);
+      expect(fct.detectTargetCoreToolsVersion(11)).toBe(3);
+      expect(fct.detectTargetCoreToolsVersion(12)).toBe(3);
+      expect(fct.detectTargetCoreToolsVersion(13)).toBe(3);
+      expect(fct.detectTargetCoreToolsVersion(14)).toBe(4);
+      expect(fct.detectTargetCoreToolsVersion(15)).toBe(4);
+      expect(fct.detectTargetCoreToolsVersion(16)).toBe(4);
       // Unsupported Node versions should always return the latest version
-      expect(detectTargetCoreToolsVersion(7)).toBe(4);
-      expect(detectTargetCoreToolsVersion(17)).toBe(4);
+      expect(fct.detectTargetCoreToolsVersion(7)).toBe(4);
+      expect(fct.detectTargetCoreToolsVersion(17)).toBe(4);
     });
   });
 
   describe("getLatestCoreToolsRelease()", () => {
+    beforeEach(() => {
+      vi.spyOn(os, "platform").mockReturnValue("linux");
+      vi.spyOn(os, "homedir").mockReturnValue("/home/user");
+    });
+
     it("should return the latest release for the specified version", async () => {
       mockResponse({
         tags: {
@@ -114,7 +112,7 @@ describe("funcCoreTools", () => {
         },
       });
 
-      const release = await getLatestCoreToolsRelease(4);
+      const release = await fct.getLatestCoreToolsRelease(4);
       expect(release.version).toBe("4.0.0");
       expect(release.sha2).toBe("123");
     });
@@ -127,7 +125,7 @@ describe("funcCoreTools", () => {
         },
       });
 
-      await expect(async () => await getLatestCoreToolsRelease(4)).rejects.toThrowError("Cannot find the latest version for v4");
+      await expect(async () => await fct.getLatestCoreToolsRelease(4)).rejects.toThrowError("Cannot find the latest version for v4");
     });
 
     it("should throw an error if no release match the specified version", async () => {
@@ -138,7 +136,7 @@ describe("funcCoreTools", () => {
         releases: {},
       });
 
-      await expect(async () => await getLatestCoreToolsRelease(4)).rejects.toThrowError("Cannot find release for 4.0.0");
+      await expect(async () => await fct.getLatestCoreToolsRelease(4)).rejects.toThrowError("Cannot find release for 4.0.0");
     });
 
     it("should throw an error if there's no compatible package", async () => {
@@ -160,17 +158,22 @@ describe("funcCoreTools", () => {
         },
       });
 
-      await expect(async () => await getLatestCoreToolsRelease(4)).rejects.toThrowError("Cannot find download package for Linux");
+      await expect(async () => await fct.getLatestCoreToolsRelease(4)).rejects.toThrowError("Cannot find download package for Linux");
     });
 
     it("should throw an error if no release match the specified version", async () => {
       fetch.mockRejectedValue(new Error("bad network"));
 
-      await expect(async () => await getLatestCoreToolsRelease(4)).rejects.toThrowError(/bad network/);
+      await expect(async () => await fct.getLatestCoreToolsRelease(4)).rejects.toThrowError(/bad network/);
     });
   });
 
   describe("getCoreToolsBinary", () => {
+    beforeEach(() => {
+      vi.spyOn(os, "platform").mockReturnValue("linux");
+      vi.spyOn(os, "homedir").mockReturnValue("/home/user");
+    });
+
     it("should return the system binary if it's compatible", async () => {
       const execMock = vi.spyOn(cp, "exec");
       execMock.mockImplementationOnce(function (
@@ -185,7 +188,7 @@ describe("funcCoreTools", () => {
         return this;
       });
 
-      const binary = await getCoreToolsBinary();
+      const binary = await fct.getCoreToolsBinary();
       expect(binary).toBe("func");
     });
 
@@ -207,7 +210,7 @@ describe("funcCoreTools", () => {
         ["/home/user/.swa/core-tools/v4"]: { ".release-version": "4.3.2" },
       });
 
-      const binary = await getCoreToolsBinary();
+      const binary = await fct.getCoreToolsBinary();
 
       // note: we have mocked os.platform(), so we can't check for os name!
       if (sep === "/") {
@@ -234,7 +237,7 @@ describe("funcCoreTools", () => {
         ["/home/user/.swa/core-tools/v4"]: { ".release-version": "4.3.2" },
       });
 
-      const binary = await getCoreToolsBinary();
+      const binary = await fct.getCoreToolsBinary();
       // note: we have mocked os.platform(), so we can't check for os name!
       if (sep === "/") {
         expect(binary).toBe("/home/user/.swa/core-tools/v4/func");
@@ -285,7 +288,7 @@ describe("funcCoreTools", () => {
       fetch.mockResolvedValue(packageResponse);
       vol.fromNestedJSON({ ["/home/user/.swa/core-tools/"]: {} });
 
-      const binary = await getCoreToolsBinary();
+      const binary = await fct.getCoreToolsBinary();
       // note: we have mocked os.platform(), so we can't check for os name!
       if (sep === "/") {
         expect(binary).toBe("/home/user/.swa/core-tools/v4/func");
@@ -310,12 +313,17 @@ describe("funcCoreTools", () => {
 
       fetch.mockRejectedValueOnce({});
 
-      const binary = await getCoreToolsBinary();
+      const binary = await fct.getCoreToolsBinary();
       expect(binary).toBe(undefined);
     });
   });
 
   describe("downloadCoreTools", () => {
+    beforeEach(() => {
+      vi.spyOn(os, "platform").mockReturnValue("linux");
+      vi.spyOn(os, "homedir").mockReturnValue("/home/user");
+    });
+
     it("should throw an error if the download is corrupted", async () => {
       const execMock = vi.spyOn(cp, "exec");
       execMock.mockImplementationOnce(function (
@@ -357,7 +365,7 @@ describe("funcCoreTools", () => {
       fetch.mockResolvedValueOnce(packageResponse);
       vol.fromNestedJSON({ ["/home/user/.swa/core-tools/"]: {} });
 
-      await expect(async () => await downloadCoreTools(4)).rejects.toThrowError(/SHA2 mismatch/);
+      await expect(async () => await fct.downloadCoreTools(4)).rejects.toThrowError(/SHA2 mismatch/);
     });
   });
 });

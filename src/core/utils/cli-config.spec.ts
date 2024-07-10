@@ -1,7 +1,6 @@
 import "../../../tests/_mocks/fs.js";
 import { fs, vol } from "memfs";
 import { logger } from "./logger.js";
-import process from "node:process";
 import * as cliConfigModule from "./cli-config.js";
 
 vi.mock("./logger", () => {
@@ -52,23 +51,6 @@ const mockConfig2 = {
 // An easy "sleep" method since some tests require us to be 1ms offset to
 // have a meaningful result.
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// A mechanism for mocking process.exit
-const maybeMockRestore = (a: any): void => (a.mockRestore && typeof a.mockRestore === "function" ? a.mockRestore() : undefined);
-
-const mockProcessExit = (err?: any) => {
-  maybeMockRestore(process.exit);
-  const mock = vi.spyOn(process, "exit").mockImplementation(
-    (err
-      ? () => {
-          throw err;
-        }
-      : () => {
-          /* noop */
-        }) as () => never
-  );
-  return mock;
-};
 
 describe("CLI config", () => {
   describe("getConfigFileOptions()", () => {
