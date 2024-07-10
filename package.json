@@ -58,7 +58,7 @@
     "rimraf": "^5.0.7",
     "selfsigned": "^2.4.1",
     "serve-static": "^1.15.0",
-    "update-notifier": "^5.1.0",
+    "update-notifier": "^7.0.0",
     "wait-on": "^7.2.0",
     "yaml": "^2.0.1"
   },
