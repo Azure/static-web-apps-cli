@@ -30,7 +30,7 @@ describe("userConfig", () => {
         },
         currentDir
       );
-      const entry = await asyncGeneratorToArray(traverseFolder("."));
+      const entry = await asyncGeneratorToArray(traverseFolder("/"));
       expect(entry).toEqual([]);
     });
 

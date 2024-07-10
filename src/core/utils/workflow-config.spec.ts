@@ -5,7 +5,8 @@ vi.mock("../constants", () => {
   return {};
 });
 
-import path from "path";
+import path from "node:path";
+import process from "node:process";
 import { convertToNativePaths } from "../../test.helpers.js";
 import { readWorkflowFile } from "./workflow-config.js";
 
@@ -20,8 +21,11 @@ vi.mock("../../config", () => {
   };
 });
 
+const currentDir = "/ABSOLUTE_PATH";
+
 describe("readWorkflowFile()", () => {
   beforeEach(() => {
+    vi.spyOn(process, "cwd").mockReturnValue(convertToNativePaths(currentDir));
     vol.reset();
   });
 
@@ -30,26 +34,35 @@ describe("readWorkflowFile()", () => {
   });
 
   it("config file with wrong filename should return undefined", () => {
-    vol.fromJSON({
-      [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/wrong-file-name-pattern.yml")]: "",
-    });
+    vol.fromJSON(
+      {
+        [convertToNativePaths(`${currentDir}/.github/workflows/wrong-file-name-pattern.yml`)]: "",
+      },
+      currentDir
+    );
 
     expect(readWorkflowFile()).toBe(undefined);
   });
 
   it("invalid YAML file should throw", () => {
-    vol.fromJSON({
-      [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps__not-valid.yml")]: "",
-    });
+    vol.fromJSON(
+      {
+        [convertToNativePaths(`${currentDir}/.github/workflows/azure-static-web-apps__not-valid.yml`)]: "",
+      },
+      currentDir
+    );
 
     expect(() => readWorkflowFile()).toThrow(/could not parse the SWA workflow file/);
   });
 
   describe("checking workflow properties", () => {
     it(`missing property "jobs" should throw`, () => {
-      vol.fromJSON({
-        [convertToNativePaths("/ABSOLUTE_PATH/.github/workflows/azure-static-web-apps__not-valid.yml")]: `name: Azure Static Web Apps CI/CD`,
-      });
+      vol.fromJSON(
+        {
+          [convertToNativePaths(`${currentDir}/.github/workflows/azure-static-web-apps__not-valid.yml`)]: `name: Azure Static Web Apps CI/CD`,
+        },
+        currentDir
+      );
 
       expect(() => readWorkflowFile()).toThrow(/missing property "jobs"/);
     });
