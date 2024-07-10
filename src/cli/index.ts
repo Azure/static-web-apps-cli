@@ -40,8 +40,8 @@ function printWelcomeMessage(argv?: string[]) {
 }
 
 function checkNodeVersion() {
-  const nodeMajorVersion = getNodeMajorVersion();
-  const minVersion = pkg.engines.node.substring(2, pkg.engines.node.indexOf("."));
+  const nodeMajorVersion: number = getNodeMajorVersion();
+  const minVersion: number = parseInt(pkg.engines.node.substring(2, pkg.engines.node.indexOf(".")));
 
   if (nodeMajorVersion < minVersion) {
     logger.error(`You are using Node ${process.versions.node} but this version of the CLI requires Node ${minVersion} or higher.`);
