@@ -1,7 +1,11 @@
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { DEFAULT_CONFIG } from "../config.js";
 import { address, isHttpUrl } from "./utils/net.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // StaticSiteClient related constants
 export const DEPLOY_BINARY_NAME = "StaticSitesClient";
@@ -37,7 +41,7 @@ export const DATA_API_BUILDER_DATABASE_TYPES = {
 // General SWA_CLI constants
 export const SWA_COMMANDS = ["login", "init", "start", "deploy", "build", "db init"] as const;
 // Type cannot be in swa.d.ts as it's inferred from SWA_COMMANDS
-export type SWACommand = typeof SWA_COMMANDS[number];
+export type SWACommand = (typeof SWA_COMMANDS)[number];
 
 export const SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB = 20; // 20kb
 
