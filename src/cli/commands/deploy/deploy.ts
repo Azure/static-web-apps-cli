@@ -14,8 +14,7 @@ import { cleanUp, getDeployClientPath } from "../../../core/deploy-client.js";
 import { swaCLIEnv } from "../../../core/env.js";
 import { getDefaultVersion } from "../../../core/functions-versions.js";
 import { login } from "../login/login.js";
-
-const packageInfo = require(path.join(__dirname, "..", "..", "..", "..", "package.json"));
+import packageInfo from "../../../../package.json";
 
 export async function deploy(options: SWACLIConfig) {
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
