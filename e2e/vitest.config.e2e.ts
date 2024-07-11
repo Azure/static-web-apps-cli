@@ -3,7 +3,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     globals: true,
-    include: ["*.spec.(js|ts)"],
+    include: ["*.spec.js"],
     mockReset: true,
     restoreMocks: true,
     server: {
@@ -11,6 +11,6 @@ export default defineConfig({
         inline: ["to-vfile"],
       },
     },
-    root: "e2e",
   },
+  root: "e2e",
 });

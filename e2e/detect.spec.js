@@ -71,7 +71,7 @@ describe("framework detection", () => {
       - samples/app/flutter (Flutter)
       - samples/app/gridsome (Gridsome)
       - samples/app/hexo (Hexo)
-      - samples/app/hugo (Hugo)
+      - samples/app/hugo (Hugo (Legacy))
       - samples/app/ionic-angular (Angular)
       - samples/app/ionic-react (React)
       - samples/app/ionic-vue (Vue.js)

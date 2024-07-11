@@ -6,7 +6,7 @@
 
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { detectProjectFolders, formatDetectedFolders } from "../src/core/frameworks/detect.js";
+import { detectProjectFolders, formatDetectedFolders } from "../dist/core/frameworks/detect.js";
 
 const invoked = path.basename(process.argv[1], path.extname(process.argv[1])) === "detect";
 
