@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "Node16", // ESM Module resolution
-    "moduleResolution": "Node16", // ESM module resolution
+    "target": "ESNext",
+    "module": "NodeNext", // ESM Module resolution
+    "moduleResolution": "NodeNext", // ESM module resolution
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,

@@ -1,7 +1,7 @@
 import { fs, vol } from "memfs";
 import { program } from "commander";
 import { run } from "./index.js";
-import pkg from "../../package.json";
+import pkg from "../../package.json" with { type: "json" };
 import * as builder from "./commands/build/build.js";
 
 vi.mock("node:fs");

@@ -88,7 +88,7 @@
     "husky": "^4.3.8",
     "lint-staged": "^12.4.1",
     "memfs": "^4.9.3",
-    "prettier": "2.6.2",
+    "prettier": "3.3.2",
     "semantic-release": "^22.0.12",
     "start-server-and-test": "^2.0.4",
     "supertest": "^6.3.4",

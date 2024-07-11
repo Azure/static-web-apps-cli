@@ -20,7 +20,7 @@ import { default as registerBuild } from "./commands/build/register.js";
 import { registerDocs } from "./commands/docs.js";
 import { default as registerDb } from "./commands/db/init/register.js";
 import { promptOrUseDefault } from "../core/prompts.js";
-import pkg from "../../package.json";
+import pkg from "../../package.json" with { type: "json" };
 
 function printWelcomeMessage(argv?: string[]) {
   const args = argv?.slice(2) || [];
@@ -62,7 +62,7 @@ export async function run(argv?: string[]) {
     .addOption(
       new Option("-V, --verbose [prefix]", "enable verbose output. Values are: silly,info,log,silent")
         .preset(DEFAULT_CONFIG.verbose)
-        .default(DEFAULT_CONFIG.verbose)
+        .default(DEFAULT_CONFIG.verbose),
     )
     .option("-c, --config <path>", "path to swa-cli.config.json file to use", path.relative(process.cwd(), swaCliConfigFilename))
     .option("-cn, --config-name <name>", "name of the configuration to use", undefined)
@@ -78,7 +78,7 @@ export async function run(argv?: string[]) {
 
   Documentation:
     https://aka.ms/swa/cli-local-development
-  `
+  `,
     );
 
   // Register commands

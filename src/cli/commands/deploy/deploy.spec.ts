@@ -6,7 +6,7 @@ import * as accountModule from "../../../core/account.js";
 import * as deployClientModule from "../../../core/deploy-client.js";
 import { deploy } from "./deploy.js";
 import * as loginModule from "../login/login.js";
-import pkg from "../../../../package.json";
+import pkg from "../../../../package.json" with { type: "json" };
 
 vi.mock("../../../core/utils/logger", () => {
   return {
@@ -97,7 +97,7 @@ describe("deploy", () => {
     expect(logger.error).toHaveBeenNthCalledWith(
       2,
       "Provide a deployment token using the --deployment-token option or SWA_CLI_DEPLOYMENT_TOKEN environment variable",
-      true
+      true,
     );
 
     expect(deployClientModule.getDeployClientPath).not.toBeCalled();

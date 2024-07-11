@@ -16,7 +16,7 @@ import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME
 import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder/index.js";
 import { swaCLIEnv } from "../../../core/env.js";
 import { getCertificate } from "../../../core/ssl.js";
-import packageInfo from "../../../../package.json";
+import packageInfo from "../../../../package.json" with { type: "json" };
 
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
@@ -153,7 +153,7 @@ export async function start(options: SWACLIConfig) {
     logger.warn(`Error reading workflow configuration:`);
     logger.warn((err as any).message);
     logger.warn(
-      `See https://docs.microsoft.com/azure/static-web-apps/build-configuration?tabs=github-actions#build-configuration for more information.`
+      `See https://docs.microsoft.com/azure/static-web-apps/build-configuration?tabs=github-actions#build-configuration for more information.`,
     );
   }
 
@@ -186,7 +186,7 @@ export async function start(options: SWACLIConfig) {
       } else {
         if (isCoreToolsVersionCompatible(targetVersion, nodeMajorVersion) === false) {
           logger.error(
-            `Found Azure Functions Core Tools v${targetVersion} which is incompatible with your current Node.js v${process.versions.node}.`
+            `Found Azure Functions Core Tools v${targetVersion} which is incompatible with your current Node.js v${process.versions.node}.`,
           );
           logger.error("See https://aka.ms/functions-node-versions for more information.");
           process.exit(1);
@@ -214,7 +214,7 @@ export async function start(options: SWACLIConfig) {
           `Could not find or install ${DATA_API_BUILDER_BINARY_NAME} binary.
         If you already have data-api-builder installed, try connecting using --data-api-devserver-url by
         starting data-api-builder engine separately. Exiting!!`,
-          true
+          true,
         );
       } else {
         serveDataApiCommand = `cd "${dataApiLocation}" && "${dataApiBinary}" start -c ${DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME} --no-https-redirect`;
@@ -314,7 +314,7 @@ export async function start(options: SWACLIConfig) {
   if (isApiLocationExistsOnDisk) {
     concurrentlyCommands.push(
       // serve the api, if it's available
-      { command: serveApiCommand, name: "api", env, prefixColor: "gray.dim" }
+      { command: serveApiCommand, name: "api", env, prefixColor: "gray.dim" },
     );
   }
 
@@ -372,7 +372,7 @@ export async function start(options: SWACLIConfig) {
             break;
         }
         logger.error(`SWA emulator stopped because ${commandMessage}.`, true);
-      }
+      },
     )
     .catch((err: Error) => {
       logger.error(err.message, true);
