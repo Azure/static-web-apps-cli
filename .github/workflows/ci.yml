@@ -115,7 +115,7 @@ jobs:
       - name: "npm test"
         run: |
           npm ci
-          npm test -- --maxWorkers=1
+          npm test
 
   e2e-deploy-windows:
     needs: [test-windows]
