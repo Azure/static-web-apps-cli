@@ -1,6 +1,7 @@
 import { concurrently, CloseEvent, ConcurrentlyOptions } from "concurrently";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { DEFAULT_CONFIG } from "../../../config.js";
 import { askNewPort, isAcceptingTcpConnections, parseUrl } from "../../../core/utils/net.js";
 import { logger } from "../../../core/utils/logger.js";
@@ -18,9 +19,15 @@ import { swaCLIEnv } from "../../../core/env.js";
 import { getCertificate } from "../../../core/ssl.js";
 import packageInfo from "../../../../package.json" with { type: "json" };
 
-import { createRequire } from "node:module";
-const require = createRequire(import.meta.url);
-const mshaPath = require.resolve("../../../msha/server.js");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// This is the path to ./dist/msha/server.js
+const mshaPath = path.resolve(__dirname, "../../../../dist/msha/server.js");
+
+// import { createRequire } from "node:module";
+// const require = createRequire(import.meta.url);
+// const mshaPath = require.resolve("../../../msha/server.js");
 
 export async function start(options: SWACLIConfig) {
   // WARNING:
