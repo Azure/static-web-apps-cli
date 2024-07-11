@@ -20,7 +20,7 @@ import packageInfo from "../../../../package.json" with { type: "json" };
 
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
-const mshaPath = require.resolve("../../../msha/server.ts");
+const mshaPath = require.resolve("../../../msha/server.js");
 
 export async function start(options: SWACLIConfig) {
   // WARNING:
