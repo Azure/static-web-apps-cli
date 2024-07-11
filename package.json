@@ -15,7 +15,7 @@
     "cy:run": "cypress run",
     "cy:open": "cypress open",
     "build": "tsc",
-    "prebuild": "rimraf -fr dist",
+    "clean": "rimraf -fr dist",
     "postbuild": "npm run copy-assets",
     "watch": "tsc --watch",
     "copy-assets": "node ./scripts/copy-assets.js",

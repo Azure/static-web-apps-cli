@@ -1,8 +1,10 @@
-import { Draft04, Draft, JsonError } from "json-schema-library";
+import jsonSchemaLibrary from "json-schema-library";
 import { promises as fs } from "node:fs";
 import chalk from "chalk";
 import { logger } from "./logger.js";
 import configSchema from "../../../schema/staticwebapp.config.json" with { type: "json" };
+
+const { Draft04 } = jsonSchemaLibrary;
 
 /**
  * Loads JSON from the designated file path, printing any JSON errors to the console.
@@ -28,8 +30,8 @@ export async function loadJSON(filePath: string): Promise<any | null> {
  * @param content the parsed JSON object that should be validated.
  */
 export async function validateConfigFile(content: any): Promise<SWAConfigFile | null> {
-  const jsonValidator: Draft = new Draft04(configSchema);
-  const errors: JsonError[] = jsonValidator.validate(content);
+  const jsonValidator = new Draft04(configSchema);
+  const errors = jsonValidator.validate(content);
   if (errors.length > 0) {
     logger.error(`Failed to validate staticwebapp.config.json schema. Errors: ${JSON.stringify(errors, null, 2)}`);
     logger.error(`Please fix the above error and try again to load and use the configuration.`);
