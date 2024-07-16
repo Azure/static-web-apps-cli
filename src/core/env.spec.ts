@@ -1,10 +1,10 @@
-import { swaCLIEnv } from "./env";
+import { swaCLIEnv } from "./env.js";
 
 describe("swaCLIEnv()", () => {
   const OLD_ENV = process.env;
 
   beforeEach(() => {
-    jest.resetModules();
+    vi.resetModules();
     process.env = {};
   });
 

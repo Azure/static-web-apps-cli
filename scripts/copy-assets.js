@@ -1,6 +1,7 @@
-const path = require("path");
-const fs = require("fs");
-const child_process = require("child_process");
+import path from "node:path";
+import fs from "node:fs";
+import child_process from "node:child_process";
+
 let branch = "";
 let hash = "";
 let build = "DEV";

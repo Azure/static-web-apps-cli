@@ -1,21 +1,31 @@
-import mockFs from "mock-fs";
-import os from "os";
-import path from "path";
-import { DEPLOY_BINARY_NAME, DEPLOY_FOLDER } from "./constants";
-import { fetchClientVersionDefinition, getLocalClientMetadata } from "./deploy-client";
-import { getPlatform } from "./utils";
+import "../../tests/_mocks/fetch.js";
+import "../../tests/_mocks/fs.js";
 
-jest.mock("node-fetch", () => jest.fn());
-jest.mock("os", () => ({ platform: () => "linux", homedir: () => "/home/user", tmpdir: () => "/tmp", release: () => "4.4.0-1-amd64" }));
+import { vol } from "memfs";
+import { MockInstance } from "vitest";
+import os from "node:os";
+import path from "node:path";
+import { DEPLOY_BINARY_NAME, DEPLOY_FOLDER } from "./constants.js";
+import { fetchClientVersionDefinition, getLocalClientMetadata } from "./deploy-client.js";
+import { getPlatform } from "./utils/platform.js";
+import * as nodeFetch from "node-fetch";
+import { Response } from "node-fetch";
+
+vi.mock("node:os", async (importOriginal) => {
+  const actual: typeof os = await importOriginal();
+  return {
+    ...actual,
+    platform: () => "linux",
+    homedir: () => "/home/user",
+    tmpdir: () => "/tmp",
+    release: () => "4.4.0-1-amd64",
+  };
+});
+
+const fetch = vi.mocked(nodeFetch).default;
 
 function mockResponse(response: any, status = 200) {
-  const fetchMock = jest.requireMock("node-fetch");
-  fetchMock.mockImplementation(() =>
-    Promise.resolve({
-      status,
-      json: () => Promise.resolve(response),
-    })
-  );
+  fetch.mockResolvedValue(new Response(JSON.stringify(response), { status }));
 }
 
 function getMockedLocalClientMetadata({ version, isWindows }: { version: string; isWindows?: boolean }) {
@@ -55,8 +65,6 @@ describe("deploy client", () => {
     afterAll(() => {
       process.env = OLD_ENV;
     });
-
-    afterEach(() => jest.resetAllMocks());
 
     describe("should return undefined when release metadata is", () => {
       it("an empty object", async () => {
@@ -168,12 +176,12 @@ describe("deploy client", () => {
   });
 
   describe("getLocalClientMetadata()", () => {
-    afterAll(() => {
-      mockFs.restore();
+    beforeEach(() => {
+      vol.reset();
     });
 
     it("should return null when local metadata is not defined", () => {
-      mockFs({
+      vol.fromJSON({
         [path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME)]: "",
       });
 
@@ -182,7 +190,7 @@ describe("deploy client", () => {
     });
 
     it("should return null when content is invalid JSON", () => {
-      mockFs({
+      vol.fromJSON({
         [path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME)]: '123"foo": "bar"},,,,',
       });
 
@@ -191,7 +199,7 @@ describe("deploy client", () => {
     });
 
     it("should return null if the metadata config file is missing", () => {
-      mockFs({
+      vol.fromJSON({
         [path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME)]: "<binary content>",
       });
 
@@ -201,7 +209,7 @@ describe("deploy client", () => {
 
     it("should return null if the local binary file is missing", () => {
       const content = getMockedLocalClientMetadata({ version: "v1", isWindows: false });
-      mockFs({
+      vol.fromJSON({
         [`${path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME)}.json`]: JSON.stringify(content),
       });
 
@@ -212,7 +220,7 @@ describe("deploy client", () => {
     it("should return local metadata when both config and binary files are defined (Linux/macOS)", () => {
       const version = "v1";
       const content = getMockedLocalClientMetadata({ version, isWindows: false });
-      mockFs({
+      vol.fromJSON({
         [`${path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME)}.json`]: JSON.stringify(content),
         [path.join(DEPLOY_FOLDER, version, DEPLOY_BINARY_NAME)]: "<binary content>",
       });
@@ -222,11 +230,11 @@ describe("deploy client", () => {
     });
 
     it("should return local metadata when both config and binary files are defined (Windows)", () => {
-      jest.spyOn(os, "platform").mockReturnValue("win32");
+      vi.spyOn(os, "platform").mockReturnValue("win32");
 
       const version = "v1";
       const content = getMockedLocalClientMetadata({ version, isWindows: true });
-      mockFs({
+      vol.fromJSON({
         [`${path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME)}.json`]: JSON.stringify(content),
         [`${path.join(DEPLOY_FOLDER, version, DEPLOY_BINARY_NAME)}.exe`]: "<binary content>",
       });
@@ -236,11 +244,11 @@ describe("deploy client", () => {
     });
 
     it("should return a valid metadata", () => {
-      jest.spyOn(os, "platform").mockReturnValue("linux");
+      vi.spyOn(os, "platform").mockReturnValue("linux");
 
       const version = "v1";
       const content = getMockedLocalClientMetadata({ version, isWindows: false });
-      mockFs({
+      vol.fromJSON({
         [`${path.join(DEPLOY_FOLDER, DEPLOY_BINARY_NAME)}.json`]: JSON.stringify(content),
         [path.join(DEPLOY_FOLDER, version, DEPLOY_BINARY_NAME)]: "<binary content>",
       });
@@ -267,50 +275,64 @@ describe("deploy client", () => {
   });
 
   describe("getPlatform()", () => {
+    let spy: MockInstance;
+
+    beforeEach(() => {
+      spy = vi.spyOn(os, "platform");
+    });
+
     it("should return 'linux-x64' when platform is 'linux'", () => {
-      jest.spyOn(os, "platform").mockReturnValue("linux");
+      spy.mockReturnValue("linux");
+      expect(os.platform()).toBe("linux");
       const result = getPlatform();
       expect(result).toBe("linux-x64");
     });
 
     it("should return 'linux-x64' when platform is 'aix'", () => {
-      jest.spyOn(os, "platform").mockReturnValue("aix");
+      spy.mockReturnValue("aix");
+      expect(os.platform()).toBe("aix");
       const result = getPlatform();
       expect(result).toBe("linux-x64");
     });
 
     it("should return 'linux-x64' when platform is 'freebsd'", () => {
-      jest.spyOn(os, "platform").mockReturnValue("freebsd");
+      spy.mockReturnValue("freebsd");
+      expect(os.platform()).toBe("freebsd");
       const result = getPlatform();
       expect(result).toBe("linux-x64");
     });
 
     it("should return 'linux-x64' when platform is 'sunos'", () => {
-      jest.spyOn(os, "platform").mockReturnValue("sunos");
+      spy.mockReturnValue("sunos");
+      expect(os.platform()).toBe("sunos");
       const result = getPlatform();
       expect(result).toBe("linux-x64");
     });
 
     it("should return 'linux-x64' when platform is 'openbsd'", () => {
-      jest.spyOn(os, "platform").mockReturnValue("openbsd");
+      spy.mockReturnValue("openbsd");
+      expect(os.platform()).toBe("openbsd");
       const result = getPlatform();
       expect(result).toBe("linux-x64");
     });
 
     it("should return 'win-x64' when platform is 'win32'", () => {
-      jest.spyOn(os, "platform").mockReturnValue("win32");
+      spy.mockReturnValue("win32");
+      expect(os.platform()).toBe("win32");
       const result = getPlatform();
       expect(result).toBe("win-x64");
     });
 
     it("should return 'osx-x64' when platform is 'darwin'", () => {
-      jest.spyOn(os, "platform").mockReturnValue("darwin");
+      spy.mockReturnValue("darwin");
+      expect(os.platform()).toBe("darwin");
       const result = getPlatform();
       expect(result).toBe("osx-x64");
     });
 
     it("should return null when platform is unsupported", () => {
-      jest.spyOn(os, "platform").mockReturnValue("unsupported" as any);
+      spy.mockReturnValue("unsupported" as any);
+      expect(os.platform()).toBe("unsupported" as any);
       const result = getPlatform();
       expect(result).toBe(null);
     });

@@ -1,5 +1,5 @@
-import { useEnvVarOrUseDefault, swaCLIEnv } from "./core/env";
-import { isRunningInDocker } from "./core/utils/docker";
+import { useEnvVarOrUseDefault, swaCLIEnv } from "./core/env.js";
+import { isRunningInDocker } from "./core/utils/docker.js";
 
 const {
   SWA_CLI_APP_LOCATION,

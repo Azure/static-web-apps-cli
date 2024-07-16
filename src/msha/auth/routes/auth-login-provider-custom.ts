@@ -1,10 +1,11 @@
-import { CookiesManager, response } from "../../../core";
-import * as http from "http";
-import { SWA_CLI_APP_PROTOCOL } from "../../../core/constants";
-import { DEFAULT_CONFIG } from "../../../config";
-import { encryptAndSign, extractPostLoginRedirectUri, hashStateGuid, newNonceWithExpiration } from "../../../core/utils/auth";
+import { IncomingMessage } from "node:http";
+import { CookiesManager } from "../../../core/utils/cookie.js";
+import { response } from "../../../core/utils/net.js";
+import { SWA_CLI_APP_PROTOCOL } from "../../../core/constants.js";
+import { DEFAULT_CONFIG } from "../../../config.js";
+import { encryptAndSign, extractPostLoginRedirectUri, hashStateGuid, newNonceWithExpiration } from "../../../core/utils/auth.js";
 
-const httpTrigger = async function (context: Context, request: http.IncomingMessage, customAuth?: SWAConfigFileAuth) {
+const httpTrigger = async function (context: Context, request: IncomingMessage, customAuth?: SWAConfigFileAuth) {
   await Promise.resolve();
 
   const providerName = context.bindingData?.provider?.toLowerCase() || "";

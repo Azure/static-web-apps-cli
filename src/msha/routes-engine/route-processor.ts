@@ -1,9 +1,9 @@
 import chalk from "chalk";
-import type http from "http";
-import { logger } from "../../core";
-import { AUTH_STATUS, CUSTOM_URL_SCHEME, SWA_CLI_APP_PROTOCOL } from "../../core/constants";
-import { globToRegExp, isValidGlobExpression } from "../../core/utils/glob";
-import { getIndexHtml } from "./rules/routes";
+import type http from "node:http";
+import { logger } from "../../core/utils/logger.js";
+import { globToRegExp, isValidGlobExpression } from "../../core/utils/glob.js";
+import { AUTH_STATUS, CUSTOM_URL_SCHEME, SWA_CLI_APP_PROTOCOL } from "../../core/constants.js";
+import { getIndexHtml } from "./rules/routes.js";
 
 export function doesRequestPathMatchRoute(
   requestPath: string,

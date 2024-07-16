@@ -1,16 +1,18 @@
 import chalk from "chalk";
-import fs from "fs";
-import http from "http";
+import fs from "node:fs";
+import http from "node:http";
 import httpProxy from "http-proxy";
-import https from "https";
-import net from "net";
+import https from "node:https";
+import net from "node:net";
 import open from "open";
-import { DEFAULT_CONFIG } from "../config";
-import { address, hostnameToIpAdress, isHttpUrl, isHttpsUrl, logger, logRequest, registerProcessExit, validateDevServerConfig } from "../core";
-import { HAS_API, IS_API_DEV_SERVER, IS_APP_DEV_SERVER, SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../core/constants";
-import { swaCLIEnv } from "../core/env";
-import { validateFunctionTriggers } from "./handlers/function.handler";
-import { handleUserConfig, onConnectionLost, requestMiddleware } from "./middlewares/request.middleware";
+import { DEFAULT_CONFIG } from "../config.js";
+import { registerProcessExit } from "../core/utils/cli.js";
+import { logger, logRequest } from "../core/utils/logger.js";
+import { address, hostnameToIpAdress, isHttpUrl, isHttpsUrl, validateDevServerConfig } from "../core/utils/net.js";
+import { HAS_API, IS_API_DEV_SERVER, IS_APP_DEV_SERVER, SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../core/constants.js";
+import { swaCLIEnv } from "../core/env.js";
+import { validateFunctionTriggers } from "./handlers/function.handler.js";
+import { handleUserConfig, onConnectionLost, requestMiddleware } from "./middlewares/request.middleware.js";
 
 const { SWA_CLI_PORT, SWA_CLI_APP_SSL } = swaCLIEnv();
 

@@ -1,36 +1,45 @@
-import { logger, execFileCommand } from "../../../../core";
-import { init, isValidDatabaseType } from "./init";
-import path from "path";
+import path from "node:path";
+import fs from "node:fs";
+import { logger } from "../../../../core/utils/logger.js";
+import { execFileCommand } from "../../../../core/utils/command.js";
+import { init, isValidDatabaseType } from "./init.js";
 import {
   DATA_API_BUILDER_DATABASE_TYPES,
   DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME,
   DATA_API_BUILDER_DEFAULT_FOLDER,
-} from "../../../../core/constants";
-import fs from "fs";
+} from "../../../../core/constants.js";
 
 // Replace the imported functions with mocks for testing purposes
-jest.mock("../../../../core/dataApiBuilder", () => ({
-  getDataApiBuilderBinaryPath: jest.fn(() => "dataApiBuilderPath"),
+vi.mock("../../../../core/dataApiBuilder", () => ({
+  getDataApiBuilderBinaryPath: vi.fn(() => "dataApiBuilderPath"),
 }));
-jest.mock("../../../../core", () => ({
+vi.mock("../../../../core/utils/command", () => ({
   fs: {
-    existsSync: jest.fn(() => false),
-    mkdirSync: jest.fn(),
-    writeFileSync: jest.fn(),
+    existsSync: vi.fn(() => false),
+    mkdirSync: vi.fn(),
+    writeFileSync: vi.fn(),
   },
   logger: {
-    log: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-    info: jest.fn(),
+    log: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
   },
-  execFileCommand: jest.fn(),
+  execFileCommand: vi.fn(),
+}));
+vi.mock("../../../../core/utils/logger", () => ({
+  logger: {
+    log: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+  },
 }));
 
 describe("init", () => {
   beforeEach(() => {
     // Reset the mocked functions before each test
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it("should log an error and return if databaseType is undefined", async () => {
@@ -69,8 +78,8 @@ describe("init", () => {
   it("should create the folder if it doesn't exist", async () => {
     const options = { databaseType: "mssql" };
     const directory = path.join(process.cwd(), DATA_API_BUILDER_DEFAULT_FOLDER);
-    const fsExistsSyncSpy = jest.spyOn(fs, "existsSync").mockReturnValueOnce(false);
-    const fsMkdirSyncSpy = jest.spyOn(fs, "mkdirSync").mockReturnValue("");
+    const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValueOnce(false);
+    const fsMkdirSyncSpy = vi.spyOn(fs, "mkdirSync").mockReturnValue("");
 
     await init(options);
 
@@ -83,8 +92,8 @@ describe("init", () => {
     const customFolderName = "customFolderName";
     const options = { databaseType: "mssql", folderName: customFolderName };
     const directory = path.join(process.cwd(), customFolderName);
-    const fsExistsSyncSpy = jest.spyOn(fs, "existsSync").mockReturnValueOnce(false);
-    const fsMkdirSyncSpy = jest.spyOn(fs, "mkdirSync").mockReturnValue("");
+    const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValueOnce(false);
+    const fsMkdirSyncSpy = vi.spyOn(fs, "mkdirSync").mockReturnValue("");
 
     await init(options);
 
@@ -95,8 +104,8 @@ describe("init", () => {
 
   it("should not create the folder if it already exists", async () => {
     const options = { databaseType: "mssql", folderName: "existingFolder" };
-    const fsExistsSyncSpy = jest.spyOn(fs, "existsSync").mockReturnValueOnce(true);
-    const fsMkdirSyncSpy = jest.spyOn(fs, "mkdirSync").mockReturnValue("");
+    const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValueOnce(true);
+    const fsMkdirSyncSpy = vi.spyOn(fs, "mkdirSync").mockReturnValue("");
 
     await init(options);
 
@@ -109,8 +118,8 @@ describe("init", () => {
     const options = { databaseType: "mssql" };
     const directory = path.join(process.cwd(), DATA_API_BUILDER_DEFAULT_FOLDER);
     const configFile = path.join(directory, DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME);
-    const fsExistsSyncSpy = jest.spyOn(fs, "existsSync").mockReturnValue(true);
-    const fsWriteFileSyncSpy = jest.spyOn(fs, "writeFileSync").mockReturnValue();
+    const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+    const fsWriteFileSyncSpy = vi.spyOn(fs, "writeFileSync").mockReturnValue();
 
     await init(options);
 
@@ -127,7 +136,7 @@ describe("init", () => {
     const options = { databaseType: "mssql" };
     const directory = path.join(process.cwd(), DATA_API_BUILDER_DEFAULT_FOLDER);
     const configFile = path.join(directory, DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME);
-    const fsExistsSyncSpy = jest.spyOn(fs, "existsSync").mockReturnValue(true);
+    const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
 
     await init(options);
 

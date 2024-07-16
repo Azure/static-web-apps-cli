@@ -1,12 +1,12 @@
 import chalk from "chalk";
-import crypto from "crypto";
-import fs from "fs";
+import crypto from "node:crypto";
+import fs from "node:fs";
 import fetch from "node-fetch";
 import ora from "ora";
-import path from "path";
-import { PassThrough } from "stream";
-import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_FOLDER, DEPLOY_BINARY_NAME, DEPLOY_FOLDER } from "./constants";
-import { logger } from "./utils";
+import path from "node:path";
+import { PassThrough } from "node:stream";
+import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_FOLDER, DEPLOY_BINARY_NAME, DEPLOY_FOLDER } from "./constants.js";
+import { logger } from "./utils/logger.js";
 
 /**
  * Downloads the binary to the given output folder

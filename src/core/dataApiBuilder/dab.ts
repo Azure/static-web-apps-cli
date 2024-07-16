@@ -5,16 +5,17 @@ import {
   DATA_API_BUILDER_LATEST_TAG,
   DATA_API_BUILDER_RELEASE_METADATA_URL,
   DEFAULT_DATA_API_BUILDER_BINARY,
-} from "../constants";
+} from "../constants.js";
 import fetch from "node-fetch";
-import { promisify } from "util";
-import { exec } from "child_process";
-import fs from "fs";
-import os from "os";
+import { promisify } from "node:util";
+import { exec } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
 import AdmZip from "adm-zip";
-import path from "path";
-import { getPlatform, logger } from "../utils";
-import { downloadAndValidateBinary } from "../download-binary-helper";
+import path from "node:path";
+import { logger } from "../utils/logger.js";
+import { getPlatform } from "../utils/platform.js";
+import { downloadAndValidateBinary } from "../download-binary-helper.js";
 
 /**
  * Gets the filepath where the Microsoft.DataApiBuilder.exe is located

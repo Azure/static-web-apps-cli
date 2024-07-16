@@ -1,6 +1,6 @@
-import path from "path";
-import fs from "fs";
-import { logger } from "./logger";
+import path from "node:path";
+import fs from "node:fs";
+import { logger } from "./logger.js";
 
 /**
  * Parse process.argv and retrieve a specific flag value.

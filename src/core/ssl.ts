@@ -1,10 +1,8 @@
-import baseFs from "fs";
-import os from "os";
-import path from "path";
+import { promises as fs } from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import pem from "pem";
-import { logger } from "./utils";
-const fs = baseFs.promises;
-const { mkdir, writeFile } = fs;
+import { logger } from "./utils/logger.js";
 
 const ONE_MONTH = 1000 * 60 * 60 * 24 * 30;
 
@@ -117,8 +115,8 @@ export async function getCertificate(options: PEMOptions): Promise<string> {
 
     const pemContent = [unsignedCertificate.csr, unsignedCertificate.serviceKey, unsignedCertificate.certificate].join("\n");
 
-    await mkdir(cacheDir, { recursive: true });
-    await writeFile(cachePath, pemContent);
+    await fs.mkdir(cacheDir, { recursive: true });
+    await fs.writeFile(cachePath, pemContent);
 
     return cachePath;
   }

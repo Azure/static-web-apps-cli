@@ -1,8 +1,11 @@
-jest.mock("../constants", () => {});
-import mockFs from "mock-fs";
-import path from "path";
-import { argv, createStartupScriptCommand, parseServerTimeout } from "./cli";
-import { logger } from "./logger";
+import "../../../tests/_mocks/fs.js";
+vi.mock("../constants", () => {
+  return {};
+});
+import path from "node:path";
+import { vol } from "memfs";
+import { argv, createStartupScriptCommand, parseServerTimeout } from "./cli.js";
+import { logger } from "./logger.js";
 
 describe("argv()", () => {
   it("process.argv = []", () => {
@@ -112,11 +115,11 @@ describe("createStartupScriptCommand()", () => {
     });
   });
   describe("an external script", () => {
-    afterEach(() => {
-      mockFs.restore();
+    beforeEach(() => {
+      vol.reset();
     });
     it("should parse relative script file ./script.sh", () => {
-      mockFs({
+      vol.fromJSON({
         "script.sh": "",
       });
       const cmd = createStartupScriptCommand("script.sh", {});
@@ -124,15 +127,15 @@ describe("createStartupScriptCommand()", () => {
     });
 
     it("should parse relative script file ./script.sh from the root of --app-location", () => {
-      mockFs({
+      vol.fromJSON({
         "/bar/script.sh": "",
       });
       const cmd = createStartupScriptCommand("script.sh", { appLocation: `${path.sep}bar` });
-      expect(cmd).toInclude(path.join(path.sep, "bar", "script.sh"));
+      expect(cmd).to.include(path.join(path.sep, "bar", "script.sh"));
     });
 
     it("should parse absolute script file /foo/script.sh", () => {
-      mockFs({
+      vol.fromNestedJSON({
         "/foo": {
           "script.sh": "",
         },
@@ -149,13 +152,15 @@ describe("createStartupScriptCommand()", () => {
   });
 
   describe("parseServerTimeout()", () => {
-    const mockLoggerError = jest.spyOn(logger, "error").mockImplementation(() => {
-      return undefined as never;
+    beforeEach(() => {
+      vi.spyOn(logger, "error").mockImplementation(() => {
+        return undefined as never;
+      });
     });
 
     it("DevserverTimeout below 0 should be invalid", () => {
       parseServerTimeout("-10");
-      expect(mockLoggerError).toBeCalled();
+      expect(logger.error).toHaveBeenCalled();
     });
 
     it("DevserverTimeout for any positive value should be valid", () => {
@@ -165,7 +170,7 @@ describe("createStartupScriptCommand()", () => {
 
     it("Non-number DevserverTimeout should be invalid", () => {
       parseServerTimeout("not a number");
-      expect(mockLoggerError).toBeCalled();
+      expect(logger.error).toHaveBeenCalled();
     });
   });
 });

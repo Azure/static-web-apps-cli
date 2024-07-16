@@ -1,6 +1,6 @@
-import crypto from "crypto";
-import { networkInterfaces } from "os";
-import { logger } from "../../utils";
+import crypto from "node:crypto";
+import { networkInterfaces } from "node:os";
+import { logger } from "../../utils/logger.js";
 
 let machineId: Promise<string>;
 

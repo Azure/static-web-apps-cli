@@ -16,11 +16,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-12, windows-latest, ubuntu-20.04]
-        node-version: [14.x, 15.x, 16.x, 17.x]
+        node-version: [18.x, 20.x]
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Cypress run
         uses: cypress-io/github-action@v2

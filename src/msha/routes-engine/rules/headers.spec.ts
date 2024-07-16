@@ -1,11 +1,9 @@
-import type http from "http";
-import { HEADER_DELETE_KEYWORD } from "../../../core/constants";
-import { getHeadersForRoute, getResponseHeaders, updateResponseHeaders } from "./headers";
+import type http from "node:http";
+import { HEADER_DELETE_KEYWORD } from "../../../core/constants.js";
+import { getHeadersForRoute, getResponseHeaders, updateResponseHeaders } from "./headers.js";
 
 describe("headers", () => {
   describe("getHeadersForRoute()", () => {
-    // TODO: for some weird reason, jest.spyOn() does'nt mock getDefaultHeaders()
-    // in this test suite, we are testing both functions: getHeadersForRoute() and getDefaultHeaders().
     it("should return default headers", async () => {
       const headers = getHeadersForRoute(undefined, undefined);
 
@@ -69,14 +67,14 @@ describe("headers", () => {
 
     it("should add deletion placeholder in empty headers", () => {
       const response = getResponseHeaders({ "x-foo": "", "x-abc": "123" });
-      expect(response["x-foo"]).toInclude(HEADER_DELETE_KEYWORD);
+      expect(response["x-foo"]).to.include(HEADER_DELETE_KEYWORD);
     });
   });
 
   describe("updateResponseHeaders()", () => {
     const res = {
-      setHeader: jest.fn(),
-      removeHeader: jest.fn(),
+      setHeader: vi.fn(),
+      removeHeader: vi.fn(),
     } as Partial<http.ServerResponse>;
     it("should not mutate response object if no headers are provided", () => {
       updateResponseHeaders(res as http.ServerResponse, {});

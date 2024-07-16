@@ -1,5 +1,7 @@
-import type http from "http";
-import { logger, response as newResponse, serializeCookie } from "../../core";
+import type http from "node:http";
+import { serializeCookie } from "../../core/utils/cookie.js";
+import { logger } from "../../core/utils/logger.js";
+import { response as newResponse } from "../../core/utils/net.js";
 
 function getAuthPaths(isCustomAuth: boolean): Path[] {
   const paths: Path[] = [];

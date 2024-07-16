@@ -2,7 +2,8 @@ import { StaticSiteARMResource } from "@azure/arm-appservice";
 import { Subscription, TenantIdDescription } from "@azure/arm-subscriptions";
 import chalk from "chalk";
 import prompts, { Answers, PromptObject } from "prompts";
-import { dasherize, logger } from "./utils";
+import { logger } from "./utils/logger.js";
+import { dasherize } from "./utils/strings.js";
 
 export async function promptOrUseDefault<T extends string = string>(
   disablePrompts: boolean,

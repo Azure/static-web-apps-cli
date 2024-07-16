@@ -1,7 +1,8 @@
 import { Command } from "commander";
 import process from "process";
-import { configureOptions, isUserOption, logger } from "../../../core/utils";
-import { init } from "./init";
+import { configureOptions, isUserOption } from "../../../core/utils/options.js";
+import { logger } from "../../../core/utils/logger.js";
+import { init } from "./init.js";
 
 export default function registerCommand(program: Command) {
   program

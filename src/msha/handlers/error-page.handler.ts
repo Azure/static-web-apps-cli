@@ -1,8 +1,8 @@
-import type http from "http";
-import { logRequest } from "../../core";
-import { SWA_CLI_APP_PROTOCOL } from "../../core/constants";
-import { responseOverrides } from "../routes-engine";
-import { isCustomUrl } from "../routes-engine/route-processor";
+import type http from "node:http";
+import { logRequest } from "../../core/utils/logger.js";
+import { SWA_CLI_APP_PROTOCOL } from "../../core/constants.js";
+import { responseOverrides } from "../routes-engine/rules/response-overrides.js";
+import { isCustomUrl } from "../routes-engine/route-processor.js";
 
 export function handleErrorPage(
   req: http.IncomingMessage,

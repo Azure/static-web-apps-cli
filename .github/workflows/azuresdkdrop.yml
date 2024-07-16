@@ -14,14 +14,14 @@ jobs:
     strategy:
       matrix:
         os: [macos-12, windows-latest, ubuntu-latest]
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [18.x, 20.x]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         ref: main
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm ci
@@ -32,11 +32,11 @@ jobs:
     name: Package / tag / release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           ref: main
       - name: Use Node.js 18.x
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
           node-version: 18.x
 
@@ -99,7 +99,7 @@ jobs:
       uses: actions/download-artifact@v2
       with:
           name: package
-          
+
     # Login via OIDC to permit uploading to azure drops blob store
     - name: 'Az login'
       uses: azure/login@v2

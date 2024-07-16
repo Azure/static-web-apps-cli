@@ -1,5 +1,6 @@
-import { IncomingMessage } from "http";
-import { decodeCookie, response, validateCookie } from "../../../core";
+import { IncomingMessage } from "node:http";
+import { decodeCookie, validateCookie } from "../../../core/utils/cookie.js";
+import { response } from "../../../core/utils/net.js";
 
 const httpTrigger = async function (context: Context, req: IncomingMessage) {
   const { cookie } = req.headers;

@@ -1,10 +1,10 @@
 import chalk from "chalk";
 import getPort from "get-port";
-import net from "net";
+import net from "node:net";
 import ora from "ora";
 import waitOn from "wait-on";
-import { confirmChooseRandomPort } from "../prompts";
-import { logger } from "./logger";
+import { confirmChooseRandomPort } from "../prompts.js";
+import { logger } from "./logger.js";
 
 const VALID_PORT_MIN = 1024;
 const VALID_PORT_MAX = 65535;

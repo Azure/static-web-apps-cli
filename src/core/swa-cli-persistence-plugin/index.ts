@@ -1,7 +1,7 @@
 import { IdentityPlugin, TokenCachePersistenceOptions } from "@azure/identity";
 import { ICachePlugin } from "@azure/msal-common";
-import { logger } from "../utils";
-import { SWACLIPersistenceCachePlugin } from "./persistence-cache-plugin";
+import { logger } from "../utils/logger.js";
+import { SWACLIPersistenceCachePlugin } from "./persistence-cache-plugin.js";
 
 /**
  * Plugin context entries for controlling cache plugins.

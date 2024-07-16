@@ -1,10 +1,10 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import YAML from "yaml";
-import { DEFAULT_CONFIG } from "../../config";
-import { logger } from "./logger";
-import { isHttpUrl } from "./net";
-import { validateUserWorkflowConfig } from "./user-config";
+import { DEFAULT_CONFIG } from "../../config.js";
+import { logger } from "./logger.js";
+import { isHttpUrl } from "./net.js";
+import { validateUserWorkflowConfig } from "./user-config.js";
 
 /**
  * Read and parse the project workflow configuration (if available).

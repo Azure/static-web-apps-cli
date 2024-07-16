@@ -1,11 +1,14 @@
 import chalk from "chalk";
-import type http from "http";
+import type http from "node:http";
 import httpProxy from "http-proxy";
 import fetch from "node-fetch";
-import { decodeCookie, logger, logRequest, registerProcessExit, validateCookie } from "../../core";
-import { HAS_API, SWA_CLI_API_URI } from "../../core/constants";
-import { parseUrl } from "../../core/utils/net";
-import { onConnectionLost } from "../middlewares/request.middleware";
+
+import { decodeCookie, validateCookie } from "../../core/utils/cookie.js";
+import { registerProcessExit } from "../../core/utils/cli.js";
+import { logger, logRequest } from "../../core/utils/logger.js";
+import { parseUrl } from "../../core/utils/net.js";
+import { HAS_API, SWA_CLI_API_URI } from "../../core/constants.js";
+import { onConnectionLost } from "../middlewares/request.middleware.js";
 
 const proxyApi = httpProxy.createProxyServer({ autoRewrite: true });
 registerProcessExit(() => {

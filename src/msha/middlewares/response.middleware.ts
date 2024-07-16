@@ -1,19 +1,17 @@
 import chalk from "chalk";
-import type http from "http";
-import { isHttpUrl, isSWAConfigFileUrl, logger } from "../../core";
-import { IS_APP_DEV_SERVER } from "../../core/constants";
-import { handleDataApiRequest } from "../handlers/dab.handler";
-import { handleErrorPage } from "../handlers/error-page.handler";
-import { handleFunctionRequest, isFunctionRequest } from "../handlers/function.handler";
-import {
-  applyRedirectResponse,
-  getHeadersForRoute,
-  getMimeTypeForExtension,
-  isRequestPathExcludedFromNavigationFallback,
-  tryFindFileForRequest,
-  updateResponseHeaders,
-} from "../routes-engine";
-import { parseQueryParams } from "../routes-engine/route-processor";
+import type http from "node:http";
+import { isHttpUrl } from "../../core/utils/net.js";
+import { logger } from "../../core/utils/logger.js";
+import { isSWAConfigFileUrl } from "../../core/utils/user-config.js";
+import { IS_APP_DEV_SERVER } from "../../core/constants.js";
+import { handleDataApiRequest } from "../handlers/dab.handler.js";
+import { handleErrorPage } from "../handlers/error-page.handler.js";
+import { handleFunctionRequest, isFunctionRequest } from "../handlers/function.handler.js";
+import { applyRedirectResponse, tryFindFileForRequest } from "../routes-engine/rules/routes.js";
+import { getHeadersForRoute, updateResponseHeaders } from "../routes-engine/rules/headers.js";
+import { getMimeTypeForExtension } from "../routes-engine/rules/mime-types.js";
+import { isRequestPathExcludedFromNavigationFallback } from "../routes-engine/rules/navigation-fallback.js";
+import { parseQueryParams } from "../routes-engine/route-processor.js";
 
 export function getResponse(
   req: http.IncomingMessage,

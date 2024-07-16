@@ -1,25 +1,20 @@
 import chalk from "chalk";
-import { spawn } from "child_process";
-import fs from "fs";
+import { spawn } from "node:child_process";
+import fs from "node:fs";
 import ora, { Ora } from "ora";
-import path from "path";
-import {
-  findSWAConfigFile,
-  getCurrentSwaCliConfigFromFile,
-  isUserOrConfigOption,
-  logger,
-  logGitHubIssueMessageAndExit,
-  readWorkflowFile,
-  updateSwaCliConfigFile,
-} from "../../../core";
-import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../../core/account";
-import { DEFAULT_RUNTIME_LANGUAGE } from "../../../core/constants";
-import { cleanUp, getDeployClientPath } from "../../../core/deploy-client";
-import { swaCLIEnv } from "../../../core/env";
-import { getDefaultVersion } from "../../../core/functions-versions";
-import { login } from "../login";
-
-const packageInfo = require(path.join(__dirname, "..", "..", "..", "..", "package.json"));
+import path from "node:path";
+import { findSWAConfigFile } from "../../../core/utils/user-config.js";
+import { getCurrentSwaCliConfigFromFile, updateSwaCliConfigFile } from "../../../core/utils/cli-config.js";
+import { logger, logGitHubIssueMessageAndExit } from "../../../core/utils/logger.js";
+import { isUserOrConfigOption } from "../../../core/utils/options.js";
+import { readWorkflowFile } from "../../../core/utils/workflow-config.js";
+import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../../core/account.js";
+import { DEFAULT_RUNTIME_LANGUAGE } from "../../../core/constants.js";
+import { cleanUp, getDeployClientPath } from "../../../core/deploy-client.js";
+import { swaCLIEnv } from "../../../core/env.js";
+import { getDefaultVersion } from "../../../core/functions-versions.js";
+import { login } from "../login/login.js";
+import packageInfo from "../../../../package.json" with { type: "json" };
 
 export async function deploy(options: SWACLIConfig) {
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
@@ -99,7 +94,7 @@ export async function deploy(options: SWACLIConfig) {
       logger.warn(
         `An API folder was found at ".${
           path.sep + path.basename(apiFolder)
-        }" but the --api-location option was not provided. The API will not be deployed.\n`
+        }" but the --api-location option was not provided. The API will not be deployed.\n`,
       );
     }
   }
@@ -157,7 +152,7 @@ export async function deploy(options: SWACLIConfig) {
         credentialChain,
         subscriptionId,
         resourceGroup as string,
-        staticSiteName as string
+        staticSiteName as string,
       );
 
       deploymentToken = deploymentTokenResponse?.properties?.apiKey;
@@ -217,7 +212,7 @@ export async function deploy(options: SWACLIConfig) {
     logger.warn(`Error reading workflow configuration:`);
     logger.warn((err as any).message);
     logger.warn(
-      `See https://docs.microsoft.com/azure/static-web-apps/build-configuration?tabs=github-actions#build-configuration for more information.`
+      `See https://docs.microsoft.com/azure/static-web-apps/build-configuration?tabs=github-actions#build-configuration for more information.`,
     );
   }
 
@@ -303,7 +298,7 @@ export async function deploy(options: SWACLIConfig) {
             else if (line.includes("[31m")) {
               if (line.includes("Cannot deploy to the function app because Function language info isn't provided.")) {
                 line = chalk.red(
-                  `Cannot deploy to the function app because Function language info isn't provided, use flags "--api-language" and "--api-version" or add a "platform.apiRuntime" property to your staticwebapp.config.json file, or create one in ${options.outputLocation!}. Please consult the documentation for more information about staticwebapp.config.json: https://learn.microsoft.com/azure/static-web-apps/build-configuration?tabs=github-actions#skip-building-the-api`
+                  `Cannot deploy to the function app because Function language info isn't provided, use flags "--api-language" and "--api-version" or add a "platform.apiRuntime" property to your staticwebapp.config.json file, or create one in ${options.outputLocation!}. Please consult the documentation for more information about staticwebapp.config.json: https://learn.microsoft.com/azure/static-web-apps/build-configuration?tabs=github-actions#skip-building-the-api`,
                 );
               }
 
@@ -336,7 +331,7 @@ export async function deploy(options: SWACLIConfig) {
     logger.error("Deployment Failed :(");
     logger.error(`Deployment Failure Reason: ${(error as any).message}`);
     logger.error(
-      `For further information, please visit the Azure Static Web Apps documentation at https://docs.microsoft.com/azure/static-web-apps/`
+      `For further information, please visit the Azure Static Web Apps documentation at https://docs.microsoft.com/azure/static-web-apps/`,
     );
     logGitHubIssueMessageAndExit();
   } finally {

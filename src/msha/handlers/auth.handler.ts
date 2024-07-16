@@ -1,7 +1,7 @@
-import type http from "http";
-import { logger, logRequest } from "../../core";
-import { processAuth } from "../auth";
-import { handleErrorPage } from "./error-page.handler";
+import type http from "node:http";
+import { logger, logRequest } from "../../core/utils/logger.js";
+import { processAuth } from "../auth/index.js";
+import { handleErrorPage } from "./error-page.handler.js";
 
 export async function handleAuthRequest(
   req: http.IncomingMessage,
