@@ -348,7 +348,7 @@ export async function start(options: SWACLIConfig) {
     },
   });
 
-  const concurrentlyOptions: Partial<ConcurrentlyOptions> = { restartTries: 0, killOthers: ["failure", "success"] };
+  const concurrentlyOptions: Partial<ConcurrentlyOptions> = { restartTries: 0, killOthers: ["failure", "success"], raw: true };
   const { result } = concurrently(concurrentlyCommands, concurrentlyOptions);
 
   await result
