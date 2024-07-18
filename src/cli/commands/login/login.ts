@@ -5,7 +5,8 @@ import { existsSync, promises as fs } from "node:fs";
 import path from "node:path";
 import { logger, logGitHubIssueMessageAndExit } from "../../../core/utils/logger.js";
 import { authenticateWithAzureIdentity, listSubscriptions, listTenants } from "../../../core/account.js";
-import { ENV_FILENAME } from "../../../core/constants.js";
+import { AZURE_LOGIN_CONFIG, ENV_FILENAME } from "../../../core/constants.js";
+import { pathExists, safeReadJson } from "../../../core/utils/file.js";
 import { updateGitIgnore } from "../../../core/git.js";
 import { chooseSubscription, chooseTenant } from "../../../core/prompts.js";
 import { Environment } from "../../../core/swa-cli-persistence-plugin/impl/azure-environment.js";
@@ -43,6 +44,7 @@ export async function login(options: SWACLIConfig): Promise<any> {
     logger.log(chalk.green(`✔ Successfully logged into Azure!`));
   }
 
+  options = await tryGetAzTenantAndSubscription(options);
   return await setupProjectCredentials(options, credentialChain);
 }
 
@@ -147,5 +149,26 @@ async function storeProjectCredentialsInEnvFile(
     logger.log(chalk.green(`✔ Saved project credentials in ${ENV_FILENAME} file.`));
 
     await updateGitIgnore(ENV_FILENAME);
+  }
+}
+
+async function tryGetAzTenantAndSubscription(options: SWACLIConfig) {
+  const doesAzureConfigExist = await pathExists(AZURE_LOGIN_CONFIG);
+  if (!doesAzureConfigExist) {
+    return options;
+  } else {
+    logger.silly(`Found an existing Azure config file, getting Tenant and Subscription Id from ${AZURE_LOGIN_CONFIG}`);
+
+    const azureProfile = await safeReadJson(AZURE_LOGIN_CONFIG);
+    if (azureProfile) {
+      const allSubscriptions = (azureProfile as AzureProfile).subscriptions;
+      const defaultAzureInfo = allSubscriptions.find((subscription) => subscription.isDefault == true);
+      if (defaultAzureInfo) {
+        options.tenantId = defaultAzureInfo.tenantId;
+        options.subscriptionId = defaultAzureInfo.id;
+      }
+    }
+
+    return options;
   }
 }

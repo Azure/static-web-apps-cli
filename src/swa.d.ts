@@ -407,3 +407,27 @@ declare type RolesSourceClaim = {
   typ: string;
   val: string;
 };
+
+declare type SubscriptionState = "Enabled" | "Warned" | "PastDue" | "Disabled" | "Deleted";
+
+declare type AzureLoginInfo = {
+  id: string;
+  name: string;
+  state: SubscriptionState;
+  user: {
+    name: string;
+    type: string;
+  };
+  isDefault: boolean;
+  tenantId: string;
+  environmentName: string;
+  homeTenantId: string;
+  tenantDefaultDomain: string;
+  tenantDisplayName: string;
+  managedByTenants: string[];
+};
+
+declare interface AzureProfile {
+  installationId: string;
+  subscriptions: AzureLoginInfo[];
+}
