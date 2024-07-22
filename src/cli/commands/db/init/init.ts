@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import {
   DATA_API_BUILDER_BINARY_NAME,
   DATA_API_BUILDER_DATABASE_TYPES,
@@ -8,9 +8,10 @@ import {
   DATA_API_BUILDER_DEFAULT_REST_PATH,
   DATA_API_BUILDER_DEFAULT_SCHEMA_FILE_NAME,
   DEFAULT_DATA_API_BUILDER_SCHEMA_CONTENT,
-} from "../../../../core/constants";
-import { execFileCommand, logger } from "../../../../core";
-import { getDataApiBuilderBinaryPath } from "../../../../core/dataApiBuilder";
+} from "../../../../core/constants.js";
+import { execFileCommand } from "../../../../core/utils/command.js";
+import { logger } from "../../../../core/utils/logger.js";
+import { getDataApiBuilderBinaryPath } from "../../../../core/dataApiBuilder/index.js";
 
 export async function init(options: SWACLIConfig) {
   let { databaseType, connectionString, cosmosdb_nosqlContainer, cosmosdb_nosqlDatabase } = options;

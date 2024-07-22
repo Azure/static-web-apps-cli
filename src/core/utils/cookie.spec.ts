@@ -1,9 +1,12 @@
-jest.mock("./logger", () => {
-  logger: {
-    silly: jest.fn();
-  }
+vi.mock("./logger", () => {
+  return {
+    logger: {
+      silly: vi.fn(),
+    },
+  };
 });
-import { validateCookie } from "./cookie";
+
+import { validateCookie } from "./cookie.js";
 
 describe("validateCookie()", () => {
   it("cookies = ''", () => {

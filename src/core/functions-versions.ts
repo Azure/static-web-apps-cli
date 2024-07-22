@@ -1,5 +1,5 @@
-import { DEFAULT_VERSION, SUPPORTED_VERSIONS } from "./constants";
-import { logger } from "./utils/logger";
+import { DEFAULT_VERSION, SUPPORTED_VERSIONS } from "./constants.js";
+import { logger } from "./utils/logger.js";
 
 export function getDefaultVersion(apiLanguage: string): string {
   let apiVersion;

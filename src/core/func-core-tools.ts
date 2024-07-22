@@ -1,15 +1,15 @@
-import os from "os";
-import fs from "fs";
-import path from "path";
-import process from "process";
-import { exec } from "child_process";
-import { promisify } from "util";
-import { PassThrough } from "stream";
-import crypto from "crypto";
+import os from "node:os";
+import fs from "node:fs";
+import path from "node:path";
+import process from "node:process";
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
+import { PassThrough } from "node:stream";
+import crypto from "node:crypto";
 import fetch from "node-fetch";
 import AdmZip from "adm-zip";
 import cliProgress from "cli-progress";
-import { logger } from "./utils/logger";
+import { logger } from "./utils/logger.js";
 
 const RELEASES_FEED_URL = "https://functionscdn.azureedge.net/public/cli-feed-v4.json";
 const DEFAULT_FUNC_BINARY = "func";
@@ -62,7 +62,26 @@ export function detectTargetCoreToolsVersion(nodeVersion: number): number {
   return 4;
 }
 
+// Cache the results of getInstalledSystemCoreToolsVersion
+// This supports the testing inside of func-core-tools.spec.ts
+let installedSystemCoreToolsVersionIsCached: boolean = false;
+let cachedSystemCoreToolsVersion: number | undefined = undefined;
+
+export function setCachedInstalledSystemCoreToolsVersion(version: number | undefined) {
+  cachedSystemCoreToolsVersion = version;
+  installedSystemCoreToolsVersionIsCached = true;
+}
+
+export function resetCachedInstalledSystemCoreToolsVersion(): void {
+  cachedSystemCoreToolsVersion = undefined;
+  installedSystemCoreToolsVersionIsCached = false;
+}
+
 async function getInstalledSystemCoreToolsVersion(): Promise<number | undefined> {
+  if (installedSystemCoreToolsVersionIsCached) {
+    return cachedSystemCoreToolsVersion;
+  }
+
   try {
     const { stdout: version } = await promisify(exec)(`${DEFAULT_FUNC_BINARY} --version`);
     return getMajorVersion(version);

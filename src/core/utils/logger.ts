@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import type http from "http";
-import { CUSTOM_URL_SCHEME, SWA_CLI_APP_PROTOCOL } from "../constants";
-import { swaCLIEnv } from "../env";
+import { CUSTOM_URL_SCHEME, SWA_CLI_APP_PROTOCOL } from "../constants.js";
+import { swaCLIEnv } from "../env.js";
 
 const SENSITIVE_KEYS = ["DEPLOYMENT_TOKEN", "SWA_CLI_DEPLOYMENT_TOKEN", "--deployment-token", "deploymentToken"];
 

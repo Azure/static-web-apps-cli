@@ -2,7 +2,8 @@ import { StaticSiteARMResource } from "@azure/arm-appservice";
 import { Subscription, TenantIdDescription } from "@azure/arm-subscriptions";
 import chalk from "chalk";
 import prompts, { Answers, PromptObject } from "prompts";
-import { dasherize, logger } from "./utils";
+import { logger } from "./utils/logger.js";
+import { dasherize } from "./utils/strings.js";
 
 export async function promptOrUseDefault<T extends string = string>(
   disablePrompts: boolean,
@@ -72,6 +73,18 @@ export async function chooseProjectName(initial: string, maxLength: number): Pro
     format: (value: string) => dasherize(value.trim()),
   });
   return response.projectName;
+}
+
+export async function chooseProjectSku(): Promise<string> {
+  const response = await promptOrUseDefault(false, {
+    type: "text",
+    name: "sku",
+    message: "Choose a SKU:",
+    initial: "Free",
+    validate: (value: string) => value === "Free" || value === "Standard" || "Configuration name cannot be empty",
+  });
+
+  return response.sku;
 }
 
 export async function chooseTenant(tenants: TenantIdDescription[], initial?: string): Promise<TenantIdDescription | undefined> {

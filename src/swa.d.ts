@@ -240,6 +240,12 @@ declare type SWACLIConfigInfo = {
 declare type ResponseOptions = {
   [key: string]: any;
 };
+
+declare type AuthContext = {
+  authNonce: string;
+  postLoginRedirectUri?: string;
+};
+
 declare type ClientPrincipal = {
   identityProvider: string;
   userId: string;
@@ -284,6 +290,23 @@ declare type SWAConfigFileMimeTypes = {
   [key: string]: string;
 };
 
+declare type AuthIdentityProvider = {
+  registration: {
+    clientIdSettingName: string;
+    clientSecretSettingName: string;
+  };
+};
+
+declare type SWAConfigFileAuthIdenityProviders = {
+  github?: AuthIdentityProvider;
+  google?: AuthIdentityProvider;
+};
+
+declare type SWAConfigFileAuth = {
+  rolesSource?: string;
+  identityProviders: SWAConfigFileAuthIdenityProviders;
+};
+
 declare type SWAConfigFile = {
   routes: SWAConfigFileRoute[];
   navigationFallback: SWAConfigFileNavigationFallback;
@@ -291,6 +314,7 @@ declare type SWAConfigFile = {
   globalHeaders: SWAConfigFileGlobalHeaders;
   mimeTypes: SWAConfigFileMimeTypes;
   isLegacyConfigFile: boolean;
+  auth?: SWAConfigFileAuth;
 };
 
 declare type DebugFilterLevel = "silly" | "silent" | "log" | "info" | "error";
@@ -370,3 +394,40 @@ const binaryType = {
   StaticSiteClient: 1,
   DataApiBuilder: 2,
 };
+
+declare type RolesSourceFunctionRequestBody = {
+  identityProvider: string;
+  userId?: string;
+  userDetails?: string;
+  claims?: RolesSourceClaim[];
+  accessToken?: string;
+};
+
+declare type RolesSourceClaim = {
+  typ: string;
+  val: string;
+};
+
+declare type SubscriptionState = "Enabled" | "Warned" | "PastDue" | "Disabled" | "Deleted";
+
+declare type AzureLoginInfo = {
+  id: string;
+  name: string;
+  state: SubscriptionState;
+  user: {
+    name: string;
+    type: string;
+  };
+  isDefault: boolean;
+  tenantId: string;
+  environmentName: string;
+  homeTenantId: string;
+  tenantDefaultDomain: string;
+  tenantDisplayName: string;
+  managedByTenants: string[];
+};
+
+declare interface AzureProfile {
+  installationId: string;
+  subscriptions: AzureLoginInfo[];
+}

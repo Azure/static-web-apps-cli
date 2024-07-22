@@ -1,27 +1,22 @@
-import fs from "fs";
-import mockFs from "mock-fs";
-import { isGitProject, updateGitIgnore } from "./git";
+import "../../tests/_mocks/fs.js";
+import { fs, vol } from "memfs";
+import { isGitProject, updateGitIgnore } from "./git.js";
 
 describe("git", () => {
   beforeEach(() => {
-    mockFs({});
-  });
-
-  afterEach(() => {
-    mockFs.restore();
+    vol.reset();
   });
 
   // test isGitProject()
   describe("isGitProject()", () => {
     it("should return true if the directory is a git project", async () => {
-      mockFs({
+      vol.fromNestedJSON({
         ".git": {},
       });
       expect(await isGitProject()).toBe(true);
     });
 
     it("should return false if the directory is a not git project", async () => {
-      mockFs();
       expect(await isGitProject()).toBe(false);
     });
   });
@@ -29,7 +24,7 @@ describe("git", () => {
   // test updateGitIgnore()
   describe("updateGitIgnore()", () => {
     it("should insert new entry in .gitignore if the directory is a git project and contains .gitignore", async () => {
-      mockFs({
+      vol.fromNestedJSON({
         ".git": {},
         ".gitignore": "",
       });
@@ -40,7 +35,7 @@ describe("git", () => {
     });
 
     it("should append new entry in .gitignore if the directory is a git project and contains .gitignore", async () => {
-      mockFs({
+      vol.fromNestedJSON({
         ".git": {},
         ".gitignore": "foo",
       });
@@ -52,7 +47,7 @@ describe("git", () => {
     });
 
     it("should not update .gitignore if entry already exists", async () => {
-      mockFs({
+      vol.fromNestedJSON({
         ".git": {},
         ".gitignore": "foo\nbar",
       });
@@ -64,23 +59,17 @@ describe("git", () => {
     });
 
     it("should not update .gitignore if it does not exist", async () => {
-      mockFs();
       const didUpdate = await updateGitIgnore("bar");
-
       expect(didUpdate).toBe(false);
     });
 
     it("should not update .gitignore if entry is empty", async () => {
-      mockFs();
       const didUpdate = await updateGitIgnore("");
-
       expect(didUpdate).toBe(false);
     });
 
     it("should not update .gitignore if entry is undefined", async () => {
-      mockFs();
       const didUpdate = await updateGitIgnore(undefined as any);
-
       expect(didUpdate).toBe(false);
     });
   });

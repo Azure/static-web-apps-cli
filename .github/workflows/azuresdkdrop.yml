@@ -3,6 +3,8 @@
 
 name: Create release and publish to drop
 
+permissions: write-all
+
 on: workflow_dispatch
 
 jobs:
@@ -11,15 +13,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
-        node-version: [14.x, 16.x, 18.x]
+        os: [macos-12, windows-latest, ubuntu-latest]
+        node-version: [18.x, 20.x]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         ref: main
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm ci
@@ -30,11 +32,11 @@ jobs:
     name: Package / tag / release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           ref: main
       - name: Use Node.js 18.x
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
           node-version: 18.x
 
@@ -98,12 +100,19 @@ jobs:
       with:
           name: package
 
+    # Login via OIDC to permit uploading to azure drops blob store
+    - name: 'Az login'
+      uses: azure/login@v2
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    # Deploy npm package - this is done by uploading to Azure's SDK blob storage then triggering their partner release pipeline.
+    # More info: https://dev.azure.com/azure-sdk/internal/_wiki/wikis/internal.wiki/1/Partner-Release-Pipeline
     - name: Upload to drop
       run: |
         ls -la
         PACKAGE_ID=`echo $(ls *.tgz) | sed -e 's/\.tgz$//'`
         echo $PACKAGE_ID
-        az storage blob upload -n azure-staticwebapps/npm/$PACKAGE_ID/$(ls *.tgz) -c drops -f $(ls *.tgz) --account-name $AZURE_SDK_STORAGE_ACCOUNT_NAME --account-key $AZURE_SDK_DROP_ACCESS_KEY
-      env:
-        AZURE_SDK_STORAGE_ACCOUNT_NAME: ${{secrets.AZURE_SDK_STORAGE_ACCOUNT_NAME}}
-        AZURE_SDK_DROP_ACCESS_KEY: ${{secrets.AZURE_SDK_DROP_ACCESS_KEY}}
+        az storage blob upload -n azure-staticwebapps/npm/$PACKAGE_ID/$(ls *.tgz) -c drops -f $(ls *.tgz) --account-name azuresdkpartnerdrops --auth-mode login

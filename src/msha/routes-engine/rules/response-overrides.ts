@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import type http from "http";
-import { logger } from "../../../core/utils/logger";
-import { CUSTOM_URL_SCHEME, OVERRIDABLE_ERROR_CODES } from "../../../core/constants";
+import { logger } from "../../../core/utils/logger.js";
+import { CUSTOM_URL_SCHEME, OVERRIDABLE_ERROR_CODES } from "../../../core/constants.js";
 
 function tryGetResponseOverrideForStatusCode(responseOverrides: SWAConfigFileResponseOverrides | undefined, statusCode: number) {
   return responseOverrides?.[statusCode];

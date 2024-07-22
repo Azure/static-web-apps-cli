@@ -1,13 +1,13 @@
-import { promises as fs } from "fs";
-import path from "path";
-import { logger } from "./logger";
-import { stripJsonComments } from "./strings";
+import { promises as fs } from "node:fs";
+import path from "node:path";
+import { logger } from "./logger.js";
+import { stripJsonComments } from "./strings.js";
 
 export async function safeReadJson(path: string): Promise<JsonData | undefined> {
   try {
     let contents = await fs.readFile(path, "utf8");
     contents = stripJsonComments(contents);
-    return JSON.parse(contents) as JsonData;
+    return JSON.parse(contents.trim()) as JsonData;
   } catch (error) {
     logger.warn(`Failed to read JSON file at: ${path}`);
     return undefined;

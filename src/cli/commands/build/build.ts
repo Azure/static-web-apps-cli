@@ -1,15 +1,12 @@
-import path from "path";
+import path from "node:path";
 import chalk from "chalk";
-import { detectProjectFolders, generateConfiguration } from "../../../core/frameworks";
-import {
-  findUpPackageJsonDir,
-  isUserOrConfigOption,
-  logger,
-  pathExists,
-  readWorkflowFile,
-  runCommand,
-  swaCliConfigFilename,
-} from "../../../core/utils";
+import { detectProjectFolders, generateConfiguration } from "../../../core/frameworks/detect.js";
+import { findUpPackageJsonDir, pathExists } from "../../../core/utils/file.js";
+import { isUserOrConfigOption } from "../../../core/utils/options.js";
+import { logger } from "../../../core/utils/logger.js";
+import { readWorkflowFile } from "../../../core/utils/workflow-config.js";
+import { runCommand } from "../../../core/utils/command.js";
+import { swaCliConfigFilename } from "../../../core/utils/cli-config.js";
 
 export async function build(options: SWACLIConfig) {
   const workflowConfig = readWorkflowFile();

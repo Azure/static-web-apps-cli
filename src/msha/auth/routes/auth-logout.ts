@@ -1,6 +1,7 @@
-import type http from "http";
-import { response } from "../../../core";
-import { SWA_CLI_APP_PROTOCOL } from "../../../core/constants";
+import type http from "node:http";
+import { CookiesManager } from "../../../core/utils/cookie.js";
+import { response } from "../../../core/utils/net.js";
+import { SWA_CLI_APP_PROTOCOL } from "../../../core/constants.js";
 
 export default async function (context: Context, req: http.IncomingMessage) {
   const headers = req?.headers;
@@ -17,18 +18,13 @@ export default async function (context: Context, req: http.IncomingMessage) {
   const query = new URL(req?.url || "", uri).searchParams;
   const location = `${uri}${query.get("post_logout_redirect_uri") || "/"}`;
 
+  const cookiesManager = new CookiesManager(req.headers.cookie);
+  cookiesManager.addCookieToDelete("StaticWebAppsAuthCookie");
+
   context.res = response({
     context,
     status: 302,
-    cookies: [
-      {
-        name: "StaticWebAppsAuthCookie",
-        value: "deleted",
-        path: "/",
-        HttpOnly: false,
-        expires: new Date(1).toUTCString(),
-      },
-    ],
+    cookies: cookiesManager.getCookies(),
     headers: {
       Location: location,
     },

@@ -1,8 +1,8 @@
 import { Command, OptionValues, program } from "commander";
-import { DEFAULT_CONFIG } from "../../config";
-import { SWACommand, SWA_COMMANDS } from "../constants";
-import { getConfigFileOptions } from "./cli-config";
-import { logger } from "./logger";
+import { DEFAULT_CONFIG } from "../../config.js";
+import { SWACommand, SWA_COMMANDS } from "../constants.js";
+import { getConfigFileOptions } from "./cli-config.js";
+import { logger } from "./logger.js";
 
 let userDefinedOptions: SWACLIConfig = {};
 let configFileDefinedOptions: SWACLIConfig = {};

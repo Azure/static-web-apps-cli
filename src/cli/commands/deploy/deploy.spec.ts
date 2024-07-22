@@ -1,43 +1,38 @@
-import child_process from "child_process";
-import mockFs from "mock-fs";
-import path from "path";
-import { logger } from "../../../core";
-import * as accountModule from "../../../core/account";
-import * as deployClientModule from "../../../core/deploy-client";
-import { deploy } from "./deploy";
-import * as loginModule from "../login/login";
+import "../../../../tests/_mocks/fs.js";
+import child_process from "node:child_process";
+import { logger } from "../../../core/utils/logger.js";
+import { vol } from "memfs";
+import * as accountModule from "../../../core/account.js";
+import * as deployClientModule from "../../../core/deploy-client.js";
+import { deploy } from "./deploy.js";
+import * as loginModule from "../login/login.js";
+import pkg from "../../../../package.json" with { type: "json" };
 
-const pkg = require(path.join(__dirname, "..", "..", "..", "..", "package.json"));
-
-jest.mock("ora", () => {
-  return jest.fn();
-});
-
-jest.mock("../../../core/utils/logger", () => {
+vi.mock("../../../core/utils/logger", () => {
   return {
     logger: {
-      error: jest.fn(),
-      log: jest.fn(),
-      warn: jest.fn(),
-      silly: jest.fn(),
+      error: vi.fn(),
+      log: vi.fn(),
+      warn: vi.fn(),
+      silly: vi.fn(),
     },
-    logGitHubIssueMessageAndExit: jest.fn(),
+    logGitHubIssueMessageAndExit: vi.fn(),
   };
 });
 
-jest.spyOn(process, "exit").mockImplementation();
-jest.spyOn(child_process, "spawn").mockImplementation(jest.fn());
-jest.spyOn(deployClientModule, "getDeployClientPath").mockImplementation(() => {
+//vi.spyOn(process, "exit").mockImplementation(() => {});
+vi.spyOn(child_process, "spawn").mockImplementation(vi.fn());
+vi.spyOn(deployClientModule, "getDeployClientPath").mockImplementation(() => {
   return Promise.resolve({
     binary: "mock-binary",
     buildId: "0.0.0",
   });
 });
-jest.spyOn(deployClientModule, "cleanUp").mockImplementation(() => {});
+vi.spyOn(deployClientModule, "cleanUp").mockImplementation(() => {});
 
-jest.spyOn(accountModule, "getStaticSiteDeployment").mockImplementation(() => Promise.resolve({}));
+vi.spyOn(accountModule, "getStaticSiteDeployment").mockImplementation(() => Promise.resolve({}));
 
-jest.spyOn(loginModule, "login").mockImplementation(() => {
+vi.spyOn(loginModule, "login").mockImplementation(() => {
   return Promise.resolve({
     credentialChain: {} as any,
     subscriptionId: "mock-subscription-id",
@@ -50,16 +45,13 @@ describe("deploy", () => {
   const OLD_ENV = process.env;
 
   beforeEach(() => {
-    jest.resetModules();
+    vol.reset();
+    vi.resetModules();
     process.env = {};
   });
 
   afterAll(() => {
     process.env = OLD_ENV;
-  });
-
-  afterEach(() => {
-    mockFs.restore();
   });
 
   it("should be a function", () => {
@@ -71,7 +63,6 @@ describe("deploy", () => {
   });
 
   it("should print warning when using dry run mode", async () => {
-    mockFs();
     await deploy({
       outputLocation: "./dist",
       dryRun: true,
@@ -82,7 +73,6 @@ describe("deploy", () => {
   });
 
   it.skip("should print error and exit when --api-location does not exist", async () => {
-    mockFs();
     await deploy({
       outputLocation: "./dist",
       apiLocation: "/does/not/exist",
@@ -91,7 +81,7 @@ describe("deploy", () => {
   });
 
   it.skip("should print an error and exit, if --deployment-token is not provided and login failed", async () => {
-    jest.spyOn(loginModule, "login").mockImplementation(() => Promise.reject("mock-error"));
+    vi.spyOn(loginModule, "login").mockImplementation(() => Promise.reject("mock-error"));
 
     await deploy({
       outputLocation: "./dist",
@@ -107,7 +97,7 @@ describe("deploy", () => {
     expect(logger.error).toHaveBeenNthCalledWith(
       2,
       "Provide a deployment token using the --deployment-token option or SWA_CLI_DEPLOYMENT_TOKEN environment variable",
-      true
+      true,
     );
 
     expect(deployClientModule.getDeployClientPath).not.toBeCalled();

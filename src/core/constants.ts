@@ -1,7 +1,11 @@
-import path from "path";
-import { DEFAULT_CONFIG } from "../config";
-import { address, isHttpUrl } from "./utils/net";
-import os from "os";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { DEFAULT_CONFIG } from "../config.js";
+import { address, isHttpUrl } from "./utils/net.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // StaticSiteClient related constants
 export const DEPLOY_BINARY_NAME = "StaticSitesClient";
@@ -37,10 +41,11 @@ export const DATA_API_BUILDER_DATABASE_TYPES = {
 // General SWA_CLI constants
 export const SWA_COMMANDS = ["login", "init", "start", "deploy", "build", "db init"] as const;
 // Type cannot be in swa.d.ts as it's inferred from SWA_COMMANDS
-export type SWACommand = typeof SWA_COMMANDS[number];
+export type SWACommand = (typeof SWA_COMMANDS)[number];
 
 export const SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB = 20; // 20kb
 
+export const SWA_AUTH_CONTEXT_COOKIE = `StaticWebAppsAuthContextCookie`;
 export const SWA_AUTH_COOKIE = `StaticWebAppsAuthCookie`;
 export const ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT = ["GET", "HEAD", "OPTIONS"];
 
@@ -226,6 +231,8 @@ export const SWA_CONFIG_FILENAME = "staticwebapp.config.json";
 export const SWA_CONFIG_FILENAME_LEGACY = "routes.json";
 export const CUSTOM_URL_SCHEME = "swa://";
 export const OVERRIDABLE_ERROR_CODES = [400, 401, 403, 404];
+export const SWA_CONFIG_SCHEME_URL = "https://json.schemastore.org/staticwebapp.config.json";
+export const SWA_CONFIG_SCHEME_FALLBACK_PATH = path.join(__dirname, "../../schema", SWA_CONFIG_FILENAME);
 
 // Constants related to Api runtime
 export const DEFAULT_VERSION = {
@@ -238,7 +245,7 @@ export const DEFAULT_VERSION = {
 export const SUPPORTED_VERSIONS = {
   Node: ["12", "14", "16", "18"],
   Dotnet: ["3.1", "6.0"],
-  DotnetIsolated: ["6.0", "7.0"],
+  DotnetIsolated: ["6.0", "7.0", "8.0"],
   Python: ["3.8", "3.9", "3.10"],
 };
 
@@ -265,3 +272,8 @@ export function IS_DATA_API_DEV_SERVER() {
 export function SWA_CLI_DATA_API_URI() {
   return IS_DATA_API_DEV_SERVER() ? DEFAULT_CONFIG.dataApiLocation : address(DEFAULT_CONFIG.host, DEFAULT_CONFIG.dataApiPort, "http");
 }
+
+// Constants related to swa login
+const azureFolderName = ".azure";
+const azureProfileFilename = "azureProfile.json";
+export const AZURE_LOGIN_CONFIG = path.join(os.homedir(), azureFolderName, azureProfileFilename);

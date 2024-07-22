@@ -188,10 +188,10 @@ export const appFrameworks: FrameworkDefinition[] = [
     overrides: ["vue"],
     packages: ["vuepress"],
     config: {
-      appBuildCommand: "npm run build",
-      appDevserverCommand: "npm run dev",
+      appBuildCommand: "npm run docs:build",
+      appDevserverCommand: "npm run docs:dev",
       appDevserverUrl: "http://localhost:8080",
-      outputLocation: "src/.vuepress/dist",
+      outputLocation: "docs/.vuepress/dist",
     },
   },
   {
@@ -214,7 +214,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "npm run build",
       appDevserverCommand: "npm run dev",
       appDevserverUrl: "http://localhost:8080",
-      outputLocation: "public",
+      outputLocation: "dist",
     },
   },
   {
@@ -321,11 +321,25 @@ export const appFrameworks: FrameworkDefinition[] = [
     },
   },
   {
-    id: "hugo",
-    name: "Hugo",
+    id: "hugolegacy",
+    name: "Hugo (Legacy)",
     files: ["config.toml", "content"],
     contains: {
       "config.toml": "baseURL =",
+    },
+    config: {
+      appBuildCommand: "hugo -D",
+      appDevserverCommand: "hugo server -D",
+      appDevserverUrl: "http://localhost:1313",
+      outputLocation: "public",
+    },
+  },
+  {
+    id: "hugo",
+    name: "Hugo",
+    files: ["hugo.toml", "content"],
+    contains: {
+      "hugo.toml": "baseURL =",
     },
     config: {
       appBuildCommand: "hugo -D",

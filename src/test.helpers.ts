@@ -1,7 +1,8 @@
-import path from "path";
-import os from "os";
+import path from "node:path";
+import os from "node:os";
 
 const isWindows = /win/.test(os.platform());
+type objectAsMap = { [key: string]: unknown };
 
 // Deep convert any Windows path to Unix path in a string or object
 export function convertToUnixPaths<T>(obj: T): T {
@@ -14,8 +15,8 @@ export function convertToUnixPaths<T>(obj: T): T {
   } else if (Array.isArray(obj)) {
     return obj.map((value) => convertToUnixPaths(value)) as any as T;
   } else if (typeof obj === "object") {
-    for (const [k, v] of Object.entries(obj)) {
-      (obj as any)[k] = convertToUnixPaths(v);
+    for (const [k, v] of Object.entries(obj as objectAsMap)) {
+      (obj as objectAsMap)[k] = convertToUnixPaths(v);
     }
   }
   return obj;
@@ -32,8 +33,8 @@ export function convertToNativePaths<T>(obj: T): T {
   } else if (Array.isArray(obj)) {
     return obj.map((value) => convertToNativePaths(value)) as any as T;
   } else if (typeof obj === "object") {
-    for (const [k, v] of Object.entries(obj)) {
-      (obj as any)[k] = convertToNativePaths(v);
+    for (const [k, v] of Object.entries(obj as objectAsMap)) {
+      (obj as objectAsMap)[k] = convertToNativePaths(v);
     }
   }
   return obj;

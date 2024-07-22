@@ -1,25 +1,26 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import process from "process";
+import process from "node:process";
 import chalk from "chalk";
 import { Command, Option, program } from "commander";
-import path from "path";
-import updateNotifier from "update-notifier";
-import { DEFAULT_CONFIG } from "../config";
-import { configureOptions, getCurrentSwaCliConfigFromFile, getNodeMajorVersion, logger, runCommand, swaCliConfigFilename } from "../core";
-import { registerDeploy } from "./commands/deploy";
-import { registerInit } from "./commands/init";
-import { registerLogin } from "./commands/login";
-import { registerStart } from "./commands/start";
-import { registerBuild } from "./commands/build";
-import { registerDocs } from "./commands/docs";
-import { registerDb } from "./commands/db/init";
-import { promptOrUseDefault } from "../core/prompts";
-
-export * from "./commands";
-
-const pkg = require("../../package.json");
+import path from "node:path";
+import { notifyOnUpdate } from "../core/utils/update-notifier.js";
+import { DEFAULT_CONFIG } from "../config.js";
+import { configureOptions } from "../core/utils/options.js";
+import { getCurrentSwaCliConfigFromFile, swaCliConfigFilename } from "../core/utils/cli-config.js";
+import { getNodeMajorVersion } from "../core/func-core-tools.js";
+import { logger } from "../core/utils/logger.js";
+import { runCommand } from "../core/utils/command.js";
+import { default as registerDeploy } from "./commands/deploy/register.js";
+import { default as registerInit } from "./commands/init/register.js";
+import { default as registerLogin } from "./commands/login/register.js";
+import { default as registerStart } from "./commands/start/register.js";
+import { default as registerBuild } from "./commands/build/register.js";
+import { registerDocs } from "./commands/docs.js";
+import { default as registerDb } from "./commands/db/init/register.js";
+import { promptOrUseDefault } from "../core/prompts.js";
+import pkg from "../../package.json" with { type: "json" };
 
 function printWelcomeMessage(argv?: string[]) {
   const args = argv?.slice(2) || [];
@@ -39,8 +40,8 @@ function printWelcomeMessage(argv?: string[]) {
 }
 
 function checkNodeVersion() {
-  const nodeMajorVersion = getNodeMajorVersion();
-  const minVersion = pkg.engines.node.substring(2, pkg.engines.node.indexOf("."));
+  const nodeMajorVersion: number = getNodeMajorVersion();
+  const minVersion: number = parseInt(pkg.engines.node.substring(2, pkg.engines.node.indexOf(".")));
 
   if (nodeMajorVersion < minVersion) {
     logger.error(`You are using Node ${process.versions.node} but this version of the CLI requires Node ${minVersion} or higher.`);
@@ -50,9 +51,7 @@ function checkNodeVersion() {
 
 export async function run(argv?: string[]) {
   printWelcomeMessage(argv);
-
-  // Once a day, check for updates
-  updateNotifier({ pkg }).notify();
+  notifyOnUpdate();
 
   program
     .name("swa")
@@ -63,21 +62,12 @@ export async function run(argv?: string[]) {
     .addOption(
       new Option("-V, --verbose [prefix]", "enable verbose output. Values are: silly,info,log,silent")
         .preset(DEFAULT_CONFIG.verbose)
-        .default(DEFAULT_CONFIG.verbose)
+        .default(DEFAULT_CONFIG.verbose),
     )
     .option("-c, --config <path>", "path to swa-cli.config.json file to use", path.relative(process.cwd(), swaCliConfigFilename))
     .option("-cn, --config-name <name>", "name of the configuration to use", undefined)
     .option("-g, --print-config", "print all resolved options", false)
     .action(async (_options: SWACLIConfig, command: Command) => {
-      if ((_options as any).ping) {
-        try {
-          require("child_process").execSync("npx command-line-pong", { stdio: ["inherit", "inherit", "ignore"] });
-        } catch (e) {
-          console.log("pong!");
-        }
-        return;
-      }
-
       const options = await configureOptions(undefined, command.optsWithGlobals(), command, "init");
       swaMagic(options);
     })
@@ -88,7 +78,7 @@ export async function run(argv?: string[]) {
 
   Documentation:
     https://aka.ms/swa/cli-local-development
-  `
+  `,
     );
 
   // Register commands

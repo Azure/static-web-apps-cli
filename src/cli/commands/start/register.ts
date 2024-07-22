@@ -1,8 +1,12 @@
 import chalk from "chalk";
 import { Command } from "commander";
-import { DEFAULT_CONFIG } from "../../../config";
-import { configureOptions, isHttpUrl, isUserOption, logger, matchLoadedConfigName, parseServerTimeout, parsePort } from "../../../core";
-import { start } from "./start";
+import { DEFAULT_CONFIG } from "../../../config.js";
+import { configureOptions, isUserOption } from "../../../core/utils/options.js";
+import { isHttpUrl, parsePort } from "../../../core/utils/net.js";
+import { matchLoadedConfigName } from "../../../core/utils/cli-config.js";
+import { logger } from "../../../core/utils/logger.js";
+import { parseServerTimeout } from "../../../core/utils/cli.js";
+import { start } from "./start.js";
 
 export default function registerCommand(program: Command) {
   program

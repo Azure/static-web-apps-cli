@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es2019",
-    "module": "commonjs",
+    "target": "ESNext",
+    "module": "NodeNext", // ESM Module resolution
+    "moduleResolution": "NodeNext", // ESM module resolution
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -16,22 +17,23 @@
     "strictBindCallApply": true,
     "strictPropertyInitialization": true,
     "noImplicitThis": true,
-    "alwaysStrict": true,
+    "alwaysStrict": false, // Can be set to false when writing ESM
 
     /* Additional Checks */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
 
     /* Advanced Options */
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "types": ["./node_modules/jest-extended"]
+    "types": ["vitest/globals"]
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["src/**/*.ts", "src/**/*.json"],
+  "include": ["src/**/*.ts", "tests/**/*.ts", "src/**/*.json", "tests/_mocks/process.js"],
   "files": ["src/swa.d.ts"]
 }

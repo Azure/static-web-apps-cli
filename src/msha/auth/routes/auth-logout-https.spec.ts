@@ -1,10 +1,10 @@
-jest.mock("../../../core/constants", () => {
+vi.mock("../../../core/constants", () => {
   return {
     SWA_CLI_APP_PROTOCOL: "https",
   };
 });
-import type http from "http";
-import httpTrigger from "./auth-logout";
+import type http from "node:http";
+import httpTrigger from "./auth-logout.js";
 
 describe("auth-logout-https", () => {
   let context: Context;
@@ -14,7 +14,7 @@ describe("auth-logout-https", () => {
     name: "StaticWebAppsAuthCookie",
     value: "deleted",
     path: "/",
-    HttpOnly: false,
+    httpOnly: false,
     expires: new Date(1).toUTCString(),
   };
 

@@ -1,13 +1,13 @@
 import chalk from "chalk";
-import fs from "fs";
-import type http from "http";
-import path from "path";
-import { logger } from "../../../core";
-import { globToRegExp, isValidGlobExpression } from "../../../core/utils/glob";
-import { AUTH_STATUS } from "../../../core/constants";
-import { doesRequestPathMatchRoute } from "../route-processor";
-import { getIndexHtml } from "./routes";
-import { swaCLIEnv } from "../../../core/env";
+import fs from "node:fs";
+import type http from "node:http";
+import path from "node:path";
+import { swaCLIEnv } from "../../../core/env.js";
+import { logger } from "../../../core/utils/logger.js";
+import { globToRegExp, isValidGlobExpression } from "../../../core/utils/glob.js";
+import { AUTH_STATUS } from "../../../core/constants.js";
+import { doesRequestPathMatchRoute } from "../route-processor.js";
+import { getIndexHtml } from "./routes.js";
 
 // See: https://docs.microsoft.com/azure/static-web-apps/configuration#fallback-routes
 

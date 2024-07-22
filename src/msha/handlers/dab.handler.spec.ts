@@ -1,10 +1,10 @@
-import http from "http";
-import { injectHeaders, isDataApiRequest } from "./dab.handler";
+import http from "node:http";
+import { injectHeaders, isDataApiRequest } from "./dab.handler.js";
 
 describe("isDataApiRequest", () => {
   beforeEach(() => {
     // Reset the mocked functions before each test
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('returns true when the path starts with "/data-api/"', () => {
@@ -49,8 +49,8 @@ describe("injectHeaders", () => {
 
   beforeEach(() => {
     req = {
-      getHeader: jest.fn(),
-      setHeader: jest.fn(),
+      getHeader: vi.fn(),
+      setHeader: vi.fn(),
       path: "/example/path",
     } as unknown as http.ClientRequest;
   });
@@ -64,7 +64,7 @@ describe("injectHeaders", () => {
 
   it("does not set x-ms-original-url header if already set", () => {
     const host = "http://example.com";
-    req.getHeader = jest.fn((headerName) => {
+    req.getHeader = vi.fn((headerName) => {
       if (headerName === "x-ms-original-url") {
         return "http://original-url.com";
       }

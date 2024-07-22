@@ -1,7 +1,7 @@
 import { Command } from "commander";
-import { DEFAULT_CONFIG } from "../../../config";
-import { configureOptions } from "../../../core";
-import { loginCommand as login } from "./login";
+import { DEFAULT_CONFIG } from "../../../config.js";
+import { configureOptions } from "../../../core/utils/options.js";
+import { loginCommand as login } from "./login.js";
 
 export function addSharedLoginOptionsToCommand(command: Command) {
   command

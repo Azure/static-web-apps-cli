@@ -1,5 +1,5 @@
-import type http from "http";
-import { parseQueryParams } from "./route-processor";
+import type http from "node:http";
+import { parseQueryParams } from "./route-processor.js";
 
 describe("parseQueryParams()", () => {
   const req = {} as http.IncomingMessage;

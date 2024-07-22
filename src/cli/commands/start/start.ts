@@ -1,26 +1,33 @@
-import concurrently, { CloseEvent } from "concurrently";
-import { CommandInfo } from "concurrently/dist/src/command";
-import fs from "fs";
-import path from "path";
-import { DEFAULT_CONFIG } from "../../../config";
+import { concurrently, CloseEvent, ConcurrentlyOptions } from "concurrently";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { DEFAULT_CONFIG } from "../../../config.js";
+import { askNewPort, isAcceptingTcpConnections, parseUrl } from "../../../core/utils/net.js";
+import { logger } from "../../../core/utils/logger.js";
+import { createStartupScriptCommand } from "../../../core/utils/cli.js";
+import { readWorkflowFile } from "../../../core/utils/workflow-config.js";
 import {
-  askNewPort,
-  createStartupScriptCommand,
-  detectTargetCoreToolsVersion,
-  getCoreToolsBinary,
   getNodeMajorVersion,
-  isAcceptingTcpConnections,
   isCoreToolsVersionCompatible,
-  logger,
-  parseUrl,
-  readWorkflowFile,
-} from "../../../core";
-import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME } from "../../../core/constants";
-import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder";
-import { swaCLIEnv } from "../../../core/env";
-import { getCertificate } from "../../../core/ssl";
-const packageInfo = require("../../../../package.json");
-const mshaPath = require.resolve("../../../msha/server");
+  getCoreToolsBinary,
+  detectTargetCoreToolsVersion,
+} from "../../../core/func-core-tools.js";
+import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME } from "../../../core/constants.js";
+import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder/index.js";
+import { swaCLIEnv } from "../../../core/env.js";
+import { getCertificate } from "../../../core/ssl.js";
+import packageInfo from "../../../../package.json" with { type: "json" };
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// This is the path to ./dist/msha/server.js
+const mshaPath = path.resolve(__dirname, "../../../../dist/msha/server.js");
+
+// import { createRequire } from "node:module";
+// const require = createRequire(import.meta.url);
+// const mshaPath = require.resolve("../../../msha/server.js");
 
 export async function start(options: SWACLIConfig) {
   // WARNING:
@@ -153,7 +160,7 @@ export async function start(options: SWACLIConfig) {
     logger.warn(`Error reading workflow configuration:`);
     logger.warn((err as any).message);
     logger.warn(
-      `See https://docs.microsoft.com/azure/static-web-apps/build-configuration?tabs=github-actions#build-configuration for more information.`
+      `See https://docs.microsoft.com/azure/static-web-apps/build-configuration?tabs=github-actions#build-configuration for more information.`,
     );
   }
 
@@ -186,7 +193,7 @@ export async function start(options: SWACLIConfig) {
       } else {
         if (isCoreToolsVersionCompatible(targetVersion, nodeMajorVersion) === false) {
           logger.error(
-            `Found Azure Functions Core Tools v${targetVersion} which is incompatible with your current Node.js v${process.versions.node}.`
+            `Found Azure Functions Core Tools v${targetVersion} which is incompatible with your current Node.js v${process.versions.node}.`,
           );
           logger.error("See https://aka.ms/functions-node-versions for more information.");
           process.exit(1);
@@ -214,7 +221,7 @@ export async function start(options: SWACLIConfig) {
           `Could not find or install ${DATA_API_BUILDER_BINARY_NAME} binary.
         If you already have data-api-builder installed, try connecting using --data-api-devserver-url by
         starting data-api-builder engine separately. Exiting!!`,
-          true
+          true,
         );
       } else {
         serveDataApiCommand = `cd "${dataApiLocation}" && "${dataApiBinary}" start -c ${DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME} --no-https-redirect`;
@@ -287,7 +294,25 @@ export async function start(options: SWACLIConfig) {
 
   // INFO: from here, code may access SWA CLI env vars.
 
-  const env = swaCLIEnv();
+  const swa_cli_env = swaCLIEnv();
+  // Convert the swa_cli_env to a Record<string, unknown> object so that type checking
+  // works in the ConcurrentlyCommandInput[] array
+  let env: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(swa_cli_env)) {
+    env[k] = v;
+  }
+
+  // Copy of the CommandInfo interface from concurrently.d.ts
+  // See https://github.com/open-cli-tools/concurrently/blob/main/src/command.ts#L10
+  interface CommandInfo {
+    name: string;
+    command: string;
+    env?: Record<string, unknown>;
+    cwd?: string;
+    prefixColor?: string;
+    raw?: boolean;
+  }
+
   const concurrentlyCommands: CommandInfo[] = [
     // start the reverse proxy
     { command: `node "${mshaPath}"`, name: "swa", env, prefixColor: "gray.dim" },
@@ -296,7 +321,7 @@ export async function start(options: SWACLIConfig) {
   if (isApiLocationExistsOnDisk) {
     concurrentlyCommands.push(
       // serve the api, if it's available
-      { command: serveApiCommand, name: "api", env, prefixColor: "gray.dim" }
+      { command: serveApiCommand, name: "api", env, prefixColor: "gray.dim" },
     );
   }
 
@@ -323,7 +348,8 @@ export async function start(options: SWACLIConfig) {
     },
   });
 
-  const { result } = concurrently(concurrentlyCommands, { restartTries: 0, killOthers: ["failure", "success"] });
+  const concurrentlyOptions: Partial<ConcurrentlyOptions> = { restartTries: 0, killOthers: ["failure", "success"], raw: true };
+  const { result } = concurrently(concurrentlyCommands, concurrentlyOptions);
 
   await result
     .then(
@@ -353,9 +379,9 @@ export async function start(options: SWACLIConfig) {
             break;
         }
         logger.error(`SWA emulator stopped because ${commandMessage}.`, true);
-      }
+      },
     )
-    .catch((err) => {
+    .catch((err: Error) => {
       logger.error(err.message, true);
     });
 }

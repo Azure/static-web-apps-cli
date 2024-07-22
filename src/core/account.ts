@@ -2,6 +2,7 @@ import { StaticSiteARMResource, WebSiteManagementClient } from "@azure/arm-appse
 import { GenericResourceExpanded, ResourceGroup, ResourceManagementClient } from "@azure/arm-resources";
 import { Subscription, SubscriptionClient } from "@azure/arm-subscriptions";
 import {
+  AzureCliCredential,
   ChainedTokenCredential,
   ClientSecretCredential,
   DeviceCodeCredential,
@@ -13,13 +14,20 @@ import {
 } from "@azure/identity";
 import chalk from "chalk";
 import ora from "ora";
-import path from "path";
-import { swaCLIEnv } from "./env";
-import { chooseProjectName, chooseStaticSite, wouldYouLikeToCreateStaticSite, wouldYouLikeToOverrideStaticSite } from "./prompts";
-import { swaCliPersistencePlugin } from "./swa-cli-persistence-plugin";
-import { SWACLIPersistenceCachePlugin } from "./swa-cli-persistence-plugin/persistence-cache-plugin";
-import { dasherize, logger } from "./utils";
-import { isRunningInDocker } from "./utils/docker";
+import path from "node:path";
+import { swaCLIEnv } from "./env.js";
+import {
+  chooseProjectName,
+  chooseProjectSku,
+  chooseStaticSite,
+  wouldYouLikeToCreateStaticSite,
+  wouldYouLikeToOverrideStaticSite,
+} from "./prompts.js";
+import { swaCliPersistencePlugin } from "./swa-cli-persistence-plugin/index.js";
+import { SWACLIPersistenceCachePlugin } from "./swa-cli-persistence-plugin/persistence-cache-plugin.js";
+import { logger } from "./utils/logger.js";
+import { dasherize } from "./utils/strings.js";
+import { isRunningInDocker } from "./utils/docker.js";
 
 const DEFAULT_AZURE_LOCATION = "West US 2";
 
@@ -62,8 +70,14 @@ export async function authenticateWithAzureIdentity(details: LoginDetails = {}, 
 
   const environmentCredential = new EnvironmentCredential();
 
+  const azureCliCredential = new AzureCliCredential({
+    tenantId: details.tenantId,
+  });
+
   // Only use interactive browser credential if we're not running in docker
-  const credentials = isRunningInDocker() ? [environmentCredential, deviceCredential] : [environmentCredential, browserCredential, deviceCredential];
+  const credentials = isRunningInDocker()
+    ? [environmentCredential, azureCliCredential, deviceCredential]
+    : [environmentCredential, azureCliCredential, browserCredential, deviceCredential];
 
   if (details.tenantId && details.clientId && details.clientSecret) {
     const clientSecretCredential = new ClientSecretCredential(details.tenantId, details.clientId, details.clientSecret, {
@@ -125,6 +139,7 @@ async function createStaticSite(options: SWACLIConfig, credentialChain: TokenCre
   const defaultStaticSiteName = appName || dasherize(path.basename(process.cwd())).substring(0, maxProjectNameLength);
 
   appName = await chooseProjectName(defaultStaticSiteName, maxProjectNameLength);
+  const sku = await chooseProjectSku();
   resourceGroup = resourceGroup || `${appName}-rg`;
 
   let spinner = ora("Creating a new project...").start();
@@ -144,7 +159,7 @@ async function createStaticSite(options: SWACLIConfig, credentialChain: TokenCre
 
     const staticSiteEnvelope: StaticSiteARMResource = {
       location: AZURE_REGION_LOCATION || DEFAULT_AZURE_LOCATION,
-      sku: { name: "Free", tier: "Free" },
+      sku: { name: sku, tier: sku },
 
       // these are mandatory, otherwise the static site will not be created
       buildProperties: {

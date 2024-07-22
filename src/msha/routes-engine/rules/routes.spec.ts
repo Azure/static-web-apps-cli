@@ -1,11 +1,16 @@
-jest.mock("../../../core/utils/logger", () => {
-  return {
-    logger: {
-      silly: () => {},
-    },
-  };
-});
-jest.mock("../../../core/constants", () => {
+import "../../../../tests/_mocks/fs.js";
+import { vol } from "memfs";
+import type http from "node:http";
+import { MockInstance } from "vitest";
+import { applyRedirectResponse, isRequestMethodValid, isRouteRequiringUserRolesCheck, tryFindFileForRequest, tryGetMatchingRoute } from "./routes.js";
+import { logger } from "../../../core/utils/logger.js";
+
+import * as routeModule from "../route-processor.js";
+import * as cookieModule from "../../../core/utils/cookie.js";
+
+vi.spyOn(logger, "silly").mockImplementation(() => {});
+
+vi.mock("../../../core/constants", () => {
   return {
     SWA_CLI_OUTPUT_LOCATION: "/",
     SWA_CLI_APP_PROTOCOL: "http",
@@ -17,7 +22,7 @@ jest.mock("../../../core/constants", () => {
   };
 });
 
-jest.mock("../../../config", () => {
+vi.mock("../../../config", () => {
   return {
     DEFAULT_CONFIG: {
       outputLocation: "/",
@@ -25,25 +30,18 @@ jest.mock("../../../config", () => {
   };
 });
 
-import type http from "http";
-import mockFs from "mock-fs";
-import { applyRedirectResponse, isRequestMethodValid, isRouteRequiringUserRolesCheck, tryFindFileForRequest, tryGetMatchingRoute } from "./routes";
-
-import * as routeModule from "../route-processor";
-import * as cookieModule from "../../../core/utils/cookie";
-
 // btoa is only available in Node.js >= 16
 const btoa = (str: string) => Buffer.from(str).toString("base64");
 
 describe("route utilities", () => {
   describe("route", () => {
     describe("tryFindFileForRequest()", () => {
-      afterEach(() => {
-        mockFs.restore();
+      beforeEach(() => {
+        vol.reset();
       });
 
       it("should return NULL when file doesn't exist", () => {
-        mockFs({
+        vol.fromJSON({
           "/bar.txt": "",
         });
 
@@ -52,7 +50,7 @@ describe("route utilities", () => {
       });
 
       it("should return file path when file exists", () => {
-        mockFs({
+        vol.fromJSON({
           "/foo.png": "",
         });
 
@@ -61,7 +59,7 @@ describe("route utilities", () => {
       });
 
       it("should return file path when file (without extension) exists", () => {
-        mockFs({
+        vol.fromJSON({
           "/foo": "",
         });
 
@@ -70,7 +68,7 @@ describe("route utilities", () => {
       });
 
       it("should return NULL when file (without extension) doesn't exist", () => {
-        mockFs({
+        vol.fromJSON({
           "/foo.txt": "",
         });
 
@@ -79,7 +77,7 @@ describe("route utilities", () => {
       });
 
       it("should return file path when file (w/ space) exists", () => {
-        mockFs({
+        vol.fromJSON({
           "/foo bar.png": "",
         });
 
@@ -88,7 +86,7 @@ describe("route utilities", () => {
       });
 
       it("should return file path when file (w/ percent-encoded symbols) exists", () => {
-        mockFs({
+        vol.fromJSON({
           "/with space.html": "",
         });
 
@@ -97,7 +95,7 @@ describe("route utilities", () => {
       });
 
       it("should return file path when file exists in subfolder", () => {
-        mockFs({
+        vol.fromJSON({
           "/foo/bar.png": "",
         });
 
@@ -106,7 +104,7 @@ describe("route utilities", () => {
       });
 
       it("should return file path when file exists in subfolder (w/ percent-encoded symbols)", () => {
-        mockFs({
+        vol.fromJSON({
           "/with space/index.html": "",
         });
 
@@ -115,7 +113,7 @@ describe("route utilities", () => {
       });
 
       it("should return null when index.html does not exist", () => {
-        mockFs({
+        vol.fromNestedJSON({
           "/foo": {
             "foo.html": "",
           },
@@ -126,7 +124,7 @@ describe("route utilities", () => {
       });
 
       it("should return index.html when folder is provided", () => {
-        mockFs({
+        vol.fromNestedJSON({
           "/foo": {
             "index.html": "",
           },
@@ -136,14 +134,14 @@ describe("route utilities", () => {
         expect(filePath).toBe("/foo/index.html");
       });
 
-      it("should return same file if using dev server", () => {
-        mockFs({
+      it("should return same file if using dev server", async () => {
+        vol.fromNestedJSON({
           "/foo": {
             "index.html": "",
           },
         });
 
-        const constantsMock = jest.requireMock("../../../core/constants");
+        const constantsMock = await vi.importMock("../../../core/constants");
         constantsMock.IS_APP_DEV_SERVER = () => true;
 
         const filePath = tryFindFileForRequest("/foo/index.html");
@@ -155,9 +153,9 @@ describe("route utilities", () => {
       const req: Partial<http.IncomingMessage> = {};
       const routeDef: Partial<SWAConfigFileRoute> = {};
 
-      let spyDecodeCookie: jest.SpyInstance;
+      let spyDecodeCookie: MockInstance<(this: ClientPrincipal | null, cookieValue: string) => ClientPrincipal | string | null>;
       beforeEach(() => {
-        spyDecodeCookie = jest.spyOn(cookieModule, "decodeCookie");
+        spyDecodeCookie = vi.spyOn(cookieModule, "decodeCookie");
       });
 
       it("should not require user roles check when route rule is undefined", () => {
@@ -283,11 +281,28 @@ describe("route utilities", () => {
           },
         ],
       };
-      let spyDoesRequestPathMatchRoute: jest.SpyInstance;
-      let spyDoesRequestPathMatchLegacyRoute: jest.SpyInstance;
+      let spyDoesRequestPathMatchRoute: MockInstance<
+        (
+          this: boolean | undefined,
+          requestPath: string,
+          routeRule: SWAConfigFileRoute | undefined,
+          requestMethod: string | null | undefined,
+          methods: string[] | null | undefined,
+          authStatus: number
+        ) => boolean | undefined
+      >;
+      let spyDoesRequestPathMatchLegacyRoute: MockInstance<
+        (
+          this: boolean | undefined,
+          requestPath: string,
+          routeRule: SWAConfigFileRoute | undefined,
+          isAuthRequest: boolean,
+          isFileRequest: boolean
+        ) => boolean | undefined
+      >;
       beforeEach(() => {
-        spyDoesRequestPathMatchRoute = jest.spyOn(routeModule, "doesRequestPathMatchRoute");
-        spyDoesRequestPathMatchLegacyRoute = jest.spyOn(routeModule, "doesRequestPathMatchLegacyRoute");
+        spyDoesRequestPathMatchRoute = vi.spyOn(routeModule, "doesRequestPathMatchRoute");
+        spyDoesRequestPathMatchLegacyRoute = vi.spyOn(routeModule, "doesRequestPathMatchLegacyRoute");
       });
 
       it("should return undefined when no route provided", () => {
@@ -446,12 +461,12 @@ describe("route utilities", () => {
   describe("applyRedirectResponse()", () => {
     const req: Partial<http.IncomingMessage> = {};
     const res: Partial<http.ServerResponse> = {
-      setHeader: jest.fn(),
-      end: jest.fn(),
+      setHeader: vi.fn(),
+      end: vi.fn(),
     };
     const routeDef: Partial<SWAConfigFileRoute> = {};
     beforeEach(() => {
-      jest.resetAllMocks();
+      vi.resetAllMocks();
     });
     it("should not apply redirect header when no redirect rule is provided", () => {
       applyRedirectResponse(req as http.IncomingMessage, res as http.ServerResponse, routeDef as SWAConfigFileRoute);
