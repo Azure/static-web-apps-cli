@@ -214,7 +214,7 @@ export const appFrameworks: FrameworkDefinition[] = [
       appBuildCommand: "npm run build",
       appDevserverCommand: "npm run dev",
       appDevserverUrl: "http://localhost:8080",
-      outputLocation: "public",
+      outputLocation: "dist",
     },
   },
   {
