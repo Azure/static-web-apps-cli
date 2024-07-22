@@ -92,11 +92,9 @@ async function getInstalledSystemCoreToolsVersion(): Promise<number | undefined>
 
 function getDownloadedCoreToolsVersion(targetVersion: number): string | undefined {
   const folder = getCoreToolsFolder(targetVersion);
-  console.log("DOWNLOAD", folder);
   if (!fs.existsSync(folder)) {
     return undefined;
   }
-  console.log("Ok folder exists");
 
   const versionFile = path.join(folder, VERSION_FILE);
   if (!fs.existsSync(versionFile)) {
