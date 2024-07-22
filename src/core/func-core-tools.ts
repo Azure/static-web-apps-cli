@@ -42,11 +42,11 @@ export function isCoreToolsVersionCompatible(coreToolsVersion: number, nodeVersi
   // Runtime support reference: https://docs.microsoft.com/azure/azure-functions/functions-versions?pivots=programming-language-javascript#languages
   switch (coreToolsVersion) {
     case 4:
-      return nodeVersion >= 14 && nodeVersion <= 20;
+      return nodeVersion >= 18 && nodeVersion <= 20;
     case 3:
-      return nodeVersion >= 10 && nodeVersion <= 14;
+      return nodeVersion >= 14 && nodeVersion <= 20;
     case 2:
-      return nodeVersion >= 8 && nodeVersion <= 10;
+      return nodeVersion >= 10 && nodeVersion <= 14;
     default:
       return false;
   }
@@ -54,9 +54,9 @@ export function isCoreToolsVersionCompatible(coreToolsVersion: number, nodeVersi
 
 export function detectTargetCoreToolsVersion(nodeVersion: number): number {
   // Pick the highest version that is compatible with the specified Node version
-  if (nodeVersion >= 14 && nodeVersion <= 20) return 4;
-  if (nodeVersion >= 10 && nodeVersion < 14) return 3;
-  if (nodeVersion >= 8 && nodeVersion < 10) return 2;
+  if (nodeVersion >= 18 && nodeVersion <= 20) return 4;
+  if (nodeVersion >= 14 && nodeVersion < 20) return 3;
+  if (nodeVersion >= 10 && nodeVersion < 14) return 2;
 
   // Fallback to the latest version for Unsupported Node version
   return 4;
@@ -155,7 +155,7 @@ async function downloadAndUnzipPackage(release: CoreToolsRelease, dest: string) 
     {
       format: "{bar} {percentage}% | ETA: {eta}s",
     },
-    cliProgress.Presets.shades_classic
+    cliProgress.Presets.shades_classic,
   );
   try {
     const response = await fetch(release.url);
