@@ -14,7 +14,9 @@ import { cleanUp, getDeployClientPath } from "../../../core/deploy-client.js";
 import { swaCLIEnv } from "../../../core/env.js";
 import { getDefaultVersion } from "../../../core/functions-versions.js";
 import { login } from "../login/login.js";
-import packageInfo from "../../../../package.json" with { type: "json" };
+import { loadPackageJson } from "../../../core/utils/json.js";
+
+const packageInfo = loadPackageJson();
 
 export async function deploy(options: SWACLIConfig) {
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();

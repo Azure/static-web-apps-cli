@@ -17,7 +17,9 @@ import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME
 import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder/index.js";
 import { swaCLIEnv } from "../../../core/env.js";
 import { getCertificate } from "../../../core/ssl.js";
-import packageInfo from "../../../../package.json" with { type: "json" };
+import { loadPackageJson } from "../../../core/utils/json.js";
+
+const packageInfo = loadPackageJson();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

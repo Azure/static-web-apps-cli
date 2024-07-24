@@ -20,7 +20,9 @@ import { default as registerBuild } from "./commands/build/register.js";
 import { registerDocs } from "./commands/docs.js";
 import { default as registerDb } from "./commands/db/init/register.js";
 import { promptOrUseDefault } from "../core/prompts.js";
-import pkg from "../../package.json" with { type: "json" };
+import { loadPackageJson } from "../core/utils/json.js";
+
+const pkg = loadPackageJson();
 
 function printWelcomeMessage(argv?: string[]) {
   const args = argv?.slice(2) || [];
