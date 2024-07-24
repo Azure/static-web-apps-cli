@@ -2,9 +2,24 @@ import jsonSchemaLibrary from "json-schema-library";
 import { promises as fs } from "node:fs";
 import chalk from "chalk";
 import { logger } from "./logger.js";
-import configSchema from "../../../schema/staticwebapp.config.json" with { type: "json" };
+import { createRequire } from "node:module";
+
+// import of JSON files requires node v20.10 - we are supporting node v18 or later,
+// so we need to create requires.  Centralizing this into a single file ensures that
+// we don't need to go hunting for import of JSON files.
+const require = createRequire(import.meta.url);
+const pkg = require("../../../package.json");
+const configSchema = require("../../../schema/staticwebapp.config.json");
 
 const { Draft04 } = jsonSchemaLibrary;
+
+/**
+ * Loads the package.json file from the root of the project.
+ * @returns the parsed package.json object, or null if an error occurred.
+ */
+export function loadPackageJson(): any {
+  return pkg;
+}
 
 /**
  * Loads JSON from the designated file path, printing any JSON errors to the console.

@@ -6,7 +6,9 @@ import * as accountModule from "../../../core/account.js";
 import * as deployClientModule from "../../../core/deploy-client.js";
 import { deploy } from "./deploy.js";
 import * as loginModule from "../login/login.js";
-import pkg from "../../../../package.json" with { type: "json" };
+import { loadPackageJson } from "../../../core/utils/json.js";
+
+const pkg = loadPackageJson();
 
 vi.mock("../../../core/utils/logger", () => {
   return {
