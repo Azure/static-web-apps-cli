@@ -54,7 +54,7 @@ function getAuthPaths(isCustomAuth: boolean): Path[] {
       route: /^\/\.auth\/purge\/(?<provider>aad|github|twitter|google|facebook|[a-z]+)(\?.*)?$/i,
       // locally, all purge requests are processed as logout requests
       function: "auth-logout",
-    }
+    },
   );
 
   return paths;
@@ -62,7 +62,7 @@ function getAuthPaths(isCustomAuth: boolean): Path[] {
 
 async function routeMatcher(
   url = "/",
-  customAuth: SWAConfigFileAuth | undefined
+  customAuth: SWAConfigFileAuth | undefined,
 ): Promise<{ func: Function | undefined; bindingData: undefined | { provider: string } }> {
   const authPaths = getAuthPaths(!!customAuth);
   for (let index = 0; index < authPaths.length; index++) {
@@ -76,7 +76,7 @@ async function routeMatcher(
         };
       }
 
-      const func = (await import(`./routes/${path.function}`)).default as Function;
+      const func = (await import(`./routes/${path.function}.js`)).default as Function;
       return { func, bindingData };
     }
   }
