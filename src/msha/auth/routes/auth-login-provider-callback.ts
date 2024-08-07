@@ -28,7 +28,12 @@ const getAuthClientPrincipal = async function (
 
   try {
     const authTokenResponse = (await getOAuthToken(authProvider, codeValue!, clientId, clientSecret, openIdIssuer)) as string;
-    const authTokenParsed = JSON.parse(authTokenResponse);
+    let authTokenParsed;
+    try {
+      authTokenParsed = JSON.parse(authTokenResponse);
+    } catch (e) {
+      authTokenParsed = querystring.parse(authTokenResponse);
+    }
     authToken = authTokenParsed["access_token"] as string;
   } catch (error) {
     console.error(`Error in getting OAuth token: ${error}`);
