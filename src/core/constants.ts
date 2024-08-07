@@ -63,8 +63,8 @@ export const CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING: AuthIdentityTokenEndpoints = {
     path: "/login/oauth/access_token",
   },
   aad: {
-    host: "login.microsoft.com",
-    path: "/tenantId/oauth/v2.0/token",
+    host: "login.microsoftonline.com",
+    path: "/tenantId/oauth2/v2.0/token",
   },
 };
 export const CUSTOM_AUTH_USER_ENDPOINT_MAPPING: AuthIdentityTokenEndpoints = {

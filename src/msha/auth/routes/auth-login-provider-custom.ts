@@ -90,7 +90,7 @@ const httpTrigger = async function (context: Context, request: IncomingMessage, 
       location = `https://github.com/login/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}/.auth/login/github/callback&scope=read:user&state=${hashedState}`;
       break;
     case "aad":
-      location = `${aadIssuer}/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}/.auth/login/aad/callback&scope=openid&state=${hashedState}`;
+      location = `${aadIssuer}/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}/.auth/login/aad/callback&scope=openid+profile+email&state=${hashedState}`;
       break;
     default:
       break;

@@ -150,8 +150,8 @@ const getOAuthToken = function (authProvider: string, codeValue: string, clientI
     code: codeValue,
     client_id: clientId,
     client_secret: clientSecret,
-    ...(authProvider !== "github" && { grant_type: authProvider }),
-    ...(authProvider !== "github" && { redirect_uri: `${redirectUri}/.auth/login/${authProvider}/callback` }),
+    grant_type: "authorization_code",
+    redirect_uri: `${redirectUri}/.auth/login/${authProvider}/callback`,
   });
 
   let tokenPath = CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING?.[authProvider]?.path;
