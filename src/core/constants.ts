@@ -48,9 +48,44 @@ export const SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB = 20; // 20kb
 export const SWA_AUTH_CONTEXT_COOKIE = `StaticWebAppsAuthContextCookie`;
 export const SWA_AUTH_COOKIE = `StaticWebAppsAuthCookie`;
 export const ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT = ["GET", "HEAD", "OPTIONS"];
+
+// Custom Auth constants
 export const SUPPORTED_CUSTOM_AUTH_PROVIDERS = ["google", "github", "aad"];
 // Full name is required in staticwebapp.config.json's schema so we will normalize it to aad
 export const AAD_FULL_NAME = "azureActiveDirectory";
+export const CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING: AuthIdentityTokenEndpoints = {
+  google: {
+    host: "oauth2.googleapis.com",
+    path: "/token",
+  },
+  github: {
+    host: "github.com",
+    path: "/login/oauth/access_token",
+  },
+  aad: {
+    host: "login.microsoft.com",
+    path: "/tenantId/oauth/v2.0/token",
+  },
+};
+export const CUSTOM_AUTH_USER_ENDPOINT_MAPPING: AuthIdentityTokenEndpoints = {
+  google: {
+    host: "www.googleapis.com",
+    path: "/oauth2/v2/userinfo",
+  },
+  github: {
+    host: "api.github.com",
+    path: "/user",
+  },
+  aad: {
+    host: "graph.microsoft.com",
+    path: "/oidc/userinfo",
+  },
+};
+export const CUSTOM_AUTH_ISS_MAPPING: AuthIdentityIssHosts = {
+  google: "https://account.google.com",
+  github: "",
+  aad: "https://graph.microsoft.com",
+};
 
 export const AUTH_STATUS = {
   NoAuth: 0,

@@ -290,6 +290,17 @@ declare type SWAConfigFileMimeTypes = {
   [key: string]: string;
 };
 
+declare type AuthIdentityTokenEndpoints = {
+  [key: string]: {
+    host: string;
+    path: string;
+  };
+};
+
+declare type AuthIdentityIssHosts = {
+  [key: string]: string;
+};
+
 declare type AuthIdentityProvider = {
   registration: {
     clientIdSettingName: string;

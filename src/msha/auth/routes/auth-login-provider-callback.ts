@@ -4,219 +4,30 @@ import * as querystring from "node:querystring";
 
 import { CookiesManager, decodeAuthContextCookie, validateAuthContextCookie } from "../../../core/utils/cookie.js";
 import { parseUrl, response } from "../../../core/utils/net.js";
-import { AAD_FULL_NAME, SUPPORTED_CUSTOM_AUTH_PROVIDERS, SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../../../core/constants.js";
+import {
+  AAD_FULL_NAME,
+  CUSTOM_AUTH_ISS_MAPPING,
+  CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING,
+  CUSTOM_AUTH_USER_ENDPOINT_MAPPING,
+  SUPPORTED_CUSTOM_AUTH_PROVIDERS,
+  SWA_CLI_API_URI,
+  SWA_CLI_APP_PROTOCOL,
+} from "../../../core/constants.js";
 import { DEFAULT_CONFIG } from "../../../config.js";
 import { encryptAndSign, hashStateGuid, isNonceExpired } from "../../../core/utils/auth.js";
 import { normalizeAuthProvider } from "./auth-login-provider-custom.js";
 
-const getGithubAuthToken = function (codeValue: string, clientId: string, clientSecret: string) {
-  const data = querystring.stringify({
-    code: codeValue,
-    client_id: clientId,
-    client_secret: clientSecret,
-  });
-
-  const options = {
-    host: "github.com",
-    path: "/login/oauth/access_token",
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "Content-Length": Buffer.byteLength(data),
-    },
-  };
-
-  return new Promise((resolve, reject) => {
-    const req = https.request(options, (res) => {
-      res.setEncoding("utf8");
-      let responseBody = "";
-
-      res.on("data", (chunk) => {
-        responseBody += chunk;
-      });
-
-      res.on("end", () => {
-        resolve(responseBody);
-      });
-    });
-
-    req.on("error", (err: Error) => {
-      reject(err);
-    });
-
-    req.write(data);
-    req.end();
-  });
-};
-
-const getGitHubUser = function (accessToken: string) {
-  const options = {
-    host: "api.github.com",
-    path: "/user",
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "User-Agent": "Azure Static Web Apps Emulator",
-    },
-  };
-
-  return new Promise((resolve, reject) => {
-    const req = https.request(options, (res) => {
-      res.setEncoding("utf8");
-      let responseBody = "";
-
-      res.on("data", (chunk) => {
-        responseBody += chunk;
-      });
-
-      res.on("end", () => {
-        try {
-          resolve(JSON.parse(responseBody));
-        } catch (err) {
-          reject(err);
-        }
-      });
-    });
-
-    req.on("error", (err) => {
-      reject(err);
-    });
-
-    req.end();
-  });
-};
-
-const getGitHubClientPrincipal = async function (codeValue: string, clientId: string, clientSecret: string) {
+const getAuthClientPrincipal = async function (
+  authProvider: string,
+  codeValue: string,
+  clientId: string,
+  clientSecret: string,
+  openIdIssuer: string = "",
+) {
   let authToken: string;
 
   try {
-    const authTokenResponse = (await getGithubAuthToken(codeValue, clientId, clientSecret)) as string;
-    const authTokenParsed = querystring.parse(authTokenResponse);
-    authToken = authTokenParsed["access_token"] as string;
-  } catch {
-    return null;
-  }
-
-  if (!authToken) {
-    return null;
-  }
-
-  try {
-    const user = (await getGitHubUser(authToken)) as { [key: string]: string };
-
-    const userId = user["id"];
-    const userDetails = user["login"];
-
-    const claims: { typ: string; val: string }[] = [
-      {
-        typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
-        val: userId,
-      },
-    ];
-
-    Object.keys(user).forEach((key) => {
-      claims.push({
-        typ: `urn:github:${key}`,
-        val: user[key],
-      });
-    });
-
-    return {
-      identityProvider: "github",
-      userId,
-      userDetails,
-      userRoles: ["authenticated", "anonymous"],
-      claims,
-    };
-  } catch {
-    return null;
-  }
-};
-
-const getGoogleAuthToken = function (codeValue: string, clientId: string, clientSecret: string) {
-  const data = querystring.stringify({
-    code: codeValue,
-    client_id: clientId,
-    client_secret: clientSecret,
-    grant_type: "authorization_code",
-    redirect_uri: `${SWA_CLI_APP_PROTOCOL}://${DEFAULT_CONFIG.host}:${DEFAULT_CONFIG.port}/.auth/login/google/callback`,
-  });
-
-  const options = {
-    host: "oauth2.googleapis.com",
-    path: "/token",
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "Content-Length": Buffer.byteLength(data),
-    },
-  };
-
-  return new Promise((resolve, reject) => {
-    const req = https.request(options, (res) => {
-      res.setEncoding("utf8");
-      let responseBody = "";
-
-      res.on("data", (chunk) => {
-        responseBody += chunk;
-      });
-
-      res.on("end", () => {
-        resolve(responseBody);
-      });
-    });
-
-    req.on("error", (err) => {
-      reject(err);
-    });
-
-    req.write(data);
-    req.end();
-  });
-};
-
-const getGoogleUser = function (accessToken: string) {
-  const options = {
-    host: "www.googleapis.com",
-    path: "/oauth2/v2/userinfo",
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "User-Agent": "Azure Static Web Apps Emulator",
-    },
-  };
-
-  return new Promise((resolve, reject) => {
-    const req = https.request(options, (res) => {
-      res.setEncoding("utf8");
-      let responseBody = "";
-
-      res.on("data", (chunk) => {
-        responseBody += chunk;
-      });
-
-      res.on("end", () => {
-        try {
-          resolve(JSON.parse(responseBody));
-        } catch (err) {
-          reject(err);
-        }
-      });
-    });
-
-    req.on("error", (err) => {
-      reject(err);
-    });
-
-    req.end();
-  });
-};
-
-const getGoogleClientPrincipal = async function (codeValue: string, clientId: string, clientSecret: string) {
-  let authToken: string;
-
-  try {
-    const authTokenResponse = (await getGoogleAuthToken(codeValue!, clientId, clientSecret)) as string;
+    const authTokenResponse = (await getOAuthToken(authProvider, codeValue!, clientId, clientSecret, openIdIssuer)) as string;
     const authTokenParsed = JSON.parse(authTokenResponse);
     authToken = authTokenParsed["access_token"] as string;
   } catch {
@@ -228,20 +39,20 @@ const getGoogleClientPrincipal = async function (codeValue: string, clientId: st
   }
 
   try {
-    const user = (await getGoogleUser(authToken)) as { [key: string]: string };
+    const user = (await getOAuthUser(authProvider, authToken)) as { [key: string]: string };
 
-    const userId = user["id"];
-    const userDetails = user["email"];
-    const verifiedEmail = user["verified_email"];
+    const userDetails = user["login"] || user["email"];
     const name = user["name"];
     const givenName = user["given_name"];
     const familyName = user["family_name"];
     const picture = user["picture"];
+    const userId = user["id"];
+    const verifiedEmail = user["verified_email"];
 
     const claims: { typ: string; val: string }[] = [
       {
         typ: "iss",
-        val: "https://accounts.google.com",
+        val: CUSTOM_AUTH_ISS_MAPPING?.[authProvider],
       },
       {
         typ: "azp",
@@ -252,6 +63,41 @@ const getGoogleClientPrincipal = async function (codeValue: string, clientId: st
         val: clientId,
       },
     ];
+
+    if (userDetails) {
+      claims.push({
+        typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+        val: userDetails,
+      });
+    }
+
+    if (name) {
+      claims.push({
+        typ: "name",
+        val: name,
+      });
+    }
+
+    if (picture) {
+      claims.push({
+        typ: "picture",
+        val: picture,
+      });
+    }
+
+    if (givenName) {
+      claims.push({
+        typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+        val: givenName,
+      });
+    }
+
+    if (familyName) {
+      claims.push({
+        typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
+        val: familyName,
+      });
+    }
 
     if (userId) {
       claims.push({
@@ -260,51 +106,24 @@ const getGoogleClientPrincipal = async function (codeValue: string, clientId: st
       });
     }
 
-    if (userDetails) {
-      claims.push({
-        typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
-        val: userDetails,
-      });
-    }
-
-    if (verifiedEmail !== undefined) {
+    if (verifiedEmail) {
       claims.push({
         typ: "email_verified",
         val: verifiedEmail,
       });
     }
 
-    if (name) {
-      claims.push({
-        typ: "name",
-        val: name,
-      });
-    }
-
-    if (picture) {
-      claims.push({
-        typ: "picture",
-        val: picture,
-      });
-    }
-
-    if (givenName) {
-      claims.push({
-        typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
-        val: givenName,
-      });
-    }
-
-    if (familyName) {
-      claims.push({
-        typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
-        val: familyName,
+    if (authProvider === "github") {
+      Object.keys(user).forEach((key) => {
+        claims.push({
+          typ: `urn:github:${key}`,
+          val: user[key],
+        });
       });
     }
 
     return {
-      identityProvider: "google",
-      userId,
+      identityProvider: authProvider,
       userDetails,
       claims,
       userRoles: ["authenticated", "anonymous"],
@@ -314,105 +133,33 @@ const getGoogleClientPrincipal = async function (codeValue: string, clientId: st
   }
 };
 
-const getAADClientPrincipal = async function (codeValue: string, clientId: string, clientSecret: string, openIdIssuer: string) {
-  let authToken: string;
-
-  try {
-    const authTokenResponse = (await getAADAuthToken(codeValue!, clientId, clientSecret, openIdIssuer)) as string;
-    const authTokenParsed = JSON.parse(authTokenResponse);
-    authToken = authTokenParsed["access_token"] as string;
-  } catch {
-    return null;
-  }
-
-  if (!authToken) {
-    return null;
-  }
-
-  try {
-    const user = (await getAADUser(authToken)) as { [key: string]: string };
-
-    const userDetails = user["email"];
-    const name = user["name"];
-    const givenName = user["given_name"];
-    const familyName = user["family_name"];
-    const picture = user["picture"];
-
-    const claims: { typ: string; val: string }[] = [
-      {
-        typ: "iss",
-        val: "https://graph.microsoft.com",
-      },
-      {
-        typ: "azp",
-        val: clientId,
-      },
-      {
-        typ: "aud",
-        val: clientId,
-      },
-    ];
-
-    if (userDetails) {
-      claims.push({
-        typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
-        val: userDetails,
-      });
-    }
-
-    if (name) {
-      claims.push({
-        typ: "name",
-        val: name,
-      });
-    }
-
-    if (picture) {
-      claims.push({
-        typ: "picture",
-        val: picture,
-      });
-    }
-
-    if (givenName) {
-      claims.push({
-        typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
-        val: givenName,
-      });
-    }
-
-    if (familyName) {
-      claims.push({
-        typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
-        val: familyName,
-      });
-    }
-
-    return {
-      identityProvider: "azureActiveDirectory",
-      userDetails,
-      claims,
-      userRoles: ["authenticated", "anonymous"],
-    };
-  } catch {
-    return null;
-  }
-};
-
-const getAADAuthToken = function (codeValue: string, clientId: string, clientSecret: string, openIdIssuer: string) {
+const getOAuthToken = function (authProvider: string, codeValue: string, clientId: string, clientSecret: string, openIdIssuer: string = "") {
   const redirectUri = `${SWA_CLI_APP_PROTOCOL}://${DEFAULT_CONFIG.host}:${DEFAULT_CONFIG.port}`;
-  const tenantId = openIdIssuer.split("/")[3];
+  let tenantId;
+
+  if (!Object.keys(CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING).includes(authProvider)) {
+    return null;
+  }
+
+  if (authProvider === "aad") {
+    tenantId = openIdIssuer.split("/")[3];
+  }
 
   const data = querystring.stringify({
     code: codeValue,
     client_id: clientId,
     client_secret: clientSecret,
-    grant_type: "authorization_code",
-    redirect_uri: `${redirectUri}/.auth/login/aad/callback`,
+    grant_type: authProvider !== "github" && "authorization_code",
+    redirect_uri: authProvider !== "github" && `${redirectUri}/.auth/login/${authProvider}/callback`,
   });
 
+  let tokenPath = CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING?.[authProvider]?.path;
+  if (authProvider === "aad" && tenantId !== undefined) {
+    tokenPath = tokenPath.replace("tenantId", tenantId);
+  }
+
   const options = {
-    host: `login.microsoft.com`,
+    host: CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING?.[authProvider]?.host,
     path: `/${tenantId}/oauth2/v2.0/token`,
     method: "POST",
     headers: {
@@ -444,10 +191,10 @@ const getAADAuthToken = function (codeValue: string, clientId: string, clientSec
   });
 };
 
-const getAADUser = function (accessToken: string) {
+const getOAuthUser = function (authProvider: string, accessToken: string) {
   const options = {
-    host: "graph.microsoft.com",
-    path: "/oidc/userinfo",
+    host: CUSTOM_AUTH_USER_ENDPOINT_MAPPING?.[authProvider]?.host,
+    path: CUSTOM_AUTH_USER_ENDPOINT_MAPPING?.[authProvider]?.path,
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -638,20 +385,7 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     return;
   }
 
-  let clientPrincipal;
-  switch (providerName) {
-    case "github":
-      clientPrincipal = await getGitHubClientPrincipal(codeValue!, clientId, clientSecret);
-      break;
-    case "google":
-      clientPrincipal = await getGoogleClientPrincipal(codeValue!, clientId, clientSecret);
-      break;
-    case "aad":
-      clientPrincipal = await getAADClientPrincipal(codeValue!, clientId, clientSecret, openIdIssuer!);
-      break;
-    default:
-      break;
-  }
+  const clientPrincipal = await getAuthClientPrincipal(providerName, codeValue!, clientId, clientSecret, openIdIssuer!);
 
   if (clientPrincipal !== null && customAuth?.rolesSource) {
     try {
