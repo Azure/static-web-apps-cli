@@ -9,20 +9,20 @@ function getAuthPaths(isCustomAuth: boolean): Path[] {
   if (isCustomAuth) {
     paths.push({
       method: "GET",
-      // only match for providers with custom auth support implemented (github, google)
-      route: /^\/\.auth\/login\/(?<provider>github|google|dummy)\/callback(\?.*)?$/i,
+      // only match for providers with custom auth support implemented (github, google, aad)
+      route: /^\/\.auth\/login\/(?<provider>github|google|azureActiveDirectory|dummy)\/callback(\?.*)?$/i,
       function: "auth-login-provider-callback",
     });
     paths.push({
       method: "GET",
-      // only match for providers with custom auth support implemented (github, google)
-      route: /^\/\.auth\/login\/(?<provider>github|google|dummy)(\?.*)?$/i,
+      // only match for providers with custom auth support implemented (github, google, aad)
+      route: /^\/\.auth\/login\/(?<provider>github|google|azureActiveDirectory|dummy)(\?.*)?$/i,
       function: "auth-login-provider-custom",
     });
     paths.push({
       method: "GET",
       // For providers with custom auth support not implemented, revert to old behavior
-      route: /^\/\.auth\/login\/(?<provider>aad|twitter|facebook|[a-z]+)(\?.*)?$/i,
+      route: /^\/\.auth\/login\/(?<provider>twitter|facebook|[a-z]+)(\?.*)?$/i,
       function: "auth-login-provider",
     });
     paths.push({
@@ -33,7 +33,7 @@ function getAuthPaths(isCustomAuth: boolean): Path[] {
   } else {
     paths.push({
       method: "GET",
-      route: /^\/\.auth\/login\/(?<provider>aad|github|twitter|google|facebook|[a-z]+)(\?.*)?$/i,
+      route: /^\/\.auth\/login\/(?<provider>github|twitter|google|facebook|[a-z]+)(\?.*)?$/i,
       function: "auth-login-provider",
     });
   }

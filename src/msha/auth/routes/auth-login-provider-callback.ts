@@ -4,7 +4,7 @@ import * as querystring from "node:querystring";
 
 import { CookiesManager, decodeAuthContextCookie, validateAuthContextCookie } from "../../../core/utils/cookie.js";
 import { parseUrl, response } from "../../../core/utils/net.js";
-import { SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../../../core/constants.js";
+import { SUPPORTED_CUSTOM_AUTH_PROVIDERS, SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../../../core/constants.js";
 import { DEFAULT_CONFIG } from "../../../config.js";
 import { encryptAndSign, hashStateGuid, isNonceExpired } from "../../../core/utils/auth.js";
 
@@ -313,6 +313,173 @@ const getGoogleClientPrincipal = async function (codeValue: string, clientId: st
   }
 };
 
+const getAADClientPrincipal = async function (codeValue: string, clientId: string, clientSecret: string, openIdIssuer: string) {
+  let authToken: string;
+
+  try {
+    const authTokenResponse = (await getAADAuthToken(codeValue!, clientId, clientSecret, openIdIssuer)) as string;
+    const authTokenParsed = JSON.parse(authTokenResponse);
+    authToken = authTokenParsed["access_token"] as string;
+  } catch {
+    return null;
+  }
+
+  if (!authToken) {
+    return null;
+  }
+
+  try {
+    const user = (await getAADUser(authToken)) as { [key: string]: string };
+
+    const userDetails = user["email"];
+    const name = user["name"];
+    const givenName = user["given_name"];
+    const familyName = user["family_name"];
+    const picture = user["picture"];
+
+    const claims: { typ: string; val: string }[] = [
+      {
+        typ: "iss",
+        val: "https://graph.microsoft.com",
+      },
+      {
+        typ: "azp",
+        val: clientId,
+      },
+      {
+        typ: "aud",
+        val: clientId,
+      },
+    ];
+
+    if (userDetails) {
+      claims.push({
+        typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+        val: userDetails,
+      });
+    }
+
+    if (name) {
+      claims.push({
+        typ: "name",
+        val: name,
+      });
+    }
+
+    if (picture) {
+      claims.push({
+        typ: "picture",
+        val: picture,
+      });
+    }
+
+    if (givenName) {
+      claims.push({
+        typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+        val: givenName,
+      });
+    }
+
+    if (familyName) {
+      claims.push({
+        typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
+        val: familyName,
+      });
+    }
+
+    return {
+      identityProvider: "azureActiveDirectory",
+      userDetails,
+      claims,
+      userRoles: ["authenticated", "anonymous"],
+    };
+  } catch {
+    return null;
+  }
+};
+
+const getAADAuthToken = function (codeValue: string, clientId: string, clientSecret: string, openIdIssuer: string) {
+  const redirectUri = `${SWA_CLI_APP_PROTOCOL}://${DEFAULT_CONFIG.host}:${DEFAULT_CONFIG.port}`;
+  const tenantId = openIdIssuer.split("/")[3];
+
+  const data = querystring.stringify({
+    code: codeValue,
+    client_id: clientId,
+    client_secret: clientSecret,
+    grant_type: "authorization_code",
+    redirect_uri: `${redirectUri}/.auth/login/azureActiveDirectory/callback`,
+  });
+
+  const options = {
+    host: `login.microsoft.com`,
+    path: `/${tenantId}/oauth2/v2.0/token`,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Content-Length": Buffer.byteLength(data),
+    },
+  };
+
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      res.setEncoding("utf8");
+      let responseBody = "";
+
+      res.on("data", (chunk) => {
+        responseBody += chunk;
+      });
+
+      res.on("end", () => {
+        resolve(responseBody);
+      });
+    });
+
+    req.on("error", (err) => {
+      reject(err);
+    });
+
+    req.write(data);
+    req.end();
+  });
+};
+
+const getAADUser = function (accessToken: string) {
+  const options = {
+    host: "graph.microsoft.com",
+    path: "/oidc/userinfo",
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "User-Agent": "Azure Static Web Apps Emulator",
+    },
+  };
+
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      res.setEncoding("utf8");
+      let responseBody = "";
+
+      res.on("data", (chunk) => {
+        responseBody += chunk;
+      });
+
+      res.on("end", () => {
+        try {
+          resolve(JSON.parse(responseBody));
+        } catch (err) {
+          reject(err);
+        }
+      });
+    });
+
+    req.on("error", (err) => {
+      reject(err);
+    });
+
+    req.end();
+  });
+};
+
 const getRoles = function (clientPrincipal: RolesSourceFunctionRequestBody, rolesSource: string) {
   let cliApiUri = SWA_CLI_API_URI();
   const { protocol, hostname, port } = parseUrl(cliApiUri);
@@ -362,12 +529,12 @@ const getRoles = function (clientPrincipal: RolesSourceFunctionRequestBody, role
 };
 
 const httpTrigger = async function (context: Context, request: http.IncomingMessage, customAuth?: SWAConfigFileAuth) {
-  const providerName = context.bindingData?.provider?.toLowerCase() || "";
+  const providerName = context.bindingData?.provider || "";
 
-  if (providerName != "github" && providerName != "google") {
+  if (!SUPPORTED_CUSTOM_AUTH_PROVIDERS.includes(providerName)) {
     context.res = response({
       context,
-      status: 404,
+      status: 400,
       headers: { ["Content-Type"]: "text/plain" },
       body: `Provider '${providerName}' not found`,
     });
@@ -413,12 +580,12 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     return;
   }
 
-  const { clientIdSettingName, clientSecretSettingName } = customAuth?.identityProviders?.[providerName]?.registration || {};
+  const { clientIdSettingName, clientSecretSettingName, openIdIssuer } = customAuth?.identityProviders?.[providerName]?.registration || {};
 
   if (!clientIdSettingName) {
     context.res = response({
       context,
-      status: 404,
+      status: 400,
       headers: { ["Content-Type"]: "text/plain" },
       body: `ClientIdSettingName not found for '${providerName}' provider`,
     });
@@ -428,9 +595,19 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
   if (!clientSecretSettingName) {
     context.res = response({
       context,
-      status: 404,
+      status: 400,
       headers: { ["Content-Type"]: "text/plain" },
       body: `ClientSecretSettingName not found for '${providerName}' provider`,
+    });
+    return;
+  }
+
+  if (providerName == "azureActiveDirectory" && !openIdIssuer) {
+    context.res = response({
+      context,
+      status: 400,
+      headers: { ["Content-Type"]: "text/plain" },
+      body: `openIdIssuer not found for '${providerName}' provider`,
     });
     return;
   }
@@ -440,7 +617,7 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
   if (!clientId) {
     context.res = response({
       context,
-      status: 404,
+      status: 400,
       headers: { ["Content-Type"]: "text/plain" },
       body: `ClientId not found for '${providerName}' provider`,
     });
@@ -452,22 +629,32 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
   if (!clientSecret) {
     context.res = response({
       context,
-      status: 404,
+      status: 400,
       headers: { ["Content-Type"]: "text/plain" },
       body: `ClientSecret not found for '${providerName}' provider`,
     });
     return;
   }
 
-  const clientPrincipal =
-    providerName === "github"
-      ? await getGitHubClientPrincipal(codeValue!, clientId, clientSecret)
-      : await getGoogleClientPrincipal(codeValue!, clientId, clientSecret);
+  let clientPrincipal;
+  switch (providerName) {
+    case "github":
+      clientPrincipal = await getGitHubClientPrincipal(codeValue!, clientId, clientSecret);
+      break;
+    case "google":
+      clientPrincipal = await getGoogleClientPrincipal(codeValue!, clientId, clientSecret);
+      break;
+    case "azureActiveDirectory":
+      clientPrincipal = await getAADClientPrincipal(codeValue!, clientId, clientSecret, openIdIssuer!);
+      break;
+    default:
+      break;
+  }
 
   if (clientPrincipal !== null && customAuth?.rolesSource) {
     try {
-      const rolesResult = (await getRoles(clientPrincipal, customAuth.rolesSource)) as { roles: string[] };
-      clientPrincipal.userRoles.push(...rolesResult.roles);
+      const rolesResult = (await getRoles(clientPrincipal as RolesSourceFunctionRequestBody, customAuth.rolesSource)) as { roles: string[] };
+      clientPrincipal?.userRoles.push(...rolesResult.roles);
     } catch {}
   }
 
