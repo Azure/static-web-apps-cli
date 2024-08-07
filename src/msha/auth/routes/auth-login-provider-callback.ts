@@ -30,7 +30,8 @@ const getAuthClientPrincipal = async function (
     const authTokenResponse = (await getOAuthToken(authProvider, codeValue!, clientId, clientSecret, openIdIssuer)) as string;
     const authTokenParsed = JSON.parse(authTokenResponse);
     authToken = authTokenParsed["access_token"] as string;
-  } catch {
+  } catch (error) {
+    console.error(`Error in getting OAuth token: ${error}`);
     return null;
   }
 
@@ -149,8 +150,8 @@ const getOAuthToken = function (authProvider: string, codeValue: string, clientI
     code: codeValue,
     client_id: clientId,
     client_secret: clientSecret,
-    grant_type: authProvider !== "github" && "authorization_code",
-    redirect_uri: authProvider !== "github" && `${redirectUri}/.auth/login/${authProvider}/callback`,
+    ...(authProvider !== "github" && { grant_type: authProvider }),
+    ...(authProvider !== "github" && { redirect_uri: `${redirectUri}/.auth/login/${authProvider}/callback` }),
   });
 
   let tokenPath = CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING?.[authProvider]?.path;
@@ -160,7 +161,7 @@ const getOAuthToken = function (authProvider: string, codeValue: string, clientI
 
   const options = {
     host: CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING?.[authProvider]?.host,
-    path: `/${tenantId}/oauth2/v2.0/token`,
+    path: tokenPath,
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
