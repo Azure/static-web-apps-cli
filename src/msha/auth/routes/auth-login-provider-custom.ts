@@ -1,14 +1,21 @@
 import { IncomingMessage } from "node:http";
 import { CookiesManager } from "../../../core/utils/cookie.js";
 import { response } from "../../../core/utils/net.js";
-import { SUPPORTED_CUSTOM_AUTH_PROVIDERS, SWA_CLI_APP_PROTOCOL } from "../../../core/constants.js";
+import { AAD_FULL_NAME, SUPPORTED_CUSTOM_AUTH_PROVIDERS, SWA_CLI_APP_PROTOCOL } from "../../../core/constants.js";
 import { DEFAULT_CONFIG } from "../../../config.js";
 import { encryptAndSign, extractPostLoginRedirectUri, hashStateGuid, newNonceWithExpiration } from "../../../core/utils/auth.js";
+
+export const normalizeAuthProvider = (providerName?: string) => {
+  if (providerName === AAD_FULL_NAME) {
+    return "aad";
+  }
+  return providerName?.toLowerCase() || "";
+};
 
 const httpTrigger = async function (context: Context, request: IncomingMessage, customAuth?: SWAConfigFileAuth) {
   await Promise.resolve();
 
-  const providerName: string = context.bindingData?.provider || "";
+  const providerName: string = normalizeAuthProvider(context.bindingData?.provider);
 
   if (!SUPPORTED_CUSTOM_AUTH_PROVIDERS.includes(providerName)) {
     context.res = response({
@@ -20,7 +27,8 @@ const httpTrigger = async function (context: Context, request: IncomingMessage, 
     return;
   }
 
-  const clientIdSettingName = customAuth?.identityProviders?.[providerName]?.registration?.clientIdSettingName;
+  const clientIdSettingName =
+    customAuth?.identityProviders?.[providerName == "aad" ? AAD_FULL_NAME : providerName]?.registration?.clientIdSettingName;
 
   if (!clientIdSettingName) {
     context.res = response({
@@ -45,8 +53,8 @@ const httpTrigger = async function (context: Context, request: IncomingMessage, 
   }
 
   let aadIssuer;
-  if (providerName == "azureActiveDirectory") {
-    aadIssuer = customAuth?.identityProviders?.[providerName]?.registration?.openIdIssuer;
+  if (providerName == "aad") {
+    aadIssuer = customAuth?.identityProviders?.[AAD_FULL_NAME]?.registration?.openIdIssuer;
 
     if (!aadIssuer) {
       context.res = response({
@@ -81,8 +89,8 @@ const httpTrigger = async function (context: Context, request: IncomingMessage, 
     case "github":
       location = `https://github.com/login/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}/.auth/login/github/callback&scope=read:user&state=${hashedState}`;
       break;
-    case "azureActiveDirectory":
-      location = `${aadIssuer}/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}/.auth/login/azureActiveDirectory/callback&scope=openid&state=${hashedState}`;
+    case "aad":
+      location = `${aadIssuer}/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}/.auth/login/aad/callback&scope=openid&state=${hashedState}`;
       break;
     default:
       break;

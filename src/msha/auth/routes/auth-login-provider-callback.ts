@@ -4,9 +4,10 @@ import * as querystring from "node:querystring";
 
 import { CookiesManager, decodeAuthContextCookie, validateAuthContextCookie } from "../../../core/utils/cookie.js";
 import { parseUrl, response } from "../../../core/utils/net.js";
-import { SUPPORTED_CUSTOM_AUTH_PROVIDERS, SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../../../core/constants.js";
+import { AAD_FULL_NAME, SUPPORTED_CUSTOM_AUTH_PROVIDERS, SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../../../core/constants.js";
 import { DEFAULT_CONFIG } from "../../../config.js";
 import { encryptAndSign, hashStateGuid, isNonceExpired } from "../../../core/utils/auth.js";
+import { normalizeAuthProvider } from "./auth-login-provider-custom.js";
 
 const getGithubAuthToken = function (codeValue: string, clientId: string, clientSecret: string) {
   const data = querystring.stringify({
@@ -407,7 +408,7 @@ const getAADAuthToken = function (codeValue: string, clientId: string, clientSec
     client_id: clientId,
     client_secret: clientSecret,
     grant_type: "authorization_code",
-    redirect_uri: `${redirectUri}/.auth/login/azureActiveDirectory/callback`,
+    redirect_uri: `${redirectUri}/.auth/login/aad/callback`,
   });
 
   const options = {
@@ -529,7 +530,7 @@ const getRoles = function (clientPrincipal: RolesSourceFunctionRequestBody, role
 };
 
 const httpTrigger = async function (context: Context, request: http.IncomingMessage, customAuth?: SWAConfigFileAuth) {
-  const providerName = context.bindingData?.provider || "";
+  const providerName = normalizeAuthProvider(context.bindingData?.provider);
 
   if (!SUPPORTED_CUSTOM_AUTH_PROVIDERS.includes(providerName)) {
     context.res = response({
@@ -580,7 +581,8 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     return;
   }
 
-  const { clientIdSettingName, clientSecretSettingName, openIdIssuer } = customAuth?.identityProviders?.[providerName]?.registration || {};
+  const { clientIdSettingName, clientSecretSettingName, openIdIssuer } =
+    customAuth?.identityProviders?.[providerName == "aad" ? AAD_FULL_NAME : providerName]?.registration || {};
 
   if (!clientIdSettingName) {
     context.res = response({
@@ -602,7 +604,7 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     return;
   }
 
-  if (providerName == "azureActiveDirectory" && !openIdIssuer) {
+  if (providerName == "aad" && !openIdIssuer) {
     context.res = response({
       context,
       status: 400,
@@ -644,7 +646,7 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     case "google":
       clientPrincipal = await getGoogleClientPrincipal(codeValue!, clientId, clientSecret);
       break;
-    case "azureActiveDirectory":
+    case "aad":
       clientPrincipal = await getAADClientPrincipal(codeValue!, clientId, clientSecret, openIdIssuer!);
       break;
     default:

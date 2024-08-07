@@ -10,13 +10,13 @@ function getAuthPaths(isCustomAuth: boolean): Path[] {
     paths.push({
       method: "GET",
       // only match for providers with custom auth support implemented (github, google, aad)
-      route: /^\/\.auth\/login\/(?<provider>github|google|azureActiveDirectory|dummy)\/callback(\?.*)?$/i,
+      route: /^\/\.auth\/login\/(?<provider>github|google|aad|dummy)\/callback(\?.*)?$/i,
       function: "auth-login-provider-callback",
     });
     paths.push({
       method: "GET",
       // only match for providers with custom auth support implemented (github, google, aad)
-      route: /^\/\.auth\/login\/(?<provider>github|google|azureActiveDirectory|dummy)(\?.*)?$/i,
+      route: /^\/\.auth\/login\/(?<provider>github|google|aad|dummy)(\?.*)?$/i,
       function: "auth-login-provider-custom",
     });
     paths.push({
