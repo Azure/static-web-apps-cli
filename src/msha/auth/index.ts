@@ -2,21 +2,24 @@ import type http from "node:http";
 import { serializeCookie } from "../../core/utils/cookie.js";
 import { logger } from "../../core/utils/logger.js";
 import { response as newResponse } from "../../core/utils/net.js";
+import { SUPPORTED_CUSTOM_AUTH_PROVIDERS } from "../../core/constants.js";
 
 function getAuthPaths(isCustomAuth: boolean): Path[] {
   const paths: Path[] = [];
 
   if (isCustomAuth) {
+    const supportedAuthsRegex = SUPPORTED_CUSTOM_AUTH_PROVIDERS.join("|");
+
     paths.push({
       method: "GET",
       // only match for providers with custom auth support implemented (github, google, aad)
-      route: /^\/\.auth\/login\/(?<provider>github|google|aad|dummy)\/callback(\?.*)?$/i,
+      route: new RegExp(`^/\\.auth/login/(?<provider>${supportedAuthsRegex})/callback(\\?.*)?$`, "i"),
       function: "auth-login-provider-callback",
     });
     paths.push({
       method: "GET",
       // only match for providers with custom auth support implemented (github, google, aad)
-      route: /^\/\.auth\/login\/(?<provider>github|google|aad|dummy)(\?.*)?$/i,
+      route: new RegExp(`^/\\.auth/login/(?<provider>${supportedAuthsRegex})(\\?.*)?$`, "i"),
       function: "auth-login-provider-custom",
     });
     paths.push({

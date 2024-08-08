@@ -5,7 +5,7 @@ import * as querystring from "node:querystring";
 import { CookiesManager, decodeAuthContextCookie, validateAuthContextCookie } from "../../../core/utils/cookie.js";
 import { parseUrl, response } from "../../../core/utils/net.js";
 import {
-  AAD_FULL_NAME,
+  ENTRAID_FULL_NAME,
   CUSTOM_AUTH_ISS_MAPPING,
   CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING,
   CUSTOM_AUTH_USER_ENDPOINT_MAPPING,
@@ -335,7 +335,7 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
   }
 
   const { clientIdSettingName, clientSecretSettingName, openIdIssuer } =
-    customAuth?.identityProviders?.[providerName == "aad" ? AAD_FULL_NAME : providerName]?.registration || {};
+    customAuth?.identityProviders?.[providerName == "aad" ? ENTRAID_FULL_NAME : providerName]?.registration || {};
 
   if (!clientIdSettingName) {
     context.res = response({

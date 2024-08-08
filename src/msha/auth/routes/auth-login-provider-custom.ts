@@ -1,12 +1,12 @@
 import { IncomingMessage } from "node:http";
 import { CookiesManager } from "../../../core/utils/cookie.js";
 import { response } from "../../../core/utils/net.js";
-import { AAD_FULL_NAME, SUPPORTED_CUSTOM_AUTH_PROVIDERS, SWA_CLI_APP_PROTOCOL } from "../../../core/constants.js";
+import { ENTRAID_FULL_NAME, SUPPORTED_CUSTOM_AUTH_PROVIDERS, SWA_CLI_APP_PROTOCOL } from "../../../core/constants.js";
 import { DEFAULT_CONFIG } from "../../../config.js";
 import { encryptAndSign, extractPostLoginRedirectUri, hashStateGuid, newNonceWithExpiration } from "../../../core/utils/auth.js";
 
 export const normalizeAuthProvider = (providerName?: string) => {
-  if (providerName === AAD_FULL_NAME) {
+  if (providerName === ENTRAID_FULL_NAME) {
     return "aad";
   }
   return providerName?.toLowerCase() || "";
@@ -28,7 +28,7 @@ const httpTrigger = async function (context: Context, request: IncomingMessage, 
   }
 
   const clientIdSettingName =
-    customAuth?.identityProviders?.[providerName == "aad" ? AAD_FULL_NAME : providerName]?.registration?.clientIdSettingName;
+    customAuth?.identityProviders?.[providerName == "aad" ? ENTRAID_FULL_NAME : providerName]?.registration?.clientIdSettingName;
 
   if (!clientIdSettingName) {
     context.res = response({
@@ -54,7 +54,7 @@ const httpTrigger = async function (context: Context, request: IncomingMessage, 
 
   let aadIssuer;
   if (providerName == "aad") {
-    aadIssuer = customAuth?.identityProviders?.[AAD_FULL_NAME]?.registration?.openIdIssuer;
+    aadIssuer = customAuth?.identityProviders?.[ENTRAID_FULL_NAME]?.registration?.openIdIssuer;
 
     if (!aadIssuer) {
       context.res = response({
