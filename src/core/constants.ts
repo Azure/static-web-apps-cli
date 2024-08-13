@@ -87,10 +87,6 @@ export const CUSTOM_AUTH_USER_ENDPOINT_MAPPING: AuthIdentityTokenEndpoints = {
     host: "graph.microsoft.com",
     path: "/oidc/userinfo",
   },
-  facebook: {
-    host: "graph.facebook.com",
-    path: "/debug_token",
-  },
 };
 export const CUSTOM_AUTH_ISS_MAPPING: AuthIdentityIssHosts = {
   google: "https://account.google.com",
