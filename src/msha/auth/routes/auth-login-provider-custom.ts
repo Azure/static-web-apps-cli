@@ -87,7 +87,7 @@ const httpTrigger = async function (context: Context, request: IncomingMessage, 
       location = `https://github.com/login/oauth/authorize?response_type=code&client_id=${authFields?.clientIdSettingName}&redirect_uri=${redirectUri}/.auth/login/github/callback&scope=read:user&state=${hashedState}`;
       break;
     case "aad":
-      location = `${authFields?.aadIssuer}/authorize?response_type=code&client_id=${authFields?.clientIdSettingName}&redirect_uri=${redirectUri}/.auth/login/aad/callback&scope=openid+profile+email&state=${hashedState}`;
+      location = `${authFields?.openIdIssuer}/authorize?response_type=code&client_id=${authFields?.clientIdSettingName}&redirect_uri=${redirectUri}/.auth/login/aad/callback&scope=openid+profile+email&state=${hashedState}`;
       break;
     case "facebook":
       location = `https://facebook.com/v11.0/dialog/oauth?client_id=${authFields?.appIdSettingName}&redirect_uri=${redirectUri}/.auth/login/facebook/callback&scope=openid&state=${hashedState}&response_type=code`;
