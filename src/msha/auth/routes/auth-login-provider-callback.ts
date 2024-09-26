@@ -47,12 +47,12 @@ const getAuthClientPrincipal = async function (authProvider: string, codeValue: 
   try {
     const user = (await getOAuthUser(authProvider, authToken)) as Record<string, any>;
 
-    const userDetails = user["login"] || user["email"] || user.data["username"];
-    const name = user["name"] || user.data["name"];
+    const userDetails = user["login"] || user["email"] || user?.data?.["username"];
+    const name = user["name"] || user?.data?.["name"];
     const givenName = user["given_name"];
     const familyName = user["family_name"];
     const picture = user["picture"];
-    const userId = user["id"] || user.data["id"];
+    const userId = user["id"] || user?.data?.["id"];
     const verifiedEmail = user["verified_email"];
 
     const claims: { typ: string; val: string }[] = [
@@ -134,7 +134,8 @@ const getAuthClientPrincipal = async function (authProvider: string, codeValue: 
       claims,
       userRoles: ["authenticated", "anonymous"],
     };
-  } catch {
+  } catch (error) {
+    console.error(`Error while parsing user information: ${error}`);
     return null;
   }
 };
