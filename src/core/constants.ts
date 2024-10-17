@@ -39,7 +39,7 @@ export const DATA_API_BUILDER_DATABASE_TYPES = {
 };
 
 // General SWA_CLI constants
-export const SWA_COMMANDS = ["login", "init", "start", "deploy", "build", "db init"] as const;
+export const SWA_COMMANDS = ["login", "init", "start", "deploy", "build", "db init", "telemetry"] as const;
 // Type cannot be in swa.d.ts as it's inferred from SWA_COMMANDS
 export type SWACommand = (typeof SWA_COMMANDS)[number];
 
@@ -339,3 +339,12 @@ export function SWA_CLI_DATA_API_URI() {
 const azureFolderName = ".azure";
 const azureProfileFilename = "azureProfile.json";
 export const AZURE_LOGIN_CONFIG = path.join(os.homedir(), azureFolderName, azureProfileFilename);
+
+// Telemetry constants
+export const TELEMETRY_EVENTS = {
+  Login: "login",
+  Init: "init",
+  Start: "start",
+  Build: "build",
+  Deploy: "deploy",
+};

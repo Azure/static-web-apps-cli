@@ -18,6 +18,9 @@ import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder/index.
 import { swaCLIEnv } from "../../../core/env.js";
 import { getCertificate } from "../../../core/ssl.js";
 import { loadPackageJson } from "../../../core/utils/json.js";
+import { findSWAConfigFile } from "../../../core/utils/user-config.js";
+import { collectTelemetryEvent } from "../../../core/telemetry/utils.js";
+import { TELEMETRY_EVENTS } from "../../../core/constants.js";
 
 const packageInfo = loadPackageJson();
 
@@ -37,6 +40,7 @@ export async function start(options: SWACLIConfig) {
   // Code below doesn't have access to these environment variables which are defined later below.
   // Make sure this code (or code from utils) does't depend on environment variables!
 
+  const cmdStartTime = new Date().getTime();
   let {
     appLocation,
     apiLocation,
@@ -167,6 +171,7 @@ export async function start(options: SWACLIConfig) {
   }
 
   const isApiLocationExistsOnDisk = fs.existsSync(userWorkflowConfig?.apiLocation!);
+  const nodeMajorVersion = getNodeMajorVersion();
 
   // handle the API location config
   let serveApiCommand = "echo 'No API found. Skipping'";
@@ -180,7 +185,6 @@ export async function start(options: SWACLIConfig) {
     if (apiLocation && userWorkflowConfig?.apiLocation) {
       // check if the func binary is globally available and if not, download it
       const funcBinary = await getCoreToolsBinary();
-      const nodeMajorVersion = getNodeMajorVersion();
       const targetVersion = detectTargetCoreToolsVersion(nodeMajorVersion);
 
       if (!funcBinary) {
@@ -262,6 +266,7 @@ export async function start(options: SWACLIConfig) {
   // resolve the following config to their absolute paths
   // note: the server will perform a search starting from this path
   swaConfigLocation = path.resolve(swaConfigLocation || userWorkflowConfig?.appLocation || process.cwd());
+  const swaConfigFileContent = (await findSWAConfigFile(swaConfigLocation!))?.content;
 
   // WARNING: code from above doesn't have access to env vars which are only defined below
 
@@ -352,7 +357,13 @@ export async function start(options: SWACLIConfig) {
 
   const concurrentlyOptions: Partial<ConcurrentlyOptions> = { restartTries: 0, killOthers: ["failure", "success"], raw: true };
   const { result } = concurrently(concurrentlyCommands, concurrentlyOptions);
+  const cmdEndTime2 = new Date().getTime();
 
+  collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+    apiRuntime: swaConfigFileContent?.platform.apiRuntime!,
+    duration: (cmdEndTime2 - cmdStartTime).toString(),
+    appRuntime: "node" + nodeMajorVersion,
+  });
   await result
     .then(
       (errorEvent: CloseEvent[]) => {
@@ -386,4 +397,12 @@ export async function start(options: SWACLIConfig) {
     .catch((err: Error) => {
       logger.error(err.message, true);
     });
+
+  const cmdEndTime = new Date().getTime();
+
+  collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+    apiRuntime: swaConfigFileContent?.platform.apiRuntime!,
+    duration: (cmdEndTime - cmdStartTime).toString(),
+    appRuntime: "node" + nodeMajorVersion,
+  });
 }

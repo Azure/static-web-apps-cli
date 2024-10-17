@@ -19,6 +19,7 @@ import { default as registerStart } from "./commands/start/register.js";
 import { default as registerBuild } from "./commands/build/register.js";
 import { registerDocs } from "./commands/docs.js";
 import { default as registerDb } from "./commands/db/init/register.js";
+import { default as registerTelemetry } from "./commands/telemetry/register.js";
 import { promptOrUseDefault } from "../core/prompts.js";
 import { loadPackageJson } from "../core/utils/json.js";
 
@@ -91,6 +92,7 @@ export async function run(argv?: string[]) {
   registerBuild(program);
   registerDocs(program);
   registerDb(program);
+  registerTelemetry(program);
 
   program.showHelpAfterError();
   program.addOption(new Option("--ping").hideHelp());
