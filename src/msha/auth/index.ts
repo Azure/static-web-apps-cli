@@ -36,7 +36,7 @@ function getAuthPaths(isCustomAuth: boolean): Path[] {
   } else {
     paths.push({
       method: "GET",
-      route: /^\/\.auth\/login\/(?<provider>github|twitter|google|facebook|[a-z]+)(\?.*)?$/i,
+      route: /^\/\.auth\/login\/(?<provider>github|twitter|google|facebook|[a-z0-9]+)(\?.*)?$/i,
       function: "auth-login-provider",
     });
   }
