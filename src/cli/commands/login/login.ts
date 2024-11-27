@@ -56,7 +56,7 @@ async function setupProjectCredentials(options: SWACLIConfig, credentialChain: T
     const tenants = await listTenants(credentialChain);
     if (tenants.length === 0) {
       throw new Error(
-        `No Azure tenants found in your account.\n  Please read https://docs.microsoft.com/azure/cost-management-billing/manage/troubleshoot-sign-in-issue`
+        `No Azure tenants found in your account.\n  Please read https://docs.microsoft.com/azure/cost-management-billing/manage/troubleshoot-sign-in-issue`,
       );
     } else if (tenants.length === 1) {
       logger.silly(`Found 1 tenant: ${tenants[0].tenantId}`);
@@ -81,7 +81,7 @@ async function setupProjectCredentials(options: SWACLIConfig, credentialChain: T
     const subscriptions = await listSubscriptions(credentialChain);
     if (subscriptions.length === 0) {
       throw new Error(
-        `No valid subscription found for tenant ${tenantId}.\n  Please read https://docs.microsoft.com/azure/cost-management-billing/manage/no-subscriptions-found`
+        `No valid subscription found for tenant ${tenantId}.\n  Please read https://docs.microsoft.com/azure/cost-management-billing/manage/no-subscriptions-found`,
       );
     } else if (subscriptions.length === 1) {
       logger.silly(`Found 1 subscription: ${subscriptions[0].subscriptionId}`);
@@ -109,7 +109,7 @@ async function storeProjectCredentialsInEnvFile(
   subscriptionId: string | undefined,
   tenantId: string | undefined,
   clientId: string | undefined,
-  clientSecret: string | undefined
+  clientSecret: string | undefined,
 ) {
   const envFile = path.join(process.cwd(), ENV_FILENAME);
   const envFileExists = existsSync(envFile);
@@ -162,10 +162,12 @@ async function tryGetAzTenantAndSubscription(options: SWACLIConfig) {
     const azureProfile = await safeReadJson(AZURE_LOGIN_CONFIG);
     if (azureProfile) {
       const allSubscriptions = (azureProfile as AzureProfile).subscriptions;
-      const defaultAzureInfo = allSubscriptions.find((subscription) => subscription.isDefault == true);
-      if (defaultAzureInfo) {
-        options.tenantId = defaultAzureInfo.tenantId;
-        options.subscriptionId = defaultAzureInfo.id;
+      if (allSubscriptions) {
+        const defaultAzureInfo = allSubscriptions.find((subscription) => subscription.isDefault == true);
+        if (defaultAzureInfo) {
+          options.tenantId = defaultAzureInfo.tenantId;
+          options.subscriptionId = defaultAzureInfo.id;
+        }
       }
     }
 
