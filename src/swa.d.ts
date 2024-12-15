@@ -442,5 +442,5 @@ declare type AzureLoginInfo = {
 
 declare interface AzureProfile {
   installationId: string;
-  subscriptions?: AzureLoginInfo[];
+  subscriptions: AzureLoginInfo[];
 }
