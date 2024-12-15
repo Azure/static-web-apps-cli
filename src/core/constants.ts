@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 export const DEPLOY_BINARY_NAME = "StaticSitesClient";
 export const DEPLOY_BINARY_STABLE_TAG = "stable";
 export const DEPLOY_FOLDER = path.join(os.homedir(), ".swa", "deploy");
-export const STATIC_SITE_CLIENT_RELEASE_METADATA_URL = "https://swalocaldeploy.azureedge.net/downloads/versions.json";
+export const STATIC_SITE_CLIENT_RELEASE_METADATA_URL = "https://aka.ms/swalocaldeploy";
 
 // Data-api-builder related constants
 export const DATA_API_BUILDER_BINARY_NAME = "DataApiBuilder";
