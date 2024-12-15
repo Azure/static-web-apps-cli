@@ -228,7 +228,7 @@ jobs:
       - run: npm version prerelease --preid=ci-$GITHUB_RUN_ID --no-git-tag-version
       - run: npm pack
       - name: Upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: static-web-apps-cli
           path: "*.tgz"

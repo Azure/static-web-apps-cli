@@ -45,14 +45,14 @@ const getAuthClientPrincipal = async function (authProvider: string, codeValue: 
   }
 
   try {
-    const user = (await getOAuthUser(authProvider, authToken)) as Record<string, any>;
+    const user = (await getOAuthUser(authProvider, authToken)) as { [key: string]: string };
 
-    const userDetails = user["login"] || user["email"] || user?.data?.["username"];
-    const name = user["name"] || user?.data?.["name"];
+    const userDetails = user["login"] || user["email"];
+    const name = user["name"];
     const givenName = user["given_name"];
     const familyName = user["family_name"];
     const picture = user["picture"];
-    const userId = user["id"] || user?.data?.["id"];
+    const userId = user["id"];
     const verifiedEmail = user["verified_email"];
 
     const claims: { typ: string; val: string }[] = [
@@ -134,8 +134,7 @@ const getAuthClientPrincipal = async function (authProvider: string, codeValue: 
       claims,
       userRoles: ["authenticated", "anonymous"],
     };
-  } catch (error) {
-    console.error(`Error while parsing user information: ${error}`);
+  } catch {
     return null;
   }
 };
@@ -152,42 +151,27 @@ const getOAuthToken = function (authProvider: string, codeValue: string, authCon
     tenantId = authConfigs?.openIdIssuer.split("/")[3];
   }
 
-  const queryString: Record<string, string> = {
+  const data = querystring.stringify({
     code: codeValue,
+    client_id: authConfigs?.clientIdSettingName || authConfigs?.appIdSettingName,
+    client_secret: authConfigs?.clientSecretSettingName || authConfigs?.appSecretSettingName,
     grant_type: "authorization_code",
     redirect_uri: `${redirectUri}/.auth/login/${authProvider}/callback`,
-  };
-
-  if (authProvider !== "twitter") {
-    queryString.client_id = authConfigs?.clientIdSettingName || authConfigs?.appIdSettingName;
-    queryString.client_secret = authConfigs?.clientSecretSettingName || authConfigs?.appSecretSettingName;
-  } else {
-    queryString.code_verifier = "challenge";
-  }
-
-  const data = querystring.stringify(queryString);
+  });
 
   let tokenPath = CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING?.[authProvider]?.path;
   if (authProvider === "aad" && tenantId !== undefined) {
     tokenPath = tokenPath.replace("tenantId", tenantId);
   }
 
-  const headers: Record<string, string | number> = {
-    "Content-Type": "application/x-www-form-urlencoded",
-    "Content-Length": Buffer.byteLength(data),
-  };
-
-  if (authProvider === "twitter") {
-    const keySecretString = `${authConfigs?.consumerKeySettingName}:${authConfigs?.consumerSecretSettingName}`;
-    const encryptedCredentials = Buffer.from(keySecretString).toString("base64");
-    headers.Authorization = `Basic ${encryptedCredentials}`;
-  }
-
   const options = {
     host: CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING?.[authProvider]?.host,
     path: tokenPath,
     method: "POST",
-    headers: headers,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Content-Length": Buffer.byteLength(data),
+    },
   };
 
   return new Promise((resolve, reject) => {

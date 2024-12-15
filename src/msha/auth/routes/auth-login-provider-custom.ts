@@ -92,9 +92,6 @@ const httpTrigger = async function (context: Context, request: IncomingMessage, 
     case "facebook":
       location = `https://facebook.com/v11.0/dialog/oauth?client_id=${authFields?.appIdSettingName}&redirect_uri=${redirectUri}/.auth/login/facebook/callback&scope=openid&state=${hashedState}&response_type=code`;
       break;
-    case "twitter":
-      location = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${authFields?.consumerKeySettingName}&redirect_uri=${redirectUri}/.auth/login/twitter/callback&scope=users.read%20tweet.read&state=${hashedState}&code_challenge=challenge&code_challenge_method=plain`;
-      break;
     default:
       break;
   }

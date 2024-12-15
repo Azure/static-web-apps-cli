@@ -12,13 +12,13 @@ function getAuthPaths(isCustomAuth: boolean): Path[] {
 
     paths.push({
       method: "GET",
-      // only match for providers with custom auth support implemented (github, google, aad, facebook, twitter)
+      // only match for providers with custom auth support implemented (github, google, aad)
       route: new RegExp(`^/\\.auth/login/(?<provider>${supportedAuthsRegex})/callback(\\?.*)?$`, "i"),
       function: "auth-login-provider-callback",
     });
     paths.push({
       method: "GET",
-      // only match for providers with custom auth support implemented (github, google, aad, facebook, twitter)
+      // only match for providers with custom auth support implemented (github, google, aad)
       route: new RegExp(`^/\\.auth/login/(?<provider>${supportedAuthsRegex})(\\?.*)?$`, "i"),
       function: "auth-login-provider-custom",
     });
