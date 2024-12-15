@@ -2,30 +2,27 @@ import type http from "node:http";
 import { serializeCookie } from "../../core/utils/cookie.js";
 import { logger } from "../../core/utils/logger.js";
 import { response as newResponse } from "../../core/utils/net.js";
-import { SUPPORTED_CUSTOM_AUTH_PROVIDERS } from "../../core/constants.js";
 
 function getAuthPaths(isCustomAuth: boolean): Path[] {
   const paths: Path[] = [];
 
   if (isCustomAuth) {
-    const supportedAuthsRegex = SUPPORTED_CUSTOM_AUTH_PROVIDERS.join("|");
-
     paths.push({
       method: "GET",
-      // only match for providers with custom auth support implemented (github, google, aad)
-      route: new RegExp(`^/\\.auth/login/(?<provider>${supportedAuthsRegex})/callback(\\?.*)?$`, "i"),
+      // only match for providers with custom auth support implemented (github, google)
+      route: /^\/\.auth\/login\/(?<provider>github|google|dummy)\/callback(\?.*)?$/i,
       function: "auth-login-provider-callback",
     });
     paths.push({
       method: "GET",
-      // only match for providers with custom auth support implemented (github, google, aad)
-      route: new RegExp(`^/\\.auth/login/(?<provider>${supportedAuthsRegex})(\\?.*)?$`, "i"),
+      // only match for providers with custom auth support implemented (github, google)
+      route: /^\/\.auth\/login\/(?<provider>github|google|dummy)(\?.*)?$/i,
       function: "auth-login-provider-custom",
     });
     paths.push({
       method: "GET",
       // For providers with custom auth support not implemented, revert to old behavior
-      route: /^\/\.auth\/login\/(?<provider>twitter|facebook|[a-z]+)(\?.*)?$/i,
+      route: /^\/\.auth\/login\/(?<provider>aad|twitter|facebook|[a-z]+)(\?.*)?$/i,
       function: "auth-login-provider",
     });
     paths.push({
@@ -36,7 +33,7 @@ function getAuthPaths(isCustomAuth: boolean): Path[] {
   } else {
     paths.push({
       method: "GET",
-      route: /^\/\.auth\/login\/(?<provider>github|twitter|google|facebook|[a-z]+)(\?.*)?$/i,
+      route: /^\/\.auth\/login\/(?<provider>aad|github|twitter|google|facebook|[a-z]+)(\?.*)?$/i,
       function: "auth-login-provider",
     });
   }
