@@ -50,7 +50,7 @@ export const SWA_AUTH_COOKIE = `StaticWebAppsAuthCookie`;
 export const ALLOWED_HTTP_METHODS_FOR_STATIC_CONTENT = ["GET", "HEAD", "OPTIONS"];
 
 // Custom Auth constants
-export const SUPPORTED_CUSTOM_AUTH_PROVIDERS = ["google", "github", "aad", "facebook", "dummy"];
+export const SUPPORTED_CUSTOM_AUTH_PROVIDERS = ["google", "github", "aad", "dummy"];
 /*
   The full name is required in staticwebapp.config.json's schema that will be normalized to aad
   https://learn.microsoft.com/en-us/azure/static-web-apps/authentication-custom?tabs=aad%2Cinvitations
@@ -68,10 +68,6 @@ export const CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING: AuthIdentityTokenEndpoints = {
   aad: {
     host: "login.microsoftonline.com",
     path: "/tenantId/oauth2/v2.0/token",
-  },
-  facebook: {
-    host: "graph.facebook.com",
-    path: "/v11.0/oauth/access_token",
   },
 };
 export const CUSTOM_AUTH_USER_ENDPOINT_MAPPING: AuthIdentityTokenEndpoints = {
@@ -92,13 +88,6 @@ export const CUSTOM_AUTH_ISS_MAPPING: AuthIdentityIssHosts = {
   google: "https://account.google.com",
   github: "",
   aad: "https://graph.microsoft.com",
-  facebook: "https://www.facebook.com",
-};
-export const CUSTOM_AUTH_REQUIRED_FIELDS: AuthIdentityRequiredFields = {
-  google: ["clientIdSettingName", "clientSecretSettingName"],
-  github: ["clientIdSettingName", "clientSecretSettingName"],
-  aad: ["clientIdSettingName", "clientSecretSettingName", "openIdIssuer"],
-  facebook: ["appIdSettingName", "appSecretSettingName"],
 };
 
 export const AUTH_STATUS = {

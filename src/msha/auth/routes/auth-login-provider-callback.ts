@@ -5,6 +5,7 @@ import * as querystring from "node:querystring";
 import { CookiesManager, decodeAuthContextCookie, validateAuthContextCookie } from "../../../core/utils/cookie.js";
 import { parseUrl, response } from "../../../core/utils/net.js";
 import {
+  ENTRAID_FULL_NAME,
   CUSTOM_AUTH_ISS_MAPPING,
   CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING,
   CUSTOM_AUTH_USER_ENDPOINT_MAPPING,
@@ -14,27 +15,26 @@ import {
 } from "../../../core/constants.js";
 import { DEFAULT_CONFIG } from "../../../config.js";
 import { encryptAndSign, hashStateGuid, isNonceExpired } from "../../../core/utils/auth.js";
-import { checkCustomAuthConfigFields, normalizeAuthProvider } from "./auth-login-provider-custom.js";
-import { jwtDecode } from "jwt-decode";
+import { normalizeAuthProvider } from "./auth-login-provider-custom.js";
 
-const getAuthClientPrincipal = async function (authProvider: string, codeValue: string, authConfigs: Record<string, string>) {
+const getAuthClientPrincipal = async function (
+  authProvider: string,
+  codeValue: string,
+  clientId: string,
+  clientSecret: string,
+  openIdIssuer: string = "",
+) {
   let authToken: string;
 
   try {
-    const authTokenResponse = (await getOAuthToken(authProvider, codeValue!, authConfigs)) as string;
+    const authTokenResponse = (await getOAuthToken(authProvider, codeValue!, clientId, clientSecret, openIdIssuer)) as string;
     let authTokenParsed;
     try {
       authTokenParsed = JSON.parse(authTokenResponse);
     } catch (e) {
       authTokenParsed = querystring.parse(authTokenResponse);
     }
-
-    // Facebook sends back a JWT in the id_token
-    if (authProvider !== "facebook") {
-      authToken = authTokenParsed["access_token"] as string;
-    } else {
-      authToken = authTokenParsed["id_token"] as string;
-    }
+    authToken = authTokenParsed["access_token"] as string;
   } catch (error) {
     console.error(`Error in getting OAuth token: ${error}`);
     return null;
@@ -62,11 +62,11 @@ const getAuthClientPrincipal = async function (authProvider: string, codeValue: 
       },
       {
         typ: "azp",
-        val: authConfigs?.clientIdSettingName || authConfigs?.appIdSettingName,
+        val: clientId,
       },
       {
         typ: "aud",
-        val: authConfigs?.clientIdSettingName || authConfigs?.appIdSettingName,
+        val: clientId,
       },
     ];
 
@@ -139,7 +139,7 @@ const getAuthClientPrincipal = async function (authProvider: string, codeValue: 
   }
 };
 
-const getOAuthToken = function (authProvider: string, codeValue: string, authConfigs: Record<string, string>) {
+const getOAuthToken = function (authProvider: string, codeValue: string, clientId: string, clientSecret: string, openIdIssuer: string = "") {
   const redirectUri = `${SWA_CLI_APP_PROTOCOL}://${DEFAULT_CONFIG.host}:${DEFAULT_CONFIG.port}`;
   let tenantId;
 
@@ -148,13 +148,13 @@ const getOAuthToken = function (authProvider: string, codeValue: string, authCon
   }
 
   if (authProvider === "aad") {
-    tenantId = authConfigs?.openIdIssuer.split("/")[3];
+    tenantId = openIdIssuer.split("/")[3];
   }
 
   const data = querystring.stringify({
     code: codeValue,
-    client_id: authConfigs?.clientIdSettingName || authConfigs?.appIdSettingName,
-    client_secret: authConfigs?.clientSecretSettingName || authConfigs?.appSecretSettingName,
+    client_id: clientId,
+    client_secret: clientSecret,
     grant_type: "authorization_code",
     redirect_uri: `${redirectUri}/.auth/login/${authProvider}/callback`,
   });
@@ -198,45 +198,40 @@ const getOAuthToken = function (authProvider: string, codeValue: string, authCon
 };
 
 const getOAuthUser = function (authProvider: string, accessToken: string) {
-  // Facebook does not have an OIDC introspection so we need to manually decode the token :(
-  if (authProvider === "facebook") {
-    return jwtDecode(accessToken);
-  } else {
-    const options = {
-      host: CUSTOM_AUTH_USER_ENDPOINT_MAPPING?.[authProvider]?.host,
-      path: CUSTOM_AUTH_USER_ENDPOINT_MAPPING?.[authProvider]?.path,
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "User-Agent": "Azure Static Web Apps Emulator",
-      },
-    };
+  const options = {
+    host: CUSTOM_AUTH_USER_ENDPOINT_MAPPING?.[authProvider]?.host,
+    path: CUSTOM_AUTH_USER_ENDPOINT_MAPPING?.[authProvider]?.path,
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "User-Agent": "Azure Static Web Apps Emulator",
+    },
+  };
 
-    return new Promise((resolve, reject) => {
-      const req = https.request(options, (res) => {
-        res.setEncoding("utf8");
-        let responseBody = "";
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      res.setEncoding("utf8");
+      let responseBody = "";
 
-        res.on("data", (chunk) => {
-          responseBody += chunk;
-        });
-
-        res.on("end", () => {
-          try {
-            resolve(JSON.parse(responseBody));
-          } catch (err) {
-            reject(err);
-          }
-        });
+      res.on("data", (chunk) => {
+        responseBody += chunk;
       });
 
-      req.on("error", (err) => {
-        reject(err);
+      res.on("end", () => {
+        try {
+          resolve(JSON.parse(responseBody));
+        } catch (err) {
+          reject(err);
+        }
       });
-
-      req.end();
     });
-  }
+
+    req.on("error", (err) => {
+      reject(err);
+    });
+
+    req.end();
+  });
 };
 
 const getRoles = function (clientPrincipal: RolesSourceFunctionRequestBody, rolesSource: string) {
@@ -339,12 +334,64 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     return;
   }
 
-  const authConfigs = checkCustomAuthConfigFields(context, providerName, customAuth);
-  if (!authConfigs) {
+  const { clientIdSettingName, clientSecretSettingName, openIdIssuer } =
+    customAuth?.identityProviders?.[providerName == "aad" ? ENTRAID_FULL_NAME : providerName]?.registration || {};
+
+  if (!clientIdSettingName) {
+    context.res = response({
+      context,
+      status: 400,
+      headers: { ["Content-Type"]: "text/plain" },
+      body: `ClientIdSettingName not found for '${providerName}' provider`,
+    });
     return;
   }
 
-  const clientPrincipal = await getAuthClientPrincipal(providerName, codeValue!, authConfigs);
+  if (!clientSecretSettingName) {
+    context.res = response({
+      context,
+      status: 400,
+      headers: { ["Content-Type"]: "text/plain" },
+      body: `ClientSecretSettingName not found for '${providerName}' provider`,
+    });
+    return;
+  }
+
+  if (providerName == "aad" && !openIdIssuer) {
+    context.res = response({
+      context,
+      status: 400,
+      headers: { ["Content-Type"]: "text/plain" },
+      body: `openIdIssuer not found for '${providerName}' provider`,
+    });
+    return;
+  }
+
+  const clientId = process.env[clientIdSettingName];
+
+  if (!clientId) {
+    context.res = response({
+      context,
+      status: 400,
+      headers: { ["Content-Type"]: "text/plain" },
+      body: `ClientId not found for '${providerName}' provider`,
+    });
+    return;
+  }
+
+  const clientSecret = process.env[clientSecretSettingName];
+
+  if (!clientSecret) {
+    context.res = response({
+      context,
+      status: 400,
+      headers: { ["Content-Type"]: "text/plain" },
+      body: `ClientSecret not found for '${providerName}' provider`,
+    });
+    return;
+  }
+
+  const clientPrincipal = await getAuthClientPrincipal(providerName, codeValue!, clientId, clientSecret, openIdIssuer!);
 
   if (clientPrincipal !== null && customAuth?.rolesSource) {
     try {

@@ -303,12 +303,10 @@ declare type AuthIdentityIssHosts = {
 
 declare type AuthIdentityProvider = {
   registration: {
-    [key: string]: string;
+    clientIdSettingName: string;
+    clientSecretSettingName: string;
+    openIdIssuer?: string;
   };
-};
-
-declare type AuthIdentityRequiredFields = {
-  [key: string]: string[];
 };
 
 declare type SWAConfigFileAuthIdenityProviders = {
