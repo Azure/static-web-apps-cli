@@ -4,39 +4,95 @@ import * as querystring from "node:querystring";
 
 import { CookiesManager, decodeAuthContextCookie, validateAuthContextCookie } from "../../../core/utils/cookie.js";
 import { parseUrl, response } from "../../../core/utils/net.js";
-import {
-  CUSTOM_AUTH_ISS_MAPPING,
-  CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING,
-  CUSTOM_AUTH_USER_ENDPOINT_MAPPING,
-  SUPPORTED_CUSTOM_AUTH_PROVIDERS,
-  SWA_CLI_API_URI,
-  SWA_CLI_APP_PROTOCOL,
-} from "../../../core/constants.js";
+import { SWA_CLI_API_URI, SWA_CLI_APP_PROTOCOL } from "../../../core/constants.js";
 import { DEFAULT_CONFIG } from "../../../config.js";
 import { encryptAndSign, hashStateGuid, isNonceExpired } from "../../../core/utils/auth.js";
-import { checkCustomAuthConfigFields, normalizeAuthProvider } from "./auth-login-provider-custom.js";
-import { jwtDecode } from "jwt-decode";
 
-const getAuthClientPrincipal = async function (authProvider: string, codeValue: string, authConfigs: Record<string, string>) {
+const getGithubAuthToken = function (codeValue: string, clientId: string, clientSecret: string) {
+  const data = querystring.stringify({
+    code: codeValue,
+    client_id: clientId,
+    client_secret: clientSecret,
+  });
+
+  const options = {
+    host: "github.com",
+    path: "/login/oauth/access_token",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Content-Length": Buffer.byteLength(data),
+    },
+  };
+
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      res.setEncoding("utf8");
+      let responseBody = "";
+
+      res.on("data", (chunk) => {
+        responseBody += chunk;
+      });
+
+      res.on("end", () => {
+        resolve(responseBody);
+      });
+    });
+
+    req.on("error", (err: Error) => {
+      reject(err);
+    });
+
+    req.write(data);
+    req.end();
+  });
+};
+
+const getGitHubUser = function (accessToken: string) {
+  const options = {
+    host: "api.github.com",
+    path: "/user",
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "User-Agent": "Azure Static Web Apps Emulator",
+    },
+  };
+
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      res.setEncoding("utf8");
+      let responseBody = "";
+
+      res.on("data", (chunk) => {
+        responseBody += chunk;
+      });
+
+      res.on("end", () => {
+        try {
+          resolve(JSON.parse(responseBody));
+        } catch (err) {
+          reject(err);
+        }
+      });
+    });
+
+    req.on("error", (err) => {
+      reject(err);
+    });
+
+    req.end();
+  });
+};
+
+const getGitHubClientPrincipal = async function (codeValue: string, clientId: string, clientSecret: string) {
   let authToken: string;
 
   try {
-    const authTokenResponse = (await getOAuthToken(authProvider, codeValue!, authConfigs)) as string;
-    let authTokenParsed;
-    try {
-      authTokenParsed = JSON.parse(authTokenResponse);
-    } catch (e) {
-      authTokenParsed = querystring.parse(authTokenResponse);
-    }
-
-    // Facebook sends back a JWT in the id_token
-    if (authProvider !== "facebook") {
-      authToken = authTokenParsed["access_token"] as string;
-    } else {
-      authToken = authTokenParsed["id_token"] as string;
-    }
-  } catch (error) {
-    console.error(`Error in getting OAuth token: ${error}`);
+    const authTokenResponse = (await getGithubAuthToken(codeValue, clientId, clientSecret)) as string;
+    const authTokenParsed = querystring.parse(authTokenResponse);
+    authToken = authTokenParsed["access_token"] as string;
+  } catch {
     return null;
   }
 
@@ -45,35 +101,175 @@ const getAuthClientPrincipal = async function (authProvider: string, codeValue: 
   }
 
   try {
-    const user = (await getOAuthUser(authProvider, authToken)) as Record<string, any>;
+    const user = (await getGitHubUser(authToken)) as { [key: string]: string };
 
-    const userDetails = user["login"] || user["email"] || user?.data?.["username"];
-    const name = user["name"] || user?.data?.["name"];
+    const userId = user["id"];
+    const userDetails = user["login"];
+
+    const claims: { typ: string; val: string }[] = [
+      {
+        typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+        val: userId,
+      },
+    ];
+
+    Object.keys(user).forEach((key) => {
+      claims.push({
+        typ: `urn:github:${key}`,
+        val: user[key],
+      });
+    });
+
+    return {
+      identityProvider: "github",
+      userId,
+      userDetails,
+      userRoles: ["authenticated", "anonymous"],
+      claims,
+    };
+  } catch {
+    return null;
+  }
+};
+
+const getGoogleAuthToken = function (codeValue: string, clientId: string, clientSecret: string) {
+  const data = querystring.stringify({
+    code: codeValue,
+    client_id: clientId,
+    client_secret: clientSecret,
+    grant_type: "authorization_code",
+    redirect_uri: `${SWA_CLI_APP_PROTOCOL}://${DEFAULT_CONFIG.host}:${DEFAULT_CONFIG.port}/.auth/login/google/callback`,
+  });
+
+  const options = {
+    host: "oauth2.googleapis.com",
+    path: "/token",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Content-Length": Buffer.byteLength(data),
+    },
+  };
+
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      res.setEncoding("utf8");
+      let responseBody = "";
+
+      res.on("data", (chunk) => {
+        responseBody += chunk;
+      });
+
+      res.on("end", () => {
+        resolve(responseBody);
+      });
+    });
+
+    req.on("error", (err) => {
+      reject(err);
+    });
+
+    req.write(data);
+    req.end();
+  });
+};
+
+const getGoogleUser = function (accessToken: string) {
+  const options = {
+    host: "www.googleapis.com",
+    path: "/oauth2/v2/userinfo",
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "User-Agent": "Azure Static Web Apps Emulator",
+    },
+  };
+
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      res.setEncoding("utf8");
+      let responseBody = "";
+
+      res.on("data", (chunk) => {
+        responseBody += chunk;
+      });
+
+      res.on("end", () => {
+        try {
+          resolve(JSON.parse(responseBody));
+        } catch (err) {
+          reject(err);
+        }
+      });
+    });
+
+    req.on("error", (err) => {
+      reject(err);
+    });
+
+    req.end();
+  });
+};
+
+const getGoogleClientPrincipal = async function (codeValue: string, clientId: string, clientSecret: string) {
+  let authToken: string;
+
+  try {
+    const authTokenResponse = (await getGoogleAuthToken(codeValue!, clientId, clientSecret)) as string;
+    const authTokenParsed = JSON.parse(authTokenResponse);
+    authToken = authTokenParsed["access_token"] as string;
+  } catch {
+    return null;
+  }
+
+  if (!authToken) {
+    return null;
+  }
+
+  try {
+    const user = (await getGoogleUser(authToken)) as { [key: string]: string };
+
+    const userId = user["id"];
+    const userDetails = user["email"];
+    const verifiedEmail = user["verified_email"];
+    const name = user["name"];
     const givenName = user["given_name"];
     const familyName = user["family_name"];
     const picture = user["picture"];
-    const userId = user["id"] || user?.data?.["id"];
-    const verifiedEmail = user["verified_email"];
 
     const claims: { typ: string; val: string }[] = [
       {
         typ: "iss",
-        val: CUSTOM_AUTH_ISS_MAPPING?.[authProvider],
+        val: "https://accounts.google.com",
       },
       {
         typ: "azp",
-        val: authConfigs?.clientIdSettingName || authConfigs?.appIdSettingName,
+        val: clientId,
       },
       {
         typ: "aud",
-        val: authConfigs?.clientIdSettingName || authConfigs?.appIdSettingName,
+        val: clientId,
       },
     ];
+
+    if (userId) {
+      claims.push({
+        typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+        val: userId,
+      });
+    }
 
     if (userDetails) {
       claims.push({
         typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
         val: userDetails,
+      });
+    }
+
+    if (verifiedEmail !== undefined) {
+      claims.push({
+        typ: "email_verified",
+        val: verifiedEmail,
       });
     }
 
@@ -105,153 +301,15 @@ const getAuthClientPrincipal = async function (authProvider: string, codeValue: 
       });
     }
 
-    if (userId) {
-      claims.push({
-        typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
-        val: userId,
-      });
-    }
-
-    if (verifiedEmail) {
-      claims.push({
-        typ: "email_verified",
-        val: verifiedEmail,
-      });
-    }
-
-    if (authProvider === "github") {
-      Object.keys(user).forEach((key) => {
-        claims.push({
-          typ: `urn:github:${key}`,
-          val: user[key],
-        });
-      });
-    }
-
     return {
-      identityProvider: authProvider,
+      identityProvider: "google",
+      userId,
       userDetails,
       claims,
       userRoles: ["authenticated", "anonymous"],
     };
-  } catch (error) {
-    console.error(`Error while parsing user information: ${error}`);
+  } catch {
     return null;
-  }
-};
-
-const getOAuthToken = function (authProvider: string, codeValue: string, authConfigs: Record<string, string>) {
-  const redirectUri = `${SWA_CLI_APP_PROTOCOL}://${DEFAULT_CONFIG.host}:${DEFAULT_CONFIG.port}`;
-  let tenantId;
-
-  if (!Object.keys(CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING).includes(authProvider)) {
-    return null;
-  }
-
-  if (authProvider === "aad") {
-    tenantId = authConfigs?.openIdIssuer.split("/")[3];
-  }
-
-  const queryString: Record<string, string> = {
-    code: codeValue,
-    grant_type: "authorization_code",
-    redirect_uri: `${redirectUri}/.auth/login/${authProvider}/callback`,
-  };
-
-  if (authProvider !== "twitter") {
-    queryString.client_id = authConfigs?.clientIdSettingName || authConfigs?.appIdSettingName;
-    queryString.client_secret = authConfigs?.clientSecretSettingName || authConfigs?.appSecretSettingName;
-  } else {
-    queryString.code_verifier = "challenge";
-  }
-
-  const data = querystring.stringify(queryString);
-
-  let tokenPath = CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING?.[authProvider]?.path;
-  if (authProvider === "aad" && tenantId !== undefined) {
-    tokenPath = tokenPath.replace("tenantId", tenantId);
-  }
-
-  const headers: Record<string, string | number> = {
-    "Content-Type": "application/x-www-form-urlencoded",
-    "Content-Length": Buffer.byteLength(data),
-  };
-
-  if (authProvider === "twitter") {
-    const keySecretString = `${authConfigs?.consumerKeySettingName}:${authConfigs?.consumerSecretSettingName}`;
-    const encryptedCredentials = Buffer.from(keySecretString).toString("base64");
-    headers.Authorization = `Basic ${encryptedCredentials}`;
-  }
-
-  const options = {
-    host: CUSTOM_AUTH_TOKEN_ENDPOINT_MAPPING?.[authProvider]?.host,
-    path: tokenPath,
-    method: "POST",
-    headers: headers,
-  };
-
-  return new Promise((resolve, reject) => {
-    const req = https.request(options, (res) => {
-      res.setEncoding("utf8");
-      let responseBody = "";
-
-      res.on("data", (chunk) => {
-        responseBody += chunk;
-      });
-
-      res.on("end", () => {
-        resolve(responseBody);
-      });
-    });
-
-    req.on("error", (err) => {
-      reject(err);
-    });
-
-    req.write(data);
-    req.end();
-  });
-};
-
-const getOAuthUser = function (authProvider: string, accessToken: string) {
-  // Facebook does not have an OIDC introspection so we need to manually decode the token :(
-  if (authProvider === "facebook") {
-    return jwtDecode(accessToken);
-  } else {
-    const options = {
-      host: CUSTOM_AUTH_USER_ENDPOINT_MAPPING?.[authProvider]?.host,
-      path: CUSTOM_AUTH_USER_ENDPOINT_MAPPING?.[authProvider]?.path,
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "User-Agent": "Azure Static Web Apps Emulator",
-      },
-    };
-
-    return new Promise((resolve, reject) => {
-      const req = https.request(options, (res) => {
-        res.setEncoding("utf8");
-        let responseBody = "";
-
-        res.on("data", (chunk) => {
-          responseBody += chunk;
-        });
-
-        res.on("end", () => {
-          try {
-            resolve(JSON.parse(responseBody));
-          } catch (err) {
-            reject(err);
-          }
-        });
-      });
-
-      req.on("error", (err) => {
-        reject(err);
-      });
-
-      req.end();
-    });
   }
 };
 
@@ -304,12 +362,12 @@ const getRoles = function (clientPrincipal: RolesSourceFunctionRequestBody, role
 };
 
 const httpTrigger = async function (context: Context, request: http.IncomingMessage, customAuth?: SWAConfigFileAuth) {
-  const providerName = normalizeAuthProvider(context.bindingData?.provider);
+  const providerName = context.bindingData?.provider?.toLowerCase() || "";
 
-  if (!SUPPORTED_CUSTOM_AUTH_PROVIDERS.includes(providerName)) {
+  if (providerName != "github" && providerName != "google") {
     context.res = response({
       context,
-      status: 400,
+      status: 404,
       headers: { ["Content-Type"]: "text/plain" },
       body: `Provider '${providerName}' not found`,
     });
@@ -355,17 +413,61 @@ const httpTrigger = async function (context: Context, request: http.IncomingMess
     return;
   }
 
-  const authConfigs = checkCustomAuthConfigFields(context, providerName, customAuth);
-  if (!authConfigs) {
+  const { clientIdSettingName, clientSecretSettingName } = customAuth?.identityProviders?.[providerName]?.registration || {};
+
+  if (!clientIdSettingName) {
+    context.res = response({
+      context,
+      status: 404,
+      headers: { ["Content-Type"]: "text/plain" },
+      body: `ClientIdSettingName not found for '${providerName}' provider`,
+    });
     return;
   }
 
-  const clientPrincipal = await getAuthClientPrincipal(providerName, codeValue!, authConfigs);
+  if (!clientSecretSettingName) {
+    context.res = response({
+      context,
+      status: 404,
+      headers: { ["Content-Type"]: "text/plain" },
+      body: `ClientSecretSettingName not found for '${providerName}' provider`,
+    });
+    return;
+  }
+
+  const clientId = process.env[clientIdSettingName];
+
+  if (!clientId) {
+    context.res = response({
+      context,
+      status: 404,
+      headers: { ["Content-Type"]: "text/plain" },
+      body: `ClientId not found for '${providerName}' provider`,
+    });
+    return;
+  }
+
+  const clientSecret = process.env[clientSecretSettingName];
+
+  if (!clientSecret) {
+    context.res = response({
+      context,
+      status: 404,
+      headers: { ["Content-Type"]: "text/plain" },
+      body: `ClientSecret not found for '${providerName}' provider`,
+    });
+    return;
+  }
+
+  const clientPrincipal =
+    providerName === "github"
+      ? await getGitHubClientPrincipal(codeValue!, clientId, clientSecret)
+      : await getGoogleClientPrincipal(codeValue!, clientId, clientSecret);
 
   if (clientPrincipal !== null && customAuth?.rolesSource) {
     try {
-      const rolesResult = (await getRoles(clientPrincipal as RolesSourceFunctionRequestBody, customAuth.rolesSource)) as { roles: string[] };
-      clientPrincipal?.userRoles.push(...rolesResult.roles);
+      const rolesResult = (await getRoles(clientPrincipal, customAuth.rolesSource)) as { roles: string[] };
+      clientPrincipal.userRoles.push(...rolesResult.roles);
     } catch {}
   }
 

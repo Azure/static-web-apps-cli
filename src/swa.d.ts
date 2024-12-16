@@ -95,7 +95,7 @@ declare interface Context {
         value: string;
         expires: string | Date;
         domaine: string;
-      },
+      }
     ];
     headers?: { [key: string]: string };
     body?: { [key: string]: string } | string | null;
@@ -290,34 +290,21 @@ declare type SWAConfigFileMimeTypes = {
   [key: string]: string;
 };
 
-declare type AuthIdentityTokenEndpoints = {
-  [key: string]: {
-    host: string;
-    path: string;
-  };
-};
-
-declare type AuthIdentityIssHosts = {
-  [key: string]: string;
-};
-
 declare type AuthIdentityProvider = {
   registration: {
-    [key: string]: string;
+    clientIdSettingName: string;
+    clientSecretSettingName: string;
   };
-};
-
-declare type AuthIdentityRequiredFields = {
-  [key: string]: string[];
 };
 
 declare type SWAConfigFileAuthIdenityProviders = {
-  [key: string]: AuthIdentityProvider;
+  github?: AuthIdentityProvider;
+  google?: AuthIdentityProvider;
 };
 
 declare type SWAConfigFileAuth = {
   rolesSource?: string;
-  identityProviders?: SWAConfigFileAuthIdenityProviders;
+  identityProviders: SWAConfigFileAuthIdenityProviders;
 };
 
 declare type SWAConfigFile = {
