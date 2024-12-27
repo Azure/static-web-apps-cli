@@ -36,7 +36,7 @@ function getAuthPaths(isCustomAuth: boolean): Path[] {
   } else {
     paths.push({
       method: "GET",
-      route: /^\/\.auth\/login\/(?<provider>github|twitter|google|facebook|[a-z]+)(\?.*)?$/i,
+      route: /^\/\.auth\/login\/(?<provider>github|twitter|google|facebook|[a-z0-9]+)(\?.*)?$/i,
       function: "auth-login-provider",
     });
   }
@@ -54,7 +54,7 @@ function getAuthPaths(isCustomAuth: boolean): Path[] {
     },
     {
       method: "GET",
-      route: /^\/\.auth\/purge\/(?<provider>aad|github|twitter|google|facebook|[a-z]+)(\?.*)?$/i,
+      route: /^\/\.auth\/purge\/(?<provider>aad|github|twitter|google|facebook|[a-z0-9]+)(\?.*)?$/i,
       // locally, all purge requests are processed as logout requests
       function: "auth-logout",
     },
