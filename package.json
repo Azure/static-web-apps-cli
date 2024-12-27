@@ -1,6 +1,6 @@
 {
   "name": "@azure/static-web-apps-cli",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Azure Static Web Apps CLI",
   "type": "module",
   "scripts": {
@@ -56,7 +56,6 @@
     "internal-ip": "^6.2.0",
     "json-schema-library": "^9.3.5",
     "json-source-map": "^0.6.1",
-    "jwt-decode": "^4.0.0",
     "keytar": "^7.9.0",
     "node-fetch": "^2.7.0",
     "open": "^8.4.2",

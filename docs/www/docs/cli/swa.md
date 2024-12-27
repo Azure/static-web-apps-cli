@@ -19,7 +19,7 @@ This is the commandline utility for streamlining local development for Azure Sta
 - start emulator or bind to dev server
 - deploy project to Azure Static Web Apps
 
-If you don't enter any command and run `swa`, it will act as a macro command shortcut for `swa init`, `swa build`, `swa login` and `swa deploy`. The `swa init` command will only be executed if the `swa-cli.config.json` does not exist in the current folder.
+If you don't enter any command and run `swa`, it will act as a macro command shorcut for `swa init`, `swa build`, `swa login` and `swa deploy`. The `swa init` command will only be executed if the `swa-cli.config.json` does not exist in the current folder.
 
 The best way to get started is to use the `swa` command and follow the interactive prompts.
 

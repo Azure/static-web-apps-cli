@@ -13,7 +13,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-12, windows-latest, ubuntu-latest]
+        os: [macos-14, windows-latest, ubuntu-latest]
         node-version: [18.x, 20.x]
 
     steps:
@@ -96,7 +96,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Download artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
           name: package
 
