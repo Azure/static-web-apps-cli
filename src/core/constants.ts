@@ -286,3 +286,8 @@ export const TELEMETRY_EVENTS = {
   Build: "build",
   Deploy: "deploy",
 };
+
+export const TELEMETRY_RESPONSE_TYPES = {
+  Failure: "Failure",
+  Success: "Success",
+};

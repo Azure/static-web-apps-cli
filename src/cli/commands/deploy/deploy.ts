@@ -9,16 +9,18 @@ import { logger, logGitHubIssueMessageAndExit } from "../../../core/utils/logger
 import { isUserOrConfigOption } from "../../../core/utils/options.js";
 import { readWorkflowFile } from "../../../core/utils/workflow-config.js";
 import { chooseOrCreateProjectDetails, getStaticSiteDeployment } from "../../../core/account.js";
-import { DEFAULT_RUNTIME_LANGUAGE } from "../../../core/constants.js";
+import { DEFAULT_RUNTIME_LANGUAGE, TELEMETRY_EVENTS, TELEMETRY_RESPONSE_TYPES } from "../../../core/constants.js";
 import { cleanUp, getDeployClientPath } from "../../../core/deploy-client.js";
 import { swaCLIEnv } from "../../../core/env.js";
 import { getDefaultVersion } from "../../../core/functions-versions.js";
 import { login } from "../login/login.js";
 import { loadPackageJson } from "../../../core/utils/json.js";
+import { collectTelemetryEvent } from "../../../core/telemetry/utils.js";
 
 const packageInfo = loadPackageJson();
 
 export async function deploy(options: SWACLIConfig) {
+  const startTime = new Date().getTime();
   const { SWA_CLI_DEPLOYMENT_TOKEN, SWA_CLI_DEBUG } = swaCLIEnv();
   const isVerboseEnabled = SWA_CLI_DEBUG === "silly";
 
@@ -52,6 +54,12 @@ export async function deploy(options: SWACLIConfig) {
     dataApiLocation = path.resolve(dataApiLocation);
     if (!fs.existsSync(dataApiLocation)) {
       logger.error(`The provided Data API folder ${dataApiLocation} does not exist. Abort.`, true);
+      const endTime = new Date().getTime();
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+        duration: (endTime - startTime).toString(),
+        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        errorMessage: "Data API folder does not exist",
+      });
       return;
     } else {
       logger.log(`Deploying Data API from folder:`);
@@ -67,6 +75,12 @@ export async function deploy(options: SWACLIConfig) {
   if (!fs.existsSync(resolvedOutputLocation)) {
     if (!fs.existsSync(outputLocation as string)) {
       logger.error(`The folder "${resolvedOutputLocation}" is not found. Exit.`, true);
+      const endTime = new Date().getTime();
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+        duration: (endTime - startTime).toString(),
+        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        errorMessage: "Output location does not exist",
+      });
       return;
     }
     // otherwise, build folder (outputLocation) is using the absolute location
@@ -83,6 +97,12 @@ export async function deploy(options: SWACLIConfig) {
     resolvedApiLocation = path.resolve(apiLocation!);
     if (!fs.existsSync(resolvedApiLocation)) {
       logger.error(`The provided API folder ${resolvedApiLocation} does not exist. Abort.`, true);
+      const endTime = new Date().getTime();
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+        duration: (endTime - startTime).toString(),
+        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        errorMessage: "API folder does not exist",
+      });
       return;
     } else {
       logger.log(`Deploying API from folder:`);
@@ -161,6 +181,12 @@ export async function deploy(options: SWACLIConfig) {
 
       if (!deploymentToken) {
         logger.error("Cannot find a deployment token. Aborting.", true);
+        const endTime = new Date().getTime();
+        await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+          duration: (endTime - startTime).toString(),
+          responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+          errorMessage: "Deployment token not found",
+        });
       } else {
         logger.log(chalk.green(`✔ Successfully setup project!`));
 
@@ -184,6 +210,12 @@ export async function deploy(options: SWACLIConfig) {
       }
     } catch (error: any) {
       logger.error(error.message);
+      const endTime = new Date().getTime();
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+        duration: (endTime - startTime).toString(),
+        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        errorMessage: "Deployment token not found",
+      });
       return;
     }
   }
@@ -317,6 +349,12 @@ export async function deploy(options: SWACLIConfig) {
 
       child.on("error", (error) => {
         logger.error(error.toString());
+        const endTime = new Date().getTime();
+        collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+          duration: (endTime - startTime).toString(),
+          responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+          errorMessage: error.toString(),
+        });
       });
 
       child.on("close", (code) => {
@@ -325,6 +363,11 @@ export async function deploy(options: SWACLIConfig) {
         if (code === 0) {
           spinner.succeed(chalk.green(`Project deployed to ${chalk.underline(projectUrl)} 🚀`));
           logger.log(``);
+          const endTime = new Date().getTime();
+          collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+            duration: (endTime - startTime).toString(),
+            responseType: TELEMETRY_RESPONSE_TYPES.Success,
+          });
         }
       });
     }
@@ -335,6 +378,12 @@ export async function deploy(options: SWACLIConfig) {
     logger.error(
       `For further information, please visit the Azure Static Web Apps documentation at https://docs.microsoft.com/azure/static-web-apps/`,
     );
+    const endTime = new Date().getTime();
+    await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+      duration: (endTime - startTime).toString(),
+      responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+      errorMessage: (error as any).message,
+    });
     logGitHubIssueMessageAndExit();
   } finally {
     cleanUp();

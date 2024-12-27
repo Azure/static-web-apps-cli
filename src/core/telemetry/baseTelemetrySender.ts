@@ -3,7 +3,6 @@ import { SenderData } from "./baseTelemetryReporter.js";
 export interface BaseTelemetryClient {
   logEvent(eventName: string, data?: SenderData): void;
   logException(exceptionName: Error, data?: SenderData): void;
-  flush(): void | Promise<void>;
 }
 
 enum InstantiationStatus {
@@ -61,17 +60,6 @@ export class BaseTelemetrySender implements TelemetrySender {
       return;
     }
     this._telemetryClient.logException(exception, data);
-  }
-
-  /**
-   * Flushes the buffered telemetry data
-   */
-  async flush(): Promise<void> {
-    if (this._telemetryClient) {
-      await this._telemetryClient.flush();
-      this._telemetryClient = undefined;
-    }
-    return;
   }
 
   /**

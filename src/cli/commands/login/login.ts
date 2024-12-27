@@ -5,27 +5,45 @@ import { existsSync, promises as fs } from "node:fs";
 import path from "node:path";
 import { logger, logGitHubIssueMessageAndExit } from "../../../core/utils/logger.js";
 import { authenticateWithAzureIdentity, listSubscriptions, listTenants } from "../../../core/account.js";
-import { AZURE_LOGIN_CONFIG, ENV_FILENAME } from "../../../core/constants.js";
+import { AZURE_LOGIN_CONFIG, ENV_FILENAME, TELEMETRY_EVENTS, TELEMETRY_RESPONSE_TYPES } from "../../../core/constants.js";
 import { pathExists, safeReadJson } from "../../../core/utils/file.js";
 import { updateGitIgnore } from "../../../core/git.js";
 import { chooseSubscription, chooseTenant } from "../../../core/prompts.js";
 import { Environment } from "../../../core/swa-cli-persistence-plugin/impl/azure-environment.js";
+import { collectTelemetryEvent } from "../../../core/telemetry/utils.js";
 
 const defaultScope = `${Environment.AzureCloud.resourceManagerEndpointUrl}/.default`;
 
 export async function loginCommand(options: SWACLIConfig) {
+  const cmdStartTime = new Date().getTime();
+
   try {
     const { credentialChain, subscriptionId } = await login(options);
 
+    const cmdEndTime = new Date().getTime();
     if (credentialChain && subscriptionId) {
       logger.log(chalk.green(`✔ Successfully setup project!`));
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
+        duration: (cmdEndTime - cmdStartTime).toString(),
+        responseType: TELEMETRY_RESPONSE_TYPES.Success,
+      });
     } else {
       logger.log(chalk.red(`✘ Failed to setup project!`));
       logGitHubIssueMessageAndExit();
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
+        duration: (cmdEndTime - cmdStartTime).toString(),
+        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        errorMessage: "Login failed",
+      });
     }
   } catch (error) {
     logger.error(`Failed to setup project: ${(error as any).message}`);
     logGitHubIssueMessageAndExit();
+    await collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
+      duration: (new Date().getTime() - cmdStartTime).toString(),
+      responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+      errorMessage: (error as any).message,
+    });
   }
 }
 
@@ -56,7 +74,7 @@ async function setupProjectCredentials(options: SWACLIConfig, credentialChain: T
     const tenants = await listTenants(credentialChain);
     if (tenants.length === 0) {
       throw new Error(
-        `No Azure tenants found in your account.\n  Please read https://docs.microsoft.com/azure/cost-management-billing/manage/troubleshoot-sign-in-issue`
+        `No Azure tenants found in your account.\n  Please read https://docs.microsoft.com/azure/cost-management-billing/manage/troubleshoot-sign-in-issue`,
       );
     } else if (tenants.length === 1) {
       logger.silly(`Found 1 tenant: ${tenants[0].tenantId}`);
@@ -81,7 +99,7 @@ async function setupProjectCredentials(options: SWACLIConfig, credentialChain: T
     const subscriptions = await listSubscriptions(credentialChain);
     if (subscriptions.length === 0) {
       throw new Error(
-        `No valid subscription found for tenant ${tenantId}.\n  Please read https://docs.microsoft.com/azure/cost-management-billing/manage/no-subscriptions-found`
+        `No valid subscription found for tenant ${tenantId}.\n  Please read https://docs.microsoft.com/azure/cost-management-billing/manage/no-subscriptions-found`,
       );
     } else if (subscriptions.length === 1) {
       logger.silly(`Found 1 subscription: ${subscriptions[0].subscriptionId}`);
@@ -109,7 +127,7 @@ async function storeProjectCredentialsInEnvFile(
   subscriptionId: string | undefined,
   tenantId: string | undefined,
   clientId: string | undefined,
-  clientSecret: string | undefined
+  clientSecret: string | undefined,
 ) {
   const envFile = path.join(process.cwd(), ENV_FILENAME);
   const envFileExists = existsSync(envFile);

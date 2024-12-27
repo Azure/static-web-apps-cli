@@ -13,7 +13,7 @@ import {
   getCoreToolsBinary,
   detectTargetCoreToolsVersion,
 } from "../../../core/func-core-tools.js";
-import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME } from "../../../core/constants.js";
+import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME, TELEMETRY_RESPONSE_TYPES } from "../../../core/constants.js";
 import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder/index.js";
 import { swaCLIEnv } from "../../../core/env.js";
 import { getCertificate } from "../../../core/ssl.js";
@@ -103,6 +103,12 @@ export async function start(options: SWACLIConfig) {
     // check for build folder (outputLocation) using the absolute location
     else if (!fs.existsSync(outputLocation!)) {
       logger.error(`The folder "${resolvedOutputLocation}" is not found. Exit.`, true);
+      const endTime = new Date().getTime();
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+        duration: (endTime - cmdStartTime).toString(),
+        errorMessage: `The folder "${resolvedOutputLocation}" is not found.`,
+        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+      });
       return;
     }
 
@@ -202,6 +208,12 @@ export async function start(options: SWACLIConfig) {
             `Found Azure Functions Core Tools v${targetVersion} which is incompatible with your current Node.js v${process.versions.node}.`,
           );
           logger.error("See https://aka.ms/functions-node-versions for more information.");
+          const endTime = new Date().getTime();
+          await collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+            duration: (endTime - cmdStartTime).toString(),
+            errorMessage: `Found Azure Functions Core Tools v${targetVersion} which is incompatible with your current Node.js v${process.versions.node}.`,
+            responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+          });
           process.exit(1);
         }
 
@@ -362,8 +374,11 @@ export async function start(options: SWACLIConfig) {
   collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
     apiRuntime: swaConfigFileContent?.platform.apiRuntime!,
     duration: (cmdEndTime2 - cmdStartTime).toString(),
-    appRuntime: "node" + nodeMajorVersion,
+    cliRuntimeEnvironment: "node" + nodeMajorVersion,
+    dataApiUsage: concurrentlyCommands.find((c) => c.name === "dataApi") ? "true" : "false",
+    responseType: TELEMETRY_RESPONSE_TYPES.Success,
   });
+
   await result
     .then(
       (errorEvent: CloseEvent[]) => {
@@ -392,17 +407,15 @@ export async function start(options: SWACLIConfig) {
             break;
         }
         logger.error(`SWA emulator stopped because ${commandMessage}.`, true);
+        const endTime = new Date().getTime();
+        collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+          duration: (endTime - cmdStartTime).toString(),
+          errorMessage: `SWA emulator stopped because ${commandMessage}.`,
+          responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        });
       },
     )
     .catch((err: Error) => {
       logger.error(err.message, true);
     });
-
-  const cmdEndTime = new Date().getTime();
-
-  collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
-    apiRuntime: swaConfigFileContent?.platform.apiRuntime!,
-    duration: (cmdEndTime - cmdStartTime).toString(),
-    appRuntime: "node" + nodeMajorVersion,
-  });
 }

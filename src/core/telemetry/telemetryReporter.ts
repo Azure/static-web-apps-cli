@@ -1,4 +1,4 @@
-import type { TelemetryClient } from "applicationinsights";
+// import type { TelemetryClient } from "applicationinsights";
 import os from "node:os";
 import { SenderData, BaseTelemetryReporter } from "./baseTelemetryReporter.js";
 import { BaseTelemetrySender, BaseTelemetryClient } from "./baseTelemetrySender.js";
@@ -17,7 +17,6 @@ import { SpanKind, trace } from "@opentelemetry/api";
  * @returns A promise which resolves to the telemetry client or rejects upon error
  */
 const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClient> => {
-  let appInsightsClient: TelemetryClient | undefined;
   const sessionId = await getSessionId(new Date().getTime());
   const macAddressHash = (await getMachineId()).toString();
   const extendedTelemetryEventProperties: TelemetryEventProperties = {
@@ -28,8 +27,6 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
   };
 
   try {
-    logger.silly(`APP INSIGHT KEY: ${key}`);
-    logger.silly(extendedTelemetryEventProperties);
     const options: AzureMonitorOpenTelemetryOptions = {
       azureMonitorExporterOptions: {
         connectionString: key,
@@ -46,12 +43,11 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
   const telemetryClient: BaseTelemetryClient = {
     logEvent: (eventName: string, data?: SenderData) => {
       try {
-        logger.silly(eventName);
-        logger.silly(data!);
-        const tracer = trace.getTracer("testTracer");
-        let span = tracer.startSpan("hello", {
+        const tracer = trace.getTracer("swa-cli");
+        const span = tracer.startSpan(eventName, {
           kind: SpanKind.SERVER,
         });
+        span.setAttributes({ ...data?.properties, ...extendedTelemetryEventProperties });
         span.end();
       } catch (e: any) {
         throw new Error("Failed to log event to app insights!\n" + e.message);
@@ -59,20 +55,12 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
     },
     logException: (exceptionName: Error, data?: SenderData) => {
       try {
-        appInsightsClient?.trackException({
-          exception: exceptionName,
-          properties: data?.properties,
-          measurements: data?.measurements,
-        });
+        const tracer = trace.getTracer("swa-cli-exception");
+        const span = tracer.startSpan(exceptionName.message);
+        span.setAttributes({ ...data?.properties, ...extendedTelemetryEventProperties });
+        span.end();
       } catch (e: any) {
         throw new Error("Failed to log exception to app insights!\n" + e.message);
-      }
-    },
-    flush: async () => {
-      try {
-        appInsightsClient?.flush();
-      } catch (e: any) {
-        throw new Error("Failed to flush app insights!\n" + e.message);
       }
     },
   };
