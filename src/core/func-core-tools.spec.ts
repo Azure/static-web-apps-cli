@@ -147,7 +147,7 @@ describe("funcCoreTools", () => {
         },
       });
 
-      await expect(async () => await fct.getLatestCoreToolsRelease(4)).rejects.toThrowError("Cannot find the latest version for v4");
+      await expect(async () => await fct.getLatestCoreToolsRelease(4)).rejects.toThrowError("Error fetching Function Core Tools releases");
     });
 
     it("should throw an error if no release match the specified version", async () => {
@@ -158,7 +158,7 @@ describe("funcCoreTools", () => {
         releases: {},
       });
 
-      await expect(async () => await fct.getLatestCoreToolsRelease(4)).rejects.toThrowError("Cannot find release for 4.0.0");
+      await expect(async () => await fct.getLatestCoreToolsRelease(4)).rejects.toThrowError("Error fetching Function Core Tools releases");
     });
 
     it("should throw an error if there's no compatible package", async () => {
