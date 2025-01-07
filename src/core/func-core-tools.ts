@@ -121,31 +121,35 @@ function getPlatform() {
 
 export async function getLatestCoreToolsRelease(targetVersion: number): Promise<CoreToolsRelease> {
   try {
-    const response = await fetch(RELEASES_FEED_URL);
-    const feed = (await response.json()) as { releases: any; tags: any };
-    const tag = feed.tags[`v${targetVersion}`];
-    if (!tag || tag.hidden) {
-      throw new Error(`Cannot find the latest version for v${targetVersion}`);
-    }
+		const response = await fetch(RELEASES_FEED_URL);
+		const feed = (await response.json()) as { releases: Record<string, Record<string, CoreToolsZipInfo[]>>; };
+		const platform = getPlatform();
 
-    const release = feed.releases[tag.release];
-    if (!release) {
-      throw new Error(`Cannot find release for ${tag.release}`);
-    }
+		const matchingVersions = Object.keys(feed.releases)
+			.reverse() // JSON has newest versions first; we want the latest first; potential improvement: sort by semver
+			.filter(
+				(version) =>
+					version.match(/^\d+\.\d+\.\d+$/) && // only stable versions
+					version.startsWith(`${targetVersion}.`), // only matching major versions
+			);
 
-    const coreTools = release.coreTools.filter((t: CoreToolsZipInfo) => t.size === "full");
-    const platform = getPlatform();
-    const info = coreTools.find((t: CoreToolsZipInfo) => t.OS === platform);
-    if (!info) {
-      throw new Error(`Cannot find download package for ${platform}`);
-    }
+		for (const version of matchingVersions) {
+      const matchingDistribution = feed.releases[version].coreTools?.find(
+				(dist) =>
+					dist.OS === platform && // Distribution for matching platform
+					dist.size === "full", // exclude minified releases
+			);
+			if (matchingDistribution) {
+				return {
+					version,
+					url: matchingDistribution.downloadLink,
+					sha2: matchingDistribution.sha2,
+				};
+			}
+		}
 
-    return {
-      version: tag.release,
-      url: info.downloadLink,
-      sha2: info.sha2,
-    };
-  } catch (error: unknown) {
+		throw new Error(`Cannot find download package for ${platform}`);
+	} catch (error: unknown) {
     throw new Error(`Error fetching Function Core Tools releases: ${(error as Error).message}`);
   }
 }
