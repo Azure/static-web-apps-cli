@@ -83,3 +83,12 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   // swa db options
   folderName: SWA_CLI_DATA_API_FOLDER || "swa-db-connections",
 };
+
+export const getEnvVariablesForTelemetry = (): SWACLIEnv => {
+  const { AZURE_SUBSCRIPTION_ID, SWA_CLI_VERSION } = swaCLIEnv();
+
+  return {
+    AZURE_SUBSCRIPTION_ID,
+    SWA_CLI_VERSION,
+  };
+};
