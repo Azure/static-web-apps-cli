@@ -7,8 +7,11 @@ import { logger } from "../../../core/utils/logger.js";
 import { readWorkflowFile } from "../../../core/utils/workflow-config.js";
 import { runCommand } from "../../../core/utils/command.js";
 import { swaCliConfigFilename } from "../../../core/utils/cli-config.js";
+import { collectTelemetryEvent } from "../../../core/telemetry/utils.js";
+import { TELEMETRY_EVENTS, TELEMETRY_RESPONSE_TYPES } from "../../../core/constants.js";
 
 export async function build(options: SWACLIConfig) {
+  const startTime = new Date().getTime();
   const workflowConfig = readWorkflowFile();
 
   logger.silly({
@@ -31,6 +34,12 @@ export async function build(options: SWACLIConfig) {
   if (options.auto && hasBuildOptionsDefined(options)) {
     logger.error(`You can't use the --auto option when you have defined appBuildCommand or apiBuildCommand in ${swaCliConfigFilename}`);
     logger.error(`or with the --app-build-command and --api-build-command options.`, true);
+    const endTime = new Date().getTime();
+    await collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
+      duration: (endTime - startTime).toString(),
+      responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+      errorMessage: "Auto option cannot be used with appBuildCommand or apiBuildCommand",
+    });
     return;
   }
 
@@ -40,9 +49,21 @@ export async function build(options: SWACLIConfig) {
 
     if (detectedFolders.app.length === 0 && detectedFolders.api.length === 0) {
       logger.error(`Your app configuration could not be detected.`);
+      const endTime = new Date().getTime();
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
+        duration: (endTime - startTime).toString(),
+        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        errorMessage: "App configuration could not be detected",
+      });
       return showAutoErrorMessageAndExit();
     } else if (detectedFolders.app.length > 1 || detectedFolders.api.length > 1) {
       logger.error(`Multiple apps found in your project folder.`);
+      const endTime = new Date().getTime();
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
+        duration: (endTime - startTime).toString(),
+        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        errorMessage: "Multiple apps found in project folder",
+      });
       return showAutoErrorMessageAndExit();
     }
 
@@ -57,6 +78,12 @@ export async function build(options: SWACLIConfig) {
     } catch (error) {
       logger.error(`Cannot generate your build configuration:`);
       logger.error(error as Error, true);
+      const endTime = new Date().getTime();
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
+        duration: (endTime - startTime).toString(),
+        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        errorMessage: "Cannot generate build configuration",
+      });
       return;
     }
   }
@@ -101,6 +128,12 @@ export async function build(options: SWACLIConfig) {
     logger.log(`Building api with ${chalk.green(apiBuildCommand)} in ${chalk.dim(apiLocation)} ...`);
     runCommand(apiBuildCommand, apiLocation!);
   }
+
+  const endTime = new Date().getTime();
+  await collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
+    duration: (endTime - startTime).toString(),
+    responseType: TELEMETRY_RESPONSE_TYPES.Success,
+  });
 }
 
 function hasBuildOptionsDefined(options: SWACLIConfig): boolean {
