@@ -1,4 +1,3 @@
-// import type { TelemetryClient } from "applicationinsights";
 import os from "node:os";
 import { SenderData, BaseTelemetryReporter } from "./baseTelemetryReporter.js";
 import { BaseTelemetrySender, BaseTelemetryClient } from "./baseTelemetrySender.js";
@@ -6,8 +5,7 @@ import { getSessionId } from "./utils.js";
 import { getMachineId } from "../swa-cli-persistence-plugin/impl/machine-identifier.js";
 import { TelemetryEventProperties } from "./telemetryReporterTypes.js";
 import { logger } from "../utils/logger.js";
-import { useAzureMonitor, AzureMonitorOpenTelemetryOptions } from "@azure/monitor-opentelemetry";
-import { SpanKind, trace } from "@opentelemetry/api";
+import applicationInsights from "applicationinsights";
 
 /**
  * A factory function which creates a telemetry client to be used by an sender to send telemetry in a node application.
@@ -27,14 +25,7 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
   };
 
   try {
-    const options: AzureMonitorOpenTelemetryOptions = {
-      azureMonitorExporterOptions: {
-        connectionString: key,
-        disableOfflineStorage: true,
-      },
-    };
-
-    useAzureMonitor(options);
+    var telemetry = new applicationInsights.TelemetryClient(key);
   } catch (e: any) {
     logger.silly(`ERROR IN INITIALIZING APP INSIGHTS: ${e}`);
     return Promise.reject("Failed to initialize app insights!\n" + e.message);
@@ -43,22 +34,14 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
   const telemetryClient: BaseTelemetryClient = {
     logEvent: (eventName: string, data?: SenderData) => {
       try {
-        const tracer = trace.getTracer("swa-cli");
-        const span = tracer.startSpan(eventName, {
-          kind: SpanKind.SERVER,
-        });
-        span.setAttributes({ ...data?.properties, ...extendedTelemetryEventProperties });
-        span.end();
+        telemetry.trackEvent({ name: eventName, properties: { ...data?.properties, ...extendedTelemetryEventProperties } });
       } catch (e: any) {
         throw new Error("Failed to log event to app insights!\n" + e.message);
       }
     },
     logException: (exceptionName: Error, data?: SenderData) => {
       try {
-        const tracer = trace.getTracer("swa-cli-exception");
-        const span = tracer.startSpan(exceptionName.message);
-        span.setAttributes({ ...data?.properties, ...extendedTelemetryEventProperties });
-        span.end();
+        telemetry.trackException({ exception: exceptionName, properties: { ...data?.properties, ...extendedTelemetryEventProperties } });
       } catch (e: any) {
         throw new Error("Failed to log exception to app insights!\n" + e.message);
       }
