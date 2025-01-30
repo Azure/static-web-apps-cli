@@ -372,10 +372,8 @@ export async function start(options: SWACLIConfig) {
   const cmdEndTime2 = new Date().getTime();
 
   collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
-    apiRuntime: swaConfigFileContent?.platform.apiRuntime!,
+    apiRuntime: swaConfigFileContent?.platform?.apiRuntime! || "unknown",
     duration: (cmdEndTime2 - cmdStartTime).toString(),
-    cliRuntimeEnvironment: "node" + nodeMajorVersion,
-    dataApiUsage: concurrentlyCommands.find((c) => c.name === "dataApi") ? "true" : "false",
     responseType: TELEMETRY_RESPONSE_TYPES.Success,
   });
 

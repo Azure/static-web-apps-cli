@@ -85,10 +85,12 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
 };
 
 export const getEnvVariablesForTelemetry = (): SWACLIEnv => {
-  const { AZURE_SUBSCRIPTION_ID, SWA_CLI_VERSION } = swaCLIEnv();
+  const { AZURE_SUBSCRIPTION_ID, SWA_CLI_API_LOCATION, SWA_CLI_DATA_API_LOCATION, SWA_CLI_VERSION } = swaCLIEnv();
 
   return {
     AZURE_SUBSCRIPTION_ID,
+    SWA_CLI_API_LOCATION,
+    SWA_CLI_DATA_API_LOCATION,
     SWA_CLI_VERSION,
   };
 };

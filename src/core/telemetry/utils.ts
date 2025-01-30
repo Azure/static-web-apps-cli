@@ -9,6 +9,7 @@ import { logger } from "../utils/logger.js";
 import crypto from "crypto";
 import { CryptoService } from "../swa-cli-persistence-plugin/impl/crypto.js";
 import { TELEMETRY_AI_KEY, TELEMETRY_SERVICE_HASH } from "../constants.js";
+import { getNodeMajorVersion } from "../func-core-tools.js";
 
 export async function collectTelemetryEvent(event: string, properties?: TelemetryEventProperties, measurements?: TelemetryEventMeasurements) {
   const reporter = await GetTelemetryReporter();
@@ -19,6 +20,9 @@ export async function collectTelemetryEvent(event: string, properties?: Telemetr
     let extendedTelemetryEventProperties = {
       subscriptionId: environmentVariables.AZURE_SUBSCRIPTION_ID!,
       swaCliVersion: environmentVariables.SWA_CLI_VERSION!,
+      cliRuntimeEnvironment: "node" + getNodeMajorVersion(),
+      functionsUsage: environmentVariables.SWA_CLI_API_LOCATION ? "true" : "false",
+      dataApiUsage: environmentVariables.SWA_CLI_DATA_API_LOCATION ? "true" : "false",
     } as TelemetryEventProperties;
 
     logger.silly(`TELEMETRY REPORTING: ${event}, ${JSON.stringify({ ...properties, ...extendedTelemetryEventProperties })}, ${measurements}`);

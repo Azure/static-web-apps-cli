@@ -251,7 +251,9 @@ export async function deploy(options: SWACLIConfig) {
   }
 
   swaConfigLocation = swaConfigLocation || userWorkflowConfig?.appLocation;
-  const swaConfigFilePath = (await findSWAConfigFile(swaConfigLocation!))?.filepath;
+  const swaConfigFile = await findSWAConfigFile(swaConfigLocation!);
+  const swaConfigFilePath = swaConfigFile?.filepath;
+  const swaConfigFileContent = swaConfigFile?.content;
   const resolvedSwaConfigLocation = swaConfigFilePath ? path.dirname(swaConfigFilePath) : undefined;
 
   const cliEnv: SWACLIEnv = {
@@ -365,6 +367,7 @@ export async function deploy(options: SWACLIConfig) {
           logger.log(``);
           const endTime = new Date().getTime();
           collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
+            apiRuntime: swaConfigFileContent?.platform?.apiRuntime!,
             duration: (endTime - startTime).toString(),
             responseType: TELEMETRY_RESPONSE_TYPES.Success,
           });
