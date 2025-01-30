@@ -18,7 +18,6 @@ import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder/index.
 import { swaCLIEnv } from "../../../core/env.js";
 import { getCertificate } from "../../../core/ssl.js";
 import { loadPackageJson } from "../../../core/utils/json.js";
-import { findSWAConfigFile } from "../../../core/utils/user-config.js";
 import { collectTelemetryEvent } from "../../../core/telemetry/utils.js";
 import { TELEMETRY_EVENTS } from "../../../core/constants.js";
 
@@ -278,7 +277,6 @@ export async function start(options: SWACLIConfig) {
   // resolve the following config to their absolute paths
   // note: the server will perform a search starting from this path
   swaConfigLocation = path.resolve(swaConfigLocation || userWorkflowConfig?.appLocation || process.cwd());
-  const swaConfigFileContent = (await findSWAConfigFile(swaConfigLocation!))?.content;
 
   // WARNING: code from above doesn't have access to env vars which are only defined below
 
@@ -367,14 +365,20 @@ export async function start(options: SWACLIConfig) {
     },
   });
 
-  const concurrentlyOptions: Partial<ConcurrentlyOptions> = { restartTries: 0, killOthers: ["failure", "success"], raw: true };
+  const concurrentlyOptions: Partial<ConcurrentlyOptions> = {
+    restartTries: 0,
+    killOthers: ["failure", "success"],
+    raw: true,
+    successCondition: "first",
+  };
   const { result } = concurrently(concurrentlyCommands, concurrentlyOptions);
-  const cmdEndTime2 = new Date().getTime();
 
-  collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
-    apiRuntime: swaConfigFileContent?.platform?.apiRuntime! || "unknown",
-    duration: (cmdEndTime2 - cmdStartTime).toString(),
-    responseType: TELEMETRY_RESPONSE_TYPES.Success,
+  process.on("SIGINT", () => {
+    const cmdEndTime2 = new Date().getTime();
+    collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+      duration: (cmdEndTime2 - cmdStartTime).toString(),
+      responseType: TELEMETRY_RESPONSE_TYPES.Success,
+    });
   });
 
   await result
