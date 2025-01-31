@@ -42,7 +42,7 @@ export function isCoreToolsVersionCompatible(coreToolsVersion: number, nodeVersi
   // Runtime support reference: https://docs.microsoft.com/azure/azure-functions/functions-versions?pivots=programming-language-javascript#languages
   switch (coreToolsVersion) {
     case 4:
-      return nodeVersion >= 18 && nodeVersion <= 20;
+      return nodeVersion >= 18 && nodeVersion <= 22;
     case 3:
       return nodeVersion >= 14 && nodeVersion <= 20;
     case 2:
@@ -54,7 +54,7 @@ export function isCoreToolsVersionCompatible(coreToolsVersion: number, nodeVersi
 
 export function detectTargetCoreToolsVersion(nodeVersion: number): number {
   // Pick the highest version that is compatible with the specified Node version
-  if (nodeVersion >= 18 && nodeVersion <= 20) return 4;
+  if (nodeVersion >= 18 && nodeVersion <= 22) return 4;
   if (nodeVersion >= 14 && nodeVersion < 20) return 3;
   if (nodeVersion >= 10 && nodeVersion < 14) return 2;
 
@@ -121,35 +121,35 @@ function getPlatform() {
 
 export async function getLatestCoreToolsRelease(targetVersion: number): Promise<CoreToolsRelease> {
   try {
-		const response = await fetch(RELEASES_FEED_URL);
-		const feed = (await response.json()) as { releases: Record<string, Record<string, CoreToolsZipInfo[]>>; };
-		const platform = getPlatform();
+    const response = await fetch(RELEASES_FEED_URL);
+    const feed = (await response.json()) as { releases: Record<string, Record<string, CoreToolsZipInfo[]>> };
+    const platform = getPlatform();
 
-		const matchingVersions = Object.keys(feed.releases)
-			.reverse() // JSON has newest versions first; we want the latest first; potential improvement: sort by semver
-			.filter(
-				(version) =>
-					version.match(/^\d+\.\d+\.\d+$/) && // only stable versions
-					version.startsWith(`${targetVersion}.`), // only matching major versions
-			);
+    const matchingVersions = Object.keys(feed.releases)
+      .reverse() // JSON has newest versions first; we want the latest first; potential improvement: sort by semver
+      .filter(
+        (version) =>
+          version.match(/^\d+\.\d+\.\d+$/) && // only stable versions
+          version.startsWith(`${targetVersion}.`), // only matching major versions
+      );
 
-		for (const version of matchingVersions) {
+    for (const version of matchingVersions) {
       const matchingDistribution = feed.releases[version].coreTools?.find(
-				(dist) =>
-					dist.OS === platform && // Distribution for matching platform
-					dist.size === "full", // exclude minified releases
-			);
-			if (matchingDistribution) {
-				return {
-					version,
-					url: matchingDistribution.downloadLink,
-					sha2: matchingDistribution.sha2,
-				};
-			}
-		}
+        (dist) =>
+          dist.OS === platform && // Distribution for matching platform
+          dist.size === "full", // exclude minified releases
+      );
+      if (matchingDistribution) {
+        return {
+          version,
+          url: matchingDistribution.downloadLink,
+          sha2: matchingDistribution.sha2,
+        };
+      }
+    }
 
-		throw new Error(`Cannot find download package for ${platform}`);
-	} catch (error: unknown) {
+    throw new Error(`Cannot find download package for ${platform}`);
+  } catch (error: unknown) {
     throw new Error(`Error fetching Function Core Tools releases: ${(error as Error).message}`);
   }
 }
