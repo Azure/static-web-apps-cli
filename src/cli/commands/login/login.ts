@@ -24,25 +24,25 @@ export async function loginCommand(options: SWACLIConfig) {
     if (credentialChain && subscriptionId) {
       logger.log(chalk.green(`✔ Successfully setup project!`));
       await collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
-        duration: (cmdEndTime - cmdStartTime).toString(),
-        responseType: TELEMETRY_RESPONSE_TYPES.Success,
+        Duration: (cmdEndTime - cmdStartTime).toString(),
+        ResponseType: TELEMETRY_RESPONSE_TYPES.Success,
       });
     } else {
       logger.log(chalk.red(`✘ Failed to setup project!`));
       logGitHubIssueMessageAndExit();
       await collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
-        duration: (cmdEndTime - cmdStartTime).toString(),
-        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
-        errorMessage: "Login failed",
+        Duration: (cmdEndTime - cmdStartTime).toString(),
+        ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        ErrorMessage: "Login failed",
       });
     }
   } catch (error) {
     logger.error(`Failed to setup project: ${(error as any).message}`);
     logGitHubIssueMessageAndExit();
     await collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
-      duration: (new Date().getTime() - cmdStartTime).toString(),
-      responseType: TELEMETRY_RESPONSE_TYPES.Failure,
-      errorMessage: (error as any).message,
+      Duration: (new Date().getTime() - cmdStartTime).toString(),
+      ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+      ErrorMessage: (error as any).message,
     });
   }
 }

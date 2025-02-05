@@ -36,9 +36,9 @@ export async function build(options: SWACLIConfig) {
     logger.error(`or with the --app-build-command and --api-build-command options.`, true);
     const endTime = new Date().getTime();
     await collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
-      duration: (endTime - startTime).toString(),
-      responseType: TELEMETRY_RESPONSE_TYPES.Failure,
-      errorMessage: "Auto option cannot be used with appBuildCommand or apiBuildCommand",
+      Duration: (endTime - startTime).toString(),
+      ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+      ErrorMessage: "Auto option cannot be used with appBuildCommand or apiBuildCommand",
     });
     return;
   }
@@ -51,18 +51,18 @@ export async function build(options: SWACLIConfig) {
       logger.error(`Your app configuration could not be detected.`);
       const endTime = new Date().getTime();
       await collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
-        duration: (endTime - startTime).toString(),
-        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
-        errorMessage: "App configuration could not be detected",
+        Duration: (endTime - startTime).toString(),
+        ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        ErrorMessage: "App configuration could not be detected",
       });
       return showAutoErrorMessageAndExit();
     } else if (detectedFolders.app.length > 1 || detectedFolders.api.length > 1) {
       logger.error(`Multiple apps found in your project folder.`);
       const endTime = new Date().getTime();
       await collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
-        duration: (endTime - startTime).toString(),
-        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
-        errorMessage: "Multiple apps found in project folder",
+        Duration: (endTime - startTime).toString(),
+        ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        ErrorMessage: "Multiple apps found in project folder",
       });
       return showAutoErrorMessageAndExit();
     }
@@ -80,9 +80,9 @@ export async function build(options: SWACLIConfig) {
       logger.error(error as Error, true);
       const endTime = new Date().getTime();
       await collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
-        duration: (endTime - startTime).toString(),
-        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
-        errorMessage: "Cannot generate build configuration",
+        Duration: (endTime - startTime).toString(),
+        ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        ErrorMessage: "Cannot generate build configuration",
       });
       return;
     }
@@ -131,8 +131,8 @@ export async function build(options: SWACLIConfig) {
 
   const endTime = new Date().getTime();
   await collectTelemetryEvent(TELEMETRY_EVENTS.Build, {
-    duration: (endTime - startTime).toString(),
-    responseType: TELEMETRY_RESPONSE_TYPES.Success,
+    Duration: (endTime - startTime).toString(),
+    ResponseType: TELEMETRY_RESPONSE_TYPES.Success,
   });
 }
 

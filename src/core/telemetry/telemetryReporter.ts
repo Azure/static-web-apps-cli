@@ -3,9 +3,10 @@ import { SenderData, BaseTelemetryReporter } from "./baseTelemetryReporter.js";
 import { BaseTelemetrySender, BaseTelemetryClient } from "./baseTelemetrySender.js";
 import { getSessionId } from "./utils.js";
 import { getMachineId } from "../swa-cli-persistence-plugin/impl/machine-identifier.js";
-import { TelemetryEventProperties } from "./telemetryReporterTypes.js";
+import { RawTelemetryEventProperties } from "./telemetryReporterTypes.js";
 import { logger } from "../utils/logger.js";
 import applicationInsights from "applicationinsights";
+import { TELEMETRY_EVENT_NAME } from "../constants.js";
 
 /**
  * A factory function which creates a telemetry client to be used by an sender to send telemetry in a node application.
@@ -17,11 +18,12 @@ import applicationInsights from "applicationinsights";
 const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClient> => {
   const sessionId = await getSessionId(new Date().getTime());
   const macAddressHash = (await getMachineId()).toString();
-  const extendedTelemetryEventProperties: TelemetryEventProperties = {
-    sessionId: sessionId,
-    macAddressHash: macAddressHash,
+  const extendedTelemetryEventProperties: RawTelemetryEventProperties = {
+    SessionId: sessionId,
+    MacAddressHash: macAddressHash,
     OsType: os.type(),
     OsVersion: os.version(),
+    PreciseTimeStamp: new Date().getTime(),
   };
 
   try {
@@ -34,7 +36,10 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
   const telemetryClient: BaseTelemetryClient = {
     logEvent: (eventName: string, data?: SenderData) => {
       try {
-        telemetry.trackEvent({ name: eventName, properties: { ...data?.properties, ...extendedTelemetryEventProperties } });
+        telemetry.trackEvent({
+          name: TELEMETRY_EVENT_NAME,
+          properties: { ...data?.properties, ...extendedTelemetryEventProperties, command: eventName },
+        });
       } catch (e: any) {
         throw new Error("Failed to log event to app insights!\n" + e.message);
       }

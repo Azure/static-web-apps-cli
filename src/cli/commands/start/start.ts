@@ -105,9 +105,9 @@ export async function start(options: SWACLIConfig) {
       logger.error(`The folder "${resolvedOutputLocation}" is not found. Exit.`, true);
       const endTime = new Date().getTime();
       await collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
-        duration: (endTime - cmdStartTime).toString(),
-        errorMessage: `The folder "${resolvedOutputLocation}" is not found.`,
-        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        Duration: (endTime - cmdStartTime).toString(),
+        ErrorMessage: `The folder "${resolvedOutputLocation}" is not found.`,
+        ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
       });
       return;
     }
@@ -210,9 +210,9 @@ export async function start(options: SWACLIConfig) {
           logger.error("See https://aka.ms/functions-node-versions for more information.");
           const endTime = new Date().getTime();
           await collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
-            duration: (endTime - cmdStartTime).toString(),
-            errorMessage: `Found Azure Functions Core Tools v${targetVersion} which is incompatible with your current Node.js v${process.versions.node}.`,
-            responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+            Duration: (endTime - cmdStartTime).toString(),
+            ErrorMessage: `Found Azure Functions Core Tools v${targetVersion} which is incompatible with your current Node.js v${process.versions.node}.`,
+            ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
           });
           process.exit(1);
         }
@@ -378,9 +378,9 @@ export async function start(options: SWACLIConfig) {
   process.on("SIGINT", () => {
     const cmdEndTime2 = new Date().getTime();
     collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
-      apiRuntime: swaConfigFileContent?.platform?.apiRuntime! || "unknown",
-      duration: (cmdEndTime2 - cmdStartTime).toString(),
-      responseType: TELEMETRY_RESPONSE_TYPES.Success,
+      ApiRuntime: swaConfigFileContent?.platform?.apiRuntime! || "unknown",
+      Duration: (cmdEndTime2 - cmdStartTime).toString(),
+      ResponseType: TELEMETRY_RESPONSE_TYPES.Success,
     });
   });
 
@@ -414,9 +414,9 @@ export async function start(options: SWACLIConfig) {
         logger.error(`SWA emulator stopped because ${commandMessage}.`, true);
         const endTime = new Date().getTime();
         collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
-          duration: (endTime - cmdStartTime).toString(),
-          errorMessage: `SWA emulator stopped because ${commandMessage}.`,
-          responseType: TELEMETRY_RESPONSE_TYPES.Failure,
+          Duration: (endTime - cmdStartTime).toString(),
+          ErrorMessage: `SWA emulator stopped because ${commandMessage}.`,
+          ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
         });
       },
     )

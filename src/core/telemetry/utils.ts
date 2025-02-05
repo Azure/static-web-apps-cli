@@ -18,11 +18,11 @@ export async function collectTelemetryEvent(event: string, properties?: Telemetr
     let environmentVariables = getEnvVariablesForTelemetry();
 
     let extendedTelemetryEventProperties = {
-      subscriptionId: environmentVariables.AZURE_SUBSCRIPTION_ID!,
-      swaCliVersion: environmentVariables.SWA_CLI_VERSION!,
-      cliRuntimeEnvironment: "node" + getNodeMajorVersion(),
-      functionsUsage: environmentVariables.SWA_CLI_API_LOCATION ? "true" : "false",
-      dataApiUsage: environmentVariables.SWA_CLI_DATA_API_LOCATION ? "true" : "false",
+      SubscriptionId: environmentVariables.AZURE_SUBSCRIPTION_ID!,
+      SwaCliVersion: environmentVariables.SWA_CLI_VERSION!,
+      CliRuntimeEnvironment: "node" + getNodeMajorVersion(),
+      FunctionsUsage: environmentVariables.SWA_CLI_API_LOCATION ? "true" : "false",
+      DataApiUsage: environmentVariables.SWA_CLI_DATA_API_LOCATION ? "true" : "false",
     } as TelemetryEventProperties;
 
     logger.silly(`TELEMETRY REPORTING: ${event}, ${JSON.stringify({ ...properties, ...extendedTelemetryEventProperties })}, ${measurements}`);

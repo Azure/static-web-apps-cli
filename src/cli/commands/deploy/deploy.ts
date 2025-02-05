@@ -56,9 +56,9 @@ export async function deploy(options: SWACLIConfig) {
       logger.error(`The provided Data API folder ${dataApiLocation} does not exist. Abort.`, true);
       const endTime = new Date().getTime();
       await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
-        duration: (endTime - startTime).toString(),
-        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
-        errorMessage: "Data API folder does not exist",
+        Duration: (endTime - startTime).toString(),
+        ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        ErrorMessage: "Data API folder does not exist",
       });
       return;
     } else {
@@ -77,9 +77,9 @@ export async function deploy(options: SWACLIConfig) {
       logger.error(`The folder "${resolvedOutputLocation}" is not found. Exit.`, true);
       const endTime = new Date().getTime();
       await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
-        duration: (endTime - startTime).toString(),
-        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
-        errorMessage: "Output location does not exist",
+        Duration: (endTime - startTime).toString(),
+        ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        ErrorMessage: "Output location does not exist",
       });
       return;
     }
@@ -99,9 +99,9 @@ export async function deploy(options: SWACLIConfig) {
       logger.error(`The provided API folder ${resolvedApiLocation} does not exist. Abort.`, true);
       const endTime = new Date().getTime();
       await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
-        duration: (endTime - startTime).toString(),
-        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
-        errorMessage: "API folder does not exist",
+        Duration: (endTime - startTime).toString(),
+        ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        ErrorMessage: "API folder does not exist",
       });
       return;
     } else {
@@ -183,9 +183,9 @@ export async function deploy(options: SWACLIConfig) {
         logger.error("Cannot find a deployment token. Aborting.", true);
         const endTime = new Date().getTime();
         await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
-          duration: (endTime - startTime).toString(),
-          responseType: TELEMETRY_RESPONSE_TYPES.Failure,
-          errorMessage: "Deployment token not found",
+          Duration: (endTime - startTime).toString(),
+          ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+          ErrorMessage: "Deployment token not found",
         });
       } else {
         logger.log(chalk.green(`✔ Successfully setup project!`));
@@ -212,9 +212,9 @@ export async function deploy(options: SWACLIConfig) {
       logger.error(error.message);
       const endTime = new Date().getTime();
       await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
-        duration: (endTime - startTime).toString(),
-        responseType: TELEMETRY_RESPONSE_TYPES.Failure,
-        errorMessage: "Deployment token not found",
+        Duration: (endTime - startTime).toString(),
+        ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        ErrorMessage: "Deployment token not found",
       });
       return;
     }
@@ -353,9 +353,9 @@ export async function deploy(options: SWACLIConfig) {
         logger.error(error.toString());
         const endTime = new Date().getTime();
         collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
-          duration: (endTime - startTime).toString(),
-          responseType: TELEMETRY_RESPONSE_TYPES.Failure,
-          errorMessage: error.toString(),
+          Duration: (endTime - startTime).toString(),
+          ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+          ErrorMessage: error.toString(),
         });
       });
 
@@ -367,9 +367,9 @@ export async function deploy(options: SWACLIConfig) {
           logger.log(``);
           const endTime = new Date().getTime();
           collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
-            apiRuntime: swaConfigFileContent?.platform?.apiRuntime!,
-            duration: (endTime - startTime).toString(),
-            responseType: TELEMETRY_RESPONSE_TYPES.Success,
+            ApiRuntime: swaConfigFileContent?.platform?.apiRuntime!,
+            Duration: (endTime - startTime).toString(),
+            ResponseType: TELEMETRY_RESPONSE_TYPES.Success,
           });
         }
       });
@@ -383,9 +383,9 @@ export async function deploy(options: SWACLIConfig) {
     );
     const endTime = new Date().getTime();
     await collectTelemetryEvent(TELEMETRY_EVENTS.Deploy, {
-      duration: (endTime - startTime).toString(),
-      responseType: TELEMETRY_RESPONSE_TYPES.Failure,
-      errorMessage: (error as any).message,
+      Duration: (endTime - startTime).toString(),
+      ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+      ErrorMessage: (error as any).message,
     });
     logGitHubIssueMessageAndExit();
   } finally {

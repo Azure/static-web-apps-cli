@@ -105,10 +105,10 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
 
     const failureEndTime = new Date().getTime();
     await collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
-      duration: (failureEndTime - cmdStartTime).toString(),
-      appFramework: projectConfig?.name?.split(", with")[0]!,
-      responseType: TELEMETRY_RESPONSE_TYPES.Failure,
-      errorMessage: error as string,
+      Duration: (failureEndTime - cmdStartTime).toString(),
+      AppFramework: projectConfig?.name?.split(", with")[0]!,
+      ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+      ErrorMessage: error as string,
     });
 
     return;
@@ -117,9 +117,9 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
   const cmdEndTime = new Date().getTime();
 
   await collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
-    duration: (cmdEndTime - cmdStartTime).toString(),
-    appFramework: projectConfig?.name?.split(", with")[0]!,
-    responseType: TELEMETRY_RESPONSE_TYPES.Success,
+    Duration: (cmdEndTime - cmdStartTime).toString(),
+    AppFramework: projectConfig?.name?.split(", with")[0]!,
+    ResponseType: TELEMETRY_RESPONSE_TYPES.Success,
   });
 
   printFrameworkConfig(projectConfig);
