@@ -6,7 +6,7 @@ import {
   DATA_API_BUILDER_RELEASE_METADATA_URL,
   DEFAULT_DATA_API_BUILDER_BINARY,
 } from "../constants.js";
-import fetch from "node-fetch";
+import { fetchWithProxy as fetch } from "../../core/utils/fetch-proxy.js";
 import { promisify } from "node:util";
 import { exec } from "node:child_process";
 import fs from "node:fs";
@@ -72,7 +72,7 @@ async function downloadAndUnzipBinary(releaseMetadata: DataApiBuilderReleaseMeta
         DATA_API_BUILDER_BINARY_NAME,
         DATA_API_BUILDER_FOLDER,
         releaseMetadata?.versionId,
-        platform
+        platform,
       );
 
       extractBinary(zipFilePath, destDirectory);

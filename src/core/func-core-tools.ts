@@ -6,7 +6,7 @@ import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import { PassThrough } from "node:stream";
 import crypto from "node:crypto";
-import fetch from "node-fetch";
+import { fetchWithProxy as fetch } from "./utils/fetch-proxy.js";
 import AdmZip from "adm-zip";
 import cliProgress from "cli-progress";
 import { logger } from "./utils/logger.js";
