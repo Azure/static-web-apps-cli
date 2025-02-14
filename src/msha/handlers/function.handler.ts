@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import type http from "node:http";
 import httpProxy from "http-proxy";
-import fetch from "node-fetch";
+import { fetchWithProxy as fetch } from "../../core/utils/fetch-proxy.js";
 
 import { decodeCookie, validateCookie } from "../../core/utils/cookie.js";
 import { registerProcessExit } from "../../core/utils/cli.js";
@@ -106,7 +106,7 @@ export function handleFunctionRequest(req: http.IncomingMessage, res: http.Serve
     {
       target,
     },
-    onConnectionLost(req, res, target, "↳")
+    onConnectionLost(req, res, target, "↳"),
   );
 
   proxyApi.once("proxyReq", (proxyReq: http.ClientRequest) => {
@@ -143,7 +143,7 @@ export async function validateFunctionTriggers(url: string) {
 
     if (triggers.some((t: string) => !/^httptrigger$/i.test(t))) {
       logger.error(
-        "\nFunction app contains non-HTTP triggered functions. Azure Static Web Apps managed functions only support HTTP functions. To use this function app with Static Web Apps, see 'Bring your own function app'.\n"
+        "\nFunction app contains non-HTTP triggered functions. Azure Static Web Apps managed functions only support HTTP functions. To use this function app with Static Web Apps, see 'Bring your own function app'.\n",
       );
     }
   } catch (error) {
