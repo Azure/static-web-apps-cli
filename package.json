@@ -1,6 +1,6 @@
 {
   "name": "@azure/static-web-apps-cli",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Azure Static Web Apps CLI",
   "type": "module",
   "scripts": {
