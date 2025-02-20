@@ -29,7 +29,15 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
 
   if (!telemetryClientInstance) {
     try {
-      telemetryClientInstance = new applicationInsights.TelemetryClient(key);
+      applicationInsights
+        .setup(key)
+        .setAutoCollectDependencies(false)
+        .setAutoCollectRequests(false)
+        .setAutoCollectExceptions(false)
+        .setAutoCollectPreAggregatedMetrics(false)
+        .setSendLiveMetrics(false)
+        .start();
+      telemetryClientInstance = applicationInsights.defaultClient;
     } catch (e: any) {
       logger.silly(`ERROR IN INITIALIZING APP INSIGHTS: ${e}`);
       return Promise.reject("Failed to initialize app insights!\n" + e.message);
