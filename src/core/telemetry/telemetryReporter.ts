@@ -15,6 +15,7 @@ import { TELEMETRY_EVENT_NAME } from "../constants.js";
  *
  * @returns A promise which resolves to the telemetry client or rejects upon error
  */
+let telemetryClientInstance: applicationInsights.TelemetryClient | null = null;
 const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClient> => {
   const sessionId = await getSessionId(new Date().getTime());
   const macAddressHash = (await getMachineId()).toString();
@@ -26,17 +27,19 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
     PreciseTimeStamp: new Date().getTime(),
   };
 
-  try {
-    var telemetry = new applicationInsights.TelemetryClient(key);
-  } catch (e: any) {
-    logger.silly(`ERROR IN INITIALIZING APP INSIGHTS: ${e}`);
-    return Promise.reject("Failed to initialize app insights!\n" + e.message);
+  if (!telemetryClientInstance) {
+    try {
+      telemetryClientInstance = new applicationInsights.TelemetryClient(key);
+    } catch (e: any) {
+      logger.silly(`ERROR IN INITIALIZING APP INSIGHTS: ${e}`);
+      return Promise.reject("Failed to initialize app insights!\n" + e.message);
+    }
   }
 
   const telemetryClient: BaseTelemetryClient = {
     logEvent: (eventName: string, data?: SenderData) => {
       try {
-        telemetry.trackEvent({
+        telemetryClientInstance?.trackEvent({
           name: TELEMETRY_EVENT_NAME,
           properties: { ...data?.properties, ...extendedTelemetryEventProperties, command: eventName },
         });
@@ -46,7 +49,10 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
     },
     logException: (exceptionName: Error, data?: SenderData) => {
       try {
-        telemetry.trackException({ exception: exceptionName, properties: { ...data?.properties, ...extendedTelemetryEventProperties } });
+        telemetryClientInstance?.trackException({
+          exception: exceptionName,
+          properties: { ...data?.properties, ...extendedTelemetryEventProperties },
+        });
       } catch (e: any) {
         throw new Error("Failed to log exception to app insights!\n" + e.message);
       }
