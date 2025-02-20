@@ -39,7 +39,7 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
   const telemetryClient: BaseTelemetryClient = {
     logEvent: (eventName: string, data?: SenderData) => {
       try {
-        telemetryClientInstance?.trackEvent({
+        telemetryClientInstance!.trackEvent({
           name: TELEMETRY_EVENT_NAME,
           properties: { ...data?.properties, ...extendedTelemetryEventProperties, command: eventName },
         });
@@ -49,7 +49,7 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
     },
     logException: (exceptionName: Error, data?: SenderData) => {
       try {
-        telemetryClientInstance?.trackException({
+        telemetryClientInstance!.trackException({
           exception: exceptionName,
           properties: { ...data?.properties, ...extendedTelemetryEventProperties },
         });
