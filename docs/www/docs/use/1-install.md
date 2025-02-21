@@ -6,8 +6,6 @@ sidebar_position: 1
 
 You can install the Static Web Apps CLI using [`npm`](https://docs.npmjs.com/cli/v6/commands/npm-install), [`yarn`](https://classic.yarnpkg.com/lang/en/docs/cli/install/) or [`pnpm`](https://pnpm.io/cli/install).
 
-:::
-
 ## Installing the CLI
 
 **See: **[@azure/static-web-apps-cli](https://www.npmjs.com/package/@azure/static-web-apps-cli) .

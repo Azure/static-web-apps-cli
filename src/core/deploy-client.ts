@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import fetch from "node-fetch";
+import { fetchWithProxy as fetch } from "./utils/fetch-proxy.js";
 import os from "node:os";
 import path from "node:path";
 import { STATIC_SITE_CLIENT_RELEASE_METADATA_URL, DEPLOY_BINARY_NAME, DEPLOY_FOLDER, DEPLOY_BINARY_STABLE_TAG } from "./constants.js";

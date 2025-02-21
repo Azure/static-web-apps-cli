@@ -6,7 +6,7 @@ import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import { PassThrough } from "node:stream";
 import crypto from "node:crypto";
-import fetch from "node-fetch";
+import { fetchWithProxy as fetch } from "./utils/fetch-proxy.js";
 import AdmZip from "adm-zip";
 import cliProgress from "cli-progress";
 import { logger } from "./utils/logger.js";
@@ -122,29 +122,33 @@ function getPlatform() {
 export async function getLatestCoreToolsRelease(targetVersion: number): Promise<CoreToolsRelease> {
   try {
     const response = await fetch(RELEASES_FEED_URL);
-    const feed = (await response.json()) as { releases: any; tags: any };
-    const tag = feed.tags[`v${targetVersion}`];
-    if (!tag || tag.hidden) {
-      throw new Error(`Cannot find the latest version for v${targetVersion}`);
-    }
-
-    const release = feed.releases[tag.release];
-    if (!release) {
-      throw new Error(`Cannot find release for ${tag.release}`);
-    }
-
-    const coreTools = release.coreTools.filter((t: CoreToolsZipInfo) => t.size === "full");
+    const feed = (await response.json()) as { releases: Record<string, Record<string, CoreToolsZipInfo[]>> };
     const platform = getPlatform();
-    const info = coreTools.find((t: CoreToolsZipInfo) => t.OS === platform);
-    if (!info) {
-      throw new Error(`Cannot find download package for ${platform}`);
+
+    const matchingVersions = Object.keys(feed.releases)
+      .reverse() // JSON has newest versions first; we want the latest first; potential improvement: sort by semver
+      .filter(
+        (version) =>
+          version.match(/^\d+\.\d+\.\d+$/) && // only stable versions
+          version.startsWith(`${targetVersion}.`), // only matching major versions
+      );
+
+    for (const version of matchingVersions) {
+      const matchingDistribution = feed.releases[version].coreTools?.find(
+        (dist) =>
+          dist.OS === platform && // Distribution for matching platform
+          dist.size === "full", // exclude minified releases
+      );
+      if (matchingDistribution) {
+        return {
+          version,
+          url: matchingDistribution.downloadLink,
+          sha2: matchingDistribution.sha2,
+        };
+      }
     }
 
-    return {
-      version: tag.release,
-      url: info.downloadLink,
-      sha2: info.sha2,
-    };
+    throw new Error(`Cannot find download package for ${platform}`);
   } catch (error: unknown) {
     throw new Error(`Error fetching Function Core Tools releases: ${(error as Error).message}`);
   }

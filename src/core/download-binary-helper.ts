@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import crypto from "node:crypto";
 import fs from "node:fs";
-import fetch from "node-fetch";
+import { fetchWithProxy as fetch } from "./utils/fetch-proxy.js";
 import ora from "ora";
 import path from "node:path";
 import { PassThrough } from "node:stream";
@@ -22,7 +22,7 @@ export async function downloadAndValidateBinary(
   binaryName: string,
   outputFolder: string,
   id: string,
-  platform: "win-x64" | "osx-x64" | "linux-x64"
+  platform: "win-x64" | "osx-x64" | "linux-x64",
 ) {
   const downloadFilename = path.basename(releaseMetadata.files[platform].url);
   const url = releaseMetadata.files[platform].url;
