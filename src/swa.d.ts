@@ -82,6 +82,9 @@ declare interface SWACLIEnv extends StaticSiteClientEnv {
 
   // swa db
   SWA_CLI_DATA_API_FOLDER?: string;
+
+  // swa telemetry
+  SWA_DISABLE_TELEMETRY?: string;
 }
 
 declare interface Context {
@@ -212,6 +215,14 @@ declare type SWACLISharedLoginOptions = LoginDetails & {
 
 declare type SWACLILoginOptions = SWACLISharedLoginOptions;
 
+// -- CLI Telemetry options -----------------------------------------------------
+
+declare type SWACLITelemetryOptions = {
+  disable?: boolean;
+  enable?: boolean;
+  status?: boolean;
+};
+
 // -- CLI Config options -----------------------------------------------------
 
 declare type SWACLIConfig = SWACLIGlobalOptions &
@@ -221,13 +232,15 @@ declare type SWACLIConfig = SWACLIGlobalOptions &
   SWACLIStartOptions &
   SWACLIDeployOptions &
   SWACLIBuildOptions &
-  SWACLIDBInitOptions & {
+  SWACLIDBInitOptions &
+  SWACLITelemetryOptions & {
     login?: SWACLIGlobalOptions & SWACLILoginOptions;
     init?: SWACLIGlobalOptions & SWACLIInitOptions;
     start?: SWACLIGlobalOptions & SWACLIStartOptions;
     deploy?: SWACLIGlobalOptions & SWACLIDeployOptions;
     build?: SWACLIGlobalOptions & SWACLIBuildOptions;
     "db init"?: SWACLIGlobalOptions & SWACLIDBInitOptions;
+    telemetry?: SWAConfigFileNavigationFallback & SWACLITelemetryOptions;
   };
 
 // Information about the loaded config
@@ -320,7 +333,12 @@ declare type SWAConfigFileAuth = {
   identityProviders?: SWAConfigFileAuthIdenityProviders;
 };
 
+declare type SWAConfigFilePlatform = {
+  apiRuntime?: string;
+};
+
 declare type SWAConfigFile = {
+  platform: SWAConfigFilePlatform;
   routes: SWAConfigFileRoute[];
   navigationFallback: SWAConfigFileNavigationFallback;
   responseOverrides: SWAConfigFileResponseOverrides;

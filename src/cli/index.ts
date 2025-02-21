@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+import fs from "node:fs";
 import process from "node:process";
 import chalk from "chalk";
 import { Command, Option, program } from "commander";
@@ -19,8 +20,11 @@ import { default as registerStart } from "./commands/start/register.js";
 import { default as registerBuild } from "./commands/build/register.js";
 import { registerDocs } from "./commands/docs.js";
 import { default as registerDb } from "./commands/db/init/register.js";
+import { default as registerTelemetry } from "./commands/telemetry/register.js";
 import { promptOrUseDefault } from "../core/prompts.js";
 import { loadPackageJson } from "../core/utils/json.js";
+import { TELEMETRY_LOG_FOLDER } from "../core/constants.js";
+import { GetTelemetryReporter } from "../core/telemetry/utils.js";
 
 const pkg = loadPackageJson();
 
@@ -54,6 +58,14 @@ function checkNodeVersion() {
 export async function run(argv?: string[]) {
   printWelcomeMessage(argv);
   notifyOnUpdate();
+
+  process.env.APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL = "INFO";
+  process.env.APPLICATIONINSIGHTS_LOG_DESTINATION = "file";
+  fs.mkdirSync(TELEMETRY_LOG_FOLDER, { recursive: true });
+  process.env.APPLICATIONINSIGHTS_LOGDIR = `${TELEMETRY_LOG_FOLDER}`;
+
+  // Instantiate telemetry report
+  await GetTelemetryReporter();
 
   program
     .name("swa")
@@ -91,6 +103,7 @@ export async function run(argv?: string[]) {
   registerBuild(program);
   registerDocs(program);
   registerDb(program);
+  registerTelemetry(program);
 
   program.showHelpAfterError();
   program.addOption(new Option("--ping").hideHelp());
