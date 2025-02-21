@@ -25,7 +25,6 @@ export async function collectTelemetryEvent(event: string, properties?: Telemetr
       DataApiUsage: environmentVariables.SWA_CLI_DATA_API_LOCATION ? "true" : "false",
     } as TelemetryEventProperties;
 
-    logger.silly(`TELEMETRY REPORTING: ${event}, ${JSON.stringify({ ...properties, ...extendedTelemetryEventProperties })}, ${measurements}`);
     reporter.sendTelemetryEvent(event, { ...properties, ...extendedTelemetryEventProperties }, measurements);
   }
 }
@@ -40,9 +39,6 @@ export async function collectTelemetryException(exception: Error, properties?: T
       swaCliVersion: environmentVariables.SWA_CLI_VERSION!,
     } as TelemetryEventProperties;
 
-    logger.silly(
-      `TELEMETRY REPORTING EXCEPTION: ${exception}, ${JSON.stringify({ ...properties, ...extendedTelemetryEventProperties })}, ${measurements}`,
-    );
     reporter.sendTelemetryException(exception, { ...properties, ...extendedTelemetryEventProperties }, measurements);
   }
 }

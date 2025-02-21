@@ -45,12 +45,14 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
   }
 
   const telemetryClient: BaseTelemetryClient = {
-    logEvent: (eventName: string, data?: SenderData) => {
+    logEvent: async (eventName: string, data?: SenderData) => {
       try {
         telemetryClientInstance!.trackEvent({
           name: TELEMETRY_EVENT_NAME,
           properties: { ...data?.properties, ...extendedTelemetryEventProperties, command: eventName },
         });
+        logger.silly(`TELEMETRY REPORTING: ${eventName}, ${JSON.stringify({ ...data?.properties, ...extendedTelemetryEventProperties })}`);
+        await telemetryClientInstance!.flush();
       } catch (e: any) {
         throw new Error("Failed to log event to app insights!\n" + e.message);
       }
@@ -61,6 +63,9 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
           exception: exceptionName,
           properties: { ...data?.properties, ...extendedTelemetryEventProperties },
         });
+        logger.silly(
+          `TELEMETRY REPORTING EXCEPTION: ${exceptionName}, ${JSON.stringify({ ...data?.properties, ...extendedTelemetryEventProperties })}`,
+        );
       } catch (e: any) {
         throw new Error("Failed to log exception to app insights!\n" + e.message);
       }

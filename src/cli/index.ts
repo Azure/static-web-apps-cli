@@ -24,6 +24,7 @@ import { default as registerTelemetry } from "./commands/telemetry/register.js";
 import { promptOrUseDefault } from "../core/prompts.js";
 import { loadPackageJson } from "../core/utils/json.js";
 import { TELEMETRY_LOG_FOLDER } from "../core/constants.js";
+import { GetTelemetryReporter } from "../core/telemetry/utils.js";
 
 const pkg = loadPackageJson();
 
@@ -62,6 +63,9 @@ export async function run(argv?: string[]) {
   process.env.APPLICATIONINSIGHTS_LOG_DESTINATION = "file";
   fs.mkdirSync(TELEMETRY_LOG_FOLDER, { recursive: true });
   process.env.APPLICATIONINSIGHTS_LOGDIR = `${TELEMETRY_LOG_FOLDER}`;
+
+  // Instantiate telemetry report
+  await GetTelemetryReporter();
 
   program
     .name("swa")
