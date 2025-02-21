@@ -279,6 +279,7 @@ const azureProfileFilename = "azureProfile.json";
 export const AZURE_LOGIN_CONFIG = path.join(os.homedir(), azureFolderName, azureProfileFilename);
 
 // Telemetry constants
+export const TELEMETRY_LOG_FOLDER = path.join(os.homedir(), ".swa", "telemetry");
 export const TELEMETRY_EVENTS = {
   Login: "login",
   Init: "init",

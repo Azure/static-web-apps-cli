@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+import fs from "node:fs";
 import process from "node:process";
 import chalk from "chalk";
 import { Command, Option, program } from "commander";
@@ -22,6 +23,7 @@ import { default as registerDb } from "./commands/db/init/register.js";
 import { default as registerTelemetry } from "./commands/telemetry/register.js";
 import { promptOrUseDefault } from "../core/prompts.js";
 import { loadPackageJson } from "../core/utils/json.js";
+import { TELEMETRY_LOG_FOLDER } from "../core/constants.js";
 
 const pkg = loadPackageJson();
 
@@ -55,6 +57,11 @@ function checkNodeVersion() {
 export async function run(argv?: string[]) {
   printWelcomeMessage(argv);
   notifyOnUpdate();
+
+  process.env.APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL = "INFO";
+  process.env.APPLICATIONINSIGHTS_LOG_DESTINATION = "file";
+  fs.mkdirSync(TELEMETRY_LOG_FOLDER, { recursive: true });
+  process.env.APPLICATIONINSIGHTS_LOGDIR = `${TELEMETRY_LOG_FOLDER}`;
 
   program
     .name("swa")
