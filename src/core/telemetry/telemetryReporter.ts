@@ -57,7 +57,7 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
         throw new Error("Failed to log event to app insights!\n" + e.message);
       }
     },
-    logException: (exceptionName: Error, data?: SenderData) => {
+    logException: async (exceptionName: Error, data?: SenderData) => {
       try {
         telemetryClientInstance!.trackException({
           exception: exceptionName,
@@ -66,6 +66,7 @@ const appInsightsClientFactory = async (key: string): Promise<BaseTelemetryClien
         logger.silly(
           `TELEMETRY REPORTING EXCEPTION: ${exceptionName}, ${JSON.stringify({ ...data?.properties, ...extendedTelemetryEventProperties })}`,
         );
+        await telemetryClientInstance!.flush();
       } catch (e: any) {
         throw new Error("Failed to log exception to app insights!\n" + e.message);
       }
