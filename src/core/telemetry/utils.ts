@@ -5,7 +5,6 @@ import TelemetryReporter from "./telemetryReporter.js";
 import type { TelemetryEventMeasurements, TelemetryEventProperties } from "./telemetryReporterTypes.js";
 import { readCLIEnvFile } from "../utils/file.js";
 import { getEnvVariablesForTelemetry } from "../../config.js";
-import { logger } from "../utils/logger.js";
 import crypto from "crypto";
 import { CryptoService } from "../swa-cli-persistence-plugin/impl/crypto.js";
 import { TELEMETRY_AI_KEY, TELEMETRY_SERVICE_HASH } from "../constants.js";
