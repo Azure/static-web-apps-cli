@@ -5,7 +5,6 @@ import stp from "node:stream/promises";
 import { fetchWithProxy as fetch } from "./utils/fetch-proxy.js";
 import ora from "ora";
 import path from "node:path";
-import { PassThrough } from "node:stream";
 import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_FOLDER, DEPLOY_BINARY_NAME, DEPLOY_FOLDER } from "./constants.js";
 import { logger } from "./utils/logger.js";
 
@@ -38,8 +37,6 @@ export async function downloadAndValidateBinary(
     throw new Error(`Failed to download ${binaryName} binary from url ${url}. File not found (${response.status})`);
   }
 
-  const bodyStream = response?.body?.pipe(new PassThrough());
-
   createBinaryDirectoryIfNotExists(id, outputFolder);
 
   const isPosix = platform === "linux-x64" || platform === "osx-x64";
@@ -47,7 +44,7 @@ export async function downloadAndValidateBinary(
 
   const writableStream = fs.createWriteStream(outputFile, { mode: isPosix ? 0o755 : undefined });
 
-  await stp.pipeline(bodyStream, writableStream);
+  await stp.pipeline(response.body, writableStream);
 
   const computedHash = computeChecksumfromFile(outputFile).toLowerCase();
   const releaseChecksum = releaseMetadata.files[platform].sha.toLowerCase();
