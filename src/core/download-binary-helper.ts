@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import crypto from "node:crypto";
 import fs from "node:fs";
+import stp from "node:stream/promises";
 import { fetchWithProxy as fetch } from "./utils/fetch-proxy.js";
 import ora from "ora";
 import path from "node:path";
@@ -41,44 +42,35 @@ export async function downloadAndValidateBinary(
 
   createBinaryDirectoryIfNotExists(id, outputFolder);
 
-  return await new Promise<string>((resolve, reject) => {
-    const isPosix = platform === "linux-x64" || platform === "osx-x64";
-    const outputFile = path.join(outputFolder, id, downloadFilename);
+  const isPosix = platform === "linux-x64" || platform === "osx-x64";
+  const outputFile = path.join(outputFolder, id, downloadFilename);
 
-    const writableStream = fs.createWriteStream(outputFile, { mode: isPosix ? 0o755 : undefined });
-    bodyStream?.pipe(writableStream);
+  const writableStream = fs.createWriteStream(outputFile, { mode: isPosix ? 0o755 : undefined });
 
-    writableStream.on("end", () => {
-      bodyStream?.end();
-    });
+  await stp.pipeline(bodyStream, writableStream);
 
-    writableStream.on("finish", async () => {
-      const computedHash = computeChecksumfromFile(outputFile).toLowerCase();
-      const releaseChecksum = releaseMetadata.files[platform].sha.toLowerCase();
-      if (computedHash !== releaseChecksum) {
-        try {
-          // in case of a failure, we remove the file
-          fs.unlinkSync(outputFile);
-        } catch {
-          logger.silly(`Not able to delete ${downloadFilename}, please delete manually.`);
-        }
+  const computedHash = computeChecksumfromFile(outputFile).toLowerCase();
+  const releaseChecksum = releaseMetadata.files[platform].sha.toLowerCase();
+  if (computedHash !== releaseChecksum) {
+    try {
+      // in case of a failure, we remove the file
+      fs.unlinkSync(outputFile);
+    } catch {
+      logger.silly(`Not able to delete ${downloadFilename}, please delete manually.`);
+    }
 
-        spinner.fail();
-        reject(new Error(`Checksum mismatch for ${binaryName}! Expected ${releaseChecksum}, got ${computedHash}.`));
-      } else {
-        spinner.succeed();
+    spinner.fail();
+    throw new Error(`Checksum mismatch for ${binaryName}! Expected ${releaseChecksum}, got ${computedHash}.`);
+  } else {
+    spinner.succeed();
 
-        logger.silly(`Checksum match: ${computedHash}`);
-        logger.silly(`Saved binary to ${outputFile}`);
+    logger.silly(`Checksum match: ${computedHash}`);
+    logger.silly(`Saved binary to ${outputFile}`);
 
-        saveMetadata(releaseMetadata, outputFile, computedHash, binaryName);
+    saveMetadata(releaseMetadata, outputFile, computedHash, binaryName);
+  }
 
-        resolve(outputFile);
-      }
-    });
-
-    // writableStream.close();
-  });
+  return outputFile;
 }
 
 /**
