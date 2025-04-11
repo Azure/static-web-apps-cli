@@ -109,7 +109,9 @@ export async function fetchClientVersionDefinition(releaseVersion: string): Prom
       logger.silly(`Release Metadata for ${releaseVersion}: ${JSON.stringify(releaseMetadata, null, 2)}`);
       return releaseMetadata;
     }
-  } catch {}
+  } catch (err) {
+    logger.silly(`Error fetching release metadata: ${err}`);
+  }
 
   logger.silly(`Could not find release metadata; returning undefined`);
   return undefined;
