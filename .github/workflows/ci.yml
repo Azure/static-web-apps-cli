@@ -12,7 +12,7 @@ on:
 jobs:
 
   format:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -155,7 +155,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04]
+        os: [ubuntu-22.04]
         node-version: [18.x, 20.x]
 
     name: "test: use node ${{ matrix.node-version }}"
@@ -186,7 +186,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04]
+        os: [ubuntu-22.04]
         node-version: [18.x, 20.x]
 
     name: "deploy: use node ${{ matrix.node-version }}"
@@ -216,7 +216,7 @@ jobs:
 
   package:
     needs: [e2e-deploy-macos, e2e-deploy-linux, e2e-deploy-windows]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4

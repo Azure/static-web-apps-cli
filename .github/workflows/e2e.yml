@@ -15,7 +15,7 @@ jobs:
       # https://github.com/cypress-io/github-action/issues/48
       fail-fast: false
       matrix:
-        os: [macos-12, windows-latest, ubuntu-20.04]
+        os: [macos-12, windows-latest, ubuntu-22.04]
         node-version: [18.x, 20.x]
 
     steps:
