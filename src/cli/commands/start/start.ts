@@ -285,6 +285,9 @@ export async function start(options: SWACLIConfig) {
     SWA_CLI_VERSION: packageInfo.version,
     SWA_CLI_SERVER_TIMEOUT: `${devserverTimeout}`,
     SWA_CLI_OPEN_BROWSER: open ? "true" : "false",
+    SWA_CLI_APP_DEVSERVER_URL: appDevserverUrl,
+    SWA_CLI_API_DEVSERVER_URL: useApiDevServer,
+    SWA_CLI_DATA_API_DEVSERVER_URL: useDataApiDevServer,
   };
 
   // merge SWA CLI env variables with process.env
