@@ -89,7 +89,7 @@
           },
           {
             "properties": {
-              "init": {
+              "build": {
                 "allOf": [
                   {
                     "$ref": "#/$defs/globalParameters"
