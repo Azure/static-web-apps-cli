@@ -192,7 +192,9 @@
 
       function saveCookie(formElement) {
         const data = localStorage[hashStorageKey(formElement)];
-        document.cookie = `StaticWebAppsAuthCookie=${btoa(data)}; path=/`;
+        // Encode Unicode-safe by converting to UTF-8 first
+        const encoded = btoa(unescape(encodeURIComponent(data)));
+        document.cookie = `StaticWebAppsAuthCookie=${encoded}; path=/`;
       }
       function redirectToApp() {
         const defaultRedirectPath = "/";
