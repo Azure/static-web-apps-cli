@@ -1,6 +1,6 @@
 {
-  "name": "@azure/static-web-apps-cli",
   "version": "2.0.6",
+  "name": "@azure/static-web-apps-cli",
   "description": "Azure Static Web Apps CLI",
   "type": "module",
   "scripts": {
@@ -55,6 +55,7 @@
     "keytar": "^7.9.0",
     "node-fetch": "^2.7.0",
     "open": "^8.4.2",
+    "openid-client": "^6.7.1",
     "ora": "^5.4.1",
     "pem": "^1.14.8",
     "prompts": "^2.4.2",
