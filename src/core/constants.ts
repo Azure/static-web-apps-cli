@@ -305,10 +305,10 @@ export const DEFAULT_VERSION = {
 };
 
 export const SUPPORTED_VERSIONS = {
-  Node: ["18", "20"],
-  Dotnet: ["8.0"],
-  DotnetIsolated: ["8.0", "9.0"],
-  Python: ["3.9", "3.10", "3.11"],
+  Node: ["12", "14", "16", "18", "20"],
+  Dotnet: ["3.1", "6.0", "8.0"],
+  DotnetIsolated: ["6.0", "7.0", "8.0", "9.0"],
+  Python: ["3.8", "3.9", "3.10", "3.11"],
 };
 
 export const DEFAULT_RUNTIME_LANGUAGE = "node";
