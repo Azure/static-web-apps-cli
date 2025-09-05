@@ -4,6 +4,7 @@ import { response } from "../../../core/utils/net.js";
 import { CUSTOM_AUTH_REQUIRED_FIELDS, ENTRAID_FULL_NAME, SWA_CLI_APP_PROTOCOL } from "../../../core/constants.js";
 import { DEFAULT_CONFIG } from "../../../config.js";
 import { encryptAndSign, extractPostLoginRedirectUri, hashStateGuid, newNonceWithExpiration } from "../../../core/utils/auth.js";
+import { OpenIdHelper } from "../../../core/utils/openidHelper.js";
 
 export const normalizeAuthProvider = function (providerName?: string) {
   if (providerName === ENTRAID_FULL_NAME) {
@@ -87,7 +88,8 @@ const httpTrigger = async function (context: Context, request: IncomingMessage, 
       location = `https://github.com/login/oauth/authorize?response_type=code&client_id=${authFields?.clientIdSettingName}&redirect_uri=${redirectUri}/.auth/login/github/callback&scope=read:user&state=${hashedState}`;
       break;
     case "aad":
-      location = `${authFields?.openIdIssuer}/authorize?response_type=code&client_id=${authFields?.clientIdSettingName}&redirect_uri=${redirectUri}/.auth/login/aad/callback&scope=openid+profile+email&state=${hashedState}`;
+      const authorizationEndpoint = await new OpenIdHelper(authFields?.openIdIssuer, authFields?.clientIdSettingName).getAuthorizationEndpoint();
+      location = `${authorizationEndpoint}?response_type=code&client_id=${authFields?.clientIdSettingName}&redirect_uri=${redirectUri}/.auth/login/aad/callback&scope=openid+profile+email&state=${hashedState}`;
       break;
     case "facebook":
       location = `https://facebook.com/v11.0/dialog/oauth?client_id=${authFields?.appIdSettingName}&redirect_uri=${redirectUri}/.auth/login/facebook/callback&scope=openid&state=${hashedState}&response_type=code`;
