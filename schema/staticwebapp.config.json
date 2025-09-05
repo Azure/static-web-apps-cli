@@ -587,6 +587,7 @@
           "enum": [
             "dotnet:3.1",
             "dotnet:6.0",
+            "dotnet:8.0",
             "dotnet-isolated:6.0",
             "dotnet-isolated:7.0",
             "dotnet-isolated:8.0",
@@ -598,7 +599,8 @@
             "node:20",
             "python:3.8",
             "python:3.9",
-            "python:3.10"
+            "python:3.10",
+            "python:3.11"
           ],
           "description": "Language runtime for the managed functions API"
         }
