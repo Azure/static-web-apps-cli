@@ -287,7 +287,7 @@ export const GIT_IGNORE_FILENAME = ".gitignore";
 
 export const SWA_CLI_APP_PROTOCOL = DEFAULT_CONFIG.ssl ? `https` : `http`;
 export const SWA_PUBLIC_DIR = path.resolve(__dirname, "..", "public"); //SWA_PUBLIC_DIR = "../public"
-export const HAS_API = Boolean(DEFAULT_CONFIG.apiLocation && SWA_CLI_API_URI());
+export const HAS_API = Boolean((DEFAULT_CONFIG.apiLocation || DEFAULT_CONFIG.apiDevserverUrl) && SWA_CLI_API_URI());
 
 export const SWA_CONFIG_FILENAME = "staticwebapp.config.json";
 export const SWA_CONFIG_FILENAME_LEGACY = "routes.json";
@@ -318,21 +318,21 @@ export const DEFAULT_RUNTIME_LANGUAGE = "node";
 // The reason for this is that these function depend on values set by environment variables which are set
 // during the startup of the CLI (see src/cli/commands/start.ts)
 export function IS_APP_DEV_SERVER() {
-  return isHttpUrl(DEFAULT_CONFIG.outputLocation);
+  return isHttpUrl(DEFAULT_CONFIG.appDevserverUrl) || isHttpUrl(DEFAULT_CONFIG.outputLocation);
 }
 export function IS_API_DEV_SERVER() {
-  return isHttpUrl(DEFAULT_CONFIG.apiLocation);
+  return isHttpUrl(DEFAULT_CONFIG.apiDevserverUrl);
 }
 export function SWA_CLI_API_URI() {
-  return IS_API_DEV_SERVER() ? DEFAULT_CONFIG.apiLocation : address(DEFAULT_CONFIG.host, DEFAULT_CONFIG.apiPort);
+  return IS_API_DEV_SERVER() ? DEFAULT_CONFIG.apiDevserverUrl : address(DEFAULT_CONFIG.host, DEFAULT_CONFIG.apiPort);
 }
 
 export function IS_DATA_API_DEV_SERVER() {
-  return isHttpUrl(DEFAULT_CONFIG.dataApiLocation);
+  return isHttpUrl(DEFAULT_CONFIG.dataApiDevserverUrl);
 }
 
 export function SWA_CLI_DATA_API_URI() {
-  return IS_DATA_API_DEV_SERVER() ? DEFAULT_CONFIG.dataApiLocation : address(DEFAULT_CONFIG.host, DEFAULT_CONFIG.dataApiPort, "http");
+  return IS_DATA_API_DEV_SERVER() ? DEFAULT_CONFIG.dataApiDevserverUrl : address(DEFAULT_CONFIG.host, DEFAULT_CONFIG.dataApiPort, "http");
 }
 
 // Constants related to swa login
