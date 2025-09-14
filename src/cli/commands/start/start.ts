@@ -13,11 +13,14 @@ import {
   getCoreToolsBinary,
   detectTargetCoreToolsVersion,
 } from "../../../core/func-core-tools.js";
-import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME } from "../../../core/constants.js";
+import { DATA_API_BUILDER_BINARY_NAME, DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME, TELEMETRY_RESPONSE_TYPES } from "../../../core/constants.js";
 import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder/index.js";
 import { swaCLIEnv } from "../../../core/env.js";
 import { getCertificate } from "../../../core/ssl.js";
 import { loadPackageJson } from "../../../core/utils/json.js";
+import { collectTelemetryEvent } from "../../../core/telemetry/utils.js";
+import { TELEMETRY_EVENTS } from "../../../core/constants.js";
+import { findSWAConfigFile } from "../../../core/utils/user-config.js";
 
 const packageInfo = loadPackageJson();
 
@@ -37,6 +40,7 @@ export async function start(options: SWACLIConfig) {
   // Code below doesn't have access to these environment variables which are defined later below.
   // Make sure this code (or code from utils) does't depend on environment variables!
 
+  const cmdStartTime = new Date().getTime();
   let {
     appLocation,
     apiLocation,
@@ -99,6 +103,12 @@ export async function start(options: SWACLIConfig) {
     // check for build folder (outputLocation) using the absolute location
     else if (!fs.existsSync(outputLocation!)) {
       logger.error(`The folder "${resolvedOutputLocation}" is not found. Exit.`, true);
+      const endTime = new Date().getTime();
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+        Duration: (endTime - cmdStartTime).toString(),
+        ErrorMessage: `The folder "${resolvedOutputLocation}" is not found.`,
+        ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+      });
       return;
     }
 
@@ -167,6 +177,7 @@ export async function start(options: SWACLIConfig) {
   }
 
   const isApiLocationExistsOnDisk = fs.existsSync(userWorkflowConfig?.apiLocation!);
+  const nodeMajorVersion = getNodeMajorVersion();
 
   // handle the API location config
   let serveApiCommand = "echo 'No API found. Skipping'";
@@ -180,7 +191,6 @@ export async function start(options: SWACLIConfig) {
     if (apiLocation && userWorkflowConfig?.apiLocation) {
       // check if the func binary is globally available and if not, download it
       const funcBinary = await getCoreToolsBinary();
-      const nodeMajorVersion = getNodeMajorVersion();
       const targetVersion = detectTargetCoreToolsVersion(nodeMajorVersion);
 
       if (!funcBinary) {
@@ -198,6 +208,12 @@ export async function start(options: SWACLIConfig) {
             `Found Azure Functions Core Tools v${targetVersion} which is incompatible with your current Node.js v${process.versions.node}.`,
           );
           logger.error("See https://aka.ms/functions-node-versions for more information.");
+          const endTime = new Date().getTime();
+          await collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+            Duration: (endTime - cmdStartTime).toString(),
+            ErrorMessage: `Found Azure Functions Core Tools v${targetVersion} which is incompatible with your current Node.js v${process.versions.node}.`,
+            ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+          });
           process.exit(1);
         }
 
@@ -262,6 +278,7 @@ export async function start(options: SWACLIConfig) {
   // resolve the following config to their absolute paths
   // note: the server will perform a search starting from this path
   swaConfigLocation = path.resolve(swaConfigLocation || userWorkflowConfig?.appLocation || process.cwd());
+  const swaConfigFileContent = (await findSWAConfigFile(swaConfigLocation!))?.content;
 
   // WARNING: code from above doesn't have access to env vars which are only defined below
 
@@ -350,8 +367,22 @@ export async function start(options: SWACLIConfig) {
     },
   });
 
-  const concurrentlyOptions: Partial<ConcurrentlyOptions> = { restartTries: 0, killOthers: ["failure", "success"], raw: true };
+  const concurrentlyOptions: Partial<ConcurrentlyOptions> = {
+    restartTries: 0,
+    killOthers: ["failure", "success"],
+    raw: true,
+    successCondition: "first",
+  };
   const { result } = concurrently(concurrentlyCommands, concurrentlyOptions);
+
+  process.on("SIGINT", () => {
+    const cmdEndTime2 = new Date().getTime();
+    collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+      ApiRuntime: swaConfigFileContent?.platform?.apiRuntime! || "unknown",
+      Duration: (cmdEndTime2 - cmdStartTime).toString(),
+      ResponseType: TELEMETRY_RESPONSE_TYPES.Success,
+    });
+  });
 
   await result
     .then(
@@ -381,6 +412,12 @@ export async function start(options: SWACLIConfig) {
             break;
         }
         logger.error(`SWA emulator stopped because ${commandMessage}.`, true);
+        const endTime = new Date().getTime();
+        collectTelemetryEvent(TELEMETRY_EVENTS.Start, {
+          Duration: (endTime - cmdStartTime).toString(),
+          ErrorMessage: `SWA emulator stopped because ${commandMessage}.`,
+          ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        });
       },
     )
     .catch((err: Error) => {
