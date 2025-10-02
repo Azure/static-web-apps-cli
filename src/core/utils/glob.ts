@@ -31,7 +31,7 @@ export function globToRegExp(glob: string | undefined) {
     }
   }
 
-  return glob.replace(/\//g, "\\/").replace("*.", ".*").replace("/*", "/.*");
+  return glob.replace(/\//g, "\\/").replace(".", "\\.").replace("*", ".*");
 }
 
 /**
