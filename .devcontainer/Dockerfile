@@ -23,6 +23,9 @@ RUN GROUPS=$(id -Gn vscode | sed "s/ /,/g" | sed -r 's/\<'vscode'\>\b,?//g') \
     && cp -r /home/vscode/. /home/$USERNAME \
     && chown -R swa-cli:vscode /home/$USERNAME
 
+# Update Yarn GPG key (the base image may have an expired key)
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor > /usr/share/keyrings/yarn-archive-keyring.gpg
+
 RUN bash /tmp/library-scripts/node-debian.sh "${NVM_DIR}" "${NODE_VERSION}" "${USERNAME}" \
     && apt-get update && apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb libsecret-1-0 \
     && if [ $CORE_TOOLS_VERSION != "4" ]; then apt-get remove -y azure-functions-core-tools-4 && apt-get install -y "azure-functions-core-tools-${CORE_TOOLS_VERSION}"; fi \
