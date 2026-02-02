@@ -298,17 +298,17 @@ export const SWA_CONFIG_SCHEME_FALLBACK_PATH = path.join(__dirname, "../../schem
 
 // Constants related to Api runtime
 export const DEFAULT_VERSION = {
-  Node: "16",
-  Dotnet: "6.0",
-  DotnetIsolated: "6.0",
-  Python: "3.8",
+  Node: "22",
+  Dotnet: "8.0",
+  DotnetIsolated: "8.0",
+  Python: "3.11",
 };
 
 export const SUPPORTED_VERSIONS = {
-  Node: ["12", "14", "16", "18", "20"],
-  Dotnet: ["3.1", "6.0", "8.0"],
-  DotnetIsolated: ["6.0", "7.0", "8.0", "9.0"],
-  Python: ["3.8", "3.9", "3.10", "3.11"],
+  Node: ["18", "20", "22"],
+  Dotnet: ["8.0"],
+  DotnetIsolated: ["8.0", "9.0"],
+  Python: ["3.9", "3.10", "3.11"],
 };
 
 export const DEFAULT_RUNTIME_LANGUAGE = "node";

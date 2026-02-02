@@ -15,8 +15,8 @@ jobs:
       # https://github.com/cypress-io/github-action/issues/48
       fail-fast: false
       matrix:
-        os: [macos-12, windows-latest, ubuntu-22.04]
-        node-version: [18.x, 20.x]
+        os: [macos-14, windows-latest, ubuntu-22.04]
+        node-version: [18.x, 20.x, 22.x]
 
     steps:
       - name: Checkout
