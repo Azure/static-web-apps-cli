@@ -39,7 +39,7 @@ export const DATA_API_BUILDER_DATABASE_TYPES = {
 };
 
 // General SWA_CLI constants
-export const SWA_COMMANDS = ["login", "init", "start", "deploy", "build", "db init"] as const;
+export const SWA_COMMANDS = ["login", "init", "start", "deploy", "build", "db init", "telemetry"] as const;
 // Type cannot be in swa.d.ts as it's inferred from SWA_COMMANDS
 export type SWACommand = (typeof SWA_COMMANDS)[number];
 
@@ -339,3 +339,23 @@ export function SWA_CLI_DATA_API_URI() {
 const azureFolderName = ".azure";
 const azureProfileFilename = "azureProfile.json";
 export const AZURE_LOGIN_CONFIG = path.join(os.homedir(), azureFolderName, azureProfileFilename);
+
+// Telemetry constants
+export const TELEMETRY_LOG_FOLDER = path.join(os.homedir(), ".swa", "telemetry");
+export const TELEMETRY_EVENTS = {
+  Login: "login",
+  Init: "init",
+  Start: "start",
+  Build: "build",
+  Deploy: "deploy",
+};
+
+export const TELEMETRY_RESPONSE_TYPES = {
+  Failure: "Failure",
+  Success: "Success",
+};
+
+export const TELEMETRY_AI_KEY =
+  "9928d14e7b98b148bdf662c107ad83a7:a52ec390fdb8602f2ae0f0d9d32f1a35ff925dad278eedb854ac0d00f8e77819abe0b37424fe536f160f8cc4142f77392d20e7d035134b2d23e03af772491a9749e9571300f86102c41b9bf8726814427db2a0f25926b743c83cddefd71ffa4cc8e77a9a1a214b14a323e5924a01c82664ee88387ae0a21f3d4ad78c86af45f161872b50671e032f28e849de2614de22c7b0497550a8cbdc64630528c6fb74865772774ec5370d5b8bdb1831e5a6bbfc10bd2b982da89e0d0f3915b7b60299fa7afd15bdd01dbc8ae7611f84b2b0845ad62f31b5082c7c9385bbb577aae8f1e1b239788ee363c8494d4c0e15ae735cf391cfce1086627440cd5cff912df384b3";
+export const TELEMETRY_SERVICE_HASH = "b5335dd37f994c4e2c5b4a78f7fc95e4";
+export const TELEMETRY_EVENT_NAME = "swacli/command";

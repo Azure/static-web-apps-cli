@@ -5,27 +5,45 @@ import { existsSync, promises as fs } from "node:fs";
 import path from "node:path";
 import { logger, logGitHubIssueMessageAndExit } from "../../../core/utils/logger.js";
 import { authenticateWithAzureIdentity, listSubscriptions, listTenants } from "../../../core/account.js";
-import { AZURE_LOGIN_CONFIG, ENV_FILENAME } from "../../../core/constants.js";
+import { AZURE_LOGIN_CONFIG, ENV_FILENAME, TELEMETRY_EVENTS, TELEMETRY_RESPONSE_TYPES } from "../../../core/constants.js";
 import { pathExists, safeReadJson } from "../../../core/utils/file.js";
 import { updateGitIgnore } from "../../../core/git.js";
 import { chooseSubscription, chooseTenant } from "../../../core/prompts.js";
 import { Environment } from "../../../core/swa-cli-persistence-plugin/impl/azure-environment.js";
+import { collectTelemetryEvent } from "../../../core/telemetry/utils.js";
 
 const defaultScope = `${Environment.AzureCloud.resourceManagerEndpointUrl}/.default`;
 
 export async function loginCommand(options: SWACLIConfig) {
+  const cmdStartTime = new Date().getTime();
+
   try {
     const { credentialChain, subscriptionId } = await login(options);
 
+    const cmdEndTime = new Date().getTime();
     if (credentialChain && subscriptionId) {
       logger.log(chalk.green(`✔ Successfully setup project!`));
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
+        Duration: (cmdEndTime - cmdStartTime).toString(),
+        ResponseType: TELEMETRY_RESPONSE_TYPES.Success,
+      });
     } else {
       logger.log(chalk.red(`✘ Failed to setup project!`));
       logGitHubIssueMessageAndExit();
+      await collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
+        Duration: (cmdEndTime - cmdStartTime).toString(),
+        ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+        ErrorMessage: "Login failed",
+      });
     }
   } catch (error) {
     logger.error(`Failed to setup project: ${(error as any).message}`);
     logGitHubIssueMessageAndExit();
+    await collectTelemetryEvent(TELEMETRY_EVENTS.Login, {
+      Duration: (new Date().getTime() - cmdStartTime).toString(),
+      ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+      ErrorMessage: (error as any).message,
+    });
   }
 }
 

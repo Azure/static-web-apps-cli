@@ -7,8 +7,11 @@ import { hasConfigurationNameInConfigFile, swaCliConfigFileExists, swaCliConfigF
 import { logger } from "../../../core/utils/logger.js";
 import { detectDbConfigFiles, detectProjectFolders, generateConfiguration, isDescendantPath } from "../../../core/frameworks/detect.js";
 import { getChoicesForApiLanguage } from "../../../core/functions-versions.js";
+import { collectTelemetryEvent } from "../../../core/telemetry/utils.js";
+import { TELEMETRY_EVENTS, TELEMETRY_RESPONSE_TYPES } from "../../../core/constants.js";
 
 export async function init(options: SWACLIConfig, showHints: boolean = true) {
+  const cmdStartTime = new Date().getTime();
   const configFilePath = options.config!;
   const disablePrompts = options.yes ?? false;
   const outputFolder = process.cwd();
@@ -99,8 +102,25 @@ export async function init(options: SWACLIConfig, showHints: boolean = true) {
   } catch (error) {
     logger.error(`Cannot generate your project configuration:`);
     logger.error(error as Error, true);
+
+    const failureEndTime = new Date().getTime();
+    await collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
+      Duration: (failureEndTime - cmdStartTime).toString(),
+      AppFramework: projectConfig?.name?.split(", with")[0]!,
+      ResponseType: TELEMETRY_RESPONSE_TYPES.Failure,
+      ErrorMessage: error as string,
+    });
+
     return;
   }
+
+  const cmdEndTime = new Date().getTime();
+
+  await collectTelemetryEvent(TELEMETRY_EVENTS.Init, {
+    Duration: (cmdEndTime - cmdStartTime).toString(),
+    AppFramework: projectConfig?.name?.split(", with")[0]!,
+    ResponseType: TELEMETRY_RESPONSE_TYPES.Success,
+  });
 
   printFrameworkConfig(projectConfig);
 
