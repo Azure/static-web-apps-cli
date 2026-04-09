@@ -1,5 +1,7 @@
 import "../../../../tests/_mocks/fs.js";
-import child_process from "node:child_process";
+import child_process, { spawn } from "node:child_process";
+import { EventEmitter } from "node:events";
+import path from "node:path";
 import { logger } from "../../../core/utils/logger.js";
 import { vol } from "memfs";
 import * as accountModule from "../../../core/account.js";
@@ -9,6 +11,26 @@ import * as loginModule from "../login/login.js";
 import { loadPackageJson } from "../../../core/utils/json.js";
 
 const pkg = loadPackageJson();
+
+// Prevent transitive jsonwebtoken/buffer-equal-constant-time loading error
+// by fully mocking modules that pull in Azure SDK → jsonwebtoken chain
+vi.mock("../../../core/account.js", () => ({
+  chooseOrCreateProjectDetails: vi.fn(() => Promise.resolve({ resourceGroup: "mock-rg", staticSiteName: "mock-site" })),
+  getStaticSiteDeployment: vi.fn(() => Promise.resolve({})),
+  authenticateWithAzureIdentity: vi.fn(),
+  listSubscriptions: vi.fn(),
+  listTenants: vi.fn(),
+}));
+
+vi.mock("../login/login.js", () => ({
+  login: vi.fn(() =>
+    Promise.resolve({
+      credentialChain: {},
+      subscriptionId: "mock-subscription-id",
+    }),
+  ),
+  loginCommand: vi.fn(),
+}));
 
 vi.mock("../../../core/utils/logger", () => {
   return {
@@ -22,8 +44,15 @@ vi.mock("../../../core/utils/logger", () => {
   };
 });
 
-//vi.spyOn(process, "exit").mockImplementation(() => {});
-vi.spyOn(child_process, "spawn").mockImplementation(vi.fn());
+vi.mock("node:child_process", async (importOriginal) => {
+  const actual: typeof child_process = await importOriginal();
+  return {
+    ...actual,
+    default: { ...actual, spawn: vi.fn() },
+    spawn: vi.fn(),
+  };
+});
+
 vi.spyOn(deployClientModule, "getDeployClientPath").mockImplementation(() => {
   return Promise.resolve({
     binary: "mock-binary",
@@ -31,17 +60,6 @@ vi.spyOn(deployClientModule, "getDeployClientPath").mockImplementation(() => {
   });
 });
 vi.spyOn(deployClientModule, "cleanUp").mockImplementation(() => {});
-
-vi.spyOn(accountModule, "getStaticSiteDeployment").mockImplementation(() => Promise.resolve({}));
-
-vi.spyOn(loginModule, "login").mockImplementation(() => {
-  return Promise.resolve({
-    credentialChain: {} as any,
-    subscriptionId: "mock-subscription-id",
-    resourceGroup: "mock-resource-group-name",
-    staticSiteName: "mock-static-site-name",
-  });
-});
 
 describe("deploy", () => {
   const OLD_ENV = process.env;
@@ -175,6 +193,71 @@ describe("deploy", () => {
         SWA_CLI_VERSION: `${pkg.version}`,
         SWA_RUNTIME_WORKFLOW_LOCATION: undefined,
       },
+    });
+  });
+
+  describe("StaticSitesClient process handling", () => {
+    let mockChild: EventEmitter & { stdout: EventEmitter; stderr: EventEmitter };
+    let exitSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      // Create mock child process with stdout/stderr EventEmitters
+      const stdout = new EventEmitter();
+      const stderr = new EventEmitter();
+      mockChild = Object.assign(new EventEmitter(), { stdout, stderr });
+
+      // Set up spawn mock to return the mock child process
+      vi.mocked(spawn).mockReturnValue(mockChild as any);
+      vi.spyOn(deployClientModule, "getDeployClientPath").mockResolvedValue({
+        binary: "mock-binary",
+        buildId: "0.0.0",
+      });
+      vi.spyOn(deployClientModule, "cleanUp").mockImplementation(() => {});
+
+      // Mock process.exit to prevent test runner from exiting
+      exitSpy = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
+
+      // Provide deployment token via env to skip login flow
+      process.env.SWA_CLI_DEPLOYMENT_TOKEN = "test-token";
+
+      // Create required filesystem structure in memfs
+      const cwd = process.cwd();
+      vol.fromJSON({
+        [path.join("/test-output", "index.html")]: "hello",
+        [path.join(cwd, "placeholder")]: "",
+      });
+    });
+
+    it("should capture stderr and pass to logger.error", async () => {
+      await deploy({ outputLocation: "/test-output", dryRun: false });
+
+      mockChild.stderr.emit("data", Buffer.from("some error from binary"));
+
+      expect(logger.error).toHaveBeenCalledWith("some error from binary");
+    });
+
+    it("should fail spinner and log error on non-zero exit code", async () => {
+      await deploy({ outputLocation: "/test-output", dryRun: false });
+
+      mockChild.emit("close", 1);
+
+      expect(logger.error).toHaveBeenCalledWith("The deployment binary exited with code 1.");
+    });
+
+    it("should call process.exit(1) on non-zero exit code", async () => {
+      await deploy({ outputLocation: "/test-output", dryRun: false });
+
+      mockChild.emit("close", 127);
+
+      expect(exitSpy).toHaveBeenCalledWith(1);
+    });
+
+    it("should succeed without calling process.exit on exit code 0", async () => {
+      await deploy({ outputLocation: "/test-output", dryRun: false });
+
+      mockChild.emit("close", 0);
+
+      expect(exitSpy).not.toHaveBeenCalled();
     });
   });
 });
