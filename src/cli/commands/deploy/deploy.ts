@@ -337,7 +337,9 @@ export async function deploy(options: SWACLIConfig) {
           logger.error(`The deployment binary exited with code ${code}.`);
           logger.error(`If you are running in a minimal container image, ensure native dependencies are installed.`);
           logger.error(`Run ${chalk.cyan(`ldd ${binary}`)} to check for missing shared libraries.`);
-          process.exit(1);
+          if (!dryRun) {
+            process.exit(1);
+          }
         }
       });
     }

@@ -260,5 +260,14 @@ describe("deploy", () => {
 
       expect(exitSpy).not.toHaveBeenCalled();
     });
+
+    it("should not call process.exit(1) on non-zero exit code in dry-run mode", async () => {
+      await deploy({ outputLocation: "/test-output", dryRun: true });
+
+      mockChild.emit("close", 1);
+
+      expect(logger.error).toHaveBeenCalledWith("The deployment binary exited with code 1.");
+      expect(exitSpy).not.toHaveBeenCalled();
+    });
   });
 });
