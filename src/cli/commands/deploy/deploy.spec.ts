@@ -198,7 +198,8 @@ describe("deploy", () => {
 
   describe("StaticSitesClient process handling", () => {
     let mockChild: EventEmitter & { stdout: EventEmitter; stderr: EventEmitter };
-    let exitSpy: ReturnType<typeof vi.spyOn>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let exitSpy: any;
 
     beforeEach(() => {
       // Create mock child process with stdout/stderr EventEmitters
@@ -215,7 +216,7 @@ describe("deploy", () => {
       vi.spyOn(deployClientModule, "cleanUp").mockImplementation(() => {});
 
       // Mock process.exit to prevent test runner from exiting
-      exitSpy = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
+      exitSpy = vi.spyOn(process, "exit").mockImplementation((() => undefined) as unknown as () => never);
 
       // Provide deployment token via env to skip login flow
       process.env.SWA_CLI_DEPLOYMENT_TOKEN = "test-token";
