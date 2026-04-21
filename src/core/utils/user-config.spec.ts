@@ -28,7 +28,7 @@ describe("userConfig", () => {
         {
           [convertToNativePaths(currentDir)]: {},
         },
-        currentDir
+        currentDir,
       );
       const entry = await asyncGeneratorToArray(traverseFolder("/"));
       expect(entry).toEqual([]);
@@ -129,7 +129,7 @@ describe("userConfig", () => {
         {
           [convertToNativePaths(currentDir)]: {},
         },
-        currentDir
+        currentDir,
       );
       const file = await findSWAConfigFile("/");
       expect(file).toBe(null);
@@ -159,7 +159,7 @@ describe("userConfig", () => {
       expect(config).toBeNull();
       expect(logger.warn).toHaveBeenLastCalledWith(
         `   WARNING: Functionality defined in the routes.json file is now deprecated. File will be ignored!\n` +
-          `   Read more: https://docs.microsoft.com/azure/static-web-apps/configuration#routes`
+          `   Read more: https://docs.microsoft.com/azure/static-web-apps/configuration#routes`,
       );
     });
 
@@ -178,8 +178,27 @@ describe("userConfig", () => {
       expect(config).toBeNull();
       expect(logger.warn).toHaveBeenLastCalledWith(
         `   WARNING: Functionality defined in the routes.json file is now deprecated. File will be ignored!\n` +
-          `   Read more: https://docs.microsoft.com/azure/static-web-apps/configuration#routes`
+          `   Read more: https://docs.microsoft.com/azure/static-web-apps/configuration#routes`,
       );
+    });
+
+    it("should warn with KB unit when config file exceeds max size", async () => {
+      // Create a valid config file larger than 20KB (SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB)
+      // Use many routes to inflate file size while keeping schema valid
+      const routes = [];
+      for (let i = 0; i < 500; i++) {
+        routes.push({ route: `/route-${i}-${"a".repeat(30)}`, rewrite: `/index-${i}.html` });
+      }
+      const largeContent = JSON.stringify({ routes });
+      vol.fromJSON({
+        "staticwebapp.config.json": largeContent,
+      });
+
+      vi.spyOn(logger, "log").mockImplementation(() => {});
+
+      await findSWAConfigFile("/");
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("KB"));
+      expect(logger.warn).not.toHaveBeenCalledWith(expect.stringContaining("bytes"));
     });
 
     it("should ignore routes.json if a staticwebapp.config.json exists", async () => {

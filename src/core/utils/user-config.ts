@@ -62,7 +62,7 @@ export async function findSWAConfigFile(folder: string): Promise<{ filepath: str
           const fileSize = (await fs.stat(file.filepath)).size;
           const fileSizeInKb = Math.round(fileSize / 1024);
           if (fileSizeInKb > SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB) {
-            logger.warn(`WARNING: ${SWA_CONFIG_FILENAME} is ${fileSizeInKb} bytes. The maximum size is ${SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB} bytes.`);
+            logger.warn(`WARNING: ${SWA_CONFIG_FILENAME} is ${fileSizeInKb} KB. The maximum size is ${SWA_RUNTIME_CONFIG_MAX_SIZE_IN_KB} KB.`);
           }
 
           logger.silly(`Content parsed successfully`);
@@ -85,7 +85,7 @@ export async function findSWAConfigFile(folder: string): Promise<{ filepath: str
     logger.warn(`Found legacy configuration file: ${file?.filepath}.`);
     logger.warn(
       `   WARNING: Functionality defined in the routes.json file is now deprecated. File will be ignored!\n` +
-        `   Read more: https://docs.microsoft.com/azure/static-web-apps/configuration#routes`
+        `   Read more: https://docs.microsoft.com/azure/static-web-apps/configuration#routes`,
     );
     return null;
   }
