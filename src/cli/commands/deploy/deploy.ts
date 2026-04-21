@@ -315,6 +315,13 @@ export async function deploy(options: SWACLIConfig) {
           });
       });
 
+      child.stderr!.on("data", (data) => {
+        const stderrOutput = data.toString().trim();
+        if (stderrOutput) {
+          logger.error(stderrOutput);
+        }
+      });
+
       child.on("error", (error) => {
         logger.error(error.toString());
       });
@@ -325,6 +332,14 @@ export async function deploy(options: SWACLIConfig) {
         if (code === 0) {
           spinner.succeed(chalk.green(`Project deployed to ${chalk.underline(projectUrl)} 🚀`));
           logger.log(``);
+        } else {
+          spinner.fail(chalk.red(`Deployment failed with exit code ${code}`));
+          logger.error(`The deployment binary exited with code ${code}.`);
+          logger.error(`If you are running in a minimal container image, ensure native dependencies are installed.`);
+          logger.error(`Run ${chalk.cyan(`ldd ${binary}`)} to check for missing shared libraries.`);
+          if (!dryRun) {
+            process.exit(1);
+          }
         }
       });
     }
