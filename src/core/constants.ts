@@ -24,7 +24,7 @@ export const DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME = "staticwebapp.database.
 export const DATA_API_BUILDER_DEFAULT_SCHEMA_FILE_NAME = "staticwebapp.database.schema.gql";
 export const DATA_API_BUILDER_DEFAULT_FOLDER = "swa-db-connections";
 export const DATA_API_BUILDER_DEFAULT_REST_PATH = "/rest";
-export const DATA_API_BUILDER_VERSION_ID = "0.5.32";
+export const DATA_API_BUILDER_VERSION_ID = "1.3.19";
 export const DEFAULT_DATA_API_BUILDER_BINARY = {
   Windows: "Microsoft.DataApiBuilder.exe",
   Linux: "Microsoft.DataApiBuilder",
