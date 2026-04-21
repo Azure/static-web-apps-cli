@@ -5,12 +5,45 @@ import { CUSTOM_AUTH_REQUIRED_FIELDS, ENTRAID_FULL_NAME, SWA_CLI_APP_PROTOCOL } 
 import { DEFAULT_CONFIG } from "../../../config.js";
 import { encryptAndSign, extractPostLoginRedirectUri, hashStateGuid, newNonceWithExpiration } from "../../../core/utils/auth.js";
 import { OpenIdHelper } from "../../../core/utils/openidHelper.js";
+import { logger } from "../../../core/utils/logger.js";
+import authLoginProviderEmulator from "./auth-login-provider.js";
 
 export const normalizeAuthProvider = function (providerName?: string) {
   if (providerName === ENTRAID_FULL_NAME) {
     return "aad";
   }
   return providerName?.toLowerCase() || "";
+};
+
+/**
+ * For the `aad` custom auth provider, when the user's `staticwebapp.config.json`
+ * references AAD env vars (clientIdSettingName / clientSecretSettingName) but
+ * those env vars are NOT set, we fall back to the SWA local auth emulator
+ * instead of hard-failing with a 400.
+ *
+ * This restores the pre-2.0.3 behaviour where `/.auth/login/aad` worked in
+ * local dev without requiring developers to provision a real tenant just to
+ * run the CLI. See https://github.com/Azure/static-web-apps-cli/issues/947.
+ *
+ * Returns `true` iff this is AAD, the config names env vars, and at least one
+ * of them is unset — i.e. the user is clearly in local-dev mode.
+ */
+export const shouldFallbackToAadEmulator = function (providerName: string, customAuth?: SWAConfigFileAuth): boolean {
+  if (providerName !== "aad") {
+    return false;
+  }
+  const registration = customAuth?.identityProviders?.[ENTRAID_FULL_NAME]?.registration;
+  const clientIdSettingName = registration?.clientIdSettingName;
+  const clientSecretSettingName = registration?.clientSecretSettingName;
+  // The config must reference env vars; if either name is missing entirely
+  // that's a config-level error and should surface as 400 (handled below by
+  // `checkCustomAuthConfigFields`).
+  if (!clientIdSettingName || !clientSecretSettingName) {
+    return false;
+  }
+  const clientIdValue = process.env[clientIdSettingName];
+  const clientSecretValue = process.env[clientSecretSettingName];
+  return !clientIdValue || !clientSecretValue;
 };
 
 export const checkCustomAuthConfigFields = function (context: Context, providerName: string, customAuth?: SWAConfigFileAuth) {
@@ -60,6 +93,15 @@ const httpTrigger = async function (context: Context, request: IncomingMessage, 
   await Promise.resolve();
 
   const providerName: string = normalizeAuthProvider(context.bindingData?.provider);
+
+  // Restore pre-2.0.3 behaviour for local dev: if the AAD env vars referenced
+  // by the user's config aren't set, delegate to the local auth emulator
+  // instead of hard-failing. See #947.
+  if (shouldFallbackToAadEmulator(providerName, customAuth)) {
+    logger.silly(`AAD env vars not set — falling back to the SWA local auth emulator for '/.auth/login/aad'`);
+    return authLoginProviderEmulator(context, request);
+  }
+
   const authFields = checkCustomAuthConfigFields(context, providerName, customAuth);
   if (!authFields) {
     return;
