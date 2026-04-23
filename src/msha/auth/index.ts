@@ -25,7 +25,7 @@ function getAuthPaths(isCustomAuth: boolean): Path[] {
     paths.push({
       method: "GET",
       // For providers with custom auth support not implemented, revert to old behavior
-      route: /^\/\.auth\/login\/(?<provider>twitter|[a-z]+)(\?.*)?$/i,
+      route: /^\/\.auth\/login\/(?<provider>twitter|[a-z0-9]+)(\?.*)?$/i,
       function: "auth-login-provider",
     });
     paths.push({
