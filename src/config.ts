@@ -68,7 +68,7 @@ export const DEFAULT_CONFIG: SWACLIConfig = {
   appName: SWA_CLI_APP_NAME || undefined,
   dryRun: useEnvVarOrUseDefault(SWA_CLI_DEPLOY_DRY_RUN, false),
   apiLanguage: SWA_CLI_API_LANGUAGE || "node",
-  apiVersion: SWA_CLI_API_VERSION || "16",
+  apiVersion: SWA_CLI_API_VERSION || "22",
   dataApiDevserverUrl: SWA_CLI_DATA_API_DEVSERVER_URL || undefined,
 
   // swa login options
