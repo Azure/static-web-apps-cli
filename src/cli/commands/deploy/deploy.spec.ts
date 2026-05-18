@@ -9,6 +9,8 @@ import * as deployClientModule from "../../../core/deploy-client.js";
 import { deploy } from "./deploy.js";
 import * as loginModule from "../login/login.js";
 import { loadPackageJson } from "../../../core/utils/json.js";
+import { DEFAULT_VERSION, SUPPORTED_VERSIONS } from "../../../core/constants.js";
+import * as optionsModule from "../../../core/utils/options.js";
 
 const pkg = loadPackageJson();
 
@@ -268,6 +270,42 @@ describe("deploy", () => {
 
       expect(logger.error).toHaveBeenCalledWith("The deployment binary exited with code 1.");
       expect(exitSpy).not.toHaveBeenCalled();
+    });
+
+    it("should pass correct FUNCTION_LANGUAGE_VERSION for python when only apiLanguage is specified", async () => {
+      vi.spyOn(optionsModule, "isUserOrConfigOption").mockImplementation((option) => option === "apiLanguage");
+
+      await deploy({ outputLocation: "/test-output", dryRun: false, apiLanguage: "python" });
+
+      const spawnCall = vi.mocked(spawn).mock.calls[0];
+      const env = spawnCall[2]?.env as Record<string, string>;
+      expect(env.FUNCTION_LANGUAGE).toBe("python");
+      expect(env.FUNCTION_LANGUAGE_VERSION).toBe(DEFAULT_VERSION.Python);
+      expect(SUPPORTED_VERSIONS.Python).toContain(env.FUNCTION_LANGUAGE_VERSION);
+    });
+
+    it("should pass correct FUNCTION_LANGUAGE_VERSION for dotnet when only apiLanguage is specified", async () => {
+      vi.spyOn(optionsModule, "isUserOrConfigOption").mockImplementation((option) => option === "apiLanguage");
+
+      await deploy({ outputLocation: "/test-output", dryRun: false, apiLanguage: "dotnet" });
+
+      const spawnCall = vi.mocked(spawn).mock.calls[0];
+      const env = spawnCall[2]?.env as Record<string, string>;
+      expect(env.FUNCTION_LANGUAGE).toBe("dotnet");
+      expect(env.FUNCTION_LANGUAGE_VERSION).toBe(DEFAULT_VERSION.Dotnet);
+      expect(SUPPORTED_VERSIONS.Dotnet).toContain(env.FUNCTION_LANGUAGE_VERSION);
+    });
+
+    it("should pass correct FUNCTION_LANGUAGE_VERSION for dotnetisolated when only apiLanguage is specified", async () => {
+      vi.spyOn(optionsModule, "isUserOrConfigOption").mockImplementation((option) => option === "apiLanguage");
+
+      await deploy({ outputLocation: "/test-output", dryRun: false, apiLanguage: "dotnetisolated" });
+
+      const spawnCall = vi.mocked(spawn).mock.calls[0];
+      const env = spawnCall[2]?.env as Record<string, string>;
+      expect(env.FUNCTION_LANGUAGE).toBe("dotnetisolated");
+      expect(env.FUNCTION_LANGUAGE_VERSION).toBe(DEFAULT_VERSION.DotnetIsolated);
+      expect(SUPPORTED_VERSIONS.DotnetIsolated).toContain(env.FUNCTION_LANGUAGE_VERSION);
     });
   });
 });
