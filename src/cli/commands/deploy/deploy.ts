@@ -255,6 +255,10 @@ export async function deploy(options: SWACLIConfig) {
   // set the DEPLOYMENT_ENVIRONMENT env variable only when the user has provided
   // a deployment environment which is not "production".
   if (options.env?.toLowerCase() !== "production" && options.env?.toLowerCase() !== "prod") {
+    if (options.env !== undefined && !options.env.trim()) {
+      logger.error("Invalid --env: cannot be empty. Use 'preview' or omit the flag.");
+      return;
+    }
     deployClientEnv.DEPLOYMENT_ENVIRONMENT = options.env;
   }
 
