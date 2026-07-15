@@ -313,7 +313,7 @@ describe("deploy", () => {
         outputLocation: "/test-output",
         env: "",
       });
-      expect(logger.error).toHaveBeenNthCalledWith(1, "Invalid --env: cannot be empty. Use 'preview' or omit the flag.");
+      expect(logger.error).toHaveBeenNthCalledWith(1, "Invalid --env: cannot be empty. Use a named environment (e.g. 'preview') or omit the flag.");
     });
   });
 });
