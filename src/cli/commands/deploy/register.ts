@@ -20,7 +20,7 @@ export default function registerCommand(program: Command) {
     .option(
       "-w, --swa-config-location <swaConfigLocation>",
       "the directory where the staticwebapp.config.json file is located",
-      DEFAULT_CONFIG.swaConfigLocation
+      DEFAULT_CONFIG.swaConfigLocation,
     )
     .option("-d, --deployment-token <secret>", "the secret token used to authenticate with the Static Web Apps")
     .option("-dr, --dry-run", "simulate a deploy process without actually running it", DEFAULT_CONFIG.dryRun)
@@ -53,7 +53,7 @@ Examples:
   SWA_CLI_DEPLOYMENT_TOKEN=123 swa deploy ./dist/ --api-location ./api/
 
   Provide function language and version
-  swa deploy ./my-dist --api-location ./api --api-language "node" --api-version "16"
+  swa deploy ./my-dist --api-location ./api --api-language "node" --api-version "22"
 
   Deploy using swa-cli.config.json file
   swa deploy
@@ -64,7 +64,7 @@ Examples:
 
   Deploy to a specific environment
   swa deploy --env production
-    `
+    `,
     );
   addSharedLoginOptionsToCommand(deployCommand);
 }

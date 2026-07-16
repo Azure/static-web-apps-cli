@@ -70,7 +70,7 @@ To deploy both the front-end app and an API to Azure Static Web Apps, use the fo
 ```json
 {
   "platform": {
-    "apiRuntime": "node:16"
+    "apiRuntime": "node:22"
   }
 }
 ```

@@ -75,7 +75,7 @@ To deploy both the front-end app and an API to Azure Static Web Apps, use the fo
 2. Use the flags `--api-language` and `--api-version` to specify the language and the runtime version of the backend api.
 
 ```json
-swa deploy ./my-dist --api-location ./api --api-language "node" --api-version "16"
+swa deploy ./my-dist --api-location ./api --api-language "node" --api-version "22"
 ```
 
 Alternatively you can [configure](https://docs.microsoft.com/en-us/azure/static-web-apps/configuration#platform) the `apiRuntime` in the `staticwebapp.config.json` file
@@ -83,7 +83,7 @@ Alternatively you can [configure](https://docs.microsoft.com/en-us/azure/static-
 ```json
 {
   "platform": {
-    "apiRuntime": "node:16"
+    "apiRuntime": "node:22"
   }
 }
 ```
@@ -211,7 +211,7 @@ swa deploy --print-token
 Provide function language and version
 
 ```bash
-swa deploy ./my-dist --api-location ./api --api-language "node" --api-version "16"
+swa deploy ./my-dist --api-location ./api --api-language "node" --api-version "22"
 ```
 
 Deploy to a specific environment
