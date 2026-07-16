@@ -307,5 +307,13 @@ describe("deploy", () => {
       expect(env.FUNCTION_LANGUAGE_VERSION).toBe(DEFAULT_VERSION.DotnetIsolated);
       expect(SUPPORTED_VERSIONS.DotnetIsolated).toContain(env.FUNCTION_LANGUAGE_VERSION);
     });
+
+    it("should print an error when --env is an empty string", async () => {
+      await deploy({
+        outputLocation: "/test-output",
+        env: "",
+      });
+      expect(logger.error).toHaveBeenNthCalledWith(1, "Invalid --env: cannot be empty. Use a named environment (e.g. 'preview') or omit the flag.");
+    });
   });
 });

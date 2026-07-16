@@ -60,6 +60,12 @@ export async function deploy(options: SWACLIConfig) {
     }
   }
 
+  // make sure --env is not an empty string
+  if (options.env !== undefined && !options.env.trim()) {
+    logger.error("Invalid --env: cannot be empty. Use a named environment (e.g. 'preview') or omit the flag.");
+    return;
+  }
+
   logger.silly(`Resolving outputLocation=${outputLocation} full path...`);
   let resolvedOutputLocation = path.resolve(appLocation, outputLocation as string);
 
