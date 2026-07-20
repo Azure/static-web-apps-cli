@@ -2,6 +2,7 @@ name: Deploy CLI docs
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   build_and_deploy_job:
