@@ -37,6 +37,11 @@ export async function deploy(options: SWACLIConfig) {
     apiVersion,
   } = options;
 
+  // normalize the hyphenated variant to the canonical value used throughout the codebase
+  if (apiLanguage === "dotnet-isolated") {
+    apiLanguage = "dotnetisolated";
+  }
+
   if (dryRun) {
     logger.warn("***********************************************************************");
     logger.warn("* WARNING: Running in dry run mode. This project will not be deployed *");

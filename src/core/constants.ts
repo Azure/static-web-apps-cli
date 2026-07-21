@@ -307,7 +307,7 @@ export const DEFAULT_VERSION = {
 export const SUPPORTED_VERSIONS = {
   Node: ["18", "20", "22"],
   Dotnet: ["8.0"],
-  DotnetIsolated: ["8.0", "9.0"],
+  DotnetIsolated: ["8.0", "9.0", "10.0"],
   Python: ["3.9", "3.10", "3.11"],
 };
 
