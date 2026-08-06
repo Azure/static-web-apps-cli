@@ -81,7 +81,7 @@
                 },
                 "registration": {
                   "type": "object",
-                  "required": ["openIdIssuer", "clientSecretSettingName"],
+                  "required": ["openIdIssuer"],
                   "properties": {
                     "openIdIssuer": {
                       "type": "string",
@@ -93,9 +93,17 @@
                     },
                     "clientSecretSettingName": {
                       "type": "string",
-                      "description": "The name of the application setting containing the client secret for the Azure AD app registration"
+                      "description": "The name of the application setting containing the client secret for the Azure AD app registration. Mutually exclusive with clientSecretCertificateKeyVaultReference."
+                    },
+                    "clientSecretCertificateKeyVaultReference": {
+                      "type": "string",
+                      "description": "A Key Vault reference to a certificate used as the client credential for the Azure AD app registration. Use this instead of clientSecretSettingName when authenticating with a certificate stored in Key Vault. See https://aka.ms/swa-authentication-custom"
                     }
                   },
+                  "oneOf": [
+                    { "required": ["clientSecretSettingName"] },
+                    { "required": ["clientSecretCertificateKeyVaultReference"] }
+                  ],
                   "additionalProperties": false
                 },
                 "login": {
