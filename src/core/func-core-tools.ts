@@ -15,6 +15,10 @@ const RELEASES_FEED_URL = "https://functionscdn.azureedge.net/public/cli-feed-v4
 const DEFAULT_FUNC_BINARY = "func";
 const VERSION_FILE = ".release-version";
 const CORE_TOOLS_FOLDER = ".swa/core-tools";
+// Core Tools packages ship no Unix permission bits, so these have to be made executable after extraction.
+// Not every package contains every binary: the in-proc6 and in-proc8 host folders appeared in 4.102.0 and are
+// missing from some builds, and gozip moved out of the package root into those folders in 4.127.0.
+const EXECUTABLE_BINARIES = ["func", "gozip", "in-proc6/func", "in-proc6/gozip", "in-proc8/func", "in-proc8/gozip"];
 
 function getMajorVersion(version: string): number {
   return Number(version.split(".")[0]);
@@ -253,8 +257,12 @@ export async function downloadCoreTools(version: number): Promise<string> {
 
   // Fix permissions on MacOS/Linux
   if (os.platform() === "linux" || os.platform() === "darwin") {
-    fs.chmodSync(path.join(dest, "func"), 0o755);
-    fs.chmodSync(path.join(dest, "gozip"), 0o755);
+    for (const binary of EXECUTABLE_BINARIES) {
+      const binaryPath = path.join(dest, binary);
+      if (fs.existsSync(binaryPath)) {
+        fs.chmodSync(binaryPath, 0o755);
+      }
+    }
   }
 
   fs.writeFileSync(path.join(dest, VERSION_FILE), release.version);

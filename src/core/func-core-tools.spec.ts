@@ -2,13 +2,12 @@ import "../../tests/_mocks/fetch.js";
 import "../../tests/_mocks/fs.js";
 
 import { vol } from "memfs";
-import { sep } from "node:path";
+import path, { sep } from "node:path";
 import { PassThrough } from "node:stream";
 import os from "node:os";
 import * as fct from "./func-core-tools.js";
 import * as nodeFetch from "node-fetch";
 import { Response } from "node-fetch";
-//import AdmZip from "adm-zip";
 
 import { logger } from "../core/utils/logger.js";
 vi.spyOn(logger, "log").mockImplementation(() => {});
@@ -17,17 +16,19 @@ vi.spyOn(logger, "error").mockImplementation(() => {});
 
 const fetch = vi.mocked(nodeFetch).default;
 
-// SKIPPED: Mock the ZIP functionality
-// vi.mock("adm-zip", async () => {
-//   const actual = await vi.importActual("adm-zip");
-//   (actual.prototype as any).extractAllTo = () => {
-//     vol.fromJSON({
-//       "/home/user/.swa/core-tools/v4/func": "",
-//       "/home/user/.swa/core-tools/v4/gozip": "",
-//     });
-//   }
-//   return actual;
-// });
+// Files the mocked ZIP extraction writes, relative to the destination folder
+let extractedPackageFiles: Record<string, string> = {};
+
+// Mock the ZIP functionality: extracted files keep the default (non executable)
+// mode, since Core Tools packages carry no Unix permission bits
+vi.mock("adm-zip", () => {
+  class AdmZipMock {
+    extractAllTo(dest: string) {
+      vol.fromJSON(extractedPackageFiles, dest);
+    }
+  }
+  return { default: AdmZipMock };
+});
 
 function mockResponse(response: any, status = 200) {
   fetch.mockResolvedValueOnce(new Response(JSON.stringify(response), { status }));
@@ -49,6 +50,7 @@ function mockBinaryResponse(response: string, status = 200) {
 describe("funcCoreTools", () => {
   beforeEach(() => {
     vol.reset();
+    extractedPackageFiles = {};
   });
 
   describe("fct.isCoreToolsVersionCompatible()", () => {
@@ -239,9 +241,9 @@ describe("funcCoreTools", () => {
       }
     });
 
-    // SKIPPED: Does not work because we cannot mock adm-zip right now
-    it.skip("should download core tools and return downloaded binary", async () => {
+    it("should download core tools and return downloaded binary", async () => {
       fct.setCachedInstalledSystemCoreToolsVersion(undefined);
+      extractedPackageFiles = { func: "" };
 
       mockResponse({
         tags: {
@@ -288,19 +290,11 @@ describe("funcCoreTools", () => {
   });
 
   describe("downloadCoreTools", () => {
-    beforeEach(() => {
-      vi.spyOn(os, "platform").mockReturnValue("linux");
-      vi.spyOn(os, "homedir").mockReturnValue("/home/user");
-    });
+    // Real sha2 for the "package" string sent by mockBinaryResponse()
+    const packageSha2 = "bc4a71180870f7945155fbb02f4b0a2e3faa2a62d6d31b7039013055ed19869a";
+    const coreToolsFolder = path.join("/home/user", ".swa/core-tools", "v4");
 
-    afterEach(() => {
-      fct.resetCachedInstalledSystemCoreToolsVersion();
-    });
-
-    // SKIPPED: The test does not work because of adm-zip mocking right now.
-    it.skip("should throw an error if the download is corrupted", async () => {
-      fct.setCachedInstalledSystemCoreToolsVersion(undefined);
-
+    function mockRelease(sha2: string) {
       mockResponse({
         tags: {
           v4: { release: "4.0.0" },
@@ -311,17 +305,75 @@ describe("funcCoreTools", () => {
               {
                 OS: "Linux",
                 downloadLink: "https://abc.com/d.zip",
-                sha2: "123",
+                sha2,
                 size: "full",
               },
             ],
           },
         },
       });
-
       mockBinaryResponse("package");
       vol.fromNestedJSON({ ["/home/user/.swa/core-tools/"]: {} });
+    }
+
+    function getMode(...segments: string[]): number {
+      return vol.statSync(path.join(coreToolsFolder, ...segments)).mode & 0o777;
+    }
+
+    beforeEach(() => {
+      vi.spyOn(os, "platform").mockReturnValue("linux");
+      vi.spyOn(os, "homedir").mockReturnValue("/home/user");
+    });
+
+    afterEach(() => {
+      fct.resetCachedInstalledSystemCoreToolsVersion();
+    });
+
+    it("should throw an error if the download is corrupted", async () => {
+      fct.setCachedInstalledSystemCoreToolsVersion(undefined);
+      extractedPackageFiles = { func: "", gozip: "" };
+      mockRelease("123");
+
       await expect(async () => await fct.downloadCoreTools(4)).rejects.toThrowError(/SHA2 mismatch/);
+    });
+
+    it("should make the binaries executable when gozip sits at the package root", async () => {
+      extractedPackageFiles = { func: "", gozip: "" };
+      mockRelease(packageSha2);
+
+      await fct.downloadCoreTools(4);
+
+      expect(getMode("func")).toBe(0o755);
+      expect(getMode("gozip")).toBe(0o755);
+    });
+
+    it("should make the binaries executable when gozip sits in the in process host folders", async () => {
+      extractedPackageFiles = {
+        func: "",
+        "in-proc6/func": "",
+        "in-proc6/gozip": "",
+        "in-proc8/func": "",
+        "in-proc8/gozip": "",
+      };
+      mockRelease(packageSha2);
+
+      await fct.downloadCoreTools(4);
+
+      expect(getMode("func")).toBe(0o755);
+      expect(getMode("in-proc6", "func")).toBe(0o755);
+      expect(getMode("in-proc6", "gozip")).toBe(0o755);
+      expect(getMode("in-proc8", "func")).toBe(0o755);
+      expect(getMode("in-proc8", "gozip")).toBe(0o755);
+    });
+
+    it("should skip the in process host binaries when the package does not ship them", async () => {
+      extractedPackageFiles = { func: "" };
+      mockRelease(packageSha2);
+
+      await expect(fct.downloadCoreTools(4)).resolves.toBe("4.0.0");
+
+      expect(getMode("func")).toBe(0o755);
+      expect(vol.existsSync(path.join(coreToolsFolder, "in-proc6"))).toBe(false);
     });
   });
 });
