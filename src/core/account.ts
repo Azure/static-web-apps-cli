@@ -215,7 +215,7 @@ async function chooseOrCreateStaticSite(
   credentialChain: TokenCredential,
   subscriptionId: string
 ): Promise<string | StaticSiteARMResource> {
-  const staticSites = await listStaticSites(credentialChain, subscriptionId);
+  const staticSites = await listStaticSites(credentialChain, subscriptionId, options.resourceGroup);
 
   // 1- when there are no static sites
   if (staticSites.length === 0) {
