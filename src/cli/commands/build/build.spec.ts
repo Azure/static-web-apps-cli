@@ -1,5 +1,7 @@
 import "../../../../tests/_mocks/fs.js";
-import { vol } from "memfs";
+import { vol, fs } from "memfs";
+import path from "node:path";
+import process from "node:process";
 import { build } from "./build.js";
 import { DEFAULT_CONFIG } from "../../../config.js";
 import { convertToNativePaths } from "../../../test.helpers.js";
@@ -19,14 +21,23 @@ vi.mock("../../../core/utils/command.js");
 describe("swa build", () => {
   beforeEach(() => {
     vol.reset();
+    vol.fromJSON({ "/trusted/bin/npm": "inert native fixture; never executed" });
+    fs.chmodSync("/trusted/bin/npm", 0o755);
+    vi.stubEnv("PATH", "/trusted/bin");
   });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  const contextFor = (cwd: string) => ({ untrustedRoots: expect.arrayContaining([path.resolve(cwd)]) });
 
   it("should run app build command", async () => {
     const command = await import("../../../core/utils/command.js");
     command.runCommand = vi.fn().mockImplementation(vi.fn());
 
     await build({ ...DEFAULT_CONFIG, appBuildCommand: "npm run something" });
-    expect(command.runCommand).toHaveBeenCalledWith("npm run something", ".");
+    expect(command.runCommand).toHaveBeenCalledWith("npm run something", ".", contextFor("."));
   });
 
   it("should run npm install before build command", async () => {
@@ -36,8 +47,12 @@ describe("swa build", () => {
 
     await build({ ...DEFAULT_CONFIG, appBuildCommand: "npm run something" });
 
-    expect(command.runCommand).toHaveBeenCalledWith("npm install", ".");
-    expect(command.runCommand).toHaveBeenCalledWith("npm run something", ".");
+    expect(command.execInternalCommand).toHaveBeenCalledWith({ executable: "/trusted/bin/npm", args: ["install"], cwd: process.cwd() });
+    expect(command.runCommand).toHaveBeenCalledTimes(1);
+    expect(command.runCommand).toHaveBeenCalledWith("npm run something", ".", contextFor("."));
+    expect(vi.mocked(command.execInternalCommand).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(command.runCommand).mock.invocationCallOrder[0],
+    );
   });
 
   it("should run command in package.json path", async () => {
@@ -51,8 +66,12 @@ describe("swa build", () => {
       appBuildCommand: "npm run something",
     });
 
-    expect(command.runCommand).toHaveBeenCalledWith("npm install", "app");
-    expect(command.runCommand).toHaveBeenCalledWith("npm run something", ".");
+    expect(command.execInternalCommand).toHaveBeenCalledWith({ executable: "/trusted/bin/npm", args: ["install"], cwd: path.resolve("app") });
+    expect(command.runCommand).toHaveBeenCalledTimes(1);
+    expect(command.runCommand).toHaveBeenCalledWith("npm run something", ".", contextFor("."));
+    expect(vi.mocked(command.execInternalCommand).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(command.runCommand).mock.invocationCallOrder[0],
+    );
   });
 
   it("should run api build command", async () => {
@@ -60,7 +79,7 @@ describe("swa build", () => {
     command.runCommand = vi.fn().mockImplementation(vi.fn());
     await build({ ...DEFAULT_CONFIG, apiLocation: "api", apiBuildCommand: "npm run something" });
 
-    expect(command.runCommand).toHaveBeenCalledWith("npm run something", "api");
+    expect(command.runCommand).toHaveBeenCalledWith("npm run something", "api", contextFor("api"));
   });
 
   it("should run npm install before build command", async () => {
@@ -70,9 +89,12 @@ describe("swa build", () => {
 
     await build({ ...DEFAULT_CONFIG, apiLocation: "api", apiBuildCommand: "npm run something" });
 
-    expect(command.runCommand).toBeCalledTimes(2);
-    expect(command.runCommand).toHaveBeenCalledWith("npm install", "api");
-    expect(command.runCommand).toHaveBeenCalledWith("npm run something", "api");
+    expect(command.execInternalCommand).toHaveBeenCalledWith({ executable: "/trusted/bin/npm", args: ["install"], cwd: path.resolve("api") });
+    expect(command.runCommand).toHaveBeenCalledTimes(1);
+    expect(command.runCommand).toHaveBeenCalledWith("npm run something", "api", contextFor("api"));
+    expect(vi.mocked(command.execInternalCommand).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(command.runCommand).mock.invocationCallOrder[0],
+    );
   });
 
   it("should run command in package.json path", async () => {
@@ -86,7 +108,9 @@ describe("swa build", () => {
       apiBuildCommand: "npm run something",
     });
 
-    expect(command.runCommand).toHaveBeenCalledWith("npm run something", "api");
+    expect(command.execInternalCommand).toHaveBeenCalledWith({ executable: "/trusted/bin/npm", args: ["install"], cwd: path.resolve("api") });
+    expect(command.runCommand).toHaveBeenCalledTimes(1);
+    expect(command.runCommand).toHaveBeenCalledWith("npm run something", "api", contextFor("api"));
   });
 
   it("should run nothing", async () => {

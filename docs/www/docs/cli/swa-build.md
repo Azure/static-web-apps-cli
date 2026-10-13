@@ -22,6 +22,12 @@ Installing dependencies is only supported for Node.js projects with a `package.j
 For other frameworks, you need to manually install dependencies.
 :::
 
+Automatic installation uses a global native npm, Yarn or pnpm installation, or its standard Node/Corepack entrypoint, outside your project directories. Standard Windows npm/Yarn/pnpm shims are supported through their installed Node entrypoints.
+
+If the CLI reports an unsupported custom wrapper, install the package manager globally outside the project or enable its standard Corepack shim. Project-local executables and arbitrary shell wrappers are not used for automatic installation. Explicit app/API build commands remain shell commands and can use your normal project scripts.
+
+Automatic installation invokes the selected installation's Node entrypoint directly; custom shell-wrapper flags or redirects are not applied. Run workflows that depend on those customizations manually or from an explicit build command.
+
 ## Options
 
 Here are the options you can use with `swa build`:

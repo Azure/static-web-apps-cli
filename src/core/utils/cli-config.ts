@@ -1,8 +1,9 @@
 import chalk from "chalk";
-import { existsSync, promises as fsPromises } from "node:fs";
+import { existsSync, promises as fsPromises, readFileSync, realpathSync, statSync } from "node:fs";
 import * as path from "node:path";
 import * as process from "node:process";
 import { logger } from "./logger.js";
+import { ExecutableExclusion } from "./executable.js";
 const { readFile, writeFile } = fsPromises;
 
 export const swaCliConfigSchemaUrl = "https://aka.ms/azure/static-web-apps-cli/schema";
@@ -12,6 +13,74 @@ export const swaCliConfigFilename = "swa-cli.config.json";
  * Holds the current configuration of the CLI loaded from the `swa-cli.config.json` file.
  */
 let currentSwaCliConfigFromFile: SWACLIConfigInfo | undefined;
+const invocationCwd = process.cwd();
+
+function projectMarker(file: string) {
+  try {
+    return statSync(file);
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === "ENOENT" || code === "ENOTDIR") return undefined;
+    throw error;
+  }
+}
+
+function evidencedRoot(location: string, hasMarker: (directory: string) => boolean): string | undefined {
+  let directory = path.resolve(location);
+  while (true) {
+    try {
+      directory = realpathSync(directory);
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code !== "ENOENT" && code !== "ENOTDIR") throw error;
+    }
+    if (hasMarker(directory)) return directory;
+    const parent = path.dirname(directory);
+    if (parent === directory) return undefined;
+    directory = parent;
+  }
+}
+
+function repositoryRoot(location: string): string | undefined {
+  return evidencedRoot(location, (directory) => {
+    const marker = path.join(directory, ".git");
+    const stat = projectMarker(marker);
+    return stat?.isDirectory() === true || (stat?.isFile() === true && /^gitdir:\s+\S/.test(readFileSync(marker, "utf8")));
+  });
+}
+
+function isProjectDirectory(directory: string): boolean {
+  return [swaCliConfigFilename, "package.json"].some((name) => {
+    const marker = path.join(directory, name);
+    return projectMarker(marker)?.isFile();
+  });
+}
+
+/** Carry exact invocation/search directories separately from genuine recursive project roots. */
+export function getProjectRoots(options: SWACLIConfig, locations: readonly (string | undefined)[] = []): ExecutableExclusion[] {
+  const cwd = process.cwd();
+  const configPath = currentSwaCliConfigFromFile?.filePath ?? options.config;
+  const resolvedConfig = configPath ? path.resolve(invocationCwd, configPath) : undefined;
+  const roots = [
+    ...(resolvedConfig && (currentSwaCliConfigFromFile || projectMarker(resolvedConfig)?.isFile()) ? [path.dirname(resolvedConfig)] : []),
+    options.appLocation,
+    options.apiLocation,
+    options.dataApiLocation,
+    options.swaConfigLocation,
+    ...locations,
+  ];
+  const projectRoots = new Set(roots.filter((root): root is string => !!root && !/^https?:\/\//i.test(root)).map((root) => path.resolve(root)));
+  const searchDirectories = [...new Set([invocationCwd, cwd].map((directory) => path.resolve(directory)))];
+  for (const directory of searchDirectories) {
+    const project = evidencedRoot(directory, isProjectDirectory);
+    if (project) projectRoots.add(project);
+  }
+  for (const location of [...projectRoots, ...searchDirectories]) {
+    const repo = repositoryRoot(location);
+    if (repo) projectRoots.add(repo);
+  }
+  return [...projectRoots, ...searchDirectories.map((directory) => ({ directory }))];
+}
 
 /**
  * Get the current configuration of the CLI stored in `{@link currentSwaCliConfigFromFile}`.

@@ -1,7 +1,8 @@
 import "../../tests/_mocks/fetch.js";
 import "../../tests/_mocks/fs.js";
+import { childProcess, mockInternalProcesses } from "../../tests/_mocks/internal-process.js";
 
-import { vol } from "memfs";
+import { vol, fs } from "memfs";
 import { sep } from "node:path";
 import { PassThrough } from "node:stream";
 import os from "node:os";
@@ -198,12 +199,23 @@ describe("funcCoreTools", () => {
 
     afterEach(() => {
       fct.resetCachedInstalledSystemCoreToolsVersion();
+      vi.unstubAllEnvs();
     });
 
     it("should return the system binary if it's compatible", async () => {
-      fct.setCachedInstalledSystemCoreToolsVersion(4);
+      vol.fromJSON({ "/trusted/bin/func": "inert native fixture; never executed" });
+      fs.chmodSync("/trusted/bin/func", 0o755);
+      vi.stubEnv("PATH", "/trusted/bin");
+      mockInternalProcesses("4.0.0");
       const binary = await fct.getCoreToolsBinary();
-      expect(binary).toBe("func");
+      expect(binary).toBe("/trusted/bin/func");
+      expect(childProcess.execFile).toHaveBeenCalledWith(
+        "/trusted/bin/func",
+        ["--version"],
+        { encoding: "utf8", shell: false },
+        expect.any(Function),
+      );
+      expect(childProcess.exec).not.toHaveBeenCalled();
     });
 
     it("should return the downloaded binary if there's no system binary", async () => {
