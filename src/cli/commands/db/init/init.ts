@@ -12,6 +12,7 @@ import {
 import { execFileCommand } from "../../../../core/utils/command.js";
 import { logger } from "../../../../core/utils/logger.js";
 import { getDataApiBuilderBinaryPath } from "../../../../core/dataApiBuilder/index.js";
+import { getProjectRoots } from "../../../../core/utils/cli-config.js";
 
 export async function init(options: SWACLIConfig) {
   let { databaseType, connectionString, cosmosdb_nosqlContainer, cosmosdb_nosqlDatabase } = options;
@@ -44,13 +45,14 @@ export async function init(options: SWACLIConfig) {
 
   logger.log(`Creating ${DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME} configuration file`, "swa");
 
-  const dataApiBinary = await getDataApiBuilderBinaryPath();
+  const dataApiBinary = await getDataApiBuilderBinaryPath({ untrustedRoots: getProjectRoots(options, [directory]) });
   if (!dataApiBinary) {
     logger.error(
       `Could not find or install ${DATA_API_BUILDER_BINARY_NAME} binary.
     If you already have data-api-builder installed, try running "dab init" directly to generate the config file. Exiting!!`,
-      true
+      true,
     );
+    return;
   }
 
   let args: string[] = [

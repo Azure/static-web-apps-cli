@@ -5,7 +5,6 @@ declare global {
 }
 
 declare module "json-source-map";
-declare module "pem";
 
 declare interface StaticSiteClientEnv {
   // StaticSitesClient env vars

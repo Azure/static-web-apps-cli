@@ -23,3 +23,42 @@ export function removeTrailingPathSep(filePath: string): string {
 }
 
 export const hasSpaces = (str: string): boolean => str.indexOf(" ") !== -1;
+
+/** Split literal argv without variable, wildcard, substitution or operator expansion. */
+export function parseCommandArguments(value: string): string[] {
+  if (value.includes("\0")) throw new Error("Arguments cannot contain a null character.");
+  const args: string[] = [];
+  let token = "";
+  let started = false;
+  let quote: "'" | '"' | undefined;
+  for (let index = 0; index < value.length; index++) {
+    const character = value[index];
+    if (character === "\\" && quote !== "'") {
+      const next = value[index + 1];
+      // Preserve ordinary backslashes in Windows paths, but support escaped quotes/whitespace.
+      if (next === "\\" || next === '"' || (!quote && (next === "'" || (next !== undefined && /\s/.test(next))))) {
+        token += next;
+        index++;
+      } else {
+        token += character;
+      }
+      started = true;
+    } else if (quote) {
+      if (character === quote) quote = undefined;
+      else token += character;
+    } else if (character === "'" || character === '"') {
+      quote = character;
+      started = true;
+    } else if (/\s/.test(character)) {
+      if (started) args.push(token);
+      token = "";
+      started = false;
+    } else {
+      token += character;
+      started = true;
+    }
+  }
+  if (quote) throw new Error("Arguments contain an unterminated quote. Close the quote or escape a literal quote.");
+  if (started) args.push(token);
+  return args;
+}

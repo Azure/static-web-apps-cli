@@ -1,4 +1,3 @@
-import { concurrently, CloseEvent, ConcurrentlyOptions } from "concurrently";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,6 +17,10 @@ import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder/index.
 import { swaCLIEnv } from "../../../core/env.js";
 import { getCertificate } from "../../../core/ssl.js";
 import { loadPackageJson } from "../../../core/utils/json.js";
+import { getProjectRoots } from "../../../core/utils/cli-config.js";
+import { createShellExecutionSpec, InternalExecutionSpec } from "../../../core/utils/executable.js";
+import { NamedExecutionSpec, ProcessCloseEvent, superviseProcesses } from "../../../core/utils/process.js";
+import { parseCommandArguments } from "../../../core/utils/strings.js";
 
 const packageInfo = loadPackageJson();
 
@@ -63,6 +66,15 @@ export async function start(options: SWACLIConfig) {
   let useApiDevServer: string | undefined | null = undefined;
   let useDataApiDevServer: string | undefined | null = undefined;
   let startupCommand: string | undefined | null = undefined;
+  const launchCwd = process.cwd();
+  let funcArgv: string[];
+  try {
+    funcArgv = parseCommandArguments(funcArgs ?? "");
+  } catch (error) {
+    process.exitCode = 1;
+    logger.error(`Invalid --func-args: ${(error as Error).message}`, true);
+    return;
+  }
 
   let resolvedPortNumber = await isAcceptingTcpConnections({ host, port });
   if (resolvedPortNumber === 0) {
@@ -167,19 +179,29 @@ export async function start(options: SWACLIConfig) {
   }
 
   const isApiLocationExistsOnDisk = fs.existsSync(userWorkflowConfig?.apiLocation!);
+  const resolutionOptions = {
+    untrustedRoots: getProjectRoots(options, [
+      appLocation,
+      outputLocation,
+      userWorkflowConfig?.appLocation,
+      userWorkflowConfig?.apiLocation,
+      userWorkflowConfig?.dataApiLocation,
+      dataApiLocation,
+    ]),
+  };
 
   // handle the API location config
-  let serveApiCommand = "echo 'No API found. Skipping'";
+  let serveApi: InternalExecutionSpec | undefined;
 
   if (useApiDevServer) {
-    serveApiCommand = `echo 'using API dev server at ${useApiDevServer}'`;
+    logger.info(`Using API dev server at ${useApiDevServer}`, "api");
 
     // get the API port from the dev server
     apiPort = parseUrl(useApiDevServer)?.port;
   } else {
     if (apiLocation && userWorkflowConfig?.apiLocation) {
       // check if the func binary is globally available and if not, download it
-      const funcBinary = await getCoreToolsBinary();
+      const funcBinary = await getCoreToolsBinary(resolutionOptions);
       const nodeMajorVersion = getNodeMajorVersion();
       const targetVersion = detectTargetCoreToolsVersion(nodeMajorVersion);
 
@@ -192,6 +214,7 @@ export async function start(options: SWACLIConfig) {
           `See https://aka.ms/functions-core-tools for more information.`,
           true
         );
+        return;
       } else {
         if (isCoreToolsVersionCompatible(targetVersion, nodeMajorVersion) === false) {
           logger.error(
@@ -199,25 +222,29 @@ export async function start(options: SWACLIConfig) {
           );
           logger.error("See https://aka.ms/functions-node-versions for more information.");
           process.exit(1);
+          return;
         }
 
         // serve the api if and only if the user provides a folder via the --api-location flag
         if (isApiLocationExistsOnDisk) {
-          serveApiCommand = `cd "${userWorkflowConfig.apiLocation}" && "${funcBinary}" start --cors "*" --port ${apiPort} ${funcArgs ?? ""}`;
+          serveApi = {
+            executable: funcBinary,
+            args: ["start", "--cors", "*", "--port", String(apiPort), ...funcArgv],
+            cwd: path.resolve(userWorkflowConfig.apiLocation),
+          };
         }
       }
     }
   }
 
-  let serveDataApiCommand = "echo 'No Data API found'. Skipping";
-  let startDataApiBuilderNeeded = false;
+  let serveDataApi: InternalExecutionSpec | undefined;
   if (useDataApiDevServer) {
-    serveDataApiCommand = `echo using Data API server at ${useDataApiDevServer}`;
+    logger.info(`Using Data API server at ${useDataApiDevServer}`, "dataApi");
 
     dataApiPort = parseUrl(useDataApiDevServer)?.port;
   } else {
     if (dataApiLocation) {
-      const dataApiBinary = await getDataApiBuilderBinaryPath();
+      const dataApiBinary = await getDataApiBuilderBinaryPath(resolutionOptions);
       if (!dataApiBinary) {
         logger.error(
           `Could not find or install ${DATA_API_BUILDER_BINARY_NAME} binary.
@@ -225,14 +252,18 @@ export async function start(options: SWACLIConfig) {
         starting data-api-builder engine separately. Exiting!!`,
           true,
         );
+        return;
       } else {
-        serveDataApiCommand = `cd "${dataApiLocation}" && "${dataApiBinary}" start -c ${DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME} --no-https-redirect`;
+        serveDataApi = {
+          executable: dataApiBinary,
+          args: ["start", "-c", DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME, "--no-https-redirect"],
+          cwd: path.resolve(dataApiLocation),
+        };
         dataApiPort = DEFAULT_CONFIG.dataApiPort;
-        startDataApiBuilderNeeded = true;
       }
     }
 
-    logger.silly(`Running ${serveDataApiCommand}`);
+    if (serveDataApi) logger.silly(`Using Data API Builder at ${serveDataApi.executable}`);
   }
 
   if (ssl) {
@@ -256,8 +287,11 @@ export async function start(options: SWACLIConfig) {
   }
 
   if (run) {
-    startupCommand = createStartupScriptCommand(run, options);
+    startupCommand = createStartupScriptCommand(run, options) ?? run;
   }
+  const startup = startupCommand
+    ? createShellExecutionSpec(startupCommand, path.resolve(userWorkflowConfig?.appLocation ?? appLocation), resolutionOptions)
+    : undefined;
 
   // resolve the following config to their absolute paths
   // note: the server will perform a search starting from this path
@@ -296,94 +330,44 @@ export async function start(options: SWACLIConfig) {
 
   // INFO: from here, code may access SWA CLI env vars.
 
-  const swa_cli_env = swaCLIEnv();
-  // Convert the swa_cli_env to a Record<string, unknown> object so that type checking
-  // works in the ConcurrentlyCommandInput[] array
-  let env: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(swa_cli_env)) {
-    env[k] = v;
-  }
+  const env: NodeJS.ProcessEnv = { ...process.env, ...swaCLIEnv() };
+  const commands: NamedExecutionSpec[] = [{ name: "swa", execution: { executable: process.execPath, args: [mshaPath], cwd: launchCwd, env } }];
 
-  // Copy of the CommandInfo interface from concurrently.d.ts
-  // See https://github.com/open-cli-tools/concurrently/blob/main/src/command.ts#L10
-  interface CommandInfo {
-    name: string;
-    command: string;
-    env?: Record<string, unknown>;
-    cwd?: string;
-    prefixColor?: string;
-    raw?: boolean;
-  }
-
-  const concurrentlyCommands: CommandInfo[] = [
-    // start the reverse proxy
-    { command: `node "${mshaPath}"`, name: "swa", env, prefixColor: "gray.dim" },
-  ];
-
-  if (isApiLocationExistsOnDisk) {
-    concurrentlyCommands.push(
-      // serve the api, if it's available
-      { command: serveApiCommand, name: "api", env, prefixColor: "gray.dim" },
-    );
-  }
-
-  if (startDataApiBuilderNeeded) {
-    concurrentlyCommands.push({ command: serveDataApiCommand, name: "dataApi", env });
-  }
-
-  // run an external script, if it's available
-  if (startupCommand) {
-    let startupPath = userWorkflowConfig?.appLocation;
-
-    concurrentlyCommands.push({ command: `cd "${startupPath}" && ${startupCommand}`, name: "run", env, prefixColor: "gray.dim" });
-  }
+  if (serveApi) commands.push({ name: "api", execution: { ...serveApi, env } });
+  if (serveDataApi) commands.push({ name: "dataApi", execution: { ...serveDataApi, env } });
+  if (startup) commands.push({ name: "run", execution: { ...startup, env } });
 
   logger.silly(`Starting the SWA emulator with the following configuration:`);
   logger.silly({
     ssl: [ssl, sslCert, sslKey],
     env: envVarsObj,
     commands: {
-      swa: concurrentlyCommands.find((c) => c.name === "swa")?.command,
-      api: concurrentlyCommands.find((c) => c.name === "api")?.command,
-      dataApi: concurrentlyCommands.find((c) => c.name == "dataApi")?.command,
-      run: concurrentlyCommands.find((c) => c.name === "run")?.command,
+      swa: process.execPath,
+      api: serveApi?.executable,
+      dataApi: serveDataApi?.executable,
+      run: startup?.executable,
     },
   });
 
-  const concurrentlyOptions: Partial<ConcurrentlyOptions> = { restartTries: 0, killOthers: ["failure", "success"], raw: true };
-  const { result } = concurrently(concurrentlyCommands, concurrentlyOptions);
-
-  await result
-    .then(
-      (errorEvent: CloseEvent[]) => {
-        const killedCommand = errorEvent.filter((event) => event.killed).pop();
-        const exitCode = killedCommand?.exitCode;
-        logger.silly(`SWA emulator exited with code ${exitCode}`);
-        process.exit();
-      },
-      (errorEvent: CloseEvent[]) => {
-        const killedCommand = errorEvent.filter((event) => event.killed).pop();
-        const commandName = killedCommand?.command.name;
-        const exitCode = killedCommand?.exitCode;
-        let commandMessage = ``;
-        switch (commandName) {
-          case "swa":
-            commandMessage = `SWA emulator exited with code ${exitCode}`;
-            break;
-          case "api":
-            commandMessage = `API server exited with code ${exitCode}`;
-            break;
-          case "dataApi":
-            commandMessage = `Data API server exited with code ${exitCode}`;
-            break;
-          case "run":
-            commandMessage = `the --run command exited with code ${exitCode}`;
-            break;
-        }
-        logger.error(`SWA emulator stopped because ${commandMessage}.`, true);
-      },
-    )
-    .catch((err: Error) => {
-      logger.error(err.message, true);
-    });
+  try {
+    await superviseProcesses(commands, resolutionOptions);
+    logger.silly("SWA emulator exited with code 0");
+    process.exit();
+  } catch (error) {
+    process.exitCode = 1;
+    if (!Array.isArray(error)) {
+      logger.error((error as Error).message, true);
+      return;
+    }
+    const events = error as ProcessCloseEvent[];
+    const interrupted = events.find((event) => event.terminationSignal);
+    if (interrupted && !events.some((event) => event.error)) {
+      process.exit(interrupted.terminationSignal === "SIGINT" ? 130 : 143);
+      return;
+    }
+    const failure = events.find((event) => event.error) ?? events.find((event) => event.exitCode !== 0);
+    const labels: Record<string, string> = { swa: "SWA emulator", api: "API server", dataApi: "Data API server", run: "the --run command" };
+    if (failure?.error) logger.error(failure.error);
+    logger.error(`SWA emulator stopped because ${labels[failure?.command.name ?? "swa"]} exited with code ${failure?.exitCode}.`, true);
+  }
 }
