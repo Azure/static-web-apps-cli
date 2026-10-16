@@ -1,4 +1,5 @@
 import "../../tests/_mocks/fs.js";
+import "../../tests/_mocks/posix.js";
 import childProcess from "node:child_process";
 import { createRequire } from "node:module";
 import { X509Certificate, createPrivateKey } from "node:crypto";

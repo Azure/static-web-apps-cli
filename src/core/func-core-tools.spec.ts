@@ -1,9 +1,9 @@
 import "../../tests/_mocks/fetch.js";
 import "../../tests/_mocks/fs.js";
+import "../../tests/_mocks/posix.js";
 import { childProcess, mockInternalProcesses } from "../../tests/_mocks/internal-process.js";
 
 import { vol, fs } from "memfs";
-import { sep } from "node:path";
 import { PassThrough } from "node:stream";
 import os from "node:os";
 import * as fct from "./func-core-tools.js";
@@ -227,12 +227,7 @@ describe("funcCoreTools", () => {
 
       const binary = await fct.getCoreToolsBinary();
 
-      // note: we have mocked os.platform(), so we can't check for os name!
-      if (sep === "/") {
-        expect(binary).toBe("/home/user/.swa/core-tools/v4/func");
-      } else {
-        expect(binary).toContain(":\\home\\user\\.swa\\core-tools\\v4\\func");
-      }
+      expect(binary).toBe("/home/user/.swa/core-tools/v4/func");
     });
 
     it("should return the downloaded binary if the system binary is incompatible", async () => {
@@ -243,12 +238,7 @@ describe("funcCoreTools", () => {
       });
 
       const binary = await fct.getCoreToolsBinary();
-      // note: we have mocked os.platform(), so we can't check for os name!
-      if (sep === "/") {
-        expect(binary).toBe("/home/user/.swa/core-tools/v4/func");
-      } else {
-        expect(binary).toContain(":\\home\\user\\.swa\\core-tools\\v4\\func");
-      }
+      expect(binary).toBe("/home/user/.swa/core-tools/v4/func");
     });
 
     // SKIPPED: Does not work because we cannot mock adm-zip right now
@@ -283,12 +273,7 @@ describe("funcCoreTools", () => {
       );
 
       const binary = await fct.getCoreToolsBinary();
-      // note: we have mocked os.platform(), so we can't check for os name!
-      if (sep === "/") {
-        expect(binary).toBe("/home/user/.swa/core-tools/v4/func");
-      } else {
-        expect(binary).toContain(":\\home\\user\\.swa\\core-tools\\v4\\func");
-      }
+      expect(binary).toBe("/home/user/.swa/core-tools/v4/func");
     });
 
     it("should return undefined if an error occured", async () => {

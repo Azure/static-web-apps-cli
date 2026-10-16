@@ -1,17 +1,10 @@
 import "../../../tests/_mocks/fs.js";
+import { posix as simulated } from "../../../tests/_mocks/posix.js";
 import { fs, vol } from "memfs";
 import os from "node:os";
 import process from "node:process";
 import * as nodeFs from "node:fs";
 import { resolveManagedExecutable, resolveTrustedExecutable, resolveTrustedPackageManager } from "./executable.js";
-
-const simulated = vi.hoisted(() => ({ cwd: "/home/tester" }));
-vi.mock("node:process", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("node:process") & { default: typeof process }>();
-  const cwd = () => simulated.cwd;
-  // Named and default imports must observe the same chdir in this isolated worker.
-  return { ...actual, cwd, default: { ...actual.default, cwd } };
-});
 
 describe("invocation directory versus selected project trust (inert fixtures)", () => {
   const home = "/home/tester";

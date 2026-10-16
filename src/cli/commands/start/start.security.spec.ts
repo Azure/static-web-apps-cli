@@ -1,4 +1,5 @@
 import "../../../../tests/_mocks/fs.js";
+import "../../../../tests/_mocks/posix.js";
 import { childProcess, directLaunches, mockInternalProcesses } from "../../../../tests/_mocks/internal-process.js";
 import { vol, fs } from "memfs";
 import process from "node:process";

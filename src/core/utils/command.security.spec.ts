@@ -1,3 +1,4 @@
+import "../../../tests/_mocks/posix.js";
 import { childProcess, mockInternalProcesses } from "../../../tests/_mocks/internal-process.js";
 import { execFileCommand, runCommand } from "./command.js";
 

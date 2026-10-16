@@ -1,4 +1,5 @@
 import "../../../../tests/_mocks/fs.js";
+import "../../../../tests/_mocks/posix.js";
 import { vol, fs } from "memfs";
 import path from "node:path";
 import process from "node:process";
