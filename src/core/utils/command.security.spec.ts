@@ -1,9 +1,16 @@
+import "../../../tests/_mocks/fs.js";
 import "../../../tests/_mocks/posix.js";
 import { childProcess, mockInternalProcesses } from "../../../tests/_mocks/internal-process.js";
+import { vol, fs } from "memfs";
 import { execFileCommand, runCommand } from "./command.js";
 
 describe("command execution trust boundary", () => {
-  beforeEach(() => mockInternalProcesses("ok"));
+  beforeEach(() => {
+    vol.reset();
+    vol.fromJSON({ "/bin/sh": "inert system-shell fixture; never executed" });
+    fs.chmodSync("/bin/sh", 0o755);
+    mockInternalProcesses("ok");
+  });
 
   it.each(["dab", "tools/dab"])("rejects non-absolute internal executable %s before execution", (binary) => {
     expect(() => execFileCommand(binary, "/workspace", ["init"])).toThrow();
@@ -26,7 +33,7 @@ describe("command execution trust boundary", () => {
     runCommand(command, "/customer project");
     expect(childProcess.execSync).toHaveBeenCalledWith(
       command,
-      expect.objectContaining({ cwd: "/customer project", env: expect.objectContaining({ SWA_CLI_INTERNAL_COMMAND: "1" }) }),
+      expect.objectContaining({ cwd: "/customer project", shell: "/bin/sh", env: expect.objectContaining({ SWA_CLI_INTERNAL_COMMAND: "1" }) }),
     );
   });
 });
