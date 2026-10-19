@@ -35,8 +35,8 @@ export function parseCommandArguments(value: string): string[] {
     const character = value[index];
     if (character === "\\" && quote !== "'") {
       const next = value[index + 1];
-      // Preserve ordinary backslashes in Windows paths, but support escaped quotes/whitespace.
-      if (next === "\\" || next === '"' || (!quote && (next === "'" || (next !== undefined && /\s/.test(next))))) {
+      // Preserve backslash pairs in quoted Windows paths, but support escaped quotes/whitespace.
+      if (next === '"' || (!quote && (next === "\\" || next === "'" || (next !== undefined && /\s/.test(next))))) {
         token += next;
         index++;
       } else {
