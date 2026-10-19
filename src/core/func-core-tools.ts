@@ -8,13 +8,7 @@ import { fetchWithProxy as fetch } from "./utils/fetch-proxy.js";
 import AdmZip from "adm-zip";
 import cliProgress from "cli-progress";
 import { logger } from "./utils/logger.js";
-import {
-  ExecutableResolutionOptions,
-  probeExecutable,
-  resolveManagedExecutable,
-  resolveTrustedExecutable,
-  UnsupportedExecutableError,
-} from "./utils/executable.js";
+import { ExecutableResolutionOptions, probeExecutable, resolveManagedExecutable, resolveTrustedExecutable } from "./utils/executable.js";
 
 const RELEASES_FEED_URL = "https://functionscdn.azureedge.net/public/cli-feed-v4.json";
 const DEFAULT_FUNC_BINARY = "func";
@@ -87,21 +81,14 @@ async function getInstalledSystemCoreTools(options: ExecutableResolutionOptions)
     return undefined;
   }
 
-  let binaryPath: string | undefined;
-  try {
-    binaryPath = resolveTrustedExecutable(DEFAULT_FUNC_BINARY, options);
-  } catch (error) {
-    if (!(error instanceof UnsupportedExecutableError)) throw error;
-    logger.warn(`${error.message} Using the CLI-managed Functions Core Tools download instead.`);
-    return undefined;
-  }
+  const binaryPath = resolveTrustedExecutable(DEFAULT_FUNC_BINARY, options);
   if (!binaryPath) return undefined;
 
   if (installedSystemCoreToolsVersionIsCached && cachedSystemCoreToolsVersion !== undefined) {
     return { binaryPath, version: cachedSystemCoreToolsVersion };
   }
   try {
-    const { stdout } = await probeExecutable(binaryPath, ["--version"]);
+    const { stdout } = await probeExecutable(binaryPath, ["--version"], options);
     const version = getMajorVersion(stdout.trim());
     return Number.isFinite(version) ? { binaryPath, version } : undefined;
   } catch (error) {

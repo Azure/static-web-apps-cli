@@ -2,9 +2,8 @@ import "../../../tests/_mocks/fs.js";
 import { posix as simulated } from "../../../tests/_mocks/posix.js";
 import { fs, vol } from "memfs";
 import os from "node:os";
-import process from "node:process";
 import * as nodeFs from "node:fs";
-import { resolveManagedExecutable, resolveTrustedExecutable, resolveTrustedPackageManager } from "./executable.js";
+import { ExecutableResolutionOptions, resolveManagedExecutable, resolveTrustedExecutable, resolveTrustedPackageManager } from "./executable.js";
 
 describe("invocation directory versus selected project trust (inert fixtures)", () => {
   const home = "/home/tester";
@@ -30,6 +29,12 @@ describe("invocation directory versus selected project trust (inert fixtures)", 
     return { untrustedRoots: getProjectRoots({ config: `${selected}/swa-cli.config.json`, appLocation: selected }) };
   }
 
+  function expectConfiguredTool(tool: string, options: ExecutableResolutionOptions) {
+    expect(resolveTrustedExecutable("func", options)).toBe(tool);
+    vi.stubEnv("PATH", "/off-path");
+    expect(resolveTrustedExecutable("func", options)).toBeUndefined();
+  }
+
   it("allows the standard HOME managed Functions path outside the configured project", async () => {
     // Arrange
     const tool = `${home}/.swa/core-tools/v4/func`;
@@ -39,7 +44,7 @@ describe("invocation directory versus selected project trust (inert fixtures)", 
     expect(resolveManagedExecutable(tool, options)).toBe(tool);
   });
 
-  it("binds HOME runtime npm outside the configured project to current Node", async () => {
+  it("preserves the canonical HOME runtime npm launcher outside the configured project", async () => {
     // Arrange
     const runtime = `${home}/.nvm/versions/node/v20.18.0`;
     const script = `${runtime}/lib/node_modules/npm/bin/npm-cli.js`;
@@ -52,7 +57,7 @@ describe("invocation directory versus selected project trust (inert fixtures)", 
     vi.stubEnv("PATH", `${runtime}/bin`);
     const options = await selectProject();
     // Act / Assert
-    expect(resolveTrustedPackageManager("npm", options)).toEqual({ executable: process.execPath, args: [script] });
+    expect(resolveTrustedPackageManager("npm", options)).toEqual({ executable: script, args: [], resolutionOptions: options });
   });
 
   it("allows an ordinary HOME tool outside the project without cache-specific exemptions", async () => {
@@ -66,17 +71,17 @@ describe("invocation directory versus selected project trust (inert fixtures)", 
     expect(resolveTrustedExecutable("func", options)).toBe(tool);
   });
 
-  it("excludes a tool directly in the original invocation directory after chdir", async () => {
+  it("honors an explicit original invocation PATH entry after chdir but not an off-PATH shadow", async () => {
     // Arrange
     vol.fromJSON({ [`${home}/func`]: "inert fixture" });
     fs.chmodSync(`${home}/func`, 0o755);
     vi.stubEnv("PATH", home);
     const options = await selectProject();
     // Act / Assert
-    expect(resolveTrustedExecutable("func", options)).toBeUndefined();
+    expectConfiguredTool(`${home}/func`, options);
   });
 
-  it("excludes a canonical alias of the original invocation search directory", async () => {
+  it("keeps an explicit invocation PATH alias canonical and ignores it when off PATH", async () => {
     // Arrange
     vol.fromJSON({ [`${home}/func`]: "inert fixture" });
     fs.chmodSync(`${home}/func`, 0o755);
@@ -84,10 +89,10 @@ describe("invocation directory versus selected project trust (inert fixtures)", 
     vi.stubEnv("PATH", "/invocation-alias");
     const options = await selectProject();
     // Act / Assert
-    expect(resolveTrustedExecutable("func", options)).toBeUndefined();
+    expectConfiguredTool(`${home}/func`, options);
   });
 
-  it("retains recursive exclusion when invocation is a real repository root", async () => {
+  it("honors configured repository tools while retaining the recursive managed boundary", async () => {
     // Arrange: repository evidence, not merely an arbitrary HOME ancestor.
     const repo = "/repository";
     const selected = `${repo}/app`;
@@ -100,10 +105,11 @@ describe("invocation directory versus selected project trust (inert fixtures)", 
     vi.stubEnv("PATH", `${repo}/tools`);
     const options = await selectProject(repo, selected);
     // Act / Assert
-    expect(resolveTrustedExecutable("func", options)).toBeUndefined();
+    expectConfiguredTool(`${repo}/tools/func`, options);
+    expect(() => resolveManagedExecutable(`${repo}/tools/func`, options)).toThrow(/inside the project/);
   });
 
-  it("retains recursive repository scope for nested invocation under a valid worktree .git file", async () => {
+  it("retains managed repository scope beneath a valid worktree .git file without banning configured tools", async () => {
     // Arrange: the selected app is elsewhere; invocation repository evidence must not be erased.
     const repo = "/worktree";
     vol.fromJSON({
@@ -116,25 +122,30 @@ describe("invocation directory versus selected project trust (inert fixtures)", 
     vi.stubEnv("PATH", `${repo}/tools`);
     const options = await selectProject(`${repo}/nested`);
     // Act / Assert
-    expect(resolveTrustedExecutable("func", options)).toBeUndefined();
+    expectConfiguredTool(`${repo}/tools/func`, options);
+    expect(() => resolveManagedExecutable(`${repo}/tools/func`, options)).toThrow(/inside the project/);
   });
 
-  it.each(["package.json", "swa-cli.config.json"])("retains recursive non-Git project scope for nested invocation beneath %s", async (marker) => {
-    // Arrange
-    const root = "/non-git-project";
-    vol.fromJSON({
-      [`${root}/${marker}`]: "{}",
-      [`${root}/nested/.keep`]: "",
-      [`${root}/tools/func`]: "inert fixture",
-    });
-    fs.chmodSync(`${root}/tools/func`, 0o755);
-    vi.stubEnv("PATH", `${root}/tools`);
-    const options = await selectProject(`${root}/nested`);
-    // Act / Assert
-    expect(resolveTrustedExecutable("func", options)).toBeUndefined();
-  });
+  it.each(["package.json", "swa-cli.config.json"])(
+    "retains managed non-Git project scope beneath %s without banning configured tools",
+    async (marker) => {
+      // Arrange
+      const root = "/non-git-project";
+      vol.fromJSON({
+        [`${root}/${marker}`]: "{}",
+        [`${root}/nested/.keep`]: "",
+        [`${root}/tools/func`]: "inert fixture",
+      });
+      fs.chmodSync(`${root}/tools/func`, 0o755);
+      vi.stubEnv("PATH", `${root}/tools`);
+      const options = await selectProject(`${root}/nested`);
+      // Act / Assert
+      expectConfiguredTool(`${root}/tools/func`, options);
+      expect(() => resolveManagedExecutable(`${root}/tools/func`, options)).toThrow(/inside the project/);
+    },
+  );
 
-  it("rejects actual selected-project descendants reached through an outside alias", async () => {
+  it("honors a selected-project PATH alias while rejecting that alias as a managed cache", async () => {
     // Arrange: invocation HOME has only exact scope, but selected project remains recursive.
     vol.fromJSON({ [`${project}/tools/func`]: "inert fixture" });
     fs.chmodSync(`${project}/tools/func`, 0o755);
@@ -142,10 +153,11 @@ describe("invocation directory versus selected project trust (inert fixtures)", 
     vi.stubEnv("PATH", "/selected-tools-alias");
     const options = await selectProject();
     // Act / Assert
-    expect(resolveTrustedExecutable("func", options)).toBeUndefined();
+    expectConfiguredTool(`${project}/tools/func`, options);
+    expect(() => resolveManagedExecutable("/selected-tools-alias/func", options)).toThrow(/inside the project/);
   });
 
-  it("retains canonical repository ancestry when the selected project is a directory alias", async () => {
+  it("retains canonical managed ancestry for an aliased project without banning configured repository tools", async () => {
     // Arrange
     const repo = "/canonical-repo";
     vol.fromJSON({
@@ -158,7 +170,8 @@ describe("invocation directory versus selected project trust (inert fixtures)", 
     vi.stubEnv("PATH", `${repo}/tools`);
     const options = await selectProject(home, "/selected-app-alias");
     // Act / Assert
-    expect(resolveTrustedExecutable("func", options)).toBeUndefined();
+    expectConfiguredTool(`${repo}/tools/func`, options);
+    expect(() => resolveManagedExecutable(`${repo}/tools/func`, options)).toThrow(/inside the project/);
   });
 
   it.each([".git", "package.json"])("fails closed when invocation %s evidence cannot be inspected", async (marker) => {

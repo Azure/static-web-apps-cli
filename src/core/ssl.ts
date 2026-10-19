@@ -1,8 +1,9 @@
 import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { isIP } from "node:net";
-import selfsigned from "selfsigned";
+import process from "node:process";
+import { createRequire } from "node:module";
+import { ExecutableResolutionOptions, prepareExecution, resolveTrustedExecutable, resolveTrustedExecutablePath } from "./utils/executable.js";
 import { logger } from "./utils/logger.js";
 
 const ONE_MONTH = 1000 * 60 * 60 * 24 * 30;
@@ -26,7 +27,7 @@ export interface PEMOptions {
   /** Set the name of the serial file, without extension. - only together with options.serviceCertificate and never in tandem with options.serial */
   serialFile?: string;
 
-  /** Built-in certificates always use SHA256. */
+  /** Hash function to use (either md5 sha1 or sha256, defaults to sha256) */
   hash?: string;
 
   /** CSR for the certificate, if not defined a new one is generated */
@@ -80,14 +81,68 @@ export interface PEMOptions {
   altNames?: string[];
 }
 
+interface SSLCertificate {
+  csr: string;
+  serviceKey: string;
+  certificate: string;
+}
+
+interface Pem {
+  config(options: { pathOpenSSL: string }): void;
+  createCertificate(options: PEMOptions, callback: (error: Error | null, certificate: SSLCertificate) => void): void;
+}
+
+let pem: Pem | undefined;
+
+function isPem(value: unknown): value is Pem {
+  return (
+    !!value &&
+    typeof value === "object" &&
+    "config" in value &&
+    typeof value.config === "function" &&
+    "createCertificate" in value &&
+    typeof value.createCertificate === "function"
+  );
+}
+
+function certificateGenerator(resolutionOptions: ExecutableResolutionOptions): Pem {
+  if (pem) return pem;
+  const configured = process.env.OPENSSL_BIN;
+  const executable =
+    configured && /[\\/]/.test(configured)
+      ? resolveTrustedExecutablePath(configured, resolutionOptions)
+      : resolveTrustedExecutable(configured || "openssl", resolutionOptions);
+  if (!executable || prepareExecution({ executable, args: [], resolutionOptions }).executable !== executable) {
+    throw new Error("Cannot find a trusted native OpenSSL executable outside the project. Check your OpenSSL installation.");
+  }
+  const previous = { OPENSSL_BIN: process.env.OPENSSL_BIN, LIBRARY: process.env.LIBRARY };
+  try {
+    process.env.OPENSSL_BIN = executable;
+    // pem's CI fixture hook otherwise overrides OPENSSL_BIN with a project-relative path before probing.
+    delete process.env.LIBRARY;
+    const loaded: unknown = createRequire(import.meta.url)("pem");
+    if (!isPem(loaded)) {
+      throw new Error("The installed pem module does not expose its certificate API.");
+    }
+    loaded.config({ pathOpenSSL: executable });
+    pem = loaded;
+    return loaded;
+  } finally {
+    for (const [key, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+}
+
 /**
  * Generate a new SSL certificate. This will create a new key and certificate and cache them in the
  * `~/.swa/certificates/ssl` directory, for one month.
  *
- * @param options Subject, validity and SAN options for an in-process self-signed certificate.
+ * @param options PEM options (passed to the "`pem`" npm library)
  * @returns The abosulte filepath to the PEM file from cache.
  */
-export async function getCertificate(options: PEMOptions): Promise<string> {
+export async function getCertificate(options: PEMOptions, resolutionOptions: ExecutableResolutionOptions = {}): Promise<string> {
   const cacheDir = path.join(os.homedir(), ".swa", "certificates", "ssl");
   const cachePath = path.join(cacheDir, "swa-cli-UNSIGNED.pem");
 
@@ -106,11 +161,11 @@ export async function getCertificate(options: PEMOptions): Promise<string> {
     logger.silly("No cached certificate found.");
 
     logger.silly("Creating new certificate...");
-    const unsignedCertificate = await createCertificate(options);
+    const unsignedCertificate = await createCertificate(options, resolutionOptions);
 
     logger.silly("Writing certificate to cache...");
 
-    const pemContent = [unsignedCertificate.private, unsignedCertificate.cert].join("\n");
+    const pemContent = [unsignedCertificate.csr, unsignedCertificate.serviceKey, unsignedCertificate.certificate].join("\n");
 
     await fs.mkdir(cacheDir, { recursive: true });
     await fs.writeFile(cachePath, pemContent);
@@ -119,62 +174,9 @@ export async function getCertificate(options: PEMOptions): Promise<string> {
   }
 }
 
-async function createCertificate(options: PEMOptions): Promise<{ private: string; cert: string }> {
-  const unsupported = [
-    "serviceCertificate",
-    "serviceKey",
-    "serviceKeyPassword",
-    "serial",
-    "serialFile",
-    "csr",
-    "clientKeyPassword",
-    "extFile",
-    "config",
-    "clientKey",
-    "csrConfigFile",
-  ] as const;
-  if (unsupported.some((option) => options[option] !== undefined)) {
-    throw new Error("Custom signing keys/CSR options are not supported by the built-in certificate generator. Use --ssl-cert and --ssl-key.");
-  }
-  const commonName = options.commonName ?? "localhost";
-  const attrs = [
-    { name: "commonName", value: commonName },
-    { name: "countryName", value: options.country },
-    { name: "stateOrProvinceName", value: options.state },
-    { name: "localityName", value: options.locality },
-    { name: "organizationName", value: options.organization },
-    { name: "organizationalUnitName", value: options.organizationUnit },
-    { name: "emailAddress", value: options.emailAddress },
-  ].filter((attribute): attribute is { name: string; value: string } => attribute.value !== undefined);
-  const altNames = [...new Set([commonName, ...(options.altNames ?? [])])].map((name) =>
-    isIP(name) ? { type: 7, ip: name } : { type: 2, value: name },
-  );
-  const keySize = Math.max(2048, options.keyBitsize ?? 2048);
-  const days = options.days ?? 365;
-  if (!Number.isInteger(keySize) || !Number.isInteger(days) || days < 1) {
-    throw new Error("Certificate key size and validity must be positive integer values.");
-  }
+async function createCertificate(options: PEMOptions, resolutionOptions: ExecutableResolutionOptions): Promise<SSLCertificate> {
+  const generator = certificateGenerator(resolutionOptions);
   return new Promise((resolve, reject) => {
-    selfsigned.generate(
-      attrs,
-      {
-        keySize,
-        days,
-        algorithm: "sha256",
-        extensions: [
-          { name: "basicConstraints", cA: false },
-          { name: "keyUsage", digitalSignature: true, keyEncipherment: true },
-          { name: "extKeyUsage", serverAuth: true },
-          { name: "subjectAltName", altNames },
-        ],
-      },
-      (err, keys) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(keys);
-        }
-      },
-    );
+    generator.createCertificate(options, (error, certificate) => (error ? reject(error) : resolve(certificate)));
   });
 }

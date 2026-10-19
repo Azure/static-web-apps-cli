@@ -138,7 +138,11 @@ async function installNpmDependencies(packageJsonPath: string, options: Executab
   try {
     const packageManager = await detectPackageManager(packageJsonPath);
     logger.log(`Installing dependencies with "${packageManager} install"...`);
-    const spec = resolveTrustedPackageManager(packageManager, { ...options, untrustedRoots: [...(options.untrustedRoots ?? []), packageJsonPath] });
+    const spec = resolveTrustedPackageManager(packageManager, {
+      ...options,
+      cwd: path.resolve(packageJsonPath),
+      untrustedRoots: [...(options.untrustedRoots ?? []), packageJsonPath],
+    });
     execInternalCommand({ ...spec, args: [...spec.args, "install"], cwd: path.resolve(packageJsonPath) });
   } catch (error) {
     logger.error(`Cannot install dependencies:`);

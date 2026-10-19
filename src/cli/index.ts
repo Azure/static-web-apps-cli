@@ -1,4 +1,6 @@
 import dotenv from "dotenv";
+import { captureCallerPath } from "../core/utils/executable.js";
+captureCallerPath();
 dotenv.config();
 
 import process from "node:process";

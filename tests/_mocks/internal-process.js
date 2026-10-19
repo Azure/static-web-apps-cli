@@ -36,8 +36,8 @@ export function mockInternalProcesses(stdout = "", error = undefined) {
     queueMicrotask(() => {
       child.stdout.end(stdout);
       child.stderr.end();
-      child.emit("exit", error ? 1 : 0);
-      child.emit("close", error ? 1 : 0);
+      child.emit("exit", error ? 1 : 0, null);
+      child.emit("close", error ? 1 : 0, null);
     });
     return child;
   };

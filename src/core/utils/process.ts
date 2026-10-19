@@ -1,7 +1,9 @@
-import { ChildProcess, execFile, spawn } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
+import { EventEmitter } from "node:events";
+import { concurrently, Command, CloseEvent } from "concurrently";
 import os from "node:os";
 import process from "node:process";
-import { assertAbsoluteExecutable, ExecutableResolutionOptions, getTrustedWindowsSystemExecutable, InternalExecutionSpec } from "./executable.js";
+import { ExecutableResolutionOptions, getTrustedWindowsSystemExecutable, InternalExecutionSpec, prepareExecution } from "./executable.js";
 import { logger } from "./logger.js";
 
 export interface NamedExecutionSpec {
@@ -9,79 +11,83 @@ export interface NamedExecutionSpec {
   execution: InternalExecutionSpec;
 }
 
-export interface ProcessCloseEvent {
-  command: { name: string };
-  exitCode: number | NodeJS.Signals;
-  killed: boolean;
+export interface ProcessCloseEvent extends Pick<CloseEvent, "command" | "exitCode" | "killed"> {
   terminationSignal?: NodeJS.Signals;
   error?: Error;
 }
 
-interface RunningProcess {
-  child: ChildProcess;
-  finished: boolean;
-  terminationSignal?: NodeJS.Signals;
-  finish: (exitCode: number | NodeJS.Signals, error?: Error) => void;
-}
-
 /**
- * Raw-I/O supervision preserves wait-for-all completion, without a shell-string adapter.
+ * The named concurrently core retains raw I/O and wait-for-all completion.
  * Only spawn errors and parent signals trigger coordinated cleanup; ordinary exits do not.
  */
 export async function superviseProcesses(commands: NamedExecutionSpec[], options: ExecutableResolutionOptions = {}): Promise<ProcessCloseEvent[]> {
   if (!commands.length) throw new Error("No processes were provided.");
-  commands.forEach(({ execution }) => assertAbsoluteExecutable(execution.executable));
+  const executions = commands.map(({ execution }) => prepareExecution(execution));
   const windows = os.platform() === "win32";
   const taskkill = windows ? getTrustedWindowsSystemExecutable("taskkill.exe", options) : undefined;
-  const running: RunningProcess[] = [];
+  let running: Command[] = [];
+  const owned = new Map<number, number>();
+  const finished = new Set<number>();
+  const errors = new Map<number, Error>();
+  const signals = new Map<number, NodeJS.Signals>();
   let stopping: NodeJS.Signals | undefined;
   let escalation: NodeJS.Timeout | undefined;
   let deadline: NodeJS.Timeout | undefined;
 
-  const kill = (child: ChildProcess, signal: NodeJS.Signals) => {
-    if (!child.pid) return;
+  const kill = (pid: number, signal = "SIGTERM") => {
+    const index = owned.get(pid);
+    if (index === undefined) throw new Error("Refusing to stop an unowned process.");
     if (taskkill) {
-      execFile(taskkill, ["/PID", String(child.pid), "/T", "/F"], { windowsHide: true }, (error) => {
-        if (error && child.exitCode === null && child.signalCode === null) {
+      execFile(taskkill, ["/PID", String(pid), "/T", "/F"], { windowsHide: true }, (error) => {
+        if (error && !finished.has(index)) {
           logger.warn("Unable to stop a child process tree. Check the running emulator/tool processes.");
         }
       });
     } else {
       try {
         // Each child owns its group, including descendants created by customer shells.
-        process.kill(-child.pid, signal);
+        process.kill(-pid, signal);
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code !== "ESRCH") throw error;
       }
     }
   };
 
+  const finish = (command: Command, error?: Error) => {
+    if (finished.has(command.index)) return;
+    if (error) errors.set(command.index, error);
+    const now = new Date();
+    command.close.next({
+      command,
+      index: command.index,
+      exitCode: 1,
+      killed: signals.has(command.index),
+      timings: { startDate: now, endDate: now, durationSeconds: 0 },
+    });
+    // A spawn error may also produce a later native close event; count the command only once.
+    command.close.complete();
+  };
+
+  const terminate = (signal: NodeJS.Signals) => {
+    for (const command of running) {
+      if (finished.has(command.index)) continue;
+      signals.set(command.index, stopping ?? signal);
+      try {
+        command.kill(signal);
+      } catch (error) {
+        logger.warn(`Unable to stop a child process: ${(error as Error).message}`);
+      }
+    }
+  };
   const stop = (signal: NodeJS.Signals) => {
     if (stopping) return;
     stopping = signal;
-    for (const entry of running) {
-      if (!entry.finished) {
-        entry.terminationSignal = signal;
-        try {
-          kill(entry.child, signal);
-        } catch (error) {
-          logger.warn(`Unable to stop a child process: ${(error as Error).message}`);
-        }
-      }
-    }
+    terminate(signal);
     escalation = setTimeout(() => {
-      for (const entry of running) {
-        if (!entry.finished) {
-          try {
-            kill(entry.child, "SIGKILL");
-          } catch (error) {
-            logger.warn(`Unable to stop a child process: ${(error as Error).message}`);
-          }
-        }
-      }
+      terminate("SIGKILL");
       deadline = setTimeout(() => {
-        for (const entry of running) {
-          if (!entry.finished) entry.finish(1, new Error("Child process cleanup timed out. Check the running emulator/tool processes."));
+        for (const command of running) {
+          finish(command, new Error("Child process cleanup timed out. Check the running emulator/tool processes."));
         }
       }, 5000);
     }, 5000);
@@ -91,56 +97,75 @@ export async function superviseProcesses(commands: NamedExecutionSpec[], options
   process.on("SIGINT", onInterrupt);
   process.on("SIGTERM", onTerminate);
 
+  const closeEvent = (event: CloseEvent): ProcessCloseEvent => ({
+    ...event,
+    terminationSignal: signals.get(event.index),
+    error: errors.get(event.index),
+    killed: event.killed || signals.has(event.index),
+  });
   try {
-    const results = commands.map(
-      ({ name, execution }) =>
-        new Promise<ProcessCloseEvent>((resolve) => {
-          if (stopping) {
-            resolve({ command: { name }, exitCode: 1, killed: true, terminationSignal: stopping });
-            return;
-          }
-          let child: ChildProcess;
-          try {
-            child = spawn(execution.executable, execution.args, {
-              cwd: execution.cwd ?? process.cwd(),
-              env: { ...process.env, ...execution.env },
-              stdio: "inherit",
-              shell: false,
-              detached: !windows,
-              windowsVerbatimArguments: execution.windowsVerbatimArguments,
-            });
-          } catch (error) {
-            stop("SIGTERM");
-            resolve({ command: { name }, exitCode: 1, killed: false, error: error as Error });
-            return;
-          }
-          const entry: RunningProcess = {
-            child,
-            finished: false,
-            finish: (exitCode, error) => {
-              if (entry.finished) return;
-              entry.finished = true;
-              if (entry.terminationSignal && !windows) {
-                try {
-                  kill(entry.child, "SIGKILL");
-                } catch (cleanupError) {
-                  logger.warn(`Unable to stop remaining child processes: ${(cleanupError as Error).message}`);
-                }
+    const core = concurrently(
+      commands.map(({ name }, index) => ({ name, command: `swa-internal-${index}` })),
+      {
+        raw: true,
+        controllers: [
+          {
+            handle(coreCommands) {
+              running = coreCommands;
+              for (const command of running) {
+                command.close.subscribe(() => {
+                  finished.add(command.index);
+                  if (!windows && signals.has(command.index) && command.pid) {
+                    try {
+                      kill(command.pid, "SIGKILL");
+                    } catch (error) {
+                      logger.warn(`Unable to stop remaining child processes: ${(error as Error).message}`);
+                    }
+                  }
+                });
               }
-              resolve({ command: { name }, exitCode, killed: !!entry.terminationSignal, terminationSignal: entry.terminationSignal, error });
+              return { commands: running };
             },
-          };
-          running.push(entry);
-          child.once("close", (code: number | null, signal: NodeJS.Signals | null) => entry.finish(signal ?? code ?? 1));
-          child.once("error", (error: Error) => {
+          },
+        ],
+        kill,
+        spawn(key) {
+          const index = Number(key.slice("swa-internal-".length));
+          const execution = executions[index];
+          if (!execution) throw new Error("Unknown internal execution identity.");
+          try {
+            if (!stopping) {
+              const child = spawn(execution.executable, execution.args, {
+                cwd: execution.cwd ?? process.cwd(),
+                env: execution.env ?? process.env,
+                stdio: "inherit",
+                shell: false,
+                detached: !windows,
+                windowsVerbatimArguments: execution.windowsVerbatimArguments,
+              });
+              if (child.pid) owned.set(child.pid, index);
+              child.once("error", (error: Error) => {
+                stop("SIGTERM");
+                finish(running[index], error);
+              });
+              return child;
+            }
+          } catch (error) {
+            errors.set(index, error instanceof Error ? error : new Error(String(error)));
             stop("SIGTERM");
-            entry.finish(1, error);
-          });
-        }),
+          }
+          signals.set(index, stopping!);
+          queueMicrotask(() => finish(running[index], errors.get(index)));
+          return Object.assign(new EventEmitter(), { stdin: null, stdout: null, stderr: null });
+        },
+      },
     );
-    const events = await Promise.all(results);
-    if (events.some((event) => event.exitCode !== 0 || event.error || event.terminationSignal)) throw events;
-    return events;
+    try {
+      return (await core.result).map(closeEvent);
+    } catch (error) {
+      if (!Array.isArray(error)) throw error;
+      throw error.map(closeEvent);
+    }
   } finally {
     process.removeListener("SIGINT", onInterrupt);
     process.removeListener("SIGTERM", onTerminate);

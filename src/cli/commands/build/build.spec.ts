@@ -48,7 +48,12 @@ describe("swa build", () => {
 
     await build({ ...DEFAULT_CONFIG, appBuildCommand: "npm run something" });
 
-    expect(command.execInternalCommand).toHaveBeenCalledWith({ executable: "/trusted/bin/npm", args: ["install"], cwd: process.cwd() });
+    expect(command.execInternalCommand).toHaveBeenCalledWith({
+      executable: "/trusted/bin/npm",
+      args: ["install"],
+      cwd: process.cwd(),
+      resolutionOptions: { ...contextFor("."), cwd: process.cwd() },
+    });
     expect(command.runCommand).toHaveBeenCalledTimes(1);
     expect(command.runCommand).toHaveBeenCalledWith("npm run something", ".", contextFor("."));
     expect(vi.mocked(command.execInternalCommand).mock.invocationCallOrder[0]).toBeLessThan(
@@ -67,7 +72,12 @@ describe("swa build", () => {
       appBuildCommand: "npm run something",
     });
 
-    expect(command.execInternalCommand).toHaveBeenCalledWith({ executable: "/trusted/bin/npm", args: ["install"], cwd: path.resolve("app") });
+    expect(command.execInternalCommand).toHaveBeenCalledWith({
+      executable: "/trusted/bin/npm",
+      args: ["install"],
+      cwd: path.resolve("app"),
+      resolutionOptions: { ...contextFor("."), cwd: path.resolve("app") },
+    });
     expect(command.runCommand).toHaveBeenCalledTimes(1);
     expect(command.runCommand).toHaveBeenCalledWith("npm run something", ".", contextFor("."));
     expect(vi.mocked(command.execInternalCommand).mock.invocationCallOrder[0]).toBeLessThan(
@@ -90,7 +100,12 @@ describe("swa build", () => {
 
     await build({ ...DEFAULT_CONFIG, apiLocation: "api", apiBuildCommand: "npm run something" });
 
-    expect(command.execInternalCommand).toHaveBeenCalledWith({ executable: "/trusted/bin/npm", args: ["install"], cwd: path.resolve("api") });
+    expect(command.execInternalCommand).toHaveBeenCalledWith({
+      executable: "/trusted/bin/npm",
+      args: ["install"],
+      cwd: path.resolve("api"),
+      resolutionOptions: { ...contextFor("api"), cwd: path.resolve("api") },
+    });
     expect(command.runCommand).toHaveBeenCalledTimes(1);
     expect(command.runCommand).toHaveBeenCalledWith("npm run something", "api", contextFor("api"));
     expect(vi.mocked(command.execInternalCommand).mock.invocationCallOrder[0]).toBeLessThan(
@@ -109,7 +124,12 @@ describe("swa build", () => {
       apiBuildCommand: "npm run something",
     });
 
-    expect(command.execInternalCommand).toHaveBeenCalledWith({ executable: "/trusted/bin/npm", args: ["install"], cwd: path.resolve("api") });
+    expect(command.execInternalCommand).toHaveBeenCalledWith({
+      executable: "/trusted/bin/npm",
+      args: ["install"],
+      cwd: path.resolve("api"),
+      resolutionOptions: { ...contextFor("api"), cwd: path.resolve("api") },
+    });
     expect(command.runCommand).toHaveBeenCalledTimes(1);
     expect(command.runCommand).toHaveBeenCalledWith("npm run something", "api", contextFor("api"));
   });

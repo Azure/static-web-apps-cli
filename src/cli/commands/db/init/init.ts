@@ -20,7 +20,7 @@ export async function init(options: SWACLIConfig) {
   if (databaseType === undefined || !isValidDatabaseType(databaseType)) {
     logger.error(
       `--database-type is a required field. Please provide the type of the database you want to connect (mssql, postgresql, cosmosdb_nosql, mysql, cosmosdb_postgresql).`,
-      true
+      true,
     );
     return;
   }
@@ -45,7 +45,8 @@ export async function init(options: SWACLIConfig) {
 
   logger.log(`Creating ${DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME} configuration file`, "swa");
 
-  const dataApiBinary = await getDataApiBuilderBinaryPath({ untrustedRoots: getProjectRoots(options, [directory]) });
+  const resolutionOptions = { untrustedRoots: getProjectRoots(options, [directory]), cwd: path.resolve(directory) };
+  const dataApiBinary = await getDataApiBuilderBinaryPath(resolutionOptions);
   if (!dataApiBinary) {
     logger.error(
       `Could not find or install ${DATA_API_BUILDER_BINARY_NAME} binary.
@@ -88,7 +89,7 @@ export async function init(options: SWACLIConfig) {
     if (!cosmosdb_nosqlDatabase) {
       logger.error(
         `--cosmosdb_nosql-database is required when database-type is cosmosdb_nosql, ${DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME} will not be created`,
-        true
+        true,
       );
     }
     // create file staticwebapp.database.schema.json directly if database type cosmosdb_nosql since needed argument
@@ -110,7 +111,7 @@ export async function init(options: SWACLIConfig) {
   // todo:DAB CLI doesn't return an error code when it fails, so we need to allow stdio to be inherited (this will be fixed in the March release)
   // It would be better to have our own logs since DAB CLI refers to itself in its success messages
   // which may lead to confusion for swa cli users ex: `SUGGESTION: Use 'dab add [entity-name] [options]' to add new entities in your config.`
-  execFileCommand(dataApiBinary, directory, args);
+  execFileCommand(dataApiBinary, directory, args, resolutionOptions);
 
   // not logging anything here since DAB CLI logs success messages or error messages and we can't catch an error
 }

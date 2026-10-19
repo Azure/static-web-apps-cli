@@ -14,13 +14,7 @@ import path from "node:path";
 import { logger } from "../utils/logger.js";
 import { getPlatform } from "../utils/platform.js";
 import { downloadAndValidateBinary } from "../download-binary-helper.js";
-import {
-  ExecutableResolutionOptions,
-  probeExecutable,
-  resolveManagedExecutable,
-  resolveTrustedExecutable,
-  UnsupportedExecutableError,
-} from "../utils/executable.js";
+import { ExecutableResolutionOptions, probeExecutable, resolveManagedExecutable, resolveTrustedExecutable } from "../utils/executable.js";
 
 /**
  * Gets the filepath where the Microsoft.DataApiBuilder.exe is located
@@ -145,23 +139,16 @@ export function getDefaultDataApiBuilderBinaryForOS(platform: string): string {
 
 /**
  * Returns installed version if installed else undefined
- * @param options Additional project-controlled roots to exclude from discovery
+ * @param options Execution context for system interpreters and managed paths
  * @returns installed version
  */
 async function getInstalledDataApiBuilder(options: ExecutableResolutionOptions): Promise<{ binaryPath: string; version: string } | undefined> {
   logger.silly(`Running ${DATA_API_BUILDER_COMMAND} --version`);
 
-  let binaryPath: string | undefined;
-  try {
-    binaryPath = resolveTrustedExecutable(DATA_API_BUILDER_COMMAND, options);
-  } catch (error) {
-    if (!(error instanceof UnsupportedExecutableError)) throw error;
-    logger.warn(`${error.message} Using the CLI-managed Data API Builder download instead.`);
-    return undefined;
-  }
+  const binaryPath = resolveTrustedExecutable(DATA_API_BUILDER_COMMAND, options);
   if (!binaryPath) return undefined;
   try {
-    const { stdout } = await probeExecutable(binaryPath, ["--version"]);
+    const { stdout } = await probeExecutable(binaryPath, ["--version"], options);
     const version = /^Microsoft\.DataApiBuilder\s+(\S+)/.exec(stdout.trim())?.[1];
     return version ? { binaryPath, version } : undefined;
   } catch (error) {

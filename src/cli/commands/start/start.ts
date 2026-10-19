@@ -18,9 +18,8 @@ import { swaCLIEnv } from "../../../core/env.js";
 import { getCertificate } from "../../../core/ssl.js";
 import { loadPackageJson } from "../../../core/utils/json.js";
 import { getProjectRoots } from "../../../core/utils/cli-config.js";
-import { createShellExecutionSpec, InternalExecutionSpec } from "../../../core/utils/executable.js";
+import { createShellExecutionSpec, createToolShellExecutionSpec, InternalExecutionSpec } from "../../../core/utils/executable.js";
 import { NamedExecutionSpec, ProcessCloseEvent, superviseProcesses } from "../../../core/utils/process.js";
-import { parseCommandArguments } from "../../../core/utils/strings.js";
 
 const packageInfo = loadPackageJson();
 
@@ -67,14 +66,6 @@ export async function start(options: SWACLIConfig) {
   let useDataApiDevServer: string | undefined | null = undefined;
   let startupCommand: string | undefined | null = undefined;
   const launchCwd = process.cwd();
-  let funcArgv: string[];
-  try {
-    funcArgv = parseCommandArguments(funcArgs ?? "");
-  } catch (error) {
-    process.exitCode = 1;
-    logger.error(`Invalid --func-args: ${(error as Error).message}`, true);
-    return;
-  }
 
   let resolvedPortNumber = await isAcceptingTcpConnections({ host, port });
   if (resolvedPortNumber === 0) {
@@ -200,8 +191,8 @@ export async function start(options: SWACLIConfig) {
     apiPort = parseUrl(useApiDevServer)?.port;
   } else {
     if (apiLocation && userWorkflowConfig?.apiLocation) {
-      // check if the func binary is globally available and if not, download it
-      const funcBinary = await getCoreToolsBinary(resolutionOptions);
+      // Check the caller's PATH before using the managed download.
+      const funcBinary = await getCoreToolsBinary({ ...resolutionOptions, cwd: path.resolve(userWorkflowConfig.apiLocation) });
       const nodeMajorVersion = getNodeMajorVersion();
       const targetVersion = detectTargetCoreToolsVersion(nodeMajorVersion);
 
@@ -227,11 +218,13 @@ export async function start(options: SWACLIConfig) {
 
         // serve the api if and only if the user provides a folder via the --api-location flag
         if (isApiLocationExistsOnDisk) {
-          serveApi = {
-            executable: funcBinary,
-            args: ["start", "--cors", "*", "--port", String(apiPort), ...funcArgv],
-            cwd: path.resolve(userWorkflowConfig.apiLocation),
-          };
+          serveApi = createToolShellExecutionSpec(
+            funcBinary,
+            ["start", "--cors", "*", "--port", String(apiPort)],
+            path.resolve(userWorkflowConfig.apiLocation),
+            funcArgs ?? "",
+            resolutionOptions,
+          );
         }
       }
     }
@@ -244,7 +237,7 @@ export async function start(options: SWACLIConfig) {
     dataApiPort = parseUrl(useDataApiDevServer)?.port;
   } else {
     if (dataApiLocation) {
-      const dataApiBinary = await getDataApiBuilderBinaryPath(resolutionOptions);
+      const dataApiBinary = await getDataApiBuilderBinaryPath({ ...resolutionOptions, cwd: path.resolve(dataApiLocation) });
       if (!dataApiBinary) {
         logger.error(
           `Could not find or install ${DATA_API_BUILDER_BINARY_NAME} binary.
@@ -258,6 +251,7 @@ export async function start(options: SWACLIConfig) {
           executable: dataApiBinary,
           args: ["start", "-c", DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME, "--no-https-redirect"],
           cwd: path.resolve(dataApiLocation),
+          resolutionOptions,
         };
         dataApiPort = DEFAULT_CONFIG.dataApiPort;
       }
@@ -269,14 +263,17 @@ export async function start(options: SWACLIConfig) {
   if (ssl) {
     if (sslCert === undefined && sslKey === undefined) {
       logger.warn(`WARNING: Using built-in UNSIGNED certificate. DO NOT USE IN PRODUCTION!`);
-      const pemFilepath = await getCertificate({
-        selfSigned: true,
-        days: 365,
-        commonName: host,
-        organization: `Azure Static Web Apps CLI ${packageInfo.version}`,
-        organizationUnit: "Azure Engineering",
-        emailAddress: `secure@microsoft.com`,
-      });
+      const pemFilepath = await getCertificate(
+        {
+          selfSigned: true,
+          days: 365,
+          commonName: host,
+          organization: `Azure Static Web Apps CLI ${packageInfo.version}`,
+          organizationUnit: "Azure Engineering",
+          emailAddress: `secure@microsoft.com`,
+        },
+        resolutionOptions,
+      );
       sslCert = pemFilepath;
       sslKey = pemFilepath;
     } else {
@@ -333,9 +330,9 @@ export async function start(options: SWACLIConfig) {
   const env: NodeJS.ProcessEnv = { ...process.env, ...swaCLIEnv() };
   const commands: NamedExecutionSpec[] = [{ name: "swa", execution: { executable: process.execPath, args: [mshaPath], cwd: launchCwd, env } }];
 
-  if (serveApi) commands.push({ name: "api", execution: { ...serveApi, env } });
+  if (serveApi) commands.push({ name: "api", execution: { ...serveApi, env: { ...env, ...serveApi.env } } });
   if (serveDataApi) commands.push({ name: "dataApi", execution: { ...serveDataApi, env } });
-  if (startup) commands.push({ name: "run", execution: { ...startup, env } });
+  if (startup) commands.push({ name: "run", execution: { ...startup, env: { ...env, ...startup.env } } });
 
   logger.silly(`Starting the SWA emulator with the following configuration:`);
   logger.silly({

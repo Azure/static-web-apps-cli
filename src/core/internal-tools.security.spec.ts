@@ -24,8 +24,7 @@ describe("internal executable identity (no fixture execution)", () => {
     vi.spyOn(os, "platform").mockReturnValue("linux");
     vi.spyOn(os, "homedir").mockReturnValue("/home/tester");
     vi.spyOn(process, "cwd").mockReturnValue("/workspace");
-    // CWD, empty and relative entries are not trusted internal tool roots.
-    vi.stubEnv("PATH", "/workspace:.:relative-tools::/trusted/bin");
+    vi.stubEnv("PATH", "/trusted/bin");
     vol.fromJSON({
       "/workspace/func": "inert fixture",
       "/workspace/dab": "inert fixture",
@@ -53,9 +52,11 @@ describe("internal executable identity (no fixture execution)", () => {
   });
 
   it("returns the same trusted Functions identity selected for probing", async () => {
+    vi.stubEnv("PATH", "/workspace/relative-tools:/trusted/bin");
     mockInternalProcesses("4.0.0");
     const binary = await getCoreToolsBinary();
-    expect(binary).toBe("/trusted/bin/func");
+    expect(binary).toBe("/workspace/relative-tools/func");
+    expect(directLaunches()).toContainEqual(expect.objectContaining({ file: binary, args: ["--version"] }));
   });
 
   it("preserves absolute cached Functions downloads when no compatible installed version exists", async () => {
@@ -76,9 +77,11 @@ describe("internal executable identity (no fixture execution)", () => {
   });
 
   it("returns the same trusted DAB identity selected for probing", async () => {
+    vi.stubEnv("PATH", "/workspace/relative-tools:/trusted/bin");
     mockInternalProcesses("Microsoft.DataApiBuilder 1.2.3\r\n");
     const result = await installAndGetDataApiBuilder();
-    expect(result.binaryPath).toBe("/trusted/bin/dab");
+    expect(result.binaryPath).toBe("/workspace/relative-tools/dab");
+    expect(directLaunches()).toContainEqual(expect.objectContaining({ file: result.binaryPath, args: ["--version"] }));
   });
 
   it("fails closed when DAB probing and download both fail instead of returning a bare name", async () => {

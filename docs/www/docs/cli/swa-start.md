@@ -75,10 +75,6 @@ Then access the application with the emulated services from `http://localhost:42
 
 If your project includes API functions, the CLI will check if the Azure Functions Core Tools are installed and available. If not, the CLI will download and install the right version of the Azure Functions Core Tools.
 
-Installed Functions and Data API Builder tools must be native executables outside project directories; unsupported command wrappers use the CLI-managed download instead. You can also start a tool yourself and connect with `--api-devserver-url` or `--data-api-devserver-url`.
-
-`--func-args` is parsed as literal arguments, not a shell command. Use quotes to keep a value containing spaces together, for example `--func-args '--language-worker "argument with spaces"'`. Single/double quotes and escaped quotes/whitespace are supported; unmatched quotes are an error. Variables, wildcards and shell operators are not expanded. The `--run` option remains an intentional shell command, including npm/npx/Yarn shortcuts.
-
 #### Start the API server automatically
 
 Run the CLI and provide the folder that contains the API backend (a valid Azure Functions App project):

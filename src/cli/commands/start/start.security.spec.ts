@@ -4,12 +4,10 @@ import { childProcess, directLaunches, mockInternalProcesses } from "../../../..
 import { vol, fs } from "memfs";
 import process from "node:process";
 import path from "node:path";
-import { concurrently } from "concurrently";
 import { start } from "./start.js";
 import { DEFAULT_CONFIG } from "../../../config.js";
 import { getCertificate } from "../../../core/ssl.js";
 
-vi.mock("concurrently", () => ({ concurrently: vi.fn() }));
 vi.mock("../../../core/utils/net.js", () => ({ isAcceptingTcpConnections: async () => 4280, askNewPort: vi.fn(), parseUrl: vi.fn() }));
 vi.mock("../../../core/utils/workflow-config.js", () => ({
   readWorkflowFile: ({ userWorkflowConfig }: { userWorkflowConfig: object }) => userWorkflowConfig,
@@ -47,7 +45,6 @@ describe("start internal launches versus intentional customer commands", () => {
     vol.mkdirSync(options.apiLocation, { recursive: true });
     vol.mkdirSync(options.dataApiLocation, { recursive: true });
     mockInternalProcesses();
-    vi.mocked(concurrently).mockReturnValue({ result: Promise.resolve([]) } as any);
     vi.spyOn(process, "exit").mockImplementation((() => undefined) as never);
   });
 
@@ -55,100 +52,74 @@ describe("start internal launches versus intentional customer commands", () => {
     process.env = originalEnv;
   });
 
-  function internalShellCommands() {
-    return vi
-      .mocked(concurrently)
-      .mock.calls.flatMap(([commands]) =>
-        (commands as { name?: string; command: string }[]).filter((command) => ["swa", "api", "dataApi"].includes(command.name ?? "")),
-      );
+  function launches() {
+    return directLaunches().map(({ file, args, options }) => ({ file, args, cwd: options?.cwd, shell: options?.shell }));
+  }
+
+  function functionsLaunch() {
+    const launch = launches().find(({ cwd }) => cwd === options.apiLocation);
+    expect(launch?.file).toBe("/bin/sh");
+    expect(launch?.shell).toBe(false);
+    expect(launch?.args[0]).toBe("-c");
+    expect(launch?.args[1]).toMatch(/^'\/trusted tools\/func' 'start' '--cors' '\*' '--port' '7071'/);
+    return launch!;
   }
 
   it("launches the emulator using current Node and literal server argv without the default shell adapter", async () => {
     await start(options);
-    expect(
-      internalShellCommands()
-        .filter((command) => command.name === "swa")
-        .map((command) => command.command),
-    ).toEqual([]);
-    const emulator = directLaunches().find((launch) => launch.file === process.execPath);
+    const emulator = launches().find((launch) => launch.file === process.execPath);
     expect(emulator).toBeDefined();
     expect(emulator!.args).toHaveLength(1);
     expect(path.isAbsolute(emulator!.args[0])).toBe(true);
     expect(emulator!.args[0]).toMatch(/[/\\]msha[/\\]server\.js$/);
-    expect(emulator!.options?.shell).not.toBe(true);
+    expect(emulator!.shell).toBe(false);
+    expect(launches().some(({ args }) => args.some((arg: string) => arg.startsWith("swa-internal-")))).toBe(false);
   });
 
-  it("launches Functions with the selected absolute identity, literal args and explicit API cwd", async () => {
+  it("launches Functions with a bound absolute prefix and explicit API cwd", async () => {
+    process.env.PATH = `${options.apiLocation}:/bin`;
     await start(options);
-    expect(directLaunches()).toContainEqual(
-      expect.objectContaining({
-        file: "/trusted tools/func",
-        args: ["start", "--cors", "*", "--port", "7071"],
-        options: expect.objectContaining({ cwd: options.apiLocation }),
-      }),
-    );
-    expect(
-      internalShellCommands()
-        .filter((command) => command.name === "api")
-        .map((command) => command.command),
-    ).toEqual([]);
+    expect(functionsLaunch().args[1]).toBe("'/trusted tools/func' 'start' '--cors' '*' '--port' '7071'");
+    const api = directLaunches().find(({ options: launchOptions }) => launchOptions?.cwd === options.apiLocation)!;
+    expect(api.options?.env?.PATH).toBe(`${options.apiLocation}:/bin`);
   });
 
-  it("passes funcArgs quotes and metacharacters as literal argv through the Functions launch", async () => {
+  it("preserves the raw funcArgs shell suffix without changing the selected Functions prefix", async () => {
     // Arrange
-    const funcArgs = '--name "two words" "" literal&value $VALUE';
+    const funcArgs = '--name "two words" "" "$VALUE" && echo done';
     // Act
     await start({ ...options, funcArgs });
     // Assert
-    expect(directLaunches()).toContainEqual(
-      expect.objectContaining({
-        file: "/trusted tools/func",
-        args: ["start", "--cors", "*", "--port", "7071", "--name", "two words", "", "literal&value", "$VALUE"],
-        options: expect.objectContaining({ cwd: options.apiLocation, shell: false }),
-      }),
-    );
+    expect(functionsLaunch().args[1]).toBe(`'/trusted tools/func' 'start' '--cors' '*' '--port' '7071' ${funcArgs}`);
   });
 
-  it("rejects malformed funcArgs before spawning any emulator or tool", async () => {
+  it("delegates unmatched suffix quotes to the bound shell instead of applying the unused argv parser", async () => {
     // Arrange / Act
     await start({ ...options, funcArgs: '"unclosed' });
     // Assert
-    expect(childProcess.spawn).not.toHaveBeenCalled();
+    expect(functionsLaunch().args[1]).toBe(`'/trusted tools/func' 'start' '--cors' '*' '--port' '7071' "unclosed`);
+    expect(launches().some(({ file }) => file === process.execPath)).toBe(true);
   });
 
   it("launches DAB with the selected absolute identity, literal args and explicit data cwd", async () => {
     await start(options);
-    expect(directLaunches()).toContainEqual(
+    expect(launches()).toContainEqual(
       expect.objectContaining({
         file: "/trusted tools/dab",
         args: ["start", "-c", "staticwebapp.database.config.json", "--no-https-redirect"],
-        options: expect.objectContaining({ cwd: options.dataApiLocation }),
+        cwd: options.dataApiLocation,
+        shell: false,
       }),
     );
-    expect(
-      internalShellCommands()
-        .filter((command) => command.name === "dataApi")
-        .map((command) => command.command),
-    ).toEqual([]);
   });
 
   it("preserves the deliberate --run shell command instead of classifying it as an internal tool", async () => {
     const run = "npm run preview && echo done";
     await start({ ...options, run });
     expect(process.env.SWA_CLI_STARTUP_COMMAND).toBe(run);
-    const shells = [
-      ...vi
-        .mocked(concurrently)
-        .mock.calls.flatMap(([commands]) =>
-          (commands as { name?: string; command: string }[]).filter((command) => command.name === "run").map((command) => command.command),
-        ),
-      ...childProcess.exec.mock.calls.map(([command]) => command),
-      ...directLaunches().flatMap((launch) => launch.args),
-    ];
+    const shells = [...childProcess.exec.mock.calls.map(([command]) => command), ...launches().flatMap((launch) => launch.args)];
     expect(shells.some((command) => command.includes(run))).toBe(true);
-    expect(directLaunches()).toContainEqual(
-      expect.objectContaining({ file: "/bin/sh", args: ["-c", run], options: expect.objectContaining({ shell: false }) }),
-    );
+    expect(launches()).toContainEqual(expect.objectContaining({ file: "/bin/sh", args: ["-c", run], shell: false }));
   });
 
   it("preserves user-supplied TLS key and certificate without generating replacements", async () => {

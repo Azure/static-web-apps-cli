@@ -24,7 +24,7 @@ describe("automatic dependency installs are internal, user build strings are del
     vol.reset();
     mockInternalProcesses();
     vi.spyOn(process, "cwd").mockReturnValue("/workspace");
-    vi.stubEnv("PATH", "/workspace:.:/trusted/bin");
+    vi.stubEnv("PATH", "/trusted/bin");
     vol.fromJSON({
       "/bin/sh": "inert system-shell fixture; never executed",
       "/workspace/app/package.json": "{}",
@@ -34,6 +34,12 @@ describe("automatic dependency installs are internal, user build strings are del
       "/workspace/npm": "inert fixture",
       "/workspace/yarn": "inert fixture",
       "/workspace/pnpm": "inert fixture",
+      "/workspace/app/npm": "inert off-PATH fixture",
+      "/workspace/app/yarn": "inert off-PATH fixture",
+      "/workspace/app/pnpm": "inert off-PATH fixture",
+      "/workspace/app/.tools/npm": "inert configured fixture",
+      "/workspace/app/.tools/yarn": "inert configured fixture",
+      "/workspace/app/.tools/pnpm": "inert configured fixture",
     });
     for (const file of Object.keys(vol.toJSON())) fs.chmodSync(file, 0o755);
   });
@@ -46,17 +52,16 @@ describe("automatic dependency installs are internal, user build strings are del
     ["npm", "package-lock.json"],
     ["yarn", "yarn.lock"],
     ["pnpm", "pnpm-lock.yaml"],
-  ])("runs automatic %s install through its absolute identity rather than a project shell", async (manager, lock) => {
+  ])("runs automatic %s install through the caller-selected identity without off-PATH CWD preemption", async (manager, lock) => {
     vol.fromJSON({ [`/workspace/app/${lock}`]: "" });
-    await build({ ...DEFAULT_CONFIG, appLocation: "/workspace/app", outputLocation: ".", appBuildCommand: "npm run build && echo done" });
-    expect(childProcess.execSync.mock.calls.map(([command]) => command)).not.toContain(`${manager} install`);
-    expect(directLaunches()).toContainEqual(
-      expect.objectContaining({
-        file: `/trusted/bin/${manager}`,
-        args: ["install"],
-        options: expect.objectContaining({ cwd: "/workspace/app" }),
-      }),
-    );
+    for (const directory of ["/trusted/bin", "/workspace/app/.tools"]) {
+      vi.stubEnv("PATH", directory === "/trusted/bin" ? directory : `${directory}:/trusted/bin`);
+      await build({ ...DEFAULT_CONFIG, appLocation: "/workspace/app", outputLocation: ".", appBuildCommand: "npm run build && echo done" });
+      expect(childProcess.execSync.mock.calls.map(([command]) => command)).not.toContain(`${manager} install`);
+      const launches = directLaunches().map(({ file, args, options }) => ({ file, args, cwd: options?.cwd }));
+      expect(launches).toContainEqual({ file: `${directory}/${manager}`, args: ["install"], cwd: "/workspace/app" });
+      expect(launches.some(({ file }) => file === `/workspace/app/${manager}` || file === `/workspace/${manager}`)).toBe(false);
+    }
   });
 
   it("preserves an explicit user build command as a shell string", async () => {

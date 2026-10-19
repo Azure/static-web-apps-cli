@@ -7,6 +7,7 @@ import process from "node:process";
 import {
   assertAbsoluteExecutable,
   createShellExecutionSpec,
+  prepareExecution,
   resolveManagedExecutable,
   resolveTrustedExecutable,
   resolveTrustedPackageManager,
@@ -29,29 +30,37 @@ describe("trusted executable boundary (inert files only)", () => {
     vi.unstubAllEnvs();
   });
 
-  it("ignores empty, relative, cwd and project-descendant PATH entries", () => {
+  it("honors configured POSIX PATH order without adding off-PATH CWD", () => {
     // Arrange
     vi.stubEnv("PATH", ":.:tools:/project:/project/tools:/trusted/bin");
     // Act / Assert
+    expect(resolveTrustedExecutable("func")).toBe("/project/func");
+    vi.stubEnv("PATH", "/trusted/bin");
     expect(resolveTrustedExecutable("func")).toBe("/trusted/bin/func");
   });
 
-  it("rejects a PATH alias to project descendants", () => {
+  it("binds an explicit project PATH alias canonically but ignores it when off PATH", () => {
     // Arrange
     fs.symlinkSync("/project/tools", "/alias");
     vi.stubEnv("PATH", "/alias");
     // Act / Assert
-    expect(resolveTrustedExecutable("func")).toBeUndefined();
+    expect(resolveTrustedExecutable("func")).toBe("/project/tools/func");
+    vi.stubEnv("PATH", "/trusted/bin");
+    expect(resolveTrustedExecutable("func")).toBe("/trusted/bin/func");
   });
 
-  it("rejects aliases of separately supplied API roots", () => {
+  it("allows configured API PATH tools without relaxing managed API-root exclusions", () => {
     // Arrange
     vol.fromJSON({ "/api-root/bin/func": "inert" });
     fs.chmodSync("/api-root/bin/func", 0o755);
     fs.symlinkSync("/api-root", "/api-alias");
     vi.stubEnv("PATH", "/api-root/bin");
     // Act / Assert
-    expect(resolveTrustedExecutable("func", { untrustedRoots: ["/api-alias"] })).toBeUndefined();
+    const options = { untrustedRoots: ["/api-alias"] };
+    expect(resolveTrustedExecutable("func", options)).toBe("/api-root/bin/func");
+    expect(() => resolveManagedExecutable("/api-root/bin/func", options)).toThrow(/inside the project/);
+    vi.stubEnv("PATH", "/trusted/bin");
+    expect(resolveTrustedExecutable("func", options)).toBe("/trusted/bin/func");
   });
 
   it("does not confuse a project-prefix sibling with a descendant", () => {
@@ -89,7 +98,7 @@ describe("trusted executable boundary (inert files only)", () => {
     expect(resolveTrustedExecutable("func")).toBe("/trusted/bin/func");
   });
 
-  it("fails closed when a supplied exclusion root cannot be canonicalized", () => {
+  it("fails closed when a managed-path exclusion root cannot be canonicalized", () => {
     // Arrange
     vi.stubEnv("PATH", "/trusted/bin");
     const realpath = fs.realpathSync.bind(fs);
@@ -98,49 +107,106 @@ describe("trusted executable boundary (inert files only)", () => {
       return realpath(file, ...args);
     });
     // Act / Assert
-    expect(() => resolveTrustedExecutable("func", { untrustedRoots: ["/denied-root"] })).toThrow("denied");
+    expect(() => resolveManagedExecutable("/trusted/bin/not-downloaded/func", { untrustedRoots: ["/denied-root"] })).toThrow("denied");
   });
 
-  it("rejects unknown interpreter scripts instead of executing their shebang", () => {
+  it("rejects a trusted wrapper whose interpreter resolves inside the project", () => {
     // Arrange
-    vol.fromJSON({ "/trusted/bin/func": "#!/usr/bin/env node\ninert" });
+    vol.fromJSON({ "/trusted/bin/func": "#!/project/node\ninert", "/project/node": "inert native fixture" });
     fs.chmodSync("/trusted/bin/func", 0o755);
     vi.stubEnv("PATH", "/trusted/bin");
     // Act / Assert
-    expect(() => resolveTrustedExecutable("func")).toThrow(/Unsupported internal tool script/);
+    const executable = resolveTrustedExecutable("func")!;
+    expect(executable).toBe("/trusted/bin/func");
+    expect(() => prepareExecution({ executable, args: ["start"] })).toThrow(/trusted script interpreter/);
   });
 
-  it.each(["func", "./func", "/trusted/tool.cmd", "/trusted/tool.bat", "/trusted/tool.ps1"])(
-    "refuses a relative identity or shell shim: %s",
+  it.each(["func", "./func"])("refuses a relative identity: %s", (file) => {
+    expect(() => assertAbsoluteExecutable(file)).toThrow();
+  });
+
+  it.each(["/trusted/tool.cmd", "/trusted/tool.bat", "/trusted/tool.ps1"])(
+    "does not confuse an absolute launcher with a relative identity: %s",
     (file) => {
-      // Arrange / Act / Assert
-      expect(() => assertAbsoluteExecutable(file)).toThrow();
+      expect(() => assertAbsoluteExecutable(file)).not.toThrow();
     },
   );
 
-  it.each(["yarn", "pnpm"] as const)("binds a known %s Corepack script to current Node", (manager) => {
+  it("refuses an absolute script when its interpreter cannot be bound", () => {
+    vol.fromJSON({ "/trusted/bin/func": "#!/missing/interpreter\ninert" });
+    expect(() => prepareExecution({ executable: "/trusted/bin/func", args: [] })).toThrow(/trusted script interpreter/);
+    expect(() => prepareExecution({ executable: "/trusted/tool.ps1", args: [] })).toThrow(/determine the interpreter/);
+  });
+
+  it("preserves the fixed trusted shebang loader and flags without removing configured project PATH", () => {
+    vol.fromJSON({
+      "/trusted/bin/func": "#!/trusted/bin/node --loader-flag\ninert",
+      "/trusted/bin/node": "inert native fixture",
+    });
+    fs.chmodSync("/trusted/bin/node", 0o755);
+    vi.stubEnv("PATH", "/project:/trusted/bin");
+    const execution = prepareExecution({ executable: "/trusted/bin/func", args: ["start"] });
+    expect({ executable: execution.executable, args: execution.args, searchPath: execution.env?.PATH }).toEqual({
+      executable: "/trusted/bin/node",
+      args: ["--loader-flag", "/trusted/bin/func", "start"],
+      searchPath: "/project:/trusted/bin",
+    });
+  });
+
+  it("binds future caller PATH aliases canonically while retaining managed exclusions and global alternatives", () => {
+    vol.fromJSON({
+      "/trusted/bin/func": "#!/trusted/bin/node\ninert",
+      "/trusted/bin/node": "inert native fixture",
+    });
+    fs.chmodSync("/trusted/bin/node", 0o755);
+    fs.symlinkSync("/project", "/outside-project-alias");
+    vi.stubEnv("PATH", "/outside-project-alias/future:/trusted/future:/trusted/bin");
+    const prepared = prepareExecution({ executable: "/trusted/bin/func", args: [], cwd: "/project" });
+    fs.mkdirSync("/project/future");
+    fs.mkdirSync("/trusted/future");
+    vol.fromJSON({ "/project/future/node": "inert project canary", "/trusted/future/node": "inert external identity" });
+    fs.chmodSync("/project/future/node", 0o755);
+    fs.chmodSync("/trusted/future/node", 0o755);
+    vi.stubEnv("PATH", prepared.env!.PATH!);
+    expect(prepared.env!.PATH!.split(":")).toEqual(["/project/future", "/trusted/future", "/trusted/bin"]);
+    expect(resolveTrustedExecutable("node")).toBe("/project/future/node");
+    expect(() => resolveManagedExecutable("/outside-project-alias/future/node")).toThrow(/inside the project/);
+    vi.stubEnv("PATH", "/trusted/future:/trusted/bin");
+    expect(resolveTrustedExecutable("node")).toBe("/trusted/future/node");
+  });
+
+  it.each(["yarn", "pnpm"] as const)("selects the actual external %s wrapper instead of a neighboring Corepack entrypoint", (manager) => {
     // Arrange
     const script = `/trusted/bin/node_modules/corepack/dist/${manager}.js`;
     vol.fromJSON({
       "/trusted/bin/node_modules/corepack/package.json": JSON.stringify({ name: "corepack", bin: { [manager]: `./dist/${manager}.js` } }),
       [script]: "inert JS fixture",
+      [`/trusted/bin/${manager}`]: "inert external launcher",
     });
+    fs.chmodSync(`/trusted/bin/${manager}`, 0o755);
     vi.stubEnv("PATH", "/trusted/bin");
     // Act / Assert
-    expect(resolveTrustedPackageManager(manager)).toEqual({ executable: process.execPath, args: [script] });
+    expect(resolveTrustedPackageManager(manager)).toEqual({ executable: `/trusted/bin/${manager}`, args: [], resolutionOptions: {} });
   });
 
-  it("rejects a recognized package entrypoint aliased into the project", () => {
+  it("never substitutes metadata for the configured launcher and keeps explicit aliases canonical", () => {
     // Arrange
     vol.fromJSON({
       "/trusted/bin/node_modules/npm/package.json": JSON.stringify({ name: "npm", bin: { npm: "bin/npm-cli.js" } }),
       "/project/npm-cli.js": "inert JS fixture",
+      "/trusted/bin/npm": "inert external launcher",
     });
+    fs.chmodSync("/trusted/bin/npm", 0o755);
     fs.mkdirSync("/trusted/bin/node_modules/npm/bin");
     fs.symlinkSync("/project/npm-cli.js", "/trusted/bin/node_modules/npm/bin/npm-cli.js");
     vi.stubEnv("PATH", "/trusted/bin");
     // Act / Assert
-    expect(() => resolveTrustedPackageManager("npm")).toThrow(/Cannot find a supported npm/);
+    expect(resolveTrustedPackageManager("npm")).toEqual({ executable: "/trusted/bin/npm", args: [], resolutionOptions: {} });
+    fs.unlinkSync("/trusted/bin/npm");
+    fs.symlinkSync("/project/npm-cli.js", "/trusted/bin/npm");
+    const aliased = resolveTrustedPackageManager("npm");
+    expect(aliased.executable).toBe("/project/npm-cli.js");
+    expect(() => prepareExecution(aliased)).toThrow(/determine the interpreter/);
   });
 });
 
@@ -155,7 +221,9 @@ describe("simulated Windows known shim identities (not native proof)", () => {
     vi.stubEnv("PATH", '"C:\\trusted";.;C:\\project');
     vi.stubEnv("SystemRoot", "C:\\Windows");
     vi.stubEnv("ComSpec", "C:\\project\\cmd.exe");
-    for (const file of ["C:\\Windows\\System32\\cmd.exe", "C:\\project\\cmd.exe"]) fixtures.set(canonical(file), "inert");
+    for (const file of ["C:\\trusted", "C:\\project", "C:\\Windows\\System32", "C:\\Windows\\System32\\cmd.exe", "C:\\project\\cmd.exe"]) {
+      fixtures.set(canonical(file), "inert");
+    }
     vi.spyOn(fs, "realpathSync").mockImplementation(((file: unknown) => {
       const key = canonical(String(file));
       if (fixtures.has(key)) return key;
@@ -174,7 +242,7 @@ describe("simulated Windows known shim identities (not native proof)", () => {
     ["npm", "npm", "bin/npm-cli.js"],
     ["yarn", "corepack", "dist/yarn.js"],
     ["pnpm", "corepack", "dist/pnpm.js"],
-  ] as const)("binds a standard Windows %s shim to current Node and recognized script", (manager, provider, entry) => {
+  ] as const)("selects the canonical external Windows %s wrapper instead of its neighboring entrypoint", (manager, provider, entry) => {
     // Arrange: wrapper content is not parsed or executed.
     const root = `C:\\trusted\\node_modules\\${provider}`;
     const script = path.win32.join(root, entry);
@@ -182,7 +250,11 @@ describe("simulated Windows known shim identities (not native proof)", () => {
     fixtures.set(canonical(`${root}\\package.json`), JSON.stringify({ name: provider, bin: { [manager]: entry } }));
     fixtures.set(canonical(script), "inert JS");
     // Act / Assert
-    expect(resolveTrustedPackageManager(manager)).toEqual({ executable: process.execPath, args: [canonical(script)] });
+    expect(resolveTrustedPackageManager(manager)).toEqual({
+      executable: canonical(`C:\\trusted\\${manager}.cmd`),
+      args: [],
+      resolutionOptions: {},
+    });
   });
 
   it("selects System32 cmd rather than project ComSpec for intentional commands", () => {
@@ -193,15 +265,18 @@ describe("simulated Windows known shim identities (not native proof)", () => {
       executable: "c:\\windows\\system32\\cmd.exe",
       args: ["/d", "/s", "/c", `"${command}"`],
       cwd: "C:\\project",
+      env: { ComSpec: "c:\\windows\\system32\\cmd.exe" },
       windowsVerbatimArguments: true,
     });
   });
 
-  it("rejects case-variant project descendants", () => {
+  it("canonicalizes configured case-variant project PATH and ignores the same off-PATH tool", () => {
     // Arrange
     vi.stubEnv("PATH", "C:\\PROJECT\\tools");
     fixtures.set(canonical("C:\\project\\tools\\func.exe"), "inert");
     // Act / Assert
+    expect(resolveTrustedExecutable("func")).toBe(canonical("C:\\project\\tools\\func.exe"));
+    vi.stubEnv("PATH", "C:\\trusted");
     expect(resolveTrustedExecutable("func")).toBeUndefined();
   });
 });
