@@ -257,6 +257,20 @@ describe("simulated Windows known shim identities (not native proof)", () => {
     });
   });
 
+  it.each([
+    ["COM before EXE", ".COM;.EXE;.BAT;.CMD", "func", ["func.com", "func.exe"], "func.com"],
+    ["BAT before CMD", ".COM;.EXE;.BAT;.CMD", "func", ["func.bat", "func.cmd"], "func.bat"],
+    ["caller CMD before EXE", ".CMD;.EXE;.COM;.BAT", "func", ["func.cmd", "func.exe"], "func.cmd"],
+    ["case-insensitive order/name/suffix", ".cMd;.eXe;.cOm;.bAt", "FuNc", ["FuNc.CmD", "FuNc.ExE"], "FuNc.CmD"],
+    ["explicit EXE does not append COM", ".COM;.EXE;.BAT;.CMD", "func.ExE", ["func.exe", "func.exe.com", "func.com"], "func.exe"],
+    ["undeclared EXE is not a fallback", ".CMD", "func", ["func.exe"], undefined],
+  ] as const)("caller PATHEXT lookup matches native cmd: %s", (_scenario, pathext, name, files, expected) => {
+    vi.stubEnv("PATH", "C:\\trusted");
+    vi.stubEnv("PATHEXT", pathext);
+    for (const file of files) fixtures.set(canonical(path.win32.join("C:\\trusted", file)), "inert fixture");
+    expect(resolveTrustedExecutable(name)).toBe(expected === undefined ? undefined : canonical(path.win32.join("C:\\trusted", expected)));
+  });
+
   it("selects System32 cmd rather than project ComSpec for intentional commands", () => {
     // Arrange
     const command = "echo benign";

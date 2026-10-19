@@ -32,16 +32,16 @@ export interface ExecutableResolutionOptions {
 
 export class UnsupportedExecutableError extends Error {}
 
-let callerPath: { value: string | undefined } | undefined;
+let callerPath: { value: string | undefined; extensions: string | undefined } | undefined;
 const absentCallerPath = "SWA_CLI_INTERNAL_PATH_ABSENT";
 
-function pathValue(env: NodeJS.ProcessEnv): string | undefined {
+function pathValue(env: NodeJS.ProcessEnv, name = "PATH"): string | undefined {
   const windows = os.platform() === "win32";
-  const key = Object.keys(env).find((name) => (windows ? name.toLowerCase() === "path" : name === "PATH"));
+  const key = Object.keys(env).find((key) => (windows ? key.toLowerCase() === name.toLowerCase() : key === name));
   return key ? env[key] : undefined;
 }
 
-/** Capture inherited selection before project dotenv values can fill a missing PATH. */
+/** Capture inherited lookup configuration before project dotenv can fill missing PATH/PATHEXT. */
 export function captureCallerPath(): void {
   let value = pathValue(process.env);
   if (os.platform() === "win32" && process.env[absentCallerPath] === "1" && value === "") {
@@ -51,12 +51,18 @@ export function captureCallerPath(): void {
     value = undefined;
   }
   delete process.env[absentCallerPath];
-  callerPath = { value };
+  callerPath = { value, extensions: pathValue(process.env, "PATHEXT") };
 }
 
-function markAbsentCallerPath(env: NodeJS.ProcessEnv): void {
+function preserveCallerLookup(env: NodeJS.ProcessEnv): void {
   delete env[absentCallerPath];
-  if (os.platform() === "win32" && callerPath && callerPath.value === undefined) env[absentCallerPath] = "1";
+  if (os.platform() !== "win32" || !callerPath) return;
+  for (const key of Object.keys(env)) {
+    if (key.toLowerCase() === "pathext") delete env[key];
+  }
+  // An undefined override prevents composed command environments from restoring project PATHEXT.
+  env.PATHEXT = callerPath.extensions;
+  if (callerPath.value === undefined) env[absentCallerPath] = "1";
 }
 
 function executionEnvironment(overrides: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv {
@@ -251,7 +257,15 @@ export function resolveTrustedExecutable(name: string, options: ExecutableResolu
     throw new Error(`Expected an internal tool name, not a path: ${name}`);
   }
   const windows = os.platform() === "win32";
-  const names = windows && !/\.(exe|com)$/i.test(name) ? [`${name}.exe`, `${name}.com`, `${name}.cmd`, `${name}.bat`, `${name}.ps1`] : [name];
+  const extensions = callerPath ? callerPath.extensions : pathValue(process.env, "PATHEXT");
+  // cmd supplies native/batch defaults only for absent or empty PATHEXT, not for an explicit list.
+  const names =
+    windows && !/\.(exe|com)$/i.test(name)
+      ? (extensions || ".COM;.EXE;.BAT;.CMD")
+          .split(";")
+          .filter((extension) => /^\.(com|exe|bat|cmd)$/i.test(extension))
+          .map((extension) => `${name}${extension.toLowerCase()}`)
+      : [name];
   for (const directory of pathDirectories(options, process.env, options.cwd)) {
     for (const filename of names) {
       const candidate = executablePath(platformPath().join(directory, filename));
@@ -314,7 +328,7 @@ function internalEnvironment(options: ExecutableResolutionOptions, overrides?: N
     env.ComSpec = getTrustedWindowsSystemExecutable("cmd.exe", options);
     env.NoDefaultCurrentDirectoryInExePath = "1";
   }
-  markAbsentCallerPath(env);
+  preserveCallerLookup(env);
   return env;
 }
 
@@ -408,7 +422,7 @@ export function prepareExecution(spec: InternalExecutionSpec): InternalExecution
   if (callerPath.value !== undefined) env[os.platform() === "win32" ? "Path" : "PATH"] = callerPath.value;
   // Windows spawn fills an omitted PATH from the parent; the entry hook restores this placeholder's absence.
   else if (os.platform() === "win32") env.Path = "";
-  markAbsentCallerPath(env);
+  preserveCallerLookup(env);
   return { ...spec, env };
 }
 
