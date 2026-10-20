@@ -588,6 +588,7 @@
             "dotnet:8.0",
             "dotnet-isolated:8.0",
             "dotnet-isolated:9.0",
+            "dotnet-isolated:10.0",
             "node:18",
             "node:20",
             "node:22",

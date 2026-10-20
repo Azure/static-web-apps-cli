@@ -308,6 +308,23 @@ describe("deploy", () => {
       expect(SUPPORTED_VERSIONS.DotnetIsolated).toContain(env.FUNCTION_LANGUAGE_VERSION);
     });
 
+    it.each(["8.0", "9.0", "10.0"])("should forward explicitly selected .NET isolated %s to the deployment process", async (apiVersion) => {
+      vi.spyOn(optionsModule, "isUserOrConfigOption").mockImplementation((option) => option === "apiLanguage" || option === "apiVersion");
+
+      await deploy({ outputLocation: "/test-output", dryRun: false, apiLanguage: "dotnetisolated", apiVersion });
+
+      expect(spawn).toHaveBeenCalledWith(
+        "mock-binary",
+        [],
+        expect.objectContaining({
+          env: expect.objectContaining({
+            FUNCTION_LANGUAGE: "dotnetisolated",
+            FUNCTION_LANGUAGE_VERSION: apiVersion,
+          }),
+        }),
+      );
+    });
+
     it("should print an error when --env is an empty string", async () => {
       await deploy({
         outputLocation: "/test-output",
