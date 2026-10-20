@@ -6,8 +6,8 @@ import { isUserOrConfigOption } from "../../../core/utils/options.js";
 import { logger } from "../../../core/utils/logger.js";
 import { readWorkflowFile } from "../../../core/utils/workflow-config.js";
 import { execInternalCommand, runCommand } from "../../../core/utils/command.js";
-import { getProjectRoots, swaCliConfigFilename } from "../../../core/utils/cli-config.js";
-import { ExecutableResolutionOptions, resolveTrustedPackageManager } from "../../../core/utils/executable.js";
+import { swaCliConfigFilename } from "../../../core/utils/cli-config.js";
+import { resolveTrustedPackageManager } from "../../../core/utils/executable.js";
 
 export async function build(options: SWACLIConfig) {
   const workflowConfig = readWorkflowFile();
@@ -80,17 +80,15 @@ export async function build(options: SWACLIConfig) {
   logger.log(`- App build command: ${chalk.green(appBuildCommand || "")}`);
   logger.log(`- API build command: ${chalk.green(apiBuildCommand || "")}`);
 
-  const resolvedOutput = appLocation && outputLocation ? path.resolve(appLocation, outputLocation) : undefined;
-  const resolutionOptions = { untrustedRoots: getProjectRoots(options, [appLocation, apiLocation, resolvedOutput]) };
   if (appBuildCommand) {
     const packageJsonPath = await findUpPackageJsonDir(appLocation!, outputLocation!);
     if (packageJsonPath) {
       logger.log(`Found package.json in ${packageJsonPath}`);
-      await installNpmDependencies(packageJsonPath, resolutionOptions);
+      await installNpmDependencies(packageJsonPath);
     }
 
     logger.log(`Building app with ${chalk.green(appBuildCommand)} in ${chalk.dim(appLocation)} ...`);
-    runCommand(appBuildCommand, appLocation!, resolutionOptions);
+    runCommand(appBuildCommand, appLocation!);
   }
 
   if (apiBuildCommand) {
@@ -98,11 +96,11 @@ export async function build(options: SWACLIConfig) {
     const packageJsonPath = await findUpPackageJsonDir(apiLocation!, ".");
     if (packageJsonPath) {
       logger.log(`Found package.json in ${packageJsonPath}`);
-      await installNpmDependencies(packageJsonPath, resolutionOptions);
+      await installNpmDependencies(packageJsonPath);
     }
 
     logger.log(`Building api with ${chalk.green(apiBuildCommand)} in ${chalk.dim(apiLocation)} ...`);
-    runCommand(apiBuildCommand, apiLocation!, resolutionOptions);
+    runCommand(apiBuildCommand, apiLocation!);
   }
 }
 
@@ -134,19 +132,14 @@ async function detectPackageManager(basePath: string): Promise<NpmPackageManager
   return "npm";
 }
 
-async function installNpmDependencies(packageJsonPath: string, options: ExecutableResolutionOptions): Promise<void> {
+async function installNpmDependencies(packageJsonPath: string): Promise<void> {
   try {
     const packageManager = await detectPackageManager(packageJsonPath);
     logger.log(`Installing dependencies with "${packageManager} install"...`);
-    const spec = resolveTrustedPackageManager(packageManager, {
-      ...options,
-      cwd: path.resolve(packageJsonPath),
-      untrustedRoots: [...(options.untrustedRoots ?? []), packageJsonPath],
-    });
+    const spec = resolveTrustedPackageManager(packageManager, { cwd: path.resolve(packageJsonPath) });
     execInternalCommand({ ...spec, args: [...spec.args, "install"], cwd: path.resolve(packageJsonPath) });
   } catch (error) {
     logger.error(`Cannot install dependencies:`);
     logger.error(error as Error, true);
-    throw error;
   }
 }

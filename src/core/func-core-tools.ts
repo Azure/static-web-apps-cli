@@ -8,7 +8,7 @@ import { fetchWithProxy as fetch } from "./utils/fetch-proxy.js";
 import AdmZip from "adm-zip";
 import cliProgress from "cli-progress";
 import { logger } from "./utils/logger.js";
-import { ExecutableResolutionOptions, probeExecutable, resolveManagedExecutable, resolveTrustedExecutable } from "./utils/executable.js";
+import { ExecutableResolutionOptions, probeExecutable, resolveTrustedExecutable, resolveTrustedExecutablePath } from "./utils/executable.js";
 
 const RELEASES_FEED_URL = "https://functionscdn.azureedge.net/public/cli-feed-v4.json";
 const DEFAULT_FUNC_BINARY = "func";
@@ -61,7 +61,7 @@ export function detectTargetCoreToolsVersion(nodeVersion: number): number {
   return 4;
 }
 
-// Test override for the installed version; executable identity is still resolved independently.
+// Cache the results of getInstalledSystemCoreToolsVersion
 // This supports the testing inside of func-core-tools.spec.ts
 let installedSystemCoreToolsVersionIsCached: boolean = false;
 let cachedSystemCoreToolsVersion: number | undefined = undefined;
@@ -88,11 +88,9 @@ async function getInstalledSystemCoreTools(options: ExecutableResolutionOptions)
     return { binaryPath, version: cachedSystemCoreToolsVersion };
   }
   try {
-    const { stdout } = await probeExecutable(binaryPath, ["--version"], options);
-    const version = getMajorVersion(stdout.trim());
-    return Number.isFinite(version) ? { binaryPath, version } : undefined;
-  } catch (error) {
-    logger.silly(`Unable to probe installed Functions Core Tools: ${(error as Error).message}`);
+    const { stdout: version } = await probeExecutable(binaryPath, ["--version"], options);
+    return { binaryPath, version: getMajorVersion(version) };
+  } catch {
     return undefined;
   }
 }
@@ -279,11 +277,11 @@ export async function getCoreToolsBinary(options: ExecutableResolutionOptions = 
   }
 
   const targetVersion = detectTargetCoreToolsVersion(nodeVersion);
-  const managedBinary = resolveManagedExecutable(getCoreToolBinaryPath(targetVersion), options);
+  const managedBinary = getCoreToolBinaryPath(targetVersion);
   const downloadedVersion = getDownloadedCoreToolsVersion(targetVersion);
   if (downloadedVersion) {
     // Should we check for newer versions here?
-    return managedBinary;
+    return resolveTrustedExecutablePath(managedBinary);
   }
 
   if (systemVersion && systemVersion !== targetVersion) {
@@ -298,10 +296,11 @@ export async function getCoreToolsBinary(options: ExecutableResolutionOptions = 
   try {
     await downloadCoreTools(targetVersion);
     logger.log(`\nDownloaded Function Core Tools successfully`);
-    return resolveManagedExecutable(managedBinary, options);
+    return resolveTrustedExecutablePath(managedBinary);
   } catch (error: unknown) {
     logger.error(`Failed to download Functions Core Tools v${targetVersion}.`);
     logger.error(error as Error);
+    console.log(error);
     return undefined;
   }
 }

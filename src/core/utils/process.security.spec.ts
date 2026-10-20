@@ -6,6 +6,19 @@ import os from "node:os";
 import process from "node:process";
 import { superviseProcesses, NamedExecutionSpec } from "./process.js";
 
+const coreHook = vi.hoisted(() => ({ commands: [] as import("concurrently").Command[], options: vi.fn() }));
+vi.mock("concurrently", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("concurrently")>();
+  return {
+    ...actual,
+    concurrently: (...args: Parameters<typeof actual.concurrently>) => {
+      coreHook.options({ ...args[1] });
+      const core = actual.concurrently(...args);
+      coreHook.commands = core.commands;
+      return core;
+    },
+  };
+});
 vi.mock("./logger.js", () => ({ logger: { warn: vi.fn() } }));
 
 describe("direct process supervisor lifecycle (all launches/signals intercepted)", () => {
@@ -78,30 +91,68 @@ describe("direct process supervisor lifecycle (all launches/signals intercepted)
     second.emit("close", 0, null);
     await result;
     // Assert
-    expect(childProcess.spawn).toHaveBeenNthCalledWith(1, "/trusted/node", ["literal space", ";"], {
-      cwd: "/project/app",
-      env: { ...process.env, TEST_CONTEXT: "inherited" },
-      stdio: "inherit",
-      shell: false,
-      detached: true,
-      windowsVerbatimArguments: undefined,
-    });
+    expect(childProcess.spawn).toHaveBeenNthCalledWith(
+      1,
+      "/trusted/node",
+      ["literal space", ";"],
+      expect.objectContaining({
+        cwd: "/project/app",
+        env: { ...process.env, TEST_CONTEXT: "inherited" },
+        stdio: "inherit",
+        shell: false,
+        windowsVerbatimArguments: undefined,
+      }),
+    );
+    expect(childProcess.spawn.mock.calls[0][2]?.detached).not.toBe(true);
   });
 
-  it("rolls back owned siblings on asynchronous spawn error", async () => {
+  it("does not add parent signal listeners while the real named core owns running children", async () => {
+    // Arrange
+    const before = [process.listenerCount("SIGINT"), process.listenerCount("SIGTERM")];
+    // Act: record while running, but close before asserting so RED cannot leak listeners.
+    const result = superviseProcesses(commands);
+    const running = [process.listenerCount("SIGINT"), process.listenerCount("SIGTERM")];
+    first.emit("close", 0, null);
+    second.emit("close", 0, null);
+    await result;
+    // Assert
+    expect(running).toEqual(before);
+  });
+
+  it("leaves POSIX cleanup to the dependency default instead of installing a kill override", async () => {
+    // Arrange / Act
+    const result = superviseProcesses(commands);
+    const options = { ...coreHook.options.mock.calls[0][0] };
+    first.emit("close", 0, null);
+    second.emit("close", 0, null);
+    await result;
+    // Assert: core fills defaults in place, so inspect what was supplied before forwarding.
+    expect(options.kill).toBeUndefined();
+  });
+
+  it("waits for native close after an asynchronous spawn error without killing siblings", async () => {
     // Arrange
     const error = new Error("spawn failed");
-    const result = superviseProcesses(commands).catch((events) => events);
+    let settled = false;
+    const result = superviseProcesses(commands)
+      .catch((events) => events)
+      .then((events) => {
+        settled = true;
+        return events;
+      });
     // Act
     first.emit("error", error);
-    second.emit("close", null, "SIGTERM");
+    await Promise.resolve();
+    const beforeNativeClose = settled;
+    first.emit("close", 1, null);
+    second.emit("close", 0, null);
     // Assert
-    expect((await result)[0].error).toBe(error);
-    expect(process.kill).toHaveBeenCalledWith(-second.pid, "SIGTERM");
-    expect(vi.getTimerCount()).toBe(0);
+    expect((await result).map((event: { exitCode: number }) => event.exitCode)).toEqual([1, 0]);
+    expect(beforeNativeClose).toBe(false);
+    expect(process.kill).not.toHaveBeenCalled();
   });
 
-  it("stops later launches and cleans earlier children after synchronous spawn failure", async () => {
+  it("leaves a synchronous spawn failure to the named core without adding rollback policy", () => {
     // Arrange
     childProcess.spawn
       .mockReset()
@@ -109,49 +160,56 @@ describe("direct process supervisor lifecycle (all launches/signals intercepted)
       .mockImplementationOnce(() => {
         throw new Error("sync spawn");
       });
-    const result = superviseProcesses([...commands, { name: "never", execution: commands[0].execution }]).catch((events) => events);
-    // Act
-    first.emit("close", null, "SIGTERM");
+    const launch = () => superviseProcesses(commands);
     // Assert
-    expect((await result)[2]).toMatchObject({ command: { name: "never" }, killed: true, exitCode: 1 });
+    expect(launch).toThrow("sync spawn");
+    first.emit("close", 0, null);
     expect(childProcess.spawn).toHaveBeenCalledTimes(2);
-    expect(process.kill).toHaveBeenCalledWith(-first.pid, "SIGTERM");
+    expect(process.kill).not.toHaveBeenCalled();
   });
 
-  it.each(["SIGINT", "SIGTERM"] as const)("cleans owned groups and removes %s listeners and timers", async (signal) => {
+  it.each(["SIGINT", "SIGTERM"] as const)("keeps native %s closes core-owned without custom signal fields", async (signal) => {
     // Arrange
     const listeners = [process.listenerCount("SIGINT"), process.listenerCount("SIGTERM")];
     const result = superviseProcesses(commands).catch((events) => events);
-    // Act: emit the EventEmitter notification, never send a real OS signal.
-    process.emit(signal);
+    // Act: native close notification only; no invented parent-signal controller.
     first.emit("close", null, signal);
     second.emit("close", null, signal);
     const events = await result;
     // Assert
-    expect(events.every((event: { terminationSignal: string }) => event.terminationSignal === signal)).toBe(true);
-    expect(process.kill).toHaveBeenCalledWith(-first.pid, signal);
-    expect(process.kill).toHaveBeenCalledWith(-first.pid, "SIGKILL");
+    expect(events.map((event: { exitCode: string; killed: boolean }) => [event.exitCode, event.killed])).toEqual([
+      [signal, false],
+      [signal, false],
+    ]);
+    expect(process.kill).not.toHaveBeenCalled();
     expect([process.listenerCount("SIGINT"), process.listenerCount("SIGTERM")]).toEqual(listeners);
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  it("bounds escalation and completion even when force-kill never produces close", async () => {
+  it("does not synthesize deadline completion before native close", async () => {
     // Arrange
-    const result = superviseProcesses(commands).catch((events) => events);
+    let settled = false;
+    const result = superviseProcesses(commands).then((events) => {
+      settled = true;
+      return events;
+    });
     // Act
-    process.emit("SIGTERM");
-    await vi.advanceTimersByTimeAsync(5000);
-    expect(process.kill).toHaveBeenCalledWith(-second.pid, "SIGKILL");
-    await vi.advanceTimersByTimeAsync(5000);
+    await vi.advanceTimersByTimeAsync(10000);
+    const beforeNativeClose = settled;
+    first.emit("close", 0, null);
+    second.emit("close", 0, null);
+    await result;
     // Assert
-    expect((await result).every((event: { error: Error }) => /cleanup timed out/.test(event.error.message))).toBe(true);
+    expect(beforeNativeClose).toBe(false);
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  it("uses absolute System32 taskkill with literal owned PID argv on simulated Windows", async () => {
+  it("uses absolute System32 taskkill through actual core Command.kill despite CWD and ComSpec canaries", async () => {
     // Arrange: simulated filesystem identities, no real cleanup executable.
     vi.mocked(os.platform).mockReturnValue("win32");
     vi.stubEnv("SystemRoot", "C:\\Windows");
+    vi.stubEnv("ComSpec", "C:\\project\\cmd.exe");
+    vi.stubEnv("PATH", "C:\\trusted");
     vi.spyOn(fs, "realpathSync").mockImplementation(((file: unknown) => String(file)) as typeof fs.realpathSync);
     vi.spyOn(fs, "statSync").mockReturnValue({ isFile: () => true } as any);
     vi.spyOn(fs, "accessSync").mockReturnValue(undefined);
@@ -159,7 +217,7 @@ describe("direct process supervisor lifecycle (all launches/signals intercepted)
     const windowsCommands = commands.map((command) => ({ ...command, execution: { ...command.execution, executable: "C:\\trusted\\node.exe" } }));
     const result = superviseProcesses(windowsCommands).catch((events) => events);
     // Act
-    process.emit("SIGINT");
+    coreHook.commands[0].kill("SIGINT");
     first.emit("close", 1, null);
     second.emit("close", 1, null);
     await result;
@@ -171,13 +229,14 @@ describe("direct process supervisor lifecycle (all launches/signals intercepted)
       expect.any(Function),
     );
     expect(process.kill).not.toHaveBeenCalled();
-    expect(childProcess.spawn.mock.calls[0][2]).toMatchObject({ shell: false, detached: false });
+    expect(childProcess.execFile).toHaveBeenCalledTimes(1);
+    expect(childProcess.spawn.mock.calls[0][2]).toMatchObject({ shell: false });
   });
 
-  it("rejects empty or relative execution specs before launching", async () => {
+  it("rejects empty or relative execution specs before launching", () => {
     // Arrange / Act / Assert
-    await expect(superviseProcesses([])).rejects.toThrow(/No processes/);
-    await expect(superviseProcesses([{ name: "bad", execution: { executable: "node", args: [] } }])).rejects.toThrow(/absolute path/);
+    expect(() => superviseProcesses([])).toThrow(/no commands/);
+    expect(() => superviseProcesses([{ name: "bad", execution: { executable: "node", args: [] } }])).toThrow(/absolute path/);
     expect(childProcess.spawn).not.toHaveBeenCalled();
   });
 });

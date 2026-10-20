@@ -8,7 +8,7 @@ import {
   assertAbsoluteExecutable,
   createShellExecutionSpec,
   prepareExecution,
-  resolveManagedExecutable,
+  resolveTrustedExecutablePath,
   resolveTrustedExecutable,
   resolveTrustedPackageManager,
 } from "./executable.js";
@@ -49,16 +49,16 @@ describe("trusted executable boundary (inert files only)", () => {
     expect(resolveTrustedExecutable("func")).toBe("/trusted/bin/func");
   });
 
-  it("allows configured API PATH tools without relaxing managed API-root exclusions", () => {
+  it("allows explicitly configured API PATH tools through their canonical alias", () => {
     // Arrange
     vol.fromJSON({ "/api-root/bin/func": "inert" });
     fs.chmodSync("/api-root/bin/func", 0o755);
     fs.symlinkSync("/api-root", "/api-alias");
     vi.stubEnv("PATH", "/api-root/bin");
     // Act / Assert
-    const options = { untrustedRoots: ["/api-alias"] };
+    const options = { cwd: "/api-alias" };
     expect(resolveTrustedExecutable("func", options)).toBe("/api-root/bin/func");
-    expect(() => resolveManagedExecutable("/api-root/bin/func", options)).toThrow(/inside the project/);
+    expect(resolveTrustedExecutablePath("/api-alias/bin/func")).toBe("/api-root/bin/func");
     vi.stubEnv("PATH", "/trusted/bin");
     expect(resolveTrustedExecutable("func", options)).toBe("/trusted/bin/func");
   });
@@ -72,18 +72,26 @@ describe("trusted executable boundary (inert files only)", () => {
     expect(resolveTrustedExecutable("func")).toBe("/project-tools/func");
   });
 
-  it("rejects a managed missing-file path whose existing parent aliases the project", () => {
+  it("does not select a missing tool beneath an explicitly configured project alias", () => {
     // Arrange
     fs.symlinkSync("/project", "/cache-alias");
     // Act / Assert
-    expect(() => resolveManagedExecutable("/cache-alias/not-downloaded/func")).toThrow(/inside the project/);
+    vi.stubEnv("PATH", "/cache-alias/not-downloaded:/trusted/bin");
+    expect(resolveTrustedExecutable("func")).toBe("/trusted/bin/func");
+    expect(resolveTrustedExecutablePath("/cache-alias/not-downloaded/func")).toBeUndefined();
   });
 
-  it("binds a missing managed filename to its trusted canonical parent", () => {
+  it("keeps a future configured directory eligible once its executable exists", () => {
     // Arrange
     fs.symlinkSync("/trusted", "/cache-alias");
     // Act / Assert
-    expect(resolveManagedExecutable("/cache-alias/new/version/func")).toBe("/trusted/new/version/func");
+    vi.stubEnv("PATH", "/cache-alias/new/version");
+    expect(resolveTrustedExecutable("func")).toBeUndefined();
+    vol.fromJSON({ "/trusted/new/version/func": "inert" });
+    fs.chmodSync("/trusted/new/version/func", 0o755);
+    expect(resolveTrustedExecutable("func")).toBe("/trusted/new/version/func");
+    vi.stubEnv("PATH", "/off-path");
+    expect(resolveTrustedExecutable("func")).toBeUndefined();
   });
 
   it("skips inaccessible PATH candidates but does not trust them", () => {
@@ -98,7 +106,7 @@ describe("trusted executable boundary (inert files only)", () => {
     expect(resolveTrustedExecutable("func")).toBe("/trusted/bin/func");
   });
 
-  it("fails closed when a managed-path exclusion root cannot be canonicalized", () => {
+  it("does not inspect unrelated project roots when selecting an existing configured tool", () => {
     // Arrange
     vi.stubEnv("PATH", "/trusted/bin");
     const realpath = fs.realpathSync.bind(fs);
@@ -107,18 +115,25 @@ describe("trusted executable boundary (inert files only)", () => {
       return realpath(file, ...args);
     });
     // Act / Assert
-    expect(() => resolveManagedExecutable("/trusted/bin/not-downloaded/func", { untrustedRoots: ["/denied-root"] })).toThrow("denied");
+    expect(resolveTrustedExecutable("func")).toBe("/trusted/bin/func");
+    expect(fs.realpathSync).not.toHaveBeenCalledWith("/denied-root");
+    vi.stubEnv("PATH", "/off-path");
+    expect(resolveTrustedExecutable("func")).toBeUndefined();
   });
 
-  it("rejects a trusted wrapper whose interpreter resolves inside the project", () => {
+  it("preserves an explicitly selected wrapper's absolute project interpreter", () => {
     // Arrange
     vol.fromJSON({ "/trusted/bin/func": "#!/project/node\ninert", "/project/node": "inert native fixture" });
     fs.chmodSync("/trusted/bin/func", 0o755);
+    fs.chmodSync("/project/node", 0o755);
     vi.stubEnv("PATH", "/trusted/bin");
     // Act / Assert
     const executable = resolveTrustedExecutable("func")!;
     expect(executable).toBe("/trusted/bin/func");
-    expect(() => prepareExecution({ executable, args: ["start"] })).toThrow(/trusted script interpreter/);
+    expect(prepareExecution({ executable, args: ["start"] })).toMatchObject({
+      executable: "/project/node",
+      args: ["/trusted/bin/func", "start"],
+    });
   });
 
   it.each(["func", "./func"])("refuses a relative identity: %s", (file) => {
@@ -153,7 +168,7 @@ describe("trusted executable boundary (inert files only)", () => {
     });
   });
 
-  it("binds future caller PATH aliases canonically while retaining managed exclusions and global alternatives", () => {
+  it("retains future configured aliases and global alternatives without adding off-PATH CWD", () => {
     vol.fromJSON({
       "/trusted/bin/func": "#!/trusted/bin/node\ninert",
       "/trusted/bin/node": "inert native fixture",
@@ -168,9 +183,8 @@ describe("trusted executable boundary (inert files only)", () => {
     fs.chmodSync("/project/future/node", 0o755);
     fs.chmodSync("/trusted/future/node", 0o755);
     vi.stubEnv("PATH", prepared.env!.PATH!);
-    expect(prepared.env!.PATH!.split(":")).toEqual(["/project/future", "/trusted/future", "/trusted/bin"]);
+    expect(prepared.env!.PATH!.split(":")).toEqual(["/outside-project-alias/future", "/trusted/future", "/trusted/bin"]);
     expect(resolveTrustedExecutable("node")).toBe("/project/future/node");
-    expect(() => resolveManagedExecutable("/outside-project-alias/future/node")).toThrow(/inside the project/);
     vi.stubEnv("PATH", "/trusted/future:/trusted/bin");
     expect(resolveTrustedExecutable("node")).toBe("/trusted/future/node");
   });
@@ -186,7 +200,7 @@ describe("trusted executable boundary (inert files only)", () => {
     fs.chmodSync(`/trusted/bin/${manager}`, 0o755);
     vi.stubEnv("PATH", "/trusted/bin");
     // Act / Assert
-    expect(resolveTrustedPackageManager(manager)).toEqual({ executable: `/trusted/bin/${manager}`, args: [], resolutionOptions: {} });
+    expect(resolveTrustedPackageManager(manager)).toEqual({ executable: `/trusted/bin/${manager}`, args: [] });
   });
 
   it("never substitutes metadata for the configured launcher and keeps explicit aliases canonical", () => {
@@ -201,7 +215,7 @@ describe("trusted executable boundary (inert files only)", () => {
     fs.symlinkSync("/project/npm-cli.js", "/trusted/bin/node_modules/npm/bin/npm-cli.js");
     vi.stubEnv("PATH", "/trusted/bin");
     // Act / Assert
-    expect(resolveTrustedPackageManager("npm")).toEqual({ executable: "/trusted/bin/npm", args: [], resolutionOptions: {} });
+    expect(resolveTrustedPackageManager("npm")).toEqual({ executable: "/trusted/bin/npm", args: [] });
     fs.unlinkSync("/trusted/bin/npm");
     fs.symlinkSync("/project/npm-cli.js", "/trusted/bin/npm");
     const aliased = resolveTrustedPackageManager("npm");
@@ -253,7 +267,6 @@ describe("simulated Windows known shim identities (not native proof)", () => {
     expect(resolveTrustedPackageManager(manager)).toEqual({
       executable: canonical(`C:\\trusted\\${manager}.cmd`),
       args: [],
-      resolutionOptions: {},
     });
   });
 

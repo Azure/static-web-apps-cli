@@ -14,7 +14,7 @@ import path from "node:path";
 import { logger } from "../utils/logger.js";
 import { getPlatform } from "../utils/platform.js";
 import { downloadAndValidateBinary } from "../download-binary-helper.js";
-import { ExecutableResolutionOptions, probeExecutable, resolveManagedExecutable, resolveTrustedExecutable } from "../utils/executable.js";
+import { ExecutableResolutionOptions, probeExecutable, resolveTrustedExecutable, resolveTrustedExecutablePath } from "../utils/executable.js";
 
 /**
  * Gets the filepath where the Microsoft.DataApiBuilder.exe is located
@@ -41,7 +41,7 @@ export async function installAndGetDataApiBuilder(options: ExecutableResolutionO
     return { binaryPath: installed.binaryPath };
   }
 
-  return { binaryPath: await downloadAndUnzipBinary(releaseMetadata, platform, options) };
+  return { binaryPath: await downloadAndUnzipBinary(releaseMetadata, platform) };
 }
 
 /**
@@ -50,14 +50,10 @@ export async function installAndGetDataApiBuilder(options: ExecutableResolutionO
  * @param platform Current OS
  * @returns Binary Path after downloading and extracting
  */
-async function downloadAndUnzipBinary(
-  releaseMetadata: DataApiBuilderReleaseMetadata,
-  platform: "win-x64" | "osx-x64" | "linux-x64",
-  options: ExecutableResolutionOptions,
-) {
+async function downloadAndUnzipBinary(releaseMetadata: DataApiBuilderReleaseMetadata, platform: "win-x64" | "osx-x64" | "linux-x64") {
   try {
     const destDirectory = path.resolve(DATA_API_BUILDER_FOLDER, releaseMetadata.versionId);
-    const binaryPath = resolveManagedExecutable(path.join(destDirectory, getDefaultDataApiBuilderBinaryForOS(platform)), options);
+    const binaryPath = path.join(destDirectory, getDefaultDataApiBuilderBinaryForOS(platform));
 
     if (!fs.existsSync(binaryPath)) {
       logger.silly(`Downloading the version ${releaseMetadata.versionId}`);
@@ -77,10 +73,12 @@ async function downloadAndUnzipBinary(
       fs.chmodSync(binaryPath, 0o755);
     }
 
-    return resolveManagedExecutable(binaryPath, options);
+    const executable = resolveTrustedExecutablePath(binaryPath);
+    if (!executable) throw new Error(`Cannot find the downloaded ${DATA_API_BUILDER_BINARY_NAME} executable.`);
+    return executable;
   } catch (ex) {
-    logger.error(`Unable to download/extract ${DATA_API_BUILDER_BINARY_NAME} binary.`);
-    throw new Error(`Unable to install ${DATA_API_BUILDER_BINARY_NAME}. Check your network connection and retry. ${(ex as Error).message}`);
+    logger.error(`Unable to download/extract ${DATA_API_BUILDER_BINARY_NAME} binary. Exception ${ex}`);
+    throw ex;
   }
 }
 
@@ -139,7 +137,7 @@ export function getDefaultDataApiBuilderBinaryForOS(platform: string): string {
 
 /**
  * Returns installed version if installed else undefined
- * @param options Execution context for system interpreters and managed paths
+ * @param options Working directory for configured PATH lookup and probing
  * @returns installed version
  */
 async function getInstalledDataApiBuilder(options: ExecutableResolutionOptions): Promise<{ binaryPath: string; version: string } | undefined> {
@@ -149,10 +147,9 @@ async function getInstalledDataApiBuilder(options: ExecutableResolutionOptions):
   if (!binaryPath) return undefined;
   try {
     const { stdout } = await probeExecutable(binaryPath, ["--version"], options);
-    const version = /^Microsoft\.DataApiBuilder\s+(\S+)/.exec(stdout.trim())?.[1];
-    return version ? { binaryPath, version } : undefined;
-  } catch (error) {
-    logger.silly(`Unable to probe installed Data API Builder: ${(error as Error).message}`);
+    const version = stdout.split(" ")[1].split("\r")[0]; // parsing output which looks like this "Microsoft.DataApiBuilder 0.5.0" (specific to dab)
+    return { binaryPath, version };
+  } catch {
     return undefined;
   }
 }

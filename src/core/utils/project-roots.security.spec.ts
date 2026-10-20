@@ -3,9 +3,9 @@ import { posix as simulated } from "../../../tests/_mocks/posix.js";
 import { fs, vol } from "memfs";
 import os from "node:os";
 import * as nodeFs from "node:fs";
-import { ExecutableResolutionOptions, resolveManagedExecutable, resolveTrustedExecutable, resolveTrustedPackageManager } from "./executable.js";
+import { ExecutableResolutionOptions, resolveTrustedExecutable, resolveTrustedExecutablePath, resolveTrustedPackageManager } from "./executable.js";
 
-describe("invocation directory versus selected project trust (inert fixtures)", () => {
+describe("configured tools at invocation versus operation cwd (inert fixtures)", () => {
   const home = "/home/tester";
   const project = `${home}/project`;
 
@@ -14,19 +14,17 @@ describe("invocation directory versus selected project trust (inert fixtures)", 
     vol.reset();
     vi.spyOn(os, "platform").mockReturnValue("linux");
     simulated.cwd = home;
-    vol.fromJSON({ [`${project}/swa-cli.config.json`]: "{}" });
+    vol.fromJSON({ [`${project}/swa-cli.config.json`]: "{}", [`${project}/func`]: "off-PATH CWD canary" });
+    fs.chmodSync(`${project}/func`, 0o755);
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
   });
 
-  async function selectProject(invocation = home, selected = project) {
+  function selectProject(invocation = home, selected = project): ExecutableResolutionOptions {
     simulated.cwd = invocation;
-    // The module captures the original invocation cwd, before config loading/chdir.
-    const { getProjectRoots } = await import("./cli-config.js");
-    simulated.cwd = selected;
-    return { untrustedRoots: getProjectRoots({ config: `${selected}/swa-cli.config.json`, appLocation: selected }) };
+    return { cwd: selected };
   }
 
   function expectConfiguredTool(tool: string, options: ExecutableResolutionOptions) {
@@ -40,8 +38,11 @@ describe("invocation directory versus selected project trust (inert fixtures)", 
     const tool = `${home}/.swa/core-tools/v4/func`;
     vol.fromJSON({ [tool]: "inert native fixture" });
     const options = await selectProject();
-    // Act / Assert: HOME is an exact search-directory exclusion, not a recursive project root.
-    expect(resolveManagedExecutable(tool, options)).toBe(tool);
+    fs.chmodSync(tool, 0o755);
+    vi.stubEnv("PATH", `${home}/.swa/core-tools/v4`);
+    // Existing managed identities are canonical; unrelated project ancestry is not policy.
+    expect(resolveTrustedExecutablePath(tool)).toBe(tool);
+    expectConfiguredTool(tool, options);
   });
 
   it("preserves the canonical HOME runtime npm launcher outside the configured project", async () => {
@@ -54,19 +55,24 @@ describe("invocation directory versus selected project trust (inert fixtures)", 
     });
     fs.mkdirSync(`${runtime}/bin`, { recursive: true });
     fs.symlinkSync(script, `${runtime}/bin/npm`);
+    fs.chmodSync(script, 0o755);
     vi.stubEnv("PATH", `${runtime}/bin`);
     const options = await selectProject();
     // Act / Assert
-    expect(resolveTrustedPackageManager("npm", options)).toEqual({ executable: script, args: [], resolutionOptions: options });
+    expect(resolveTrustedPackageManager("npm", options)).toEqual({ executable: script, args: [], cwd: project });
+    vi.stubEnv("PATH", "/off-path");
+    expect(resolveTrustedExecutable("npm", options)).toBeUndefined();
   });
 
-  it("allows an ordinary HOME tool outside the project without cache-specific exemptions", async () => {
-    // Arrange: the distinction is root classification, not a .swa/.nvm allowlist.
+  it("allows a future configured HOME tool after creation without cache-specific exemptions", async () => {
+    // Arrange: no .swa/.nvm allowlist or recursive HOME exclusion is needed.
     const tool = `${home}/global-tools/func`;
+    vi.stubEnv("PATH", `${home}/global-tools`);
+    const options = await selectProject();
+    expect(resolveTrustedExecutable("func", options)).toBeUndefined();
     vol.fromJSON({ [tool]: "inert native fixture" });
     fs.chmodSync(tool, 0o755);
     vi.stubEnv("PATH", `${home}/global-tools`);
-    const options = await selectProject();
     // Act / Assert
     expect(resolveTrustedExecutable("func", options)).toBe(tool);
   });
@@ -92,7 +98,7 @@ describe("invocation directory versus selected project trust (inert fixtures)", 
     expectConfiguredTool(`${home}/func`, options);
   });
 
-  it("honors configured repository tools while retaining the recursive managed boundary", async () => {
+  it("honors configured repository tools independently of Git marker ancestry", async () => {
     // Arrange: repository evidence, not merely an arbitrary HOME ancestor.
     const repo = "/repository";
     const selected = `${repo}/app`;
@@ -106,10 +112,10 @@ describe("invocation directory versus selected project trust (inert fixtures)", 
     const options = await selectProject(repo, selected);
     // Act / Assert
     expectConfiguredTool(`${repo}/tools/func`, options);
-    expect(() => resolveManagedExecutable(`${repo}/tools/func`, options)).toThrow(/inside the project/);
+    expect(resolveTrustedExecutablePath(`${repo}/tools/func`)).toBe(`${repo}/tools/func`);
   });
 
-  it("retains managed repository scope beneath a valid worktree .git file without banning configured tools", async () => {
+  it("honors configured tools beneath a worktree .git file without marker discovery", async () => {
     // Arrange: the selected app is elsewhere; invocation repository evidence must not be erased.
     const repo = "/worktree";
     vol.fromJSON({
@@ -123,30 +129,27 @@ describe("invocation directory versus selected project trust (inert fixtures)", 
     const options = await selectProject(`${repo}/nested`);
     // Act / Assert
     expectConfiguredTool(`${repo}/tools/func`, options);
-    expect(() => resolveManagedExecutable(`${repo}/tools/func`, options)).toThrow(/inside the project/);
+    expect(resolveTrustedExecutablePath(`${repo}/tools/func`)).toBe(`${repo}/tools/func`);
   });
 
-  it.each(["package.json", "swa-cli.config.json"])(
-    "retains managed non-Git project scope beneath %s without banning configured tools",
-    async (marker) => {
-      // Arrange
-      const root = "/non-git-project";
-      vol.fromJSON({
-        [`${root}/${marker}`]: "{}",
-        [`${root}/nested/.keep`]: "",
-        [`${root}/tools/func`]: "inert fixture",
-      });
-      fs.chmodSync(`${root}/tools/func`, 0o755);
-      vi.stubEnv("PATH", `${root}/tools`);
-      const options = await selectProject(`${root}/nested`);
-      // Act / Assert
-      expectConfiguredTool(`${root}/tools/func`, options);
-      expect(() => resolveManagedExecutable(`${root}/tools/func`, options)).toThrow(/inside the project/);
-    },
-  );
+  it.each(["package.json", "swa-cli.config.json"])("honors configured tools beneath %s without a new project trust policy", async (marker) => {
+    // Arrange
+    const root = "/non-git-project";
+    vol.fromJSON({
+      [`${root}/${marker}`]: "{}",
+      [`${root}/nested/.keep`]: "",
+      [`${root}/tools/func`]: "inert fixture",
+    });
+    fs.chmodSync(`${root}/tools/func`, 0o755);
+    vi.stubEnv("PATH", `${root}/tools`);
+    const options = await selectProject(`${root}/nested`);
+    // Act / Assert
+    expectConfiguredTool(`${root}/tools/func`, options);
+    expect(resolveTrustedExecutablePath(`${root}/tools/func`)).toBe(`${root}/tools/func`);
+  });
 
-  it("honors a selected-project PATH alias while rejecting that alias as a managed cache", async () => {
-    // Arrange: invocation HOME has only exact scope, but selected project remains recursive.
+  it("honors a selected-project PATH alias and canonical existing cache identity", async () => {
+    // Explicit project choices remain configured choices, not implicit CWD preemption.
     vol.fromJSON({ [`${project}/tools/func`]: "inert fixture" });
     fs.chmodSync(`${project}/tools/func`, 0o755);
     fs.symlinkSync(`${project}/tools`, "/selected-tools-alias");
@@ -154,10 +157,10 @@ describe("invocation directory versus selected project trust (inert fixtures)", 
     const options = await selectProject();
     // Act / Assert
     expectConfiguredTool(`${project}/tools/func`, options);
-    expect(() => resolveManagedExecutable("/selected-tools-alias/func", options)).toThrow(/inside the project/);
+    expect(resolveTrustedExecutablePath("/selected-tools-alias/func")).toBe(`${project}/tools/func`);
   });
 
-  it("retains canonical managed ancestry for an aliased project without banning configured repository tools", async () => {
+  it("selects canonical configured tools when the operation cwd itself is aliased", async () => {
     // Arrange
     const repo = "/canonical-repo";
     vol.fromJSON({
@@ -171,18 +174,22 @@ describe("invocation directory versus selected project trust (inert fixtures)", 
     const options = await selectProject(home, "/selected-app-alias");
     // Act / Assert
     expectConfiguredTool(`${repo}/tools/func`, options);
-    expect(() => resolveManagedExecutable(`${repo}/tools/func`, options)).toThrow(/inside the project/);
+    expect(resolveTrustedExecutablePath(`${repo}/tools/func`)).toBe(`${repo}/tools/func`);
   });
 
-  it.each([".git", "package.json"])("fails closed when invocation %s evidence cannot be inspected", async (marker) => {
-    // Arrange: intercept the named fs API used by marker discovery, not a real filesystem permission.
+  it.each([".git", "package.json"])("does not inspect unrelated invocation %s markers during configured lookup", async (marker) => {
+    // Unrelated marker permission must not become a tool-lookup policy.
     const denied = Object.assign(new Error("marker permission denied"), { code: "EACCES" });
     const stat = nodeFs.statSync;
     vi.spyOn(nodeFs, "statSync").mockImplementation((file, ...args) => {
       if (String(file) === `${home}/${marker}`) throw denied;
       return stat(file, ...args);
     });
-    // Act / Assert
-    await expect(selectProject()).rejects.toBe(denied);
+    const tool = `${project}/tools/func`;
+    vol.fromJSON({ [tool]: "inert executable" });
+    fs.chmodSync(tool, 0o755);
+    vi.stubEnv("PATH", "tools");
+    // Relative PATH is interpreted at selected operation cwd, not invocation HOME.
+    expectConfiguredTool(tool, await selectProject());
   });
 });

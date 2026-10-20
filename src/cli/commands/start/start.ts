@@ -1,3 +1,4 @@
+import { CloseEvent } from "concurrently";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,9 +18,8 @@ import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder/index.
 import { swaCLIEnv } from "../../../core/env.js";
 import { getCertificate } from "../../../core/ssl.js";
 import { loadPackageJson } from "../../../core/utils/json.js";
-import { getProjectRoots } from "../../../core/utils/cli-config.js";
 import { createShellExecutionSpec, createToolShellExecutionSpec, InternalExecutionSpec } from "../../../core/utils/executable.js";
-import { NamedExecutionSpec, ProcessCloseEvent, superviseProcesses } from "../../../core/utils/process.js";
+import { NamedExecutionSpec, superviseProcesses } from "../../../core/utils/process.js";
 
 const packageInfo = loadPackageJson();
 
@@ -170,16 +170,6 @@ export async function start(options: SWACLIConfig) {
   }
 
   const isApiLocationExistsOnDisk = fs.existsSync(userWorkflowConfig?.apiLocation!);
-  const resolutionOptions = {
-    untrustedRoots: getProjectRoots(options, [
-      appLocation,
-      outputLocation,
-      userWorkflowConfig?.appLocation,
-      userWorkflowConfig?.apiLocation,
-      userWorkflowConfig?.dataApiLocation,
-      dataApiLocation,
-    ]),
-  };
 
   // handle the API location config
   let serveApi: InternalExecutionSpec | undefined;
@@ -192,7 +182,7 @@ export async function start(options: SWACLIConfig) {
   } else {
     if (apiLocation && userWorkflowConfig?.apiLocation) {
       // Check the caller's PATH before using the managed download.
-      const funcBinary = await getCoreToolsBinary({ ...resolutionOptions, cwd: path.resolve(userWorkflowConfig.apiLocation) });
+      const funcBinary = await getCoreToolsBinary({ cwd: path.resolve(userWorkflowConfig.apiLocation) });
       const nodeMajorVersion = getNodeMajorVersion();
       const targetVersion = detectTargetCoreToolsVersion(nodeMajorVersion);
 
@@ -223,7 +213,6 @@ export async function start(options: SWACLIConfig) {
             ["start", "--cors", "*", "--port", String(apiPort)],
             path.resolve(userWorkflowConfig.apiLocation),
             funcArgs ?? "",
-            resolutionOptions,
           );
         }
       }
@@ -237,7 +226,7 @@ export async function start(options: SWACLIConfig) {
     dataApiPort = parseUrl(useDataApiDevServer)?.port;
   } else {
     if (dataApiLocation) {
-      const dataApiBinary = await getDataApiBuilderBinaryPath({ ...resolutionOptions, cwd: path.resolve(dataApiLocation) });
+      const dataApiBinary = await getDataApiBuilderBinaryPath({ cwd: path.resolve(dataApiLocation) });
       if (!dataApiBinary) {
         logger.error(
           `Could not find or install ${DATA_API_BUILDER_BINARY_NAME} binary.
@@ -251,7 +240,6 @@ export async function start(options: SWACLIConfig) {
           executable: dataApiBinary,
           args: ["start", "-c", DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME, "--no-https-redirect"],
           cwd: path.resolve(dataApiLocation),
-          resolutionOptions,
         };
         dataApiPort = DEFAULT_CONFIG.dataApiPort;
       }
@@ -263,17 +251,14 @@ export async function start(options: SWACLIConfig) {
   if (ssl) {
     if (sslCert === undefined && sslKey === undefined) {
       logger.warn(`WARNING: Using built-in UNSIGNED certificate. DO NOT USE IN PRODUCTION!`);
-      const pemFilepath = await getCertificate(
-        {
-          selfSigned: true,
-          days: 365,
-          commonName: host,
-          organization: `Azure Static Web Apps CLI ${packageInfo.version}`,
-          organizationUnit: "Azure Engineering",
-          emailAddress: `secure@microsoft.com`,
-        },
-        resolutionOptions,
-      );
+      const pemFilepath = await getCertificate({
+        selfSigned: true,
+        days: 365,
+        commonName: host,
+        organization: `Azure Static Web Apps CLI ${packageInfo.version}`,
+        organizationUnit: "Azure Engineering",
+        emailAddress: `secure@microsoft.com`,
+      });
       sslCert = pemFilepath;
       sslKey = pemFilepath;
     } else {
@@ -284,11 +269,9 @@ export async function start(options: SWACLIConfig) {
   }
 
   if (run) {
-    startupCommand = createStartupScriptCommand(run, options) ?? run;
+    startupCommand = createStartupScriptCommand(run, options);
   }
-  const startup = startupCommand
-    ? createShellExecutionSpec(startupCommand, path.resolve(userWorkflowConfig?.appLocation ?? appLocation), resolutionOptions)
-    : undefined;
+  const startup = startupCommand ? createShellExecutionSpec(startupCommand, path.resolve(userWorkflowConfig?.appLocation ?? appLocation)) : undefined;
 
   // resolve the following config to their absolute paths
   // note: the server will perform a search starting from this path
@@ -346,25 +329,39 @@ export async function start(options: SWACLIConfig) {
     },
   });
 
-  try {
-    await superviseProcesses(commands, resolutionOptions);
-    logger.silly("SWA emulator exited with code 0");
-    process.exit();
-  } catch (error) {
-    process.exitCode = 1;
-    if (!Array.isArray(error)) {
-      logger.error((error as Error).message, true);
-      return;
-    }
-    const events = error as ProcessCloseEvent[];
-    const interrupted = events.find((event) => event.terminationSignal);
-    if (interrupted && !events.some((event) => event.error)) {
-      process.exit(interrupted.terminationSignal === "SIGINT" ? 130 : 143);
-      return;
-    }
-    const failure = events.find((event) => event.error) ?? events.find((event) => event.exitCode !== 0);
-    const labels: Record<string, string> = { swa: "SWA emulator", api: "API server", dataApi: "Data API server", run: "the --run command" };
-    if (failure?.error) logger.error(failure.error);
-    logger.error(`SWA emulator stopped because ${labels[failure?.command.name ?? "swa"]} exited with code ${failure?.exitCode}.`, true);
-  }
+  const result = superviseProcesses(commands);
+
+  await result
+    .then(
+      (errorEvent: CloseEvent[]) => {
+        const killedCommand = errorEvent.filter((event) => event.killed).pop();
+        const exitCode = killedCommand?.exitCode;
+        logger.silly(`SWA emulator exited with code ${exitCode}`);
+        process.exit();
+      },
+      (errorEvent: CloseEvent[]) => {
+        const killedCommand = errorEvent.filter((event) => event.killed).pop();
+        const commandName = killedCommand?.command.name;
+        const exitCode = killedCommand?.exitCode;
+        let commandMessage = ``;
+        switch (commandName) {
+          case "swa":
+            commandMessage = `SWA emulator exited with code ${exitCode}`;
+            break;
+          case "api":
+            commandMessage = `API server exited with code ${exitCode}`;
+            break;
+          case "dataApi":
+            commandMessage = `Data API server exited with code ${exitCode}`;
+            break;
+          case "run":
+            commandMessage = `the --run command exited with code ${exitCode}`;
+            break;
+        }
+        logger.error(`SWA emulator stopped because ${commandMessage}.`, true);
+      },
+    )
+    .catch((err: Error) => {
+      logger.error(err.message, true);
+    });
 }

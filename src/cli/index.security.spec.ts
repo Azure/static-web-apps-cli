@@ -70,7 +70,7 @@ describe("magic-flow same-installation reentry", () => {
     expect(commands[0]).toMatch(/(?:^| )build$/);
   });
 
-  it.each([false, true])("captures caller PATH before project dotenv and preserves it across reentry (present=%s)", async (present) => {
+  it.each([false, true])("honors operation-effective configured PATH after dotenv without adding off-PATH CWD (present=%s)", async (present) => {
     const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "swa-entry-provenance-"));
     try {
       const project = path.join(sandbox, "project");
@@ -82,36 +82,39 @@ describe("magic-flow same-installation reentry", () => {
       fs.mkdirSync(inherited);
       fs.writeFileSync(path.join(injected, filename), "inert project fixture", { mode: 0o755 });
       fs.writeFileSync(path.join(inherited, filename), "inert caller fixture", { mode: 0o755 });
+      fs.writeFileSync(path.join(project, filename), "inert off-PATH CWD canary", { mode: 0o755 });
       vi.spyOn(process, "cwd").mockReturnValue(project);
       vi.stubEnv("PATH", present ? inherited : "");
       if (!present) delete process.env.PATH;
-      vi.stubEnv("SWA_CLI_INTERNAL_PATH_ABSENT", "");
-      delete process.env.SWA_CLI_INTERNAL_PATH_ABSENT;
       childProcess.spawnSync.mockReturnValue({ status: 0, stdout: "/usr/bin:/bin", stderr: "" });
       vi.mocked(dotenv.config).mockImplementation(() => {
         process.env.PATH = injected;
         return { parsed: { PATH: injected } };
       });
-      for (let generation = 0; generation < 2; generation++) {
-        vi.resetModules();
-        const cli = await import("./index.js");
-        const resolver = await import("../core/utils/executable.js");
-        expect(process.env.PATH).toBe(injected);
-        expect(resolver.resolveTrustedExecutable(tool, { cwd: project })).toBe(present ? fs.realpathSync(path.join(inherited, filename)) : undefined);
-        if (generation === 0) {
-          await cli.swaMagic({} as SWACLIConfig);
-          const child = directLaunches().find(({ file, args }) => file === process.execPath && args?.includes("init"));
-          const env = child?.options?.env;
-          if (!env) throw new Error("Magic reentry did not provide its prepared environment.");
-          const value = process.platform === "win32" ? env.Path ?? env.PATH : env.PATH;
-          expect(value).toBe(present ? inherited : process.platform === "win32" ? "" : undefined);
-          expect(env.SWA_CLI_INTERNAL_PATH_ABSENT).toBe(!present && process.platform === "win32" ? "1" : undefined);
-          vi.stubEnv("PATH", value ?? "");
-          if (value === undefined) delete process.env.PATH;
-          vi.stubEnv("SWA_CLI_INTERNAL_PATH_ABSENT", env.SWA_CLI_INTERNAL_PATH_ABSENT ?? "");
-          if (env.SWA_CLI_INTERNAL_PATH_ABSENT === undefined) delete process.env.SWA_CLI_INTERNAL_PATH_ABSENT;
-        }
-      }
+      vi.resetModules();
+      const cli = await import("./index.js");
+      const resolver = await import("../core/utils/executable.js");
+      expect(process.env.PATH).toBe(injected);
+      const selected = resolver.resolveTrustedExecutable(tool, { cwd: project });
+      process.env.PATH = inherited;
+      const external = resolver.resolveTrustedExecutable(tool, { cwd: project });
+      process.env.PATH = injected;
+      await cli.swaMagic({} as SWACLIConfig);
+      const child = directLaunches().find(({ file, args }) => file === process.execPath && args?.includes("init"));
+      const env = child?.options?.env;
+      if (!env) throw new Error("Magic reentry did not provide its prepared environment.");
+      // One configured-lookup contract, paired with the identical off-PATH canary.
+      expect({
+        selected,
+        external,
+        reentryPath: process.platform === "win32" ? env.Path ?? env.PATH : env.PATH,
+        absenceMarker: env.SWA_CLI_INTERNAL_PATH_ABSENT,
+      }).toEqual({
+        selected: fs.realpathSync(path.join(injected, filename)),
+        external: fs.realpathSync(path.join(inherited, filename)),
+        reentryPath: injected,
+        absenceMarker: undefined,
+      });
     } finally {
       fs.rmSync(sandbox, { recursive: true });
     }

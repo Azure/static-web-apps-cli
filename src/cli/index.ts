@@ -1,6 +1,4 @@
 import dotenv from "dotenv";
-import { captureCallerPath } from "../core/utils/executable.js";
-captureCallerPath();
 dotenv.config();
 
 import process from "node:process";
@@ -74,7 +72,7 @@ export async function run(argv?: string[]) {
     .option("-g, --print-config", "print all resolved options", false)
     .action(async (_options: SWACLIConfig, command: Command) => {
       const options = await configureOptions(undefined, command.optsWithGlobals(), command, "init");
-      await swaMagic(options);
+      swaMagic(options);
     })
     .addHelpText(
       "after",
@@ -130,9 +128,8 @@ export async function swaMagic(_options: SWACLIConfig) {
 
     logger.log(`\n${chalk.cyan("→")} Running ${chalk.cyan("swa deploy")}...\n`);
     reenter("deploy");
-  } catch (error) {
-    logger.error("SWA workflow stopped before completion.");
-    logger.error(error as Error);
-    process.exitCode = 1;
+  } catch (_) {
+    // Pokemon, go catch'em all!
+    // (Errors are already caught an displayed in individual commands)
   }
 }

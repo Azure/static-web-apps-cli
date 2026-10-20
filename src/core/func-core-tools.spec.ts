@@ -212,7 +212,7 @@ describe("funcCoreTools", () => {
       expect(childProcess.execFile).toHaveBeenCalledWith(
         "/trusted/bin/func",
         ["--version"],
-        { encoding: "utf8", shell: false },
+        { encoding: "utf8", shell: false, env: { ...process.env } },
         expect.any(Function),
       );
       expect(childProcess.exec).not.toHaveBeenCalled();
@@ -222,8 +222,9 @@ describe("funcCoreTools", () => {
       fct.setCachedInstalledSystemCoreToolsVersion(undefined);
 
       vol.fromNestedJSON({
-        ["/home/user/.swa/core-tools/v4"]: { ".release-version": "4.3.2" },
+        ["/home/user/.swa/core-tools/v4"]: { ".release-version": "4.3.2", func: "inert cached executable" },
       });
+      fs.chmodSync("/home/user/.swa/core-tools/v4/func", 0o755);
 
       const binary = await fct.getCoreToolsBinary();
 
@@ -234,8 +235,9 @@ describe("funcCoreTools", () => {
       fct.setCachedInstalledSystemCoreToolsVersion(2);
 
       vol.fromNestedJSON({
-        ["/home/user/.swa/core-tools/v4"]: { ".release-version": "4.3.2" },
+        ["/home/user/.swa/core-tools/v4"]: { ".release-version": "4.3.2", func: "inert cached executable" },
       });
+      fs.chmodSync("/home/user/.swa/core-tools/v4/func", 0o755);
 
       const binary = await fct.getCoreToolsBinary();
       expect(binary).toBe("/home/user/.swa/core-tools/v4/func");

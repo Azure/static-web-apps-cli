@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import { createRequire } from "node:module";
-import { ExecutableResolutionOptions, prepareExecution, resolveTrustedExecutable, resolveTrustedExecutablePath } from "./utils/executable.js";
+import { resolveTrustedExecutable, resolveTrustedExecutablePath } from "./utils/executable.js";
 import { logger } from "./utils/logger.js";
 
 const ONE_MONTH = 1000 * 60 * 60 * 24 * 30;
@@ -81,9 +81,7 @@ export interface PEMOptions {
   altNames?: string[];
 }
 
-interface SSLCertificate {
-  csr: string;
-  serviceKey: string;
+interface SSLCertificate extends Pick<PEMOptions, "csr" | "clientKey" | "serviceKey"> {
   certificate: string;
 }
 
@@ -94,36 +92,22 @@ interface Pem {
 
 let pem: Pem | undefined;
 
-function isPem(value: unknown): value is Pem {
-  return (
-    !!value &&
-    typeof value === "object" &&
-    "config" in value &&
-    typeof value.config === "function" &&
-    "createCertificate" in value &&
-    typeof value.createCertificate === "function"
-  );
-}
-
-function certificateGenerator(resolutionOptions: ExecutableResolutionOptions): Pem {
+function certificateGenerator(): Pem {
   if (pem) return pem;
   const configured = process.env.OPENSSL_BIN;
   const executable =
     configured && /[\\/]/.test(configured)
-      ? resolveTrustedExecutablePath(configured, resolutionOptions)
-      : resolveTrustedExecutable(configured || "openssl", resolutionOptions);
-  if (!executable || prepareExecution({ executable, args: [], resolutionOptions }).executable !== executable) {
-    throw new Error("Cannot find a trusted native OpenSSL executable outside the project. Check your OpenSSL installation.");
+      ? resolveTrustedExecutablePath(path.resolve(configured))
+      : resolveTrustedExecutable(configured || "openssl");
+  if (!executable) {
+    throw new Error("Cannot find an OpenSSL executable. Check your OpenSSL installation.");
   }
   const previous = { OPENSSL_BIN: process.env.OPENSSL_BIN, LIBRARY: process.env.LIBRARY };
   try {
     process.env.OPENSSL_BIN = executable;
     // pem's CI fixture hook otherwise overrides OPENSSL_BIN with a project-relative path before probing.
     delete process.env.LIBRARY;
-    const loaded: unknown = createRequire(import.meta.url)("pem");
-    if (!isPem(loaded)) {
-      throw new Error("The installed pem module does not expose its certificate API.");
-    }
+    const loaded: Pem = createRequire(import.meta.url)("pem");
     loaded.config({ pathOpenSSL: executable });
     pem = loaded;
     return loaded;
@@ -142,26 +126,26 @@ function certificateGenerator(resolutionOptions: ExecutableResolutionOptions): P
  * @param options PEM options (passed to the "`pem`" npm library)
  * @returns The abosulte filepath to the PEM file from cache.
  */
-export async function getCertificate(options: PEMOptions, resolutionOptions: ExecutableResolutionOptions = {}): Promise<string> {
+export async function getCertificate(options: PEMOptions): Promise<string> {
   const cacheDir = path.join(os.homedir(), ".swa", "certificates", "ssl");
   const cachePath = path.join(cacheDir, "swa-cli-UNSIGNED.pem");
 
   try {
     logger.silly(`Checking for cached certificate at ${cachePath}`);
 
-    const [stat] = await Promise.all([fs.stat(cachePath), fs.readFile(cachePath, "utf8")]);
+    const [stat, unsignedCertificate] = await Promise.all([fs.stat(cachePath), fs.readFile(cachePath, "utf8")]);
 
     if (Date.now() - stat.ctime.valueOf() > ONE_MONTH) {
       throw new Error("Certificate is too old, a new one will be generated.");
     }
 
     logger.silly("Certificate is valid, using it.");
-    return cachePath;
+    return unsignedCertificate;
   } catch {
     logger.silly("No cached certificate found.");
 
     logger.silly("Creating new certificate...");
-    const unsignedCertificate = await createCertificate(options, resolutionOptions);
+    const unsignedCertificate = await createCertificate(options);
 
     logger.silly("Writing certificate to cache...");
 
@@ -174,9 +158,15 @@ export async function getCertificate(options: PEMOptions, resolutionOptions: Exe
   }
 }
 
-async function createCertificate(options: PEMOptions, resolutionOptions: ExecutableResolutionOptions): Promise<SSLCertificate> {
-  const generator = certificateGenerator(resolutionOptions);
+async function createCertificate(options: PEMOptions): Promise<SSLCertificate> {
+  const generator = certificateGenerator();
   return new Promise((resolve, reject) => {
-    generator.createCertificate(options, (error, certificate) => (error ? reject(error) : resolve(certificate)));
+    generator.createCertificate(options, (err, keys) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(keys);
+      }
+    });
   });
 }

@@ -105,12 +105,12 @@ describe("SSL trusted bootstrap and baseline PEM delegation", () => {
     expect(moduleLoader.load).not.toHaveBeenCalled();
   });
 
-  it("reuses a fresh cache without requiring OpenSSL or loading pem", async () => {
+  it("returns original fresh-cache contents without requiring OpenSSL or loading pem", async () => {
     fs.mkdirSync(path.dirname(cache), { recursive: true });
     fs.writeFileSync(cache, "cached certificate fixture");
     vi.stubEnv("PATH", project);
     const ssl = await import("./ssl.js");
-    expect(await ssl.getCertificate({ selfSigned: true })).toBe(cache);
+    expect(await ssl.getCertificate({ selfSigned: true })).toBe("cached certificate fixture");
     expect(moduleLoader.load).not.toHaveBeenCalled();
     expect(fs.readFileSync(cache, "utf8")).toBe("cached certificate fixture");
   });
@@ -277,10 +277,14 @@ describe("SSL trusted bootstrap and baseline PEM delegation", () => {
     expect(fs.existsSync(cache)).toBe(false);
   });
 
-  it("rejects a project OpenSSL override before loading or probing pem", async () => {
-    process.env.OPENSSL_BIN = path.join(project, "bin", process.platform === "win32" ? "openssl.exe" : "openssl");
+  it("honors an explicit project OpenSSL override and pins that configured identity", async () => {
+    // Explicit configuration is distinct from an extra implicit CWD search.
+    const configured = fs.realpathSync(path.join(project, "bin", process.platform === "win32" ? "openssl.exe" : "openssl"));
+    process.env.OPENSSL_BIN = configured;
+    const before = snapshot();
     const ssl = await import("./ssl.js");
-    await expect(ssl.getCertificate({ selfSigned: true })).rejects.toThrow(/trusted native OpenSSL/);
-    expect(moduleLoader.load).not.toHaveBeenCalled();
+    await ssl.getCertificate({ selfSigned: true });
+    expect(generator.config).toHaveBeenCalledWith({ pathOpenSSL: configured });
+    expect(snapshot()).toEqual(before);
   });
 });

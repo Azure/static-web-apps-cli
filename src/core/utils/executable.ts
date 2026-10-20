@@ -11,58 +11,21 @@ export interface InternalExecutionSpec {
   cwd?: string;
   /** Overrides on input; a prepared environment, when present, is a complete snapshot. */
   env?: NodeJS.ProcessEnv;
-  resolutionOptions?: ExecutableResolutionOptions;
   /** Arguments have already been encoded for an absolute Windows shell. */
   windowsVerbatimArguments?: boolean;
 }
 
-export interface ExecutableDirectoryExclusion {
-  /** An exact invocation directory, not a recursive project boundary. */
-  directory: string;
-}
-
-export type ExecutableExclusion = string | ExecutableDirectoryExclusion;
-
 export interface ExecutableResolutionOptions {
   /** Working directory for caller-relative PATH entries and the selected tool's probe. */
   cwd?: string;
-  /** Project boundaries for fixed system identities and managed paths, not configured PATH choices. */
-  untrustedRoots?: readonly ExecutableExclusion[];
 }
 
 export class UnsupportedExecutableError extends Error {}
-
-let callerPath: { value: string | undefined; extensions: string | undefined } | undefined;
-const absentCallerPath = "SWA_CLI_INTERNAL_PATH_ABSENT";
 
 function pathValue(env: NodeJS.ProcessEnv, name = "PATH"): string | undefined {
   const windows = os.platform() === "win32";
   const key = Object.keys(env).find((key) => (windows ? key.toLowerCase() === name.toLowerCase() : key === name));
   return key ? env[key] : undefined;
-}
-
-/** Capture inherited lookup configuration before project dotenv can fill missing PATH/PATHEXT. */
-export function captureCallerPath(): void {
-  let value = pathValue(process.env);
-  if (os.platform() === "win32" && process.env[absentCallerPath] === "1" && value === "") {
-    for (const key of Object.keys(process.env)) {
-      if (key.toLowerCase() === "path") delete process.env[key];
-    }
-    value = undefined;
-  }
-  delete process.env[absentCallerPath];
-  callerPath = { value, extensions: pathValue(process.env, "PATHEXT") };
-}
-
-function preserveCallerLookup(env: NodeJS.ProcessEnv): void {
-  delete env[absentCallerPath];
-  if (os.platform() !== "win32" || !callerPath) return;
-  for (const key of Object.keys(env)) {
-    if (key.toLowerCase() === "pathext") delete env[key];
-  }
-  // An undefined override prevents composed command environments from restoring project PATHEXT.
-  env.PATHEXT = callerPath.extensions;
-  if (callerPath.value === undefined) env[absentCallerPath] = "1";
 }
 
 function executionEnvironment(overrides: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv {
@@ -74,6 +37,13 @@ function executionEnvironment(overrides: NodeJS.ProcessEnv = {}): NodeJS.Process
       }
     }
     env[key] = value;
+  }
+  if (os.platform() === "win32") {
+    for (const key of Object.keys(env)) {
+      if (["comspec", "nodefaultcurrentdirectoryinexepath"].includes(key.toLowerCase())) delete env[key];
+    }
+    env.ComSpec = getTrustedWindowsSystemExecutable("cmd.exe");
+    env.NoDefaultCurrentDirectoryInExePath = "1";
   }
   return env;
 }
@@ -106,38 +76,6 @@ function realPath(file: string): string | undefined {
   }
 }
 
-function containsPath(root: string, file: string): boolean {
-  const paths = platformPath();
-  // Conservative case folding also covers case-insensitive Unix volumes.
-  const normalize = (value: string) =>
-    paths
-      .normalize(value)
-      .replace(/^\\\\\?\\UNC\\/i, "\\\\")
-      .replace(/^\\\\\?\\([a-z]:\\)/i, "$1")
-      .toLowerCase();
-  const relative = paths.relative(normalize(root), normalize(file));
-  return relative === "" || (!relative.startsWith(`..${paths.sep}`) && relative !== ".." && !paths.isAbsolute(relative));
-}
-
-function samePath(first: string, second: string): boolean {
-  return containsPath(first, second) && containsPath(second, first);
-}
-
-function matchesDirectory(directory: string, exclusion: ExecutableDirectoryExclusion): boolean {
-  const root = platformPath().resolve(exclusion.directory);
-  return samePath(root, directory) || samePath(realPath(root) ?? root, directory);
-}
-
-function excludedPath(file: string, options: ExecutableResolutionOptions): boolean {
-  const paths = platformPath();
-  const entries = options.untrustedRoots ?? [];
-  const roots = entries.filter((entry): entry is string => typeof entry === "string").map((root) => paths.resolve(root));
-  const cwd = paths.resolve(process.cwd());
-  // Legacy callers assume cwd is their project. Explicit contexts classify it without that assumption.
-  if (!entries.some((entry) => typeof entry !== "string" && matchesDirectory(cwd, entry))) roots.push(cwd);
-  return roots.some((root) => containsPath(root, file) || containsPath(realPath(root) ?? root, file));
-}
-
 function executablePath(file: string): string | undefined {
   if (!isAbsoluteExecutable(file)) return undefined;
 
@@ -153,46 +91,13 @@ function executablePath(file: string): string | undefined {
   return canonical;
 }
 
-function trustedPath(file: string, options: ExecutableResolutionOptions): string | undefined {
-  if (excludedPath(file, options)) return undefined;
-  const canonical = executablePath(file);
-  return canonical && !excludedPath(canonical, options) ? canonical : undefined;
-}
-
-function canonicalPath(file: string): string | undefined {
-  const paths = platformPath();
-  const suffix: string[] = [];
-  let parent = file;
-  let canonical = realPath(parent);
-  while (!canonical) {
-    const next = paths.dirname(parent);
-    if (next === parent) return undefined;
-    suffix.unshift(paths.basename(parent));
-    parent = next;
-    canonical = realPath(parent);
-  }
-  return paths.join(canonical, ...suffix);
-}
-
-/** Bind a managed path even before download, while checking existing parent-directory aliases. */
-export function resolveManagedExecutable(file: string, options: ExecutableResolutionOptions = {}): string {
-  assertAbsoluteExecutable(file);
-  const resolved = canonicalPath(file);
-  if (!resolved) throw new Error(`Cannot resolve managed executable directory: ${file}`);
-  if (excludedPath(file, options) || excludedPath(resolved, options)) {
-    throw new Error("The managed tool directory resolves inside the project. Move the CLI tool cache outside the project and retry.");
-  }
-  assertAbsoluteExecutable(resolved);
-  return resolved;
-}
-
-function pathDirectories(options: ExecutableResolutionOptions, env: NodeJS.ProcessEnv = process.env, cwd = process.cwd()): string[] {
+function pathDirectories(env: NodeJS.ProcessEnv = process.env, cwd = process.cwd()): string[] {
   const windows = os.platform() === "win32";
-  let value = callerPath ? callerPath.value : pathValue(env);
+  let value = pathValue(env);
   if (value === undefined && !windows) {
     const defaultEnv = { ...env };
     delete defaultEnv.PATH;
-    const result = spawnSync(getTrustedShell(options), ["-c", 'printf "%s" "$PATH"'], {
+    const result = spawnSync(getTrustedShell(), ["-c", 'printf "%s" "$PATH"'], {
       cwd,
       env: defaultEnv,
       encoding: "utf8",
@@ -209,16 +114,6 @@ function pathDirectories(options: ExecutableResolutionOptions, env: NodeJS.Proce
       // Empty Windows entries do not declare CWD; normalize them before guarded cmd lookup.
       .filter((directory) => !windows || directory !== "")
       .map((directory) => platformPath().resolve(cwd, directory || "."))
-      .flatMap((directory) => {
-        let canonical: string | undefined;
-        try {
-          canonical = canonicalPath(directory);
-        } catch (error) {
-          if ((error as NodeJS.ErrnoException).code === "EACCES") return [];
-          throw error;
-        }
-        return canonical ? [canonical] : [];
-      })
   );
 }
 
@@ -257,7 +152,7 @@ export function resolveTrustedExecutable(name: string, options: ExecutableResolu
     throw new Error(`Expected an internal tool name, not a path: ${name}`);
   }
   const windows = os.platform() === "win32";
-  const extensions = callerPath ? callerPath.extensions : pathValue(process.env, "PATHEXT");
+  const extensions = pathValue(process.env, "PATHEXT");
   // cmd supplies native/batch defaults only for absent or empty PATHEXT, not for an explicit list.
   const names =
     windows && !/\.(exe|com)$/i.test(name)
@@ -266,7 +161,7 @@ export function resolveTrustedExecutable(name: string, options: ExecutableResolu
           .filter((extension) => /^\.(com|exe|bat|cmd)$/i.test(extension))
           .map((extension) => `${name}${extension.toLowerCase()}`)
       : [name];
-  for (const directory of pathDirectories(options, process.env, options.cwd)) {
+  for (const directory of pathDirectories(process.env, options.cwd)) {
     for (const filename of names) {
       const candidate = executablePath(platformPath().join(directory, filename));
       if (!candidate || !isExecutableFile(candidate)) continue;
@@ -276,59 +171,54 @@ export function resolveTrustedExecutable(name: string, options: ExecutableResolu
   return undefined;
 }
 
-export function resolveTrustedExecutablePath(file: string, options: ExecutableResolutionOptions = {}): string | undefined {
-  const executable = trustedPath(file, options);
+export function resolveTrustedExecutablePath(file: string): string | undefined {
+  const executable = executablePath(file);
   return executable && isExecutableFile(executable) ? executable : undefined;
 }
 
 /** Keep the selected launcher's behavior instead of bypassing it through package metadata. */
 export function resolveTrustedPackageManager(name: "npm" | "yarn" | "pnpm", options: ExecutableResolutionOptions = {}): InternalExecutionSpec {
   const executable = resolveTrustedExecutable(name, options);
-  if (executable) return { executable, args: [], resolutionOptions: options, ...(options.cwd ? { cwd: options.cwd } : {}) };
+  if (executable) return { executable, args: [], ...(options.cwd ? { cwd: options.cwd } : {}) };
   throw new Error(`Cannot find ${name} on the caller's PATH.`);
 }
 
 /** Bind the shell used for caller syntax or a trusted external command shim. */
-export function getTrustedShell(options: ExecutableResolutionOptions = {}): string {
+export function getTrustedShell(): string {
   if (os.platform() !== "win32") {
-    const shell = trustedPath("/bin/sh", options);
+    const shell = executablePath("/bin/sh");
     if (shell && isExecutableFile(shell)) return shell;
   } else {
-    return getTrustedWindowsSystemExecutable("cmd.exe", options);
+    return getTrustedWindowsSystemExecutable("cmd.exe");
   }
-  throw new Error("Cannot locate a trusted absolute system shell outside the project. Check your operating system installation.");
+  throw new Error("Cannot locate an absolute system shell. Check your operating system installation.");
 }
 
-export function getTrustedWindowsSystemExecutable(name: "cmd.exe" | "taskkill.exe", options: ExecutableResolutionOptions = {}): string {
+export function getTrustedWindowsSystemExecutable(name: "cmd.exe" | "taskkill.exe"): string {
   const systemRoot = process.env.SystemRoot ?? process.env.SYSTEMROOT;
   if (os.platform() === "win32" && systemRoot && isAbsoluteExecutable(systemRoot)) {
-    const executable = trustedPath(path.win32.join(systemRoot, "System32", name), options);
+    const executable = executablePath(path.win32.join(systemRoot, "System32", name));
     if (executable && isExecutableFile(executable)) return executable;
   }
-  throw new Error(`Cannot locate trusted System32\\${name} outside the project. Check your Windows installation.`);
+  throw new Error(`Cannot locate System32\\${name}. Check your Windows installation.`);
 }
 
-export function createShellExecutionSpec(command: string, cwd: string, options: ExecutableResolutionOptions = {}): InternalExecutionSpec {
-  const executable = getTrustedShell(options);
+export function createShellExecutionSpec(command: string, cwd: string): InternalExecutionSpec {
+  const executable = getTrustedShell();
   if (os.platform() === "win32") {
     return { executable, args: ["/d", "/s", "/c", `"${command}"`], cwd, env: { ComSpec: executable }, windowsVerbatimArguments: true };
   }
   return { executable, args: ["-c", command], cwd };
 }
 
-function internalEnvironment(options: ExecutableResolutionOptions, overrides?: NodeJS.ProcessEnv, cwd = process.cwd()): NodeJS.ProcessEnv {
+function internalEnvironment(overrides?: NodeJS.ProcessEnv, cwd = process.cwd()): NodeJS.ProcessEnv {
   const env = executionEnvironment(overrides);
   const windows = os.platform() === "win32";
-  const directories = pathDirectories(options, env, cwd);
+  const directories = pathDirectories(env, cwd);
   for (const key of Object.keys(env)) {
-    if (windows && ["path", "comspec", "nodefaultcurrentdirectoryinexepath"].includes(key.toLowerCase())) delete env[key];
+    if (windows && key.toLowerCase() === "path") delete env[key];
   }
   env[windows ? "Path" : "PATH"] = directories.join(windows ? ";" : ":");
-  if (windows) {
-    env.ComSpec = getTrustedWindowsSystemExecutable("cmd.exe", options);
-    env.NoDefaultCurrentDirectoryInExePath = "1";
-  }
-  preserveCallerLookup(env);
   return env;
 }
 
@@ -358,16 +248,9 @@ function windowsVariableExpansion(env: NodeJS.ProcessEnv, cwd: string): "%" | "!
 }
 
 /** Only the CLI-owned prefix is encoded; the caller's explicit shell suffix is left intact. */
-export function createToolShellExecutionSpec(
-  executable: string,
-  args: string[],
-  cwd: string,
-  suffix = "",
-  options: ExecutableResolutionOptions = {},
-): InternalExecutionSpec {
+export function createToolShellExecutionSpec(executable: string, args: string[], cwd: string, suffix = ""): InternalExecutionSpec {
   assertAbsoluteExecutable(executable);
-  const context = { untrustedRoots: [...(options.untrustedRoots ?? []), { directory: cwd }] };
-  const env = internalEnvironment(context, undefined, cwd);
+  const env = internalEnvironment(undefined, cwd);
   let prefix: string;
   if (os.platform() === "win32") {
     env.SWA_CLI_INTERNAL_EXECUTABLE = executable;
@@ -375,31 +258,25 @@ export function createToolShellExecutionSpec(
     const expansion = windowsVariableExpansion(env, cwd);
     prefix = [`"${expansion}SWA_CLI_INTERNAL_EXECUTABLE${expansion}"`, ...args.map(quoteArgument)].join(" ");
   } else {
-    const execution = prepareExecution({ executable, args, cwd, resolutionOptions: context });
+    const execution = prepareExecution({ executable, args, cwd });
     prefix = [execution.executable, ...execution.args].map(quoteArgument).join(" ");
   }
-  return { ...createShellExecutionSpec(`${prefix}${suffix ? ` ${suffix}` : ""}`, cwd, context), env };
+  return { ...createShellExecutionSpec(`${prefix}${suffix ? ` ${suffix}` : ""}`, cwd), env };
 }
 
-/** Native identities stay direct; script loaders retain canonical caller-selected PATH entries. */
+/** Native identities stay direct; script loaders receive absolute configured PATH entries. */
 export function prepareExecution(spec: InternalExecutionSpec): InternalExecutionSpec {
   assertAbsoluteExecutable(spec.executable);
   if (spec.windowsVerbatimArguments) return { ...spec, env: executionEnvironment(spec.env) };
-  const options = {
-    untrustedRoots: [
-      ...(spec.resolutionOptions?.untrustedRoots ?? []),
-      ...(spec.cwd ? [spec.resolutionOptions ? { directory: spec.cwd } : spec.cwd] : []),
-    ],
-  };
   if (os.platform() === "win32" && /\.(?:cmd|bat)$/i.test(spec.executable)) {
     return {
-      ...createToolShellExecutionSpec(spec.executable, spec.args, spec.cwd ?? process.cwd(), "", options),
-      env: { ...internalEnvironment(options, spec.env, spec.cwd), SWA_CLI_INTERNAL_EXECUTABLE: spec.executable },
+      ...createToolShellExecutionSpec(spec.executable, spec.args, spec.cwd ?? process.cwd()),
+      env: { ...internalEnvironment(spec.env, spec.cwd), SWA_CLI_INTERNAL_EXECUTABLE: spec.executable },
     };
   }
   const script = shebang(spec.executable);
   if (script) {
-    const interpreter = trustedPath(script.interpreter, options);
+    const interpreter = executablePath(script.interpreter);
     if (!interpreter || !isExecutableFile(interpreter)) {
       throw new UnsupportedExecutableError(`Cannot bind a trusted script interpreter for ${spec.executable}.`);
     }
@@ -407,23 +284,13 @@ export function prepareExecution(spec: InternalExecutionSpec): InternalExecution
       ...spec,
       executable: interpreter,
       args: [...(script.argument ? [script.argument] : []), spec.executable, ...spec.args],
-      env: internalEnvironment(options, spec.env, spec.cwd),
+      env: internalEnvironment(spec.env, spec.cwd),
     };
   }
   if (/\.(?:ps1|js|cjs|mjs)$/i.test(spec.executable)) {
     throw new UnsupportedExecutableError(`Cannot determine the interpreter for ${spec.executable}.`);
   }
-  if (!callerPath) return spec.env ? { ...spec, env: executionEnvironment(spec.env) } : spec;
-  // Preserve absence too: a reentered CLI must capture PATH before loading its own project dotenv.
-  const env = executionEnvironment(spec.env);
-  for (const key of Object.keys(env)) {
-    if (os.platform() === "win32" ? key.toLowerCase() === "path" : key === "PATH") delete env[key];
-  }
-  if (callerPath.value !== undefined) env[os.platform() === "win32" ? "Path" : "PATH"] = callerPath.value;
-  // Windows spawn fills an omitted PATH from the parent; the entry hook restores this placeholder's absence.
-  else if (os.platform() === "win32") env.Path = "";
-  preserveCallerLookup(env);
-  return { ...spec, env };
+  return { ...spec, env: executionEnvironment(spec.env) };
 }
 
 export function probeExecutable(
@@ -431,7 +298,7 @@ export function probeExecutable(
   args: string[],
   options: ExecutableResolutionOptions = {},
 ): Promise<{ stdout: string; stderr: string }> {
-  const spec = prepareExecution({ executable, args, cwd: options.cwd, resolutionOptions: options });
+  const spec = prepareExecution({ executable, args, cwd: options.cwd });
   return promisify(execFile)(spec.executable, spec.args, {
     encoding: "utf8",
     shell: false,

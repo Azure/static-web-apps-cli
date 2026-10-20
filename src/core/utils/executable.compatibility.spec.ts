@@ -124,7 +124,7 @@ describe("trusted external wrapper compatibility (benign native fixtures)", () =
     expect(fs.readFileSync(output, "utf8").trim()).toBe("compatibility wrapper stdout");
     fs.writeFileSync(report, "");
     fs.unlinkSync(output);
-    const execution = resolveTrustedPackageManager("npm", { untrustedRoots: [project] });
+    const execution = resolveTrustedPackageManager("npm");
     const status = executeWithStatus({ ...execution, args: [...execution.args, "install"], cwd: project });
     expect({
       status,
@@ -150,12 +150,12 @@ describe("trusted external wrapper compatibility (benign native fixtures)", () =
   ])("executes the same trusted %s wrapper for version probing and launch", async (tool, version) => {
     const expected = wrapper(tool);
     vi.stubEnv("SWA_COMPAT_VERSION", version);
-    const resolutionOptions = { untrustedRoots: [project] };
+    const resolutionOptions = {};
     const executable = resolveTrustedExecutable(tool, resolutionOptions);
     expect(executable).toBe(expected);
     if (!executable) throw new Error(`Missing fixture wrapper for ${tool}.`);
     expect((await probeExecutable(executable, ["--version"], resolutionOptions)).stdout.trim()).toBe(version);
-    execInternalCommand({ executable, args: ["start"], cwd: project, resolutionOptions });
+    execInternalCommand({ executable, args: ["start"], cwd: project });
     expect(records()).toEqual([
       {
         execPath: process.execPath,
@@ -191,9 +191,9 @@ describe("trusted external wrapper compatibility (benign native fixtures)", () =
     const callerPath = [local, external, path.dirname(process.execPath)].join(path.delimiter);
     vi.stubEnv("PATH", callerPath);
     vi.stubEnv("SWA_COMPAT_VERSION", version);
-    const resolutionOptions = { untrustedRoots: [project] };
+    const resolutionOptions = {};
 
-    const baseline = createShellExecutionSpec(`"${tool}" ${command}`, project, resolutionOptions);
+    const baseline = createShellExecutionSpec(`"${tool}" ${command}`, project);
     const control = spawnSync(baseline.executable, baseline.args, {
       cwd: project,
       env: { ...process.env, ...baseline.env },
@@ -209,7 +209,7 @@ describe("trusted external wrapper compatibility (benign native fixtures)", () =
     const execution =
       tool === "npm"
         ? resolveTrustedPackageManager("npm", resolutionOptions)
-        : { executable: resolveTrustedExecutable(tool, resolutionOptions)!, args: [], resolutionOptions };
+        : { executable: resolveTrustedExecutable(tool, resolutionOptions)!, args: [] };
     const probe = await probeExecutable(execution.executable, ["--version"], resolutionOptions);
     const actualStatus = executeWithStatus({ ...execution, args: [command], cwd: project });
     const observed = records();
@@ -253,12 +253,12 @@ describe("trusted external wrapper compatibility (benign native fixtures)", () =
     const callerPath = [path.relative(project, external), path.relative(project, runtime)].join(path.delimiter);
     vi.stubEnv("PATH", callerPath);
     vi.stubEnv("SWA_COMPAT_VERSION", "4.0.0");
-    const resolutionOptions = { cwd: project, untrustedRoots: [project] };
+    const resolutionOptions = { cwd: project };
     const executable = resolveTrustedExecutable("func", resolutionOptions);
     expect(executable).toBe(expected);
     if (!executable) throw new Error("Missing relative PATH fixture.");
     expect((await probeExecutable(executable, ["--version"], resolutionOptions)).stdout.trim()).toBe("4.0.0");
-    execInternalCommand({ executable, args: ["start"], cwd: project, resolutionOptions });
+    execInternalCommand({ executable, args: ["start"], cwd: project });
     const argv = windows
       ? [["--version"], ["--wrapper-flag", "--version"], ["--version"], ["--wrapper-flag", "start"]]
       : [
@@ -274,8 +274,8 @@ describe("trusted external wrapper compatibility (benign native fixtures)", () =
   it.skipIf(!windows)(
     "native Windows: off-PATH CWD canaries cannot preempt wrappers or fixed cmd/Node loaders",
     () => {
-      const resolutionOptions = { untrustedRoots: [project] };
-      const trustedCmd = createShellExecutionSpec("echo fixture", project, resolutionOptions).executable;
+      const resolutionOptions = { cwd: project };
+      const trustedCmd = createShellExecutionSpec("echo fixture", project).executable;
       fs.copyFileSync(process.execPath, path.join(project, "node.exe"));
       fs.copyFileSync(trustedCmd, path.join(project, "cmd.exe"));
       for (const name of ["func", "dab", "npm"]) {
@@ -289,7 +289,7 @@ describe("trusted external wrapper compatibility (benign native fixtures)", () =
         fs.writeFileSync(report, "");
         const selected =
           name === "npm" ? resolveTrustedPackageManager("npm", resolutionOptions).executable : resolveTrustedExecutable(name, resolutionOptions)!;
-        const prepared = prepareExecution({ executable: selected, args: ["start"], cwd: project, resolutionOptions });
+        const prepared = prepareExecution({ executable: selected, args: ["start"], cwd: project });
         expect(prepared.executable).toBe(trustedCmd);
         expect(prepared.env?.ComSpec).toBe(trustedCmd);
         execInternalCommand(prepared);
@@ -318,7 +318,7 @@ describe("trusted external wrapper compatibility (benign native fixtures)", () =
       fs.symlinkSync(project, alias, "junction");
       vi.stubEnv("PATH", [missingProjectChild, futureGlobal, external, path.dirname(process.execPath)].join(path.delimiter));
       expect(fs.existsSync(path.join(external, "node.exe"))).toBe(false);
-      const execution = resolveTrustedPackageManager("npm", { untrustedRoots: [project] });
+      const execution = resolveTrustedPackageManager("npm");
       const prepared = prepareExecution({ ...execution, args: [...execution.args, "install"], cwd: project });
       fs.mkdirSync(missingProjectChild);
       fs.linkSync(path.join(project, "node.exe"), path.join(missingProjectChild, "node.exe"));

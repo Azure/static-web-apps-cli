@@ -12,7 +12,6 @@ import {
 import { execFileCommand } from "../../../../core/utils/command.js";
 import { logger } from "../../../../core/utils/logger.js";
 import { getDataApiBuilderBinaryPath } from "../../../../core/dataApiBuilder/index.js";
-import { getProjectRoots } from "../../../../core/utils/cli-config.js";
 
 export async function init(options: SWACLIConfig) {
   let { databaseType, connectionString, cosmosdb_nosqlContainer, cosmosdb_nosqlDatabase } = options;
@@ -45,8 +44,7 @@ export async function init(options: SWACLIConfig) {
 
   logger.log(`Creating ${DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME} configuration file`, "swa");
 
-  const resolutionOptions = { untrustedRoots: getProjectRoots(options, [directory]), cwd: path.resolve(directory) };
-  const dataApiBinary = await getDataApiBuilderBinaryPath(resolutionOptions);
+  const dataApiBinary = await getDataApiBuilderBinaryPath({ cwd: path.resolve(directory) });
   if (!dataApiBinary) {
     logger.error(
       `Could not find or install ${DATA_API_BUILDER_BINARY_NAME} binary.
@@ -111,7 +109,7 @@ export async function init(options: SWACLIConfig) {
   // todo:DAB CLI doesn't return an error code when it fails, so we need to allow stdio to be inherited (this will be fixed in the March release)
   // It would be better to have our own logs since DAB CLI refers to itself in its success messages
   // which may lead to confusion for swa cli users ex: `SUGGESTION: Use 'dab add [entity-name] [options]' to add new entities in your config.`
-  execFileCommand(dataApiBinary, directory, args, resolutionOptions);
+  execFileCommand(dataApiBinary, directory, args);
 
   // not logging anything here since DAB CLI logs success messages or error messages and we can't catch an error
 }
