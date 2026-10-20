@@ -1,13 +1,17 @@
 import process from "process";
-import { execFileSync, execSync } from "child_process";
+import { execFileSync, execSync, SpawnSyncOptions } from "child_process";
+import { getTrustedShell, InternalExecutionSpec, prepareExecution } from "./executable.js";
 
 export function runCommand(command: string, cwd?: string) {
+  const shell = getTrustedShell();
+  const { env } = prepareExecution({ executable: shell, args: [] });
   execSync(command, {
     stdio: "inherit",
     cwd: cwd ?? process.cwd(),
+    shell,
     // Set CI to avoid extra NPM logs and potentially unwanted interactive modes
     env: {
-      ...process.env,
+      ...env,
       // Internal flag to avoid duplicating user messages
       SWA_CLI_INTERNAL_COMMAND: "1",
     },
@@ -15,15 +19,16 @@ export function runCommand(command: string, cwd?: string) {
 }
 
 export function execFileCommand(command: string, cwd?: string, args?: string[]) {
-  const child = execFileSync(command, args, {
+  return execInternalCommand({ executable: command, cwd, args: args ?? [] });
+}
+
+export function execInternalCommand(execution: InternalExecutionSpec) {
+  const spec = prepareExecution(execution);
+  const options: SpawnSyncOptions = {
+    cwd: spec.cwd ?? process.cwd(),
     stdio: "inherit",
-    cwd: cwd ?? process.cwd(),
-    // Set CI to avoid extra NPM logs and potentially unwanted interactive modes
-    env: {
-      ...process.env,
-      // Internal flag to avoid duplicating user messages
-      SWA_CLI_INTERNAL_COMMAND: "1",
-    },
-  });
-  return child;
+    env: { ...(spec.env ?? process.env), SWA_CLI_INTERNAL_COMMAND: "1" },
+    windowsVerbatimArguments: spec.windowsVerbatimArguments,
+  };
+  return execFileSync(spec.executable, spec.args, options);
 }

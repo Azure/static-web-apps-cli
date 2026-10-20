@@ -5,13 +5,14 @@ import process from "node:process";
 import chalk from "chalk";
 import { Command, Option, program } from "commander";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { notifyOnUpdate } from "../core/utils/update-notifier.js";
 import { DEFAULT_CONFIG } from "../config.js";
 import { configureOptions } from "../core/utils/options.js";
 import { getCurrentSwaCliConfigFromFile, swaCliConfigFilename } from "../core/utils/cli-config.js";
 import { getNodeMajorVersion } from "../core/func-core-tools.js";
 import { logger } from "../core/utils/logger.js";
-import { runCommand } from "../core/utils/command.js";
+import { execInternalCommand } from "../core/utils/command.js";
 import { default as registerDeploy } from "./commands/deploy/register.js";
 import { default as registerInit } from "./commands/init/register.js";
 import { default as registerLogin } from "./commands/login/register.js";
@@ -99,15 +100,19 @@ export async function run(argv?: string[]) {
 }
 
 export async function swaMagic(_options: SWACLIConfig) {
+  const executable = process.execPath;
+  const entrypoint = fileURLToPath(new URL("./bin.js", import.meta.url));
+  const cwd = process.cwd();
+  const reenter = (command: string) => execInternalCommand({ executable, args: [entrypoint, command], cwd });
   try {
     const hasLoadedConfig = getCurrentSwaCliConfigFromFile();
     if (!hasLoadedConfig) {
       logger.log(`${chalk.cyan("→")} No configuration found, running ${chalk.cyan("swa init")}...\n`);
-      runCommand("swa init");
+      reenter("init");
     }
 
     logger.log(`${chalk.cyan("→")} Running ${chalk.cyan("swa build")}...\n`);
-    runCommand("swa build");
+    reenter("build");
     logger.log("");
 
     const response = await promptOrUseDefault(false, {
@@ -122,7 +127,7 @@ export async function swaMagic(_options: SWACLIConfig) {
     }
 
     logger.log(`\n${chalk.cyan("→")} Running ${chalk.cyan("swa deploy")}...\n`);
-    runCommand("swa deploy");
+    reenter("deploy");
   } catch (_) {
     // Pokemon, go catch'em all!
     // (Errors are already caught an displayed in individual commands)

@@ -160,7 +160,7 @@ export function parseCommandLineArgs(input?: string): string[] {
         tokenStarted = true;
       } else if (quote === '"') {
         const nextChar = input[index + 1];
-        if (nextChar === '"' || nextChar === "\\") {
+        if (nextChar === '"') {
           current += nextChar;
           tokenStarted = true;
           index++;

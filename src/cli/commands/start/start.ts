@@ -1,5 +1,4 @@
-import { concurrently, CloseEvent, ConcurrentlyOptions } from "concurrently";
-import { spawn, SpawnOptions } from "node:child_process";
+import { CloseEvent } from "concurrently";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,6 +18,8 @@ import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder/index.
 import { swaCLIEnv } from "../../../core/env.js";
 import { getCertificate } from "../../../core/ssl.js";
 import { loadPackageJson } from "../../../core/utils/json.js";
+import { createShellExecutionSpec, InternalExecutionSpec } from "../../../core/utils/executable.js";
+import { NamedExecutionSpec, superviseProcesses } from "../../../core/utils/process.js";
 
 const packageInfo = loadPackageJson();
 
@@ -27,13 +28,6 @@ const __dirname = path.dirname(__filename);
 
 // This is the path to ./dist/msha/server.js
 const mshaPath = path.resolve(__dirname, "../../../../dist/msha/server.js");
-const INTERNAL_FUNC_START_PREFIX = "__SWA_INTERNAL_FUNC_START__:";
-
-type InternalFuncStartPayload = {
-  binary: string;
-  args: string[];
-  cwd: string;
-};
 
 // import { createRequire } from "node:module";
 // const require = createRequire(import.meta.url);
@@ -71,6 +65,7 @@ export async function start(options: SWACLIConfig) {
   let useApiDevServer: string | undefined | null = undefined;
   let useDataApiDevServer: string | undefined | null = undefined;
   let startupCommand: string | undefined | null = undefined;
+  const launchCwd = process.cwd();
 
   let resolvedPortNumber = await isAcceptingTcpConnections({ host, port });
   if (resolvedPortNumber === 0) {
@@ -175,20 +170,19 @@ export async function start(options: SWACLIConfig) {
   }
 
   const isApiLocationExistsOnDisk = fs.existsSync(userWorkflowConfig?.apiLocation!);
-  let apiFuncPayload: InternalFuncStartPayload | undefined = undefined;
 
   // handle the API location config
-  let serveApiCommand = "echo 'No API found. Skipping'";
+  let serveApi: InternalExecutionSpec | undefined;
 
   if (useApiDevServer) {
-    serveApiCommand = `echo 'using API dev server at ${useApiDevServer}'`;
+    logger.info(`Using API dev server at ${useApiDevServer}`, "api");
 
     // get the API port from the dev server
     apiPort = parseUrl(useApiDevServer)?.port;
   } else {
     if (apiLocation && userWorkflowConfig?.apiLocation) {
-      // check if the func binary is globally available and if not, download it
-      const funcBinary = await getCoreToolsBinary();
+      // Check the caller's PATH before using the managed download.
+      const funcBinary = await getCoreToolsBinary({ cwd: path.resolve(userWorkflowConfig.apiLocation) });
       const nodeMajorVersion = getNodeMajorVersion();
       const targetVersion = detectTargetCoreToolsVersion(nodeMajorVersion);
 
@@ -201,6 +195,7 @@ export async function start(options: SWACLIConfig) {
           `See https://aka.ms/functions-core-tools for more information.`,
           true
         );
+        return;
       } else {
         if (isCoreToolsVersionCompatible(targetVersion, nodeMajorVersion) === false) {
           logger.error(
@@ -208,38 +203,37 @@ export async function start(options: SWACLIConfig) {
           );
           logger.error("See https://aka.ms/functions-node-versions for more information.");
           process.exit(1);
+          return;
         }
 
         // serve the api if and only if the user provides a folder via the --api-location flag
         if (isApiLocationExistsOnDisk) {
-          let parsedFuncArgs: string[] = [];
+          let parsedFuncArgs: string[];
           try {
             parsedFuncArgs = parseCommandLineArgs(funcArgs);
           } catch (error: unknown) {
             logger.error((error as Error).message, true);
+            return;
           }
 
-          apiFuncPayload = {
-            binary: funcBinary,
-            cwd: userWorkflowConfig.apiLocation,
-            args: ["start", "--cors", "*", "--port", `${apiPort}`, ...parsedFuncArgs],
+          serveApi = {
+            executable: funcBinary,
+            args: ["start", "--cors", "*", "--port", String(apiPort), ...parsedFuncArgs],
+            cwd: path.resolve(userWorkflowConfig.apiLocation),
           };
-
-          serveApiCommand = `${INTERNAL_FUNC_START_PREFIX}${Buffer.from(JSON.stringify(apiFuncPayload)).toString("base64url")}`;
         }
       }
     }
   }
 
-  let serveDataApiCommand = "echo 'No Data API found'. Skipping";
-  let startDataApiBuilderNeeded = false;
+  let serveDataApi: InternalExecutionSpec | undefined;
   if (useDataApiDevServer) {
-    serveDataApiCommand = `echo using Data API server at ${useDataApiDevServer}`;
+    logger.info(`Using Data API server at ${useDataApiDevServer}`, "dataApi");
 
     dataApiPort = parseUrl(useDataApiDevServer)?.port;
   } else {
     if (dataApiLocation) {
-      const dataApiBinary = await getDataApiBuilderBinaryPath();
+      const dataApiBinary = await getDataApiBuilderBinaryPath({ cwd: path.resolve(dataApiLocation) });
       if (!dataApiBinary) {
         logger.error(
           `Could not find or install ${DATA_API_BUILDER_BINARY_NAME} binary.
@@ -247,14 +241,18 @@ export async function start(options: SWACLIConfig) {
         starting data-api-builder engine separately. Exiting!!`,
           true,
         );
+        return;
       } else {
-        serveDataApiCommand = `cd "${dataApiLocation}" && "${dataApiBinary}" start -c ${DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME} --no-https-redirect`;
+        serveDataApi = {
+          executable: dataApiBinary,
+          args: ["start", "-c", DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME, "--no-https-redirect"],
+          cwd: path.resolve(dataApiLocation),
+        };
         dataApiPort = DEFAULT_CONFIG.dataApiPort;
-        startDataApiBuilderNeeded = true;
       }
     }
 
-    logger.silly(`Running ${serveDataApiCommand}`);
+    if (serveDataApi) logger.silly(`Using Data API Builder at ${serveDataApi.executable}`);
   }
 
   if (ssl) {
@@ -280,6 +278,7 @@ export async function start(options: SWACLIConfig) {
   if (run) {
     startupCommand = createStartupScriptCommand(run, options);
   }
+  const startup = startupCommand ? createShellExecutionSpec(startupCommand, path.resolve(userWorkflowConfig?.appLocation ?? appLocation)) : undefined;
 
   // resolve the following config to their absolute paths
   // note: the server will perform a search starting from this path
@@ -318,85 +317,26 @@ export async function start(options: SWACLIConfig) {
 
   // INFO: from here, code may access SWA CLI env vars.
 
-  const swa_cli_env = swaCLIEnv();
-  // Convert the swa_cli_env to a Record<string, unknown> object so that type checking
-  // works in the ConcurrentlyCommandInput[] array
-  let env: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(swa_cli_env)) {
-    env[k] = v;
-  }
+  const env: NodeJS.ProcessEnv = { ...process.env, ...swaCLIEnv() };
+  const commands: NamedExecutionSpec[] = [{ name: "swa", execution: { executable: process.execPath, args: [mshaPath], cwd: launchCwd, env } }];
 
-  // Copy of the CommandInfo interface from concurrently.d.ts
-  // See https://github.com/open-cli-tools/concurrently/blob/main/src/command.ts#L10
-  interface CommandInfo {
-    name: string;
-    command: string;
-    env?: Record<string, unknown>;
-    cwd?: string;
-    prefixColor?: string;
-    raw?: boolean;
-  }
-
-  const concurrentlyCommands: CommandInfo[] = [
-    // start the reverse proxy
-    { command: `node "${mshaPath}"`, name: "swa", env, prefixColor: "gray.dim" },
-  ];
-
-  if (isApiLocationExistsOnDisk) {
-    concurrentlyCommands.push(
-      // serve the api, if it's available
-      { command: serveApiCommand, name: "api", env, prefixColor: "gray.dim" },
-    );
-  }
-
-  if (startDataApiBuilderNeeded) {
-    concurrentlyCommands.push({ command: serveDataApiCommand, name: "dataApi", env });
-  }
-
-  // run an external script, if it's available
-  if (startupCommand) {
-    let startupPath = userWorkflowConfig?.appLocation;
-
-    concurrentlyCommands.push({ command: `cd "${startupPath}" && ${startupCommand}`, name: "run", env, prefixColor: "gray.dim" });
-  }
+  if (serveApi) commands.push({ name: "api", execution: { ...serveApi, env: { ...env, ...serveApi.env } } });
+  if (serveDataApi) commands.push({ name: "dataApi", execution: { ...serveDataApi, env } });
+  if (startup) commands.push({ name: "run", execution: { ...startup, env: { ...env, ...startup.env } } });
 
   logger.silly(`Starting the SWA emulator with the following configuration:`);
   logger.silly({
     ssl: [ssl, sslCert, sslKey],
     env: envVarsObj,
     commands: {
-      swa: concurrentlyCommands.find((c) => c.name === "swa")?.command,
-      api: apiFuncPayload
-        ? `"${apiFuncPayload.binary}" ${apiFuncPayload.args.join(" ")} (cwd: ${apiFuncPayload.cwd})`
-        : concurrentlyCommands.find((c) => c.name === "api")?.command,
-      dataApi: concurrentlyCommands.find((c) => c.name == "dataApi")?.command,
-      run: concurrentlyCommands.find((c) => c.name === "run")?.command,
+      swa: process.execPath,
+      api: serveApi?.executable,
+      dataApi: serveDataApi?.executable,
+      run: startup?.executable,
     },
   });
 
-  const concurrentlyOptions: Partial<ConcurrentlyOptions> = {
-    restartTries: 0,
-    killOthers: ["failure", "success"],
-    raw: true,
-    spawn: (command: string, options: SpawnOptions) => {
-      if (command.startsWith(INTERNAL_FUNC_START_PREFIX)) {
-        const encodedPayload = command.slice(INTERNAL_FUNC_START_PREFIX.length);
-        const payload = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf8")) as InternalFuncStartPayload;
-        const env = Object.fromEntries(Object.entries(options.env || {}).map(([key, value]) => [key, value == null ? undefined : String(value)]));
-
-        return spawn(payload.binary, payload.args, {
-          ...options,
-          cwd: payload.cwd,
-          env,
-          shell: false,
-          windowsVerbatimArguments: false,
-        });
-      }
-
-      return spawnWithShell(command, options);
-    },
-  };
-  const { result } = concurrently(concurrentlyCommands, concurrentlyOptions);
+  const result = superviseProcesses(commands);
 
   await result
     .then(
@@ -431,18 +371,4 @@ export async function start(options: SWACLIConfig) {
     .catch((err: Error) => {
       logger.error(err.message, true);
     });
-}
-
-function spawnWithShell(command: string, options: SpawnOptions) {
-  const shellOptions: SpawnOptions = { ...options };
-
-  if (process.platform === "win32") {
-    const shell = process.env.comspec || "cmd.exe";
-    return spawn(shell, ["/d", "/s", "/c", `"${command}"`], {
-      ...shellOptions,
-      windowsVerbatimArguments: true,
-    });
-  }
-
-  return spawn("/bin/sh", ["-c", command], shellOptions);
 }

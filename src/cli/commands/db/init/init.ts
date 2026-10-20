@@ -19,7 +19,7 @@ export async function init(options: SWACLIConfig) {
   if (databaseType === undefined || !isValidDatabaseType(databaseType)) {
     logger.error(
       `--database-type is a required field. Please provide the type of the database you want to connect (mssql, postgresql, cosmosdb_nosql, mysql, cosmosdb_postgresql).`,
-      true
+      true,
     );
     return;
   }
@@ -44,13 +44,14 @@ export async function init(options: SWACLIConfig) {
 
   logger.log(`Creating ${DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME} configuration file`, "swa");
 
-  const dataApiBinary = await getDataApiBuilderBinaryPath();
+  const dataApiBinary = await getDataApiBuilderBinaryPath({ cwd: path.resolve(directory) });
   if (!dataApiBinary) {
     logger.error(
       `Could not find or install ${DATA_API_BUILDER_BINARY_NAME} binary.
     If you already have data-api-builder installed, try running "dab init" directly to generate the config file. Exiting!!`,
-      true
+      true,
     );
+    return;
   }
 
   let args: string[] = [
@@ -86,7 +87,7 @@ export async function init(options: SWACLIConfig) {
     if (!cosmosdb_nosqlDatabase) {
       logger.error(
         `--cosmosdb_nosql-database is required when database-type is cosmosdb_nosql, ${DATA_API_BUILDER_DEFAULT_CONFIG_FILE_NAME} will not be created`,
-        true
+        true,
       );
     }
     // create file staticwebapp.database.schema.json directly if database type cosmosdb_nosql since needed argument

@@ -7,8 +7,6 @@ import {
   DEFAULT_DATA_API_BUILDER_BINARY,
 } from "../constants.js";
 import { fetchWithProxy as fetch } from "../../core/utils/fetch-proxy.js";
-import { promisify } from "node:util";
-import { exec } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import AdmZip from "adm-zip";
@@ -16,6 +14,7 @@ import path from "node:path";
 import { logger } from "../utils/logger.js";
 import { getPlatform } from "../utils/platform.js";
 import { downloadAndValidateBinary } from "../download-binary-helper.js";
+import { ExecutableResolutionOptions, probeExecutable, resolveTrustedExecutable, resolveTrustedExecutablePath } from "../utils/executable.js";
 
 /**
  * Gets the filepath where the Microsoft.DataApiBuilder.exe is located
@@ -27,7 +26,7 @@ import { downloadAndValidateBinary } from "../download-binary-helper.js";
  *
  * @returns binaryPath
  */
-export async function installAndGetDataApiBuilder(): Promise<{ binaryPath: string }> {
+export async function installAndGetDataApiBuilder(options: ExecutableResolutionOptions = {}): Promise<{ binaryPath: string }> {
   const platform = getPlatform();
   if (!platform) {
     throw new Error(`Unsupported platform: ${os.platform()}`);
@@ -37,21 +36,12 @@ export async function installAndGetDataApiBuilder(): Promise<{ binaryPath: strin
   if (releaseMetadata === undefined) {
     throw new Error(`Could not load ${DATA_API_BUILDER_BINARY_NAME} metadata from remote. Please check your internet connection.`); // should we throw error and stop or can we allow users to use local version
   }
-  const isLatestVersionInstalled = await isLocalVersionInstalledAndLatest(releaseMetadata.versionId);
-
-  if (!isLatestVersionInstalled) {
-    const binaryPath = await downloadAndUnzipBinary(releaseMetadata, platform);
-
-    if (binaryPath != undefined) {
-      return {
-        binaryPath: binaryPath,
-      };
-    }
+  const installed = await getInstalledDataApiBuilder(options);
+  if (installed?.version === releaseMetadata.versionId) {
+    return { binaryPath: installed.binaryPath };
   }
 
-  return {
-    binaryPath: DATA_API_BUILDER_COMMAND,
-  };
+  return { binaryPath: await downloadAndUnzipBinary(releaseMetadata, platform) };
 }
 
 /**
@@ -62,7 +52,7 @@ export async function installAndGetDataApiBuilder(): Promise<{ binaryPath: strin
  */
 async function downloadAndUnzipBinary(releaseMetadata: DataApiBuilderReleaseMetadata, platform: "win-x64" | "osx-x64" | "linux-x64") {
   try {
-    const destDirectory = path.join(DATA_API_BUILDER_FOLDER, releaseMetadata.versionId);
+    const destDirectory = path.resolve(DATA_API_BUILDER_FOLDER, releaseMetadata.versionId);
     const binaryPath = path.join(destDirectory, getDefaultDataApiBuilderBinaryForOS(platform));
 
     if (!fs.existsSync(binaryPath)) {
@@ -83,10 +73,12 @@ async function downloadAndUnzipBinary(releaseMetadata: DataApiBuilderReleaseMeta
       fs.chmodSync(binaryPath, 0o755);
     }
 
-    return binaryPath;
+    const executable = resolveTrustedExecutablePath(binaryPath);
+    if (!executable) throw new Error(`Cannot find the downloaded ${DATA_API_BUILDER_BINARY_NAME} executable.`);
+    return executable;
   } catch (ex) {
     logger.error(`Unable to download/extract ${DATA_API_BUILDER_BINARY_NAME} binary. Exception ${ex}`);
-    return undefined;
+    throw ex;
   }
 }
 
@@ -110,24 +102,6 @@ async function getReleaseDataApiBuilderMetadata(): Promise<{ releaseMetadata: Da
       releaseMetadata: undefined,
     };
   }
-}
-
-/**
- * Returns if the version installed locally is latest or not
- * @param releaseVersion current released Version of the Microsoft.DataApiBuilder.exe
- * @param platform current OS
- * @returns true if latest Version of data-api-builder is installed else false
- */
-async function isLocalVersionInstalledAndLatest(releaseVersion: string): Promise<boolean | undefined> {
-  const versionInstalled = await getInstalledVersion(DATA_API_BUILDER_COMMAND);
-
-  if (versionInstalled) {
-    logger.silly(`Installed version: ${versionInstalled}`);
-    return versionInstalled == releaseVersion;
-  }
-
-  logger.silly(`${DATA_API_BUILDER_COMMAND} is not installed.`);
-  return undefined;
 }
 
 /**
@@ -163,17 +137,18 @@ export function getDefaultDataApiBuilderBinaryForOS(platform: string): string {
 
 /**
  * Returns installed version if installed else undefined
- * @param command package to know the version
+ * @param options Working directory for configured PATH lookup and probing
  * @returns installed version
  */
-async function getInstalledVersion(command: "dab"): Promise<string | undefined> {
+async function getInstalledDataApiBuilder(options: ExecutableResolutionOptions): Promise<{ binaryPath: string; version: string } | undefined> {
   logger.silly(`Running ${DATA_API_BUILDER_COMMAND} --version`);
 
+  const binaryPath = resolveTrustedExecutable(DATA_API_BUILDER_COMMAND, options);
+  if (!binaryPath) return undefined;
   try {
-    const { stdout } = await promisify(exec)(`${command} --version`);
+    const { stdout } = await probeExecutable(binaryPath, ["--version"], options);
     const version = stdout.split(" ")[1].split("\r")[0]; // parsing output which looks like this "Microsoft.DataApiBuilder 0.5.0" (specific to dab)
-
-    return version;
+    return { binaryPath, version };
   } catch {
     return undefined;
   }

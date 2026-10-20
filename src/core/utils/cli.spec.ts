@@ -110,6 +110,13 @@ describe("createStartupScriptCommand()", () => {
       ]);
     });
 
+    it.each([String.raw`\\fileserver\devcerts\local.pfx`, String.raw`\\fileserver\dev certs\local.pfx`])(
+      "should preserve both leading backslashes in quoted UNC path %s",
+      (file) => {
+        expect(parseCommandLineArgs(`--cert "${file}"`)).toStrictEqual(["--cert", file]);
+      },
+    );
+
     it("should keep option terminator as a literal token", () => {
       expect(parseCommandLineArgs(`-- --literal --not-option`)).toStrictEqual(["--", "--literal", "--not-option"]);
     });

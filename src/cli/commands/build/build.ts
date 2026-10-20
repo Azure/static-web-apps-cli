@@ -5,8 +5,9 @@ import { findUpPackageJsonDir, pathExists } from "../../../core/utils/file.js";
 import { isUserOrConfigOption } from "../../../core/utils/options.js";
 import { logger } from "../../../core/utils/logger.js";
 import { readWorkflowFile } from "../../../core/utils/workflow-config.js";
-import { runCommand } from "../../../core/utils/command.js";
+import { execInternalCommand, runCommand } from "../../../core/utils/command.js";
 import { swaCliConfigFilename } from "../../../core/utils/cli-config.js";
+import { resolveTrustedPackageManager } from "../../../core/utils/executable.js";
 
 export async function build(options: SWACLIConfig) {
   const workflowConfig = readWorkflowFile();
@@ -135,7 +136,8 @@ async function installNpmDependencies(packageJsonPath: string): Promise<void> {
   try {
     const packageManager = await detectPackageManager(packageJsonPath);
     logger.log(`Installing dependencies with "${packageManager} install"...`);
-    runCommand(`${packageManager} install`, packageJsonPath);
+    const spec = resolveTrustedPackageManager(packageManager, { cwd: path.resolve(packageJsonPath) });
+    execInternalCommand({ ...spec, args: [...spec.args, "install"], cwd: path.resolve(packageJsonPath) });
   } catch (error) {
     logger.error(`Cannot install dependencies:`);
     logger.error(error as Error, true);

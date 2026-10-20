@@ -1,7 +1,9 @@
 import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import pem from "pem";
+import process from "node:process";
+import { createRequire } from "node:module";
+import { resolveTrustedExecutable, resolveTrustedExecutablePath } from "./utils/executable.js";
 import { logger } from "./utils/logger.js";
 
 const ONE_MONTH = 1000 * 60 * 60 * 24 * 30;
@@ -83,6 +85,40 @@ interface SSLCertificate extends Pick<PEMOptions, "csr" | "clientKey" | "service
   certificate: string;
 }
 
+interface Pem {
+  config(options: { pathOpenSSL: string }): void;
+  createCertificate(options: PEMOptions, callback: (error: Error | null, certificate: SSLCertificate) => void): void;
+}
+
+let pem: Pem | undefined;
+
+function certificateGenerator(): Pem {
+  if (pem) return pem;
+  const configured = process.env.OPENSSL_BIN;
+  const executable =
+    configured && /[\\/]/.test(configured)
+      ? resolveTrustedExecutablePath(path.resolve(configured))
+      : resolveTrustedExecutable(configured || "openssl");
+  if (!executable) {
+    throw new Error("Cannot find an OpenSSL executable. Check your OpenSSL installation.");
+  }
+  const previous = { OPENSSL_BIN: process.env.OPENSSL_BIN, LIBRARY: process.env.LIBRARY };
+  try {
+    process.env.OPENSSL_BIN = executable;
+    // pem's CI fixture hook otherwise overrides OPENSSL_BIN with a project-relative path before probing.
+    delete process.env.LIBRARY;
+    const loaded: Pem = createRequire(import.meta.url)("pem");
+    loaded.config({ pathOpenSSL: executable });
+    pem = loaded;
+    return loaded;
+  } finally {
+    for (const [key, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+}
+
 /**
  * Generate a new SSL certificate. This will create a new key and certificate and cache them in the
  * `~/.swa/certificates/ssl` directory, for one month.
@@ -123,8 +159,9 @@ export async function getCertificate(options: PEMOptions): Promise<string> {
 }
 
 async function createCertificate(options: PEMOptions): Promise<SSLCertificate> {
+  const generator = certificateGenerator();
   return new Promise((resolve, reject) => {
-    pem.createCertificate(options, (err: Error, keys: SSLCertificate) => {
+    generator.createCertificate(options, (err, keys) => {
       if (err) {
         reject(err);
       } else {

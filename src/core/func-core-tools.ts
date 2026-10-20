@@ -2,14 +2,13 @@ import os from "node:os";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { exec } from "node:child_process";
-import { promisify } from "node:util";
 import { PassThrough } from "node:stream";
 import crypto from "node:crypto";
 import { fetchWithProxy as fetch } from "./utils/fetch-proxy.js";
 import AdmZip from "adm-zip";
 import cliProgress from "cli-progress";
 import { logger } from "./utils/logger.js";
+import { ExecutableResolutionOptions, probeExecutable, resolveTrustedExecutable, resolveTrustedExecutablePath } from "./utils/executable.js";
 
 const RELEASES_FEED_URL = "https://functionscdn.azureedge.net/public/cli-feed-v4.json";
 const DEFAULT_FUNC_BINARY = "func";
@@ -35,7 +34,7 @@ function getCoreToolsFolder(version: number): string {
 
 function getCoreToolBinaryPath(version: number): string {
   const folder = getCoreToolsFolder(version);
-  return path.resolve(path.join(folder, "func"));
+  return path.resolve(path.join(folder, os.platform() === "win32" ? "func.exe" : "func"));
 }
 
 export function isCoreToolsVersionCompatible(coreToolsVersion: number, nodeVersion: number): boolean {
@@ -77,14 +76,20 @@ export function resetCachedInstalledSystemCoreToolsVersion(): void {
   installedSystemCoreToolsVersionIsCached = false;
 }
 
-async function getInstalledSystemCoreToolsVersion(): Promise<number | undefined> {
-  if (installedSystemCoreToolsVersionIsCached) {
-    return cachedSystemCoreToolsVersion;
+async function getInstalledSystemCoreTools(options: ExecutableResolutionOptions): Promise<{ binaryPath: string; version: number } | undefined> {
+  if (installedSystemCoreToolsVersionIsCached && cachedSystemCoreToolsVersion === undefined) {
+    return undefined;
   }
 
+  const binaryPath = resolveTrustedExecutable(DEFAULT_FUNC_BINARY, options);
+  if (!binaryPath) return undefined;
+
+  if (installedSystemCoreToolsVersionIsCached && cachedSystemCoreToolsVersion !== undefined) {
+    return { binaryPath, version: cachedSystemCoreToolsVersion };
+  }
   try {
-    const { stdout: version } = await promisify(exec)(`${DEFAULT_FUNC_BINARY} --version`);
-    return getMajorVersion(version);
+    const { stdout: version } = await probeExecutable(binaryPath, ["--version"], options);
+    return { binaryPath, version: getMajorVersion(version) };
   } catch {
     return undefined;
   }
@@ -262,19 +267,21 @@ export async function downloadCoreTools(version: number): Promise<string> {
   return release.version;
 }
 
-export async function getCoreToolsBinary(): Promise<string | undefined> {
+export async function getCoreToolsBinary(options: ExecutableResolutionOptions = {}): Promise<string | undefined> {
   const nodeVersion = getNodeMajorVersion();
-  const systemVersion = await getInstalledSystemCoreToolsVersion();
+  const installed = await getInstalledSystemCoreTools(options);
+  const systemVersion = installed?.version;
 
-  if (systemVersion && isCoreToolsVersionCompatible(systemVersion, nodeVersion)) {
-    return DEFAULT_FUNC_BINARY;
+  if (installed && isCoreToolsVersionCompatible(installed.version, nodeVersion)) {
+    return installed.binaryPath;
   }
 
   const targetVersion = detectTargetCoreToolsVersion(nodeVersion);
+  const managedBinary = getCoreToolBinaryPath(targetVersion);
   const downloadedVersion = getDownloadedCoreToolsVersion(targetVersion);
   if (downloadedVersion) {
     // Should we check for newer versions here?
-    return getCoreToolBinaryPath(targetVersion);
+    return resolveTrustedExecutablePath(managedBinary);
   }
 
   if (systemVersion && systemVersion !== targetVersion) {
@@ -289,7 +296,7 @@ export async function getCoreToolsBinary(): Promise<string | undefined> {
   try {
     await downloadCoreTools(targetVersion);
     logger.log(`\nDownloaded Function Core Tools successfully`);
-    return getCoreToolBinaryPath(targetVersion);
+    return resolveTrustedExecutablePath(managedBinary);
   } catch (error: unknown) {
     logger.error(`Failed to download Functions Core Tools v${targetVersion}.`);
     logger.error(error as Error);
