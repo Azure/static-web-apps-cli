@@ -98,6 +98,27 @@ If your project doesn't have any `staticwebapp.config.json` file, add one under 
 swa deploy ./my-dist --api-location ./api
 ```
 
+#### Opt in to .NET 10 isolated
+
+For a .NET 10 isolated Functions API, explicitly select the language and version:
+
+```bash
+swa deploy ./my-dist --api-location ./api --api-language dotnetisolated --api-version 10.0
+```
+
+The corresponding runtime setting in `staticwebapp.config.json` is:
+
+```json
+{
+  "platform": {
+    "apiRuntime": "dotnet-isolated:10.0"
+  }
+}
+```
+
+The default .NET isolated version remains `8.0`. .NET 10 is not supported for the in-process `dotnet` runtime.
+CLI runtime selection does not establish runtime availability in Azure Static Web Apps; verify support for your target environment before deploying.
+
 ### Deploy a Blazor app
 
 To deploy a Blazor app with (optional) an API to Azure Static Web Apps, use the following steps:
