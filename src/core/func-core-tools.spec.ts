@@ -1,11 +1,12 @@
 import "../../tests/_mocks/fetch.js";
 import "../../tests/_mocks/fs.js";
 import "../../tests/_mocks/posix.js";
-import { childProcess, mockInternalProcesses } from "../../tests/_mocks/internal-process.js";
+import { childProcess, directLaunches, mockInternalProcesses } from "../../tests/_mocks/internal-process.js";
 
 import { vol, fs } from "memfs";
 import { PassThrough } from "node:stream";
 import os from "node:os";
+import process from "node:process";
 import * as fct from "./func-core-tools.js";
 import * as nodeFetch from "node-fetch";
 import { Response } from "node-fetch";
@@ -46,6 +47,71 @@ function mockBinaryResponse(response: string, status = 200) {
   });
   fetch.mockResolvedValueOnce(packageResponse);
 }
+
+describe("internal executable identity (no fixture execution)", () => {
+  let getCoreToolsBinary: typeof fct.getCoreToolsBinary;
+  let resetCachedInstalledSystemCoreToolsVersion: typeof fct.resetCachedInstalledSystemCoreToolsVersion;
+
+  beforeEach(async () => {
+    // Keep mocked proxy/download dependencies separate from the original fetch tests.
+    vi.resetModules();
+    vi.doMock("./utils/fetch-proxy.js", () => ({ fetchWithProxy: vi.fn() }));
+    vi.doMock("./download-binary-helper.js", () => ({ downloadAndValidateBinary: vi.fn() }));
+    vi.doMock("./utils/logger.js", () => ({
+      logger: { log: vi.fn(), warn: vi.fn(), error: vi.fn(), silly: vi.fn(), info: vi.fn() },
+    }));
+    ({ getCoreToolsBinary, resetCachedInstalledSystemCoreToolsVersion } = await import("./func-core-tools.js"));
+    vol.reset();
+    resetCachedInstalledSystemCoreToolsVersion();
+    vi.spyOn(os, "platform").mockReturnValue("linux");
+    vi.spyOn(os, "homedir").mockReturnValue("/home/tester");
+    vi.spyOn(process, "cwd").mockReturnValue("/workspace");
+    vi.stubEnv("PATH", "/trusted/bin");
+    vol.fromJSON({
+      "/workspace/func": "inert fixture",
+      "/workspace/dab": "inert fixture",
+      "/workspace/relative-tools/func": "inert fixture",
+      "/workspace/relative-tools/dab": "inert fixture",
+      "/trusted/bin/func": "inert fixture",
+      "/trusted/bin/dab": "inert fixture",
+    });
+    for (const file of Object.keys(vol.toJSON())) fs.chmodSync(file, 0o755);
+    const { fetchWithProxy } = await import("./utils/fetch-proxy.js");
+    vi.mocked(fetchWithProxy).mockResolvedValue({
+      json: async () => [{ version: "latest", versionId: "1.2.3" }],
+    } as any);
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    resetCachedInstalledSystemCoreToolsVersion();
+  });
+
+  it("probes installed Functions with an absolute executable and argv, not a shell", async () => {
+    mockInternalProcesses("4.0.0");
+    await getCoreToolsBinary();
+    expect(childProcess.exec.mock.calls).toEqual([]);
+    expect(directLaunches()).toContainEqual(expect.objectContaining({ file: "/trusted/bin/func", args: ["--version"] }));
+  });
+
+  it("returns the same trusted Functions identity selected for probing", async () => {
+    vi.stubEnv("PATH", "/workspace/relative-tools:/trusted/bin");
+    mockInternalProcesses("4.0.0");
+    const binary = await getCoreToolsBinary();
+    expect(binary).toBe("/workspace/relative-tools/func");
+    expect(directLaunches()).toContainEqual(expect.objectContaining({ file: binary, args: ["--version"] }));
+  });
+
+  it("preserves absolute cached Functions downloads when no compatible installed version exists", async () => {
+    mockInternalProcesses("2.0.0");
+    vol.fromJSON({
+      "/home/tester/.swa/core-tools/v4/.release-version": "4.3.2",
+      "/home/tester/.swa/core-tools/v4/func": "inert fixture",
+    });
+    const binary = await getCoreToolsBinary();
+    expect(binary).toBe("/home/tester/.swa/core-tools/v4/func");
+  });
+});
 
 describe("funcCoreTools", () => {
   beforeEach(() => {

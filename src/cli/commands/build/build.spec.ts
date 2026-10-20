@@ -1,26 +1,29 @@
 import "../../../../tests/_mocks/fs.js";
 import "../../../../tests/_mocks/posix.js";
+import { childProcess, directLaunches, mockInternalProcesses } from "../../../../tests/_mocks/internal-process.js";
 import { vol, fs } from "memfs";
 import path from "node:path";
 import process from "node:process";
-import { build } from "./build.js";
 import { DEFAULT_CONFIG } from "../../../config.js";
 import { convertToNativePaths } from "../../../test.helpers.js";
 
-vi.mock("../../../core/utils/logger", () => {
-  return {
-    logger: {
-      error: vi.fn(),
-      log: vi.fn(),
-      warn: vi.fn(),
-      silly: vi.fn(),
-    },
-  };
-});
-vi.mock("../../../core/utils/command.js");
-
 describe("swa build", () => {
-  beforeEach(() => {
+  let build: typeof import("./build.js").build;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    for (const module of [
+      "../../../core/utils/workflow-config.js",
+      "../../../core/utils/options.js",
+      "../../../core/utils/file.js",
+      "../../../core/frameworks/detect.js",
+    ])
+      vi.doUnmock(module);
+    vi.doMock("../../../core/utils/logger.js", () => ({
+      logger: { error: vi.fn(), log: vi.fn(), warn: vi.fn(), silly: vi.fn() },
+    }));
+    vi.doMock("../../../core/utils/command.js");
+    ({ build } = await import("./build.js"));
     vol.reset();
     vol.fromJSON({ "/trusted/bin/npm": "inert native fixture; never executed" });
     fs.chmodSync("/trusted/bin/npm", 0o755);
@@ -146,5 +149,73 @@ describe("swa build", () => {
     // expect(execSyncMock).toHaveBeenCalledTimes(2);
     // expect(execSyncMock).toHaveBeenCalledWith("npm install", { cwd: convertToNativePaths("src/node-ts") });
     // expect(execSyncMock).toHaveBeenCalledWith("npm run build --if-present", { cwd: convertToNativePaths("src/node-ts") });
+  });
+});
+
+describe("automatic dependency installs are internal, user build strings are deliberate", () => {
+  let build: typeof import("./build.js").build;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    vi.doUnmock("../../../core/utils/command.js");
+    vi.doMock("../../../core/utils/workflow-config.js", () => ({ readWorkflowFile: () => undefined }));
+    vi.doMock("../../../core/utils/options.js", () => ({ isUserOrConfigOption: () => false }));
+    vi.doMock("../../../core/utils/file.js", async (importOriginal) => ({
+      ...(await importOriginal<typeof import("../../../core/utils/file.js")>()),
+      // Preserve the original finder isolation, independently of command execution.
+      findUpPackageJsonDir: async () => "/workspace/app",
+    }));
+    vi.doMock("../../../core/utils/logger.js", () => ({
+      logger: { log: vi.fn(), warn: vi.fn(), error: vi.fn(), silly: vi.fn() },
+    }));
+    vi.doMock("../../../core/frameworks/detect.js", () => ({ detectProjectFolders: vi.fn(), generateConfiguration: vi.fn() }));
+    ({ build } = await import("./build.js"));
+    vol.reset();
+    mockInternalProcesses();
+    vi.spyOn(process, "cwd").mockReturnValue("/workspace");
+    vi.stubEnv("PATH", "/trusted/bin");
+    vol.fromJSON({
+      "/bin/sh": "inert system-shell fixture; never executed",
+      "/workspace/app/package.json": "{}",
+      "/trusted/bin/npm": "inert fixture",
+      "/trusted/bin/yarn": "inert fixture",
+      "/trusted/bin/pnpm": "inert fixture",
+      "/workspace/npm": "inert fixture",
+      "/workspace/yarn": "inert fixture",
+      "/workspace/pnpm": "inert fixture",
+      "/workspace/app/npm": "inert off-PATH fixture",
+      "/workspace/app/yarn": "inert off-PATH fixture",
+      "/workspace/app/pnpm": "inert off-PATH fixture",
+      "/workspace/app/.tools/npm": "inert configured fixture",
+      "/workspace/app/.tools/yarn": "inert configured fixture",
+      "/workspace/app/.tools/pnpm": "inert configured fixture",
+    });
+    for (const file of Object.keys(vol.toJSON())) fs.chmodSync(file, 0o755);
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it.each([
+    ["npm", "package-lock.json"],
+    ["yarn", "yarn.lock"],
+    ["pnpm", "pnpm-lock.yaml"],
+  ])("runs automatic %s install through the caller-selected identity without off-PATH CWD preemption", async (manager, lock) => {
+    vol.fromJSON({ [`/workspace/app/${lock}`]: "" });
+    for (const directory of ["/trusted/bin", "/workspace/app/.tools"]) {
+      vi.stubEnv("PATH", directory === "/trusted/bin" ? directory : `${directory}:/trusted/bin`);
+      await build({ ...DEFAULT_CONFIG, appLocation: "/workspace/app", outputLocation: ".", appBuildCommand: "npm run build && echo done" });
+      expect(childProcess.execSync.mock.calls.map(([command]) => command)).not.toContain(`${manager} install`);
+      const launches = directLaunches().map(({ file, args, options }) => ({ file, args, cwd: options?.cwd }));
+      expect(launches).toContainEqual({ file: `${directory}/${manager}`, args: ["install"], cwd: "/workspace/app" });
+      expect(launches.some(({ file }) => file === `/workspace/app/${manager}` || file === `/workspace/${manager}`)).toBe(false);
+    }
+  });
+
+  it("preserves an explicit user build command as a shell string", async () => {
+    const command = "npm run build && echo done";
+    await build({ ...DEFAULT_CONFIG, appLocation: "/workspace/app", outputLocation: ".", appBuildCommand: command });
+    expect(childProcess.execSync).toHaveBeenCalledWith(command, expect.objectContaining({ cwd: "/workspace/app", shell: "/bin/sh" }));
   });
 });
