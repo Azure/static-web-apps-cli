@@ -1,11 +1,12 @@
 import { concurrently, CloseEvent, ConcurrentlyOptions } from "concurrently";
+import { spawn, SpawnOptions } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { DEFAULT_CONFIG } from "../../../config.js";
 import { askNewPort, isAcceptingTcpConnections, parseUrl } from "../../../core/utils/net.js";
 import { logger } from "../../../core/utils/logger.js";
-import { createStartupScriptCommand } from "../../../core/utils/cli.js";
+import { createStartupScriptCommand, parseCommandLineArgs } from "../../../core/utils/cli.js";
 import { readWorkflowFile } from "../../../core/utils/workflow-config.js";
 import {
   getNodeMajorVersion,
@@ -26,6 +27,13 @@ const __dirname = path.dirname(__filename);
 
 // This is the path to ./dist/msha/server.js
 const mshaPath = path.resolve(__dirname, "../../../../dist/msha/server.js");
+const INTERNAL_FUNC_START_PREFIX = "__SWA_INTERNAL_FUNC_START__:";
+
+type InternalFuncStartPayload = {
+  binary: string;
+  args: string[];
+  cwd: string;
+};
 
 // import { createRequire } from "node:module";
 // const require = createRequire(import.meta.url);
@@ -167,6 +175,7 @@ export async function start(options: SWACLIConfig) {
   }
 
   const isApiLocationExistsOnDisk = fs.existsSync(userWorkflowConfig?.apiLocation!);
+  let apiFuncPayload: InternalFuncStartPayload | undefined = undefined;
 
   // handle the API location config
   let serveApiCommand = "echo 'No API found. Skipping'";
@@ -203,7 +212,20 @@ export async function start(options: SWACLIConfig) {
 
         // serve the api if and only if the user provides a folder via the --api-location flag
         if (isApiLocationExistsOnDisk) {
-          serveApiCommand = `cd "${userWorkflowConfig.apiLocation}" && "${funcBinary}" start --cors "*" --port ${apiPort} ${funcArgs ?? ""}`;
+          let parsedFuncArgs: string[] = [];
+          try {
+            parsedFuncArgs = parseCommandLineArgs(funcArgs);
+          } catch (error: unknown) {
+            logger.error((error as Error).message, true);
+          }
+
+          apiFuncPayload = {
+            binary: funcBinary,
+            cwd: userWorkflowConfig.apiLocation,
+            args: ["start", "--cors", "*", "--port", `${apiPort}`, ...parsedFuncArgs],
+          };
+
+          serveApiCommand = `${INTERNAL_FUNC_START_PREFIX}${Buffer.from(JSON.stringify(apiFuncPayload)).toString("base64url")}`;
         }
       }
     }
@@ -344,13 +366,36 @@ export async function start(options: SWACLIConfig) {
     env: envVarsObj,
     commands: {
       swa: concurrentlyCommands.find((c) => c.name === "swa")?.command,
-      api: concurrentlyCommands.find((c) => c.name === "api")?.command,
+      api: apiFuncPayload
+        ? `"${apiFuncPayload.binary}" ${apiFuncPayload.args.join(" ")} (cwd: ${apiFuncPayload.cwd})`
+        : concurrentlyCommands.find((c) => c.name === "api")?.command,
       dataApi: concurrentlyCommands.find((c) => c.name == "dataApi")?.command,
       run: concurrentlyCommands.find((c) => c.name === "run")?.command,
     },
   });
 
-  const concurrentlyOptions: Partial<ConcurrentlyOptions> = { restartTries: 0, killOthers: ["failure", "success"], raw: true };
+  const concurrentlyOptions: Partial<ConcurrentlyOptions> = {
+    restartTries: 0,
+    killOthers: ["failure", "success"],
+    raw: true,
+    spawn: (command: string, options: SpawnOptions) => {
+      if (command.startsWith(INTERNAL_FUNC_START_PREFIX)) {
+        const encodedPayload = command.slice(INTERNAL_FUNC_START_PREFIX.length);
+        const payload = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf8")) as InternalFuncStartPayload;
+        const env = Object.fromEntries(Object.entries(options.env || {}).map(([key, value]) => [key, value == null ? undefined : String(value)]));
+
+        return spawn(payload.binary, payload.args, {
+          ...options,
+          cwd: payload.cwd,
+          env,
+          shell: false,
+          windowsVerbatimArguments: false,
+        });
+      }
+
+      return spawnWithShell(command, options);
+    },
+  };
   const { result } = concurrently(concurrentlyCommands, concurrentlyOptions);
 
   await result
@@ -386,4 +431,18 @@ export async function start(options: SWACLIConfig) {
     .catch((err: Error) => {
       logger.error(err.message, true);
     });
+}
+
+function spawnWithShell(command: string, options: SpawnOptions) {
+  const shellOptions: SpawnOptions = { ...options };
+
+  if (process.platform === "win32") {
+    const shell = process.env.comspec || "cmd.exe";
+    return spawn(shell, ["/d", "/s", "/c", `"${command}"`], {
+      ...shellOptions,
+      windowsVerbatimArguments: true,
+    });
+  }
+
+  return spawn("/bin/sh", ["-c", command], shellOptions);
 }
