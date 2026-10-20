@@ -119,3 +119,95 @@ export function parseServerTimeout(time: string) {
   }
   return timeValue;
 }
+
+/**
+ * Split a shell-like argument string into argv tokens without executing shell syntax.
+ * Supports spaces, single/double quotes, and backslash escaping.
+ * Throws when quotes are not balanced.
+ */
+export function parseCommandLineArgs(input?: string): string[] {
+  if (!input?.trim()) {
+    return [];
+  }
+
+  const args: string[] = [];
+  let current = "";
+  let quote: "'" | '"' | null = null;
+  let escaping = false;
+  let tokenStarted = false;
+
+  const pushToken = () => {
+    if (tokenStarted) {
+      args.push(current);
+      current = "";
+      tokenStarted = false;
+    }
+  };
+
+  for (let index = 0; index < input.length; index++) {
+    const char = input[index];
+
+    if (escaping) {
+      current += char;
+      tokenStarted = true;
+      escaping = false;
+      continue;
+    }
+
+    if (char === "\\") {
+      if (quote === "'") {
+        current += char;
+        tokenStarted = true;
+      } else if (quote === '"') {
+        const nextChar = input[index + 1];
+        if (nextChar === '"') {
+          current += nextChar;
+          tokenStarted = true;
+          index++;
+        } else {
+          current += char;
+          tokenStarted = true;
+        }
+      } else {
+        escaping = true;
+        tokenStarted = true;
+      }
+      continue;
+    }
+
+    if (quote) {
+      if (char === quote) {
+        quote = null;
+      } else {
+        current += char;
+      }
+      tokenStarted = true;
+      continue;
+    }
+
+    if (char === "'" || char === '"') {
+      quote = char;
+      tokenStarted = true;
+      continue;
+    }
+
+    if (/\s/.test(char)) {
+      pushToken();
+      continue;
+    }
+
+    current += char;
+    tokenStarted = true;
+  }
+
+  if (escaping) {
+    current += "\\";
+  }
+
+  if (quote) {
+    throw new Error(`Unbalanced quotes in --func-args.`);
+  }
+
+  pushToken();
+  return args;
+}

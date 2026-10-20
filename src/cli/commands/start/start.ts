@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { DEFAULT_CONFIG } from "../../../config.js";
 import { askNewPort, isAcceptingTcpConnections, parseUrl } from "../../../core/utils/net.js";
 import { logger } from "../../../core/utils/logger.js";
-import { createStartupScriptCommand } from "../../../core/utils/cli.js";
+import { createStartupScriptCommand, parseCommandLineArgs } from "../../../core/utils/cli.js";
 import { readWorkflowFile } from "../../../core/utils/workflow-config.js";
 import {
   getNodeMajorVersion,
@@ -18,7 +18,7 @@ import { getDataApiBuilderBinaryPath } from "../../../core/dataApiBuilder/index.
 import { swaCLIEnv } from "../../../core/env.js";
 import { getCertificate } from "../../../core/ssl.js";
 import { loadPackageJson } from "../../../core/utils/json.js";
-import { createShellExecutionSpec, createToolShellExecutionSpec, InternalExecutionSpec } from "../../../core/utils/executable.js";
+import { createShellExecutionSpec, InternalExecutionSpec } from "../../../core/utils/executable.js";
 import { NamedExecutionSpec, superviseProcesses } from "../../../core/utils/process.js";
 
 const packageInfo = loadPackageJson();
@@ -208,12 +208,19 @@ export async function start(options: SWACLIConfig) {
 
         // serve the api if and only if the user provides a folder via the --api-location flag
         if (isApiLocationExistsOnDisk) {
-          serveApi = createToolShellExecutionSpec(
-            funcBinary,
-            ["start", "--cors", "*", "--port", String(apiPort)],
-            path.resolve(userWorkflowConfig.apiLocation),
-            funcArgs ?? "",
-          );
+          let parsedFuncArgs: string[];
+          try {
+            parsedFuncArgs = parseCommandLineArgs(funcArgs);
+          } catch (error: unknown) {
+            logger.error((error as Error).message, true);
+            return;
+          }
+
+          serveApi = {
+            executable: funcBinary,
+            args: ["start", "--cors", "*", "--port", String(apiPort), ...parsedFuncArgs],
+            cwd: path.resolve(userWorkflowConfig.apiLocation),
+          };
         }
       }
     }

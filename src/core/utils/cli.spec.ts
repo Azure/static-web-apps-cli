@@ -4,7 +4,7 @@ vi.mock("../constants", () => {
 });
 import path from "node:path";
 import { vol } from "memfs";
-import { argv, createStartupScriptCommand, parseServerTimeout } from "./cli.js";
+import { argv, createStartupScriptCommand, parseCommandLineArgs, parseServerTimeout } from "./cli.js";
 import { logger } from "./logger.js";
 
 describe("argv()", () => {
@@ -62,6 +62,67 @@ describe("createStartupScriptCommand()", () => {
     it("should parse npm scripts (with #)", () => {
       const cmd = createStartupScriptCommand("npm:start#foo", {});
       expect(cmd).toBe("npm run start#foo --if-present");
+    });
+  });
+
+  describe("parseCommandLineArgs()", () => {
+    it("should return empty array for empty input", () => {
+      expect(parseCommandLineArgs()).toStrictEqual([]);
+      expect(parseCommandLineArgs("   ")).toStrictEqual([]);
+    });
+
+    it("should split regular arguments", () => {
+      expect(parseCommandLineArgs("--verbose --port 7071")).toStrictEqual(["--verbose", "--port", "7071"]);
+    });
+
+    it("should preserve quoted arguments", () => {
+      expect(parseCommandLineArgs('--name "hello world"')).toStrictEqual(["--name", "hello world"]);
+      expect(parseCommandLineArgs("--name 'hello world'")).toStrictEqual(["--name", "hello world"]);
+    });
+
+    it("should preserve shell metacharacters as literal values", () => {
+      expect(parseCommandLineArgs("| (echo vulnerable>swa-msrc-144619-windows.marker)")).toStrictEqual([
+        "|",
+        "(echo",
+        "vulnerable>swa-msrc-144619-windows.marker)",
+      ]);
+      expect(parseCommandLineArgs("--flag && whoami > out.txt")).toStrictEqual(["--flag", "&&", "whoami", ">", "out.txt"]);
+    });
+
+    it("should throw for unbalanced quotes", () => {
+      expect(() => parseCommandLineArgs('--name "hello')).toThrow("Unbalanced quotes in --func-args.");
+    });
+
+    it("should preserve mixed quote content", () => {
+      expect(parseCommandLineArgs(`--msg "a 'b' c"`)).toStrictEqual(["--msg", "a 'b' c"]);
+      expect(parseCommandLineArgs(`--msg 'a "b" c'`)).toStrictEqual(["--msg", `a "b" c`]);
+    });
+
+    it("should preserve escaped whitespace and trailing backslash", () => {
+      expect(parseCommandLineArgs(String.raw`--title hello\ world`)).toStrictEqual(["--title", "hello world"]);
+      expect(parseCommandLineArgs("--path C:\\tmp\\")).toStrictEqual(["--path", "C:tmp\\"]);
+    });
+
+    it("should preserve windows paths in quoted values", () => {
+      expect(parseCommandLineArgs(`--script "C:\\Program Files\\my app\\start.js"`)).toStrictEqual([
+        "--script",
+        `C:\\Program Files\\my app\\start.js`,
+      ]);
+    });
+
+    it.each([String.raw`\\fileserver\devcerts\local.pfx`, String.raw`\\fileserver\dev certs\local.pfx`])(
+      "should preserve both leading backslashes in quoted UNC path %s",
+      (file) => {
+        expect(parseCommandLineArgs(`--cert "${file}"`)).toStrictEqual(["--cert", file]);
+      },
+    );
+
+    it("should keep option terminator as a literal token", () => {
+      expect(parseCommandLineArgs(`-- --literal --not-option`)).toStrictEqual(["--", "--literal", "--not-option"]);
+    });
+
+    it("should treat all whitespace as separators when not quoted", () => {
+      expect(parseCommandLineArgs("--a   1\t--b  2")).toStrictEqual(["--a", "1", "--b", "2"]);
     });
   });
   describe("yarn", () => {

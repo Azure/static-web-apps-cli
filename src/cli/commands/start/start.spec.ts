@@ -6,6 +6,7 @@ import process from "node:process";
 import path from "node:path";
 import { DEFAULT_CONFIG } from "../../../config.js";
 import { getCertificate } from "../../../core/ssl.js";
+import { logger } from "../../../core/utils/logger.js";
 import type { InternalExecutionSpec } from "../../../core/utils/executable.js";
 import * as fixtureFs from "node:fs";
 import * as fixtureOs from "node:os";
@@ -86,10 +87,9 @@ describe("start internal launches versus intentional customer commands", () => {
 
   function functionsLaunch() {
     const launch = launches().find(({ cwd }) => cwd === options.apiLocation);
-    expect(launch?.file).toBe("/bin/sh");
+    expect(launch?.file).toBe("/trusted tools/func");
     expect(launch?.shell).toBe(false);
-    expect(launch?.args[0]).toBe("-c");
-    expect(launch?.args[1]).toMatch(/^'\/trusted tools\/func' 'start' '--cors' '\*' '--port' '7071'/);
+    expect(launch?.args.slice(0, 5)).toEqual(["start", "--cors", "*", "--port", "7071"]);
     return launch!;
   }
 
@@ -107,26 +107,48 @@ describe("start internal launches versus intentional customer commands", () => {
   it("launches Functions with a bound absolute prefix and explicit API cwd", async () => {
     process.env.PATH = `${options.apiLocation}:/bin`;
     await start(options);
-    expect(functionsLaunch().args[1]).toBe("'/trusted tools/func' 'start' '--cors' '*' '--port' '7071'");
+    expect(functionsLaunch().args).toEqual(["start", "--cors", "*", "--port", "7071"]);
     const api = directLaunches().find(({ options: launchOptions }) => launchOptions?.cwd === options.apiLocation)!;
     expect(api.options?.env?.PATH).toBe(`${options.apiLocation}:/bin`);
   });
 
-  it("preserves the raw funcArgs shell suffix without changing the selected Functions prefix", async () => {
+  it("parses funcArgs into literal argv without changing the selected Functions identity", async () => {
     // Arrange
     const funcArgs = '--name "two words" "" "$VALUE" && echo done';
     // Act
     await start({ ...options, funcArgs });
     // Assert
-    expect(functionsLaunch().args[1]).toBe(`'/trusted tools/func' 'start' '--cors' '*' '--port' '7071' ${funcArgs}`);
+    expect(functionsLaunch().args).toEqual(["start", "--cors", "*", "--port", "7071", "--name", "two words", "", "$VALUE", "&&", "echo", "done"]);
   });
 
-  it("delegates unmatched suffix quotes to the bound shell instead of applying the unused argv parser", async () => {
-    // Arrange / Act
-    await start({ ...options, funcArgs: '"unclosed' });
-    // Assert
-    expect(functionsLaunch().args[1]).toBe(`'/trusted tools/func' 'start' '--cors' '*' '--port' '7071' "unclosed`);
-    expect(launches().some(({ file }) => file === process.execPath)).toBe(true);
+  it("rejects malformed funcArgs quotes before launching automatic workers", async () => {
+    // Real fatal logger.error exits; its test double must also stop execution.
+    vi.mocked(logger.error).mockImplementationOnce((message) => {
+      throw new Error(String(message));
+    });
+
+    await expect(start({ ...options, funcArgs: '"unclosed' })).rejects.toThrow("Unbalanced quotes in --func-args.");
+    expect(launches()).toEqual([]);
+  });
+
+  it("should spawn Functions with argv and shell disabled for funcArgs", async () => {
+    // Preserve upstream MSRC144619's payload/control through the actual existing
+    // thin adapter and named core, not its encoded command-prefix implementation.
+    await start({
+      ...options,
+      dataApiLocation: undefined,
+      funcArgs: "| (echo vulnerable>swa-msrc-144619-windows.marker)",
+    });
+
+    expect(functionsLaunch()).toEqual({
+      file: "/trusted tools/func",
+      args: ["start", "--cors", "*", "--port", "7071", "|", "(echo", "vulnerable>swa-msrc-144619-windows.marker)"],
+      cwd: options.apiLocation,
+      shell: false,
+    });
+    expect(launches().map(({ file }) => file)).toEqual([process.execPath, "/trusted tools/func"]);
+    expect(childProcess.exec).not.toHaveBeenCalled();
+    expect(childProcess.execSync).not.toHaveBeenCalled();
   });
 
   it("launches DAB with the selected absolute identity, literal args and explicit data cwd", async () => {
@@ -158,7 +180,7 @@ describe("start internal launches versus intentional customer commands", () => {
   });
 });
 
-describe("Functions raw shell suffix compatibility (benign native argv recorder)", () => {
+describe("Functions literal argv security compatibility (benign native argv recorder)", () => {
   const fs = nativeModules["node:fs"].default;
   const os = nativeModules["node:os"].default;
   const path = nativeModules["node:path"].default;
@@ -166,7 +188,7 @@ describe("Functions raw shell suffix compatibility (benign native argv recorder)
   const { spawnSync } = nativeModules["node:child_process"];
   const { fileURLToPath } = nativeModules["node:url"];
   let start: typeof import("./start.js").start;
-  let createShellExecutionSpec: typeof import("../../../core/utils/executable.js").createShellExecutionSpec;
+  let prepareExecution: typeof import("../../../core/utils/executable.js").prepareExecution;
   let superviseProcesses: typeof import("../../../core/utils/process.js").superviseProcesses;
   let sandbox: string;
   let originalEnv: NodeJS.ProcessEnv;
@@ -187,7 +209,7 @@ describe("Functions raw shell suffix compatibility (benign native argv recorder)
     }));
     vi.doUnmock("../../../core/dataApiBuilder/index.js");
     ({ start } = await import("./start.js"));
-    ({ createShellExecutionSpec } = await import("../../../core/utils/executable.js"));
+    ({ prepareExecution } = await import("../../../core/utils/executable.js"));
     ({ superviseProcesses } = await import("../../../core/utils/process.js"));
     sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "swa-suffix-compat-"));
     originalEnv = { ...process.env };
@@ -204,7 +226,7 @@ describe("Functions raw shell suffix compatibility (benign native argv recorder)
     vi.stubGlobal("process", simulatedProcess);
   });
 
-  it("preserves variable expansion and a shell operator while retaining quoted space and UNC argument values", async () => {
+  it("keeps funcArgs variables, operators and redirection literal while retaining quoted space and UNC argument values", async () => {
     const api = path.join(sandbox, "api with spaces");
     fs.mkdirSync(api);
     fs.copyFileSync(fileURLToPath(new URL("../../../../tests/fixtures/compatibility-recorder.cjs", import.meta.url)), path.join(api, "start"));
@@ -213,10 +235,11 @@ describe("Functions raw shell suffix compatibility (benign native argv recorder)
     process.env.SWA_COMPAT_REPORT = report;
     process.env.SWA_COMPAT_MARKER = marker;
     process.env.SWA_COMPAT_VALUE = "expanded two words";
-    process.env.SWA_COMPAT_CERT = String.raw`\\fileserver\dev certs\local.pfx`;
+    const cert = String.raw`\\fileserver\dev certs\local.pfx`;
+    process.env.SWA_COMPAT_CERT = cert;
     const variable = (name: string) => (process.platform === "win32" ? `%${name}%` : `$${name}`);
     const file = path.join(api, "certificate with spaces.pfx");
-    const suffix = `--file "${file}" --cert "${variable("SWA_COMPAT_CERT")}" --name "${variable("SWA_COMPAT_VALUE")}" && echo suffix-complete > "${variable("SWA_COMPAT_MARKER")}"`;
+    const suffix = `--file "${file}" --cert "${cert}" --name "${variable("SWA_COMPAT_VALUE")}" && echo suffix-complete > "${variable("SWA_COMPAT_MARKER")}"`;
 
     function execute(execution: InternalExecutionSpec) {
       const child = spawnSync(execution.executable, execution.args, {
@@ -235,14 +258,30 @@ describe("Functions raw shell suffix compatibility (benign native argv recorder)
 
     const expected = {
       execPath: process.execPath,
-      args: ["--cors", "*", "--port", "7071", "--file", file, "--cert", process.env.SWA_COMPAT_CERT, "--name", "expanded two words"],
+      args: [
+        "--cors",
+        "*",
+        "--port",
+        "7071",
+        "--file",
+        file,
+        "--cert",
+        cert,
+        "--name",
+        variable("SWA_COMPAT_VALUE"),
+        "&&",
+        "echo",
+        "suffix-complete",
+        ">",
+        variable("SWA_COMPAT_MARKER"),
+      ],
       cwd: fs.realpathSync(api),
-      suffixCompleted: true,
+      suffixCompleted: false,
     };
-    // Positive control: the baseline raw suffix is executed by the actual trusted OS shell.
-    expect(execute(createShellExecutionSpec(`"${process.execPath}" start --cors "*" --port 7071 ${suffix}`, api))).toEqual(expected);
+    // Positive control: actual native execution with independently specified argv.
+    // Negative control: no expansion, command operator or redirection may run.
+    expect(execute(prepareExecution({ executable: process.execPath, args: ["start", ...expected.args], cwd: api }))).toEqual(expected);
     fs.writeFileSync(report, "");
-    fs.unlinkSync(marker);
 
     await start({
       ...DEFAULT_CONFIG,
